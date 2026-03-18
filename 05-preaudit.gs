@@ -15,7 +15,8 @@ function chargerConfigurationPreAudit() {
         contexteClient: props['CONTEXTE_CLIENT'] || "",
         slideId: props['SLIDE_PRE_AUDIT_ID'] || "",
         brief: props['BRIEF_PRE_AUDIT'] || "",
-        urlReponses: props['URL_REPONSES'] || ""
+        urlReponses: props['URL_REPONSES'] || "",
+        contextePreaudit: props['CONTEXTE_PRE_AUDIT'] || ""
     };
 }
 
@@ -107,6 +108,64 @@ function recupererReponseFormulaire(urlForm) {
     }
 }
 
+function genererSlideBesoinSolutionIA(contextePreaudit) {
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un expert SEO et stratège en avant-vente. À partir du profilage commercial fourni, tu dois extraire les arguments clés pour remplir une slide de présentation divisée en deux colonnes : 'Le constat (Votre Besoin)' et 'La réponse (Notre Solution)'.\n\n" +
+                        "CONTRAINTES STRICTES :\n" +
+                        "1. Tu dois générer EXACTEMENT deux puces pour le Besoin, et EXACTEMENT deux puces pour la Solution. Pas une de plus, pas une de moins.\n" +
+                        "2. Rédige des phrases courtes, percutantes et orientées bénéfice client.\n" +
+                        "3. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON, uniquement le texte brut de la phrase.\n" +
+                        "4. RÈGLES TYPOGRAPHIQUES OBLIGATOIRES : majuscule uniquement au premier mot des phrases, pas de majuscule après les deux-points.\n\n" +
+                        "Format de sortie attendu STRICTEMENT en JSON :\n" +
+                        "{\n" +
+                        "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\"],\n" +
+                        "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\"]\n" +
+                        "}\n\n" +
+                        "PROFILAGE COMMERCIAL :\n" + contextePreaudit;
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+
+        if (apiResponse.getResponseCode() !== 200) {
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            return { success: true, jsonString: responseText };
+        } else {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
 function sauvegarderConfigurationPreAudit(form) {
     var props = PropertiesService.getScriptProperties();
     props.setProperties({
@@ -116,7 +175,8 @@ function sauvegarderConfigurationPreAudit(form) {
         'CONTEXTE_CLIENT': form.contexteClient || "",
         'SLIDE_PRE_AUDIT_ID': form.slideId || "",
         'BRIEF_PRE_AUDIT': form.brief || "",
-        'URL_REPONSES': form.urlReponses || ""
+        'URL_REPONSES': form.urlReponses || "",
+        'CONTEXTE_PRE_AUDIT': form.contextePreaudit || ""
     });
     
     syncPropertiesToConfigSheet();

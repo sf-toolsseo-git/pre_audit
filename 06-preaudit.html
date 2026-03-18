@@ -80,7 +80,7 @@
 
         <div class="tabs">
             <div class="tab active" onclick="switchTab('config')" id="tab-btn-config">1. Configuration</div>
-            <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush">2. Analyse Semrush (IA)</div>
+            <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush">2. 1ère analyse</div>
             <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic">3. Diagnostic sémantique</div>
         </div>
 
@@ -136,6 +136,26 @@
 
         <div class="tab-content" id="content-semrush">
             <div class="main-area" style="max-width: 1000px; margin: 0 auto;">
+                <div class="config-card">
+                    <h2 class="section-title">Besoins et solutions</h2>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn" id="btn-gen-besoin-solution" style="width: auto; background-color: #1a73e8;" onclick="lancerGenerationBesoinSolution()">🤖 Générer les besoins et solutions</button>
+                        <div id="besoin-solution-msg" style="font-size: 12px; margin-top: 8px; font-weight: bold;"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Le constat (Votre Besoin)</label>
+                            <textarea id="bs-besoin-1" placeholder="Besoin 1..." style="margin-bottom: 10px;"></textarea>
+                            <textarea id="bs-besoin-2" placeholder="Besoin 2..."></textarea>
+                        </div>
+                        <div class="col">
+                            <label class="input-label">La réponse (Notre Solution)</label>
+                            <textarea id="bs-solution-1" placeholder="Solution 1..." style="margin-bottom: 10px;"></textarea>
+                            <textarea id="bs-solution-2" placeholder="Solution 2..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="config-card">
                     <h2 class="section-title">Analyse de l'évolution (mots-clés et trafic)</h2>
                     <p style="font-size: 13px; color: #5f6368; margin-bottom: 20px;">Collez (Ctrl+V) ou glissez les captures d'écran depuis Semrush pour générer l'analyse IA.</p>
@@ -436,6 +456,47 @@
                     btn.innerText = "🤖 Générer le profilage commercial (IA)";
                     alert("Erreur critique : " + err.message);
                 }).genererProfilageCommercialIA(urlForm, brief, contexte);
+            }
+
+            function lancerGenerationBesoinSolution() {
+                var btn = document.getElementById('btn-gen-besoin-solution');
+                var msg = document.getElementById('besoin-solution-msg');
+                var contextePreaudit = document.getElementById('conf-contexte-preaudit').value;
+
+                if (!contextePreaudit || contextePreaudit.trim() === "") {
+                    msg.innerHTML = '<span style="color:#d93025">Veuillez d\'abord renseigner le profilage commercial dans l\'onglet Configuration.</span>';
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerText = "⏳ Génération en cours...";
+                msg.innerText = "";
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        btn.disabled = false;
+                        btn.innerText = "🤖 Générer les besoins et solutions";
+                        if (res.success) {
+                            try {
+                                var data = JSON.parse(res.jsonString);
+                                document.getElementById('bs-besoin-1').value = data.besoin[0] || "";
+                                document.getElementById('bs-besoin-2').value = data.besoin[1] || "";
+                                document.getElementById('bs-solution-1').value = data.solution[0] || "";
+                                document.getElementById('bs-solution-2').value = data.solution[1] || "";
+                                msg.innerHTML = '<span style="color:#188038">Besoins et solutions générés avec succès !</span>';
+                            } catch (e) {
+                                msg.innerHTML = '<span style="color:#d93025">Erreur lors du parsing de la réponse IA.</span>';
+                            }
+                        } else {
+                            msg.innerHTML = '<span style="color:#d93025">Erreur : ' + res.message + '</span>';
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "🤖 Générer les besoins et solutions";
+                        msg.innerHTML = '<span style="color:#d93025">Erreur critique : ' + err.message + '</span>';
+                    })
+                    .genererSlideBesoinSolutionIA(contextePreaudit);
             }
 
             function exporterAnalyseSemrush() {
