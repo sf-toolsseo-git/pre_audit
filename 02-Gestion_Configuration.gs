@@ -1,5 +1,5 @@
 function afficherFenetreConfiguration() {
-    Logger.log("Ouverture de la fenêtre de configuration unifiée");
+    Logger.log("Ouverture de la fenêtre de configuration");
     try {
         var html = HtmlService.createHtmlOutputFromFile('03-Interface_Configuration')
             .setWidth(900)
