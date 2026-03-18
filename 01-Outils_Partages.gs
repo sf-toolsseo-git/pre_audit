@@ -321,23 +321,23 @@ function syncPropertiesToConfigSheet() {
             
             sheet.setFrozenRows(1);
             sheet.setHiddenGridlines(true);
-            
-            sheet.setRowHeights(1, sheet.getMaxRows(), 21);
-            
+
             for (var i = 0; i < numGroups; i++) {
                 var cBase = (i * 3) + 1;
                 var hRange = sheet.getRange(1, cBase, 1, 2);
                 hRange.setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center");
-                
+
                 sheet.getRange(2, cBase, maxRows - 1, 1).setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368");
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1).setWrap(true).setVerticalAlignment("top");
-                
+
                 sheet.setColumnWidth(cBase, 180);
                 sheet.setColumnWidth(cBase + 1, 300);
                 if (cBase + 2 <= numGroups * 3) {
                     sheet.setColumnWidth(cBase + 2, 30);
                 }
             }
+
+            sheet.setRowHeights(1, sheet.getMaxRows(), 21);
         }
     } catch (e) {
         Logger.log("Erreur lors de la synchronisation vers l'onglet CONFIG : " + e.toString());
