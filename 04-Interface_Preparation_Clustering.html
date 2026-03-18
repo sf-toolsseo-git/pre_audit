@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0; }
+        h3 { font-size: 15px; color: #202124; margin-top: 0; margin-bottom: 15px; font-weight: 600; }
+        .config-card { background-color: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dadce0; max-width: 800px; margin: 0 auto 20px auto; }
+        .row { display: flex; gap: 15px; margin-bottom: 12px; }
+        .col { flex: 1; display: flex; flex-direction: column; }
+        label { font-size: 12px; color: #5f6368; margin-bottom: 5px; font-weight: 500; }
+        textarea { width: 100%; padding: 9px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 13px; background-color: #fff; font-family: inherit; resize: vertical; }
+        textarea:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 1px #1a73e8; }
+        .helper-text { font-size: 11px; color: #888; margin-top: 4px; font-style: italic; pointer-events: none; }
+        .action-button { background-color: #08133B; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: 700; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; border: 1px solid #08133B; }
+        .action-button:hover { background-color: #152255; }
+        .action-button:disabled { background-color: #dadce0; border-color: #dadce0; cursor: not-allowed; }
+        .dropzone { border: 2px dashed #1a73e8; background-color: #f8f9fa; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; max-width: 800px; margin: 0 auto 20px auto; }
+        .dropzone.dragover { background-color: #e8f0fe; border-color: #1557b0; border-width: 3px; }
+        .bulk-title { font-weight: 700; color: #1967d2; font-size: 14px; margin-bottom: 5px; pointer-events: none; }
+        .custom-file-button { display: inline-block; background-color: #08133B; color: #ffffff; padding: 10px 20px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; transition: background-color 0.2s; margin-top: 10px; }
+        .file-status { margin-top: 10px; font-size: 13px; font-weight: 600; color: #188038; min-height: 20px; pointer-events: none; }
+        input[type="file"] { display: none; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; display: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        .progress-container { width: 100%; max-width: 400px; background-color: #e0e0e0; border-radius: 4px; height: 8px; margin: 15px auto 0 auto; overflow: hidden; display: none; }
+        .progress-bar { height: 100%; width: 0%; background-color: #1a73e8; transition: width 0.3s ease-out; border-radius: 4px; }
+        .progress-bar.success { background-color: #137333; }
+        .progress-bar.error { background-color: #c5221f; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+
+    <div class="config-card">
+        <h3 style="color:#1a73e8;">Contexte sémantique (IA)</h3>
+        <div class="helper-text" style="margin-bottom: 15px;">Renseignez des URLs (blog, à propos...) pour que l'IA analyse le contexte sémantique de l'entreprise. Ce contexte sera injecté dans le JSON d'export.</div>
+        <div class="row">
+            <div class="col">
+                <label>URLs supplémentaires pour l'analyse (une par ligne)</label>
+                <textarea id="urlsContexte" name="urlsContexte" rows="3" placeholder="https://...\nhttps://..."></textarea>
+            </div>
+        </div>
+        
+        <div class="dropzone" id="dropzoneDocs" onclick="document.getElementById('importDocsFile').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('importDocsFile').files = event.dataTransfer.files; gererImportDocs(event.dataTransfer.files);" style="margin-bottom: 15px; padding: 20px;">
+            <div class="bulk-title">📂 Glissez vos documents de contexte ici (PDF, Word, TXT)</div>
+            <div class="helper-text">ou cliquez pour les sélectionner.</div>
+            <label for="importDocsFile" class="custom-file-button" onclick="event.stopPropagation(); document.getElementById('importDocsFile').click();">Sélectionner les fichiers</label>
+            <input type="file" id="importDocsFile" accept=".pdf,.doc,.docx,.txt" multiple onchange="gererImportDocs(this.files)">
+            <div id="docsFileStatus" class="file-status"></div>
+        </div>
+        <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
+            <button type="button" id="btnGenererIA" class="action-button" onclick="lancerGenerationIA()">🤖 Générer le contexte par IA</button>
+        </div>
+        <div id="iaMessage" style="margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center;"></div>
+        <div class="row">
+            <div class="col">
+                <label>Contexte client (généré ou manuel)</label>
+                <textarea id="contexteClient" name="contexteClient" rows="5" placeholder="Décrivez l'activité, la cible et le marché de l'entreprise..."></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label>Directive prioritaire d'architecture (Règle absolue pour l'IA)</label>
+                <textarea id="directivePrioritaire" name="directivePrioritaire" rows="2" placeholder="Ex : Le clustering doit se faire en fonction des produits disponibles chez Vista..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="config-card" style="text-align:center;">
+        <h3 style="color:#1a73e8;">Étape 1 : export pour le script python</h3>
+        <p style="font-size:13px; color:#5f6368; margin-bottom: 20px;">Générez le fichier JSON contenant les mots-clés, les volumes, les URLs concurrentes et le contexte client à partir de l'onglet "Concurrence filtrée".</p>
+        <button type="button" class="action-button" id="btnExportClustering" onclick="exporterClustering()">⬇️ Télécharger le JSON d'analyse</button>
+        <div id="exportMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></div>
+    </div>
+
+    <div class="config-card" style="text-align:center; margin-top: 20px;">
+        <h3 style="color:#188038;">Étape 2 : import du résultat python</h3>
+        <p style="font-size:13px; color:#5f6368; margin-bottom: 20px;">Une fois le script Python exécuté, importez le fichier JSON de sortie ici pour visualiser les clusters.</p>
+        
+        <div class="dropzone" id="dropzoneCluster" style="border-color: #188038; background-color: #e6f4ea;" onclick="document.getElementById('importClusteringFile').click()">
+            <div class="bulk-title" style="color:#188038;">📂 Glissez le JSON (output) ici</div>
+            <div class="helper-text">ou cliquez pour le sélectionner.</div>
+            <label for="importClusteringFile" class="custom-file-button" style="background-color:#188038; border-color:#188038;" onclick="event.stopPropagation(); document.getElementById('importClusteringFile').click();">Sélectionner le fichier</label>
+            <input type="file" id="importClusteringFile" accept=".json" onchange="gererImportClustering(this.files)">
+            <div id="importFileName" class="file-status"></div>
+        </div>
+        
+        <button type="button" class="action-button" id="btnProcessClustering" style="background-color:#188038; border-color:#188038; display:none; margin: 15px auto 0;" onclick="traiterImportClustering()">Visualiser les clusters 🚀</button>
+        
+        <div id="progressContainerCluster" class="progress-container">
+            <div id="progressBarCluster" class="progress-bar"></div>
+        </div>
+        <div id="importMessage" style="margin-top: 10px; font-size: 13px; font-weight: bold;"></div>
+    </div>
+
+    <script>
+        var timeoutContexte = null;
+
+        window.onload = function() {
+            document.getElementById('loader').style.display = 'flex';
+            google.script.run.withSuccessHandler(function(data) {
+                document.getElementById('loader').style.display = 'none';
+                if(data) {
+                    document.getElementById('urlsContexte').value = data.urlsContexte || '';
+                    document.getElementById('contexteClient').value = data.contexteClient || '';
+                    document.getElementById('directivePrioritaire').value = data.directivePrioritaire || '';
+                }
+            }).chargerContexteIA();
+
+            initDragAndDrop('dropzoneCluster', 'importClusteringFile', gererImportClustering);
+
+            var champs = ['urlsContexte', 'contexteClient', 'directivePrioritaire'];
+            for (var i = 0; i < champs.length; i++) {
+                var el = document.getElementById(champs[i]);
+                if (el) {
+                    el.addEventListener('input', function() {
+                        clearTimeout(timeoutContexte);
+                        timeoutContexte = setTimeout(autoSaveContext, 1000);
+                    });
+                }
+            }
+        };
+
+        function gererImportDocs(filesList) {
+            var display = document.getElementById('docsFileStatus');
+            if (filesList && filesList.length > 0) {
+                var noms = [];
+                for (var i = 0; i < filesList.length; i++) {
+                    noms.push(filesList[i].name);
+                }
+                display.innerText = "✅ " + filesList.length + " document(s) prêt(s) : " + noms.join(", ");
+            } else {
+                display.innerText = "";
+            }
+        }
+
+        function autoSaveContext() {
+            var urls = document.getElementById('urlsContexte').value;
+            var ctx = document.getElementById('contexteClient').value;
+            var directive = document.getElementById('directivePrioritaire').value;
+            google.script.run.sauvegarderContexteIA(urls, ctx, directive);
+        }
+
+        function initDragAndDrop(zoneId, inputId, callback) {
+            var dropzone = document.getElementById(zoneId);
+            var input = document.getElementById(inputId);
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                }, false);
+            });
+            ['dragenter', 'dragover'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function() { dropzone.classList.add('dragover'); }, false);
+            });
+            ['dragleave', 'drop'].forEach(function(eventName) {
+                dropzone.addEventListener(eventName, function() { dropzone.classList.remove('dragover'); }, false);
+            });
+            dropzone.addEventListener('drop', function(e) {
+                input.files = e.dataTransfer.files;
+                callback(e.dataTransfer.files);
+            }, false);
+        }
+
+        function lancerGenerationIA() {
+            var btn = document.getElementById('btnGenererIA');
+            var msg = document.getElementById('iaMessage');
+            var urlsTexteBrut = document.getElementById('urlsContexte').value;
+            var contexteField = document.getElementById('contexteClient');
+            var fileInput = document.getElementById('importDocsFile');
+            var files = fileInput ? fileInput.files : [];
+
+            if ((!urlsTexteBrut || urlsTexteBrut.trim() === "") && files.length === 0) {
+                msg.innerText = "⚠️ Veuillez saisir au moins une URL ou déposer un document.";
+                msg.style.color = "#d93025";
+                return;
+            }
+
+            var urlsFormatees = urlsTexteBrut.split('\n').map(u => u.trim()).filter(u => u !== '').join(',');
+
+            btn.disabled = true;
+            btn.innerText = "⏳ Génération en cours...";
+            msg.innerText = "";
+            
+            var loader = document.getElementById('loader');
+            loader.innerHTML = '<div style="text-align:center; background:#fff; padding:30px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.15);"><div class="spinner" style="margin:0 auto 15px;"></div><div id="loaderText" style="font-size:14px; font-weight:600; color:#1a73e8;">Démarrage...</div></div>';
+            loader.style.display = 'flex';
+
+            var loaderText = document.getElementById('loaderText');
+            var steps = [
+                "1/3 : Extraction des textes (URLs et documents)...",
+                "2/3 : Analyse sémantique par l'IA...",
+                "3/3 : Synthèse et rédaction du contexte..."
+            ];
+            var stepIndex = 0;
+            loaderText.innerText = steps[0];
+
+            var stepTimer = setInterval(function() {
+                stepIndex++;
+                if (stepIndex < steps.length) {
+                    loaderText.innerText = steps[stepIndex];
+                } else {
+                    loaderText.innerText = "Finalisation en cours... (Cela peut prendre jusqu'à 30s)";
+                    clearInterval(stepTimer);
+                }
+            }, 6000);
+
+            var filePromises = [];
+            for (var i = 0; i < files.length; i++) {
+                (function(file) {
+                    filePromises.push(new Promise(function(resolve, reject) {
+                        var reader = new FileReader();
+                        reader.onload = function(e) {
+                            var data = e.target.result;
+                            var base64 = data.split(',')[1];
+                            resolve({ nom: file.name, mimeType: file.type, base64: base64 });
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    }));
+                })(files[i]);
+            }
+
+            Promise.all(filePromises).then(function(fichiersBase64) {
+                google.script.run.withSuccessHandler(function(res) {
+                    clearInterval(stepTimer);
+                    loader.style.display = 'none';
+                    loader.innerHTML = '<div class="spinner"></div>';
+                    
+                    btn.disabled = false;
+                    btn.innerText = "🤖 Générer le contexte par IA";
+                    
+                    if (res.success) {
+                        contexteField.value = res.texte;
+                        autoSaveContext();
+                        msg.innerHTML = "✅ <strong>Contexte généré avec succès.</strong>";
+                        msg.style.color = "#188038";
+                    } else {
+                        msg.innerHTML = "❌ <strong>Échec de l'IA :</strong> " + res.message;
+                        msg.style.color = "#d93025";
+                    }
+                }).withFailureHandler(function(err) {
+                    clearInterval(stepTimer);
+                    loader.style.display = 'none';
+                    loader.innerHTML = '<div class="spinner"></div>';
+                    
+                    btn.disabled = false;
+                    btn.innerText = "🤖 Générer le contexte par IA";
+                    msg.innerHTML = "❌ <strong>Erreur critique (Timeout/Serveur) :</strong> Le traitement a été interrompu.";
+                    msg.style.color = "#d93025";
+                }).genererContexteClientIA(urlsFormatees, fichiersBase64);
+            }).catch(function(err) {
+                clearInterval(stepTimer);
+                loader.style.display = 'none';
+                btn.disabled = false;
+                btn.innerText = "🤖 Générer le contexte par IA";
+                msg.innerHTML = "❌ <strong>Erreur de lecture du fichier :</strong> " + err.message;
+                msg.style.color = "#d93025";
+            });
+        }
+
+        function exporterClustering() {
+            var btn = document.getElementById('btnExportClustering');
+            var msg = document.getElementById('exportMessage');
+            var contexte = document.getElementById('contexteClient').value;
+            var directive = document.getElementById('directivePrioritaire').value;
+            
+            btn.disabled = true;
+            msg.innerText = "⏳ Préparation du fichier JSON...";
+            msg.style.color = "#1a73e8";
+
+            google.script.run.withSuccessHandler(function(res) {
+                btn.disabled = false;
+                if(res.error) {
+                    msg.innerText = "❌ " + res.error;
+                    msg.style.color = "#d93025";
+                    return;
+                }
+                
+                var jsonOutput = {
+                    mode_multi_thematique: res.mode_multi_thematique,
+                    contexte_client: res.contexte_client,
+                    directive_prioritaire: res.directive_prioritaire,
+                    keywords: res.keywords
+                };
+                
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonOutput, null, 2));
+                var dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "Clustering_Input.json");
+                document.body.appendChild(dlAnchorElem);
+                dlAnchorElem.click();
+                document.body.removeChild(dlAnchorElem);
+                
+                msg.innerText = "✅ Fichier téléchargé (" + res.count + " mots-clés).";
+                msg.style.color = "#188038";
+            }).withFailureHandler(function(err) {
+                btn.disabled = false;
+                msg.innerText = "❌ Erreur : " + err.message;
+                msg.style.color = "#d93025";
+            }).recupererDonneesBrutesClustering(contexte, directive);
+        }
+
+        function gererImportClustering(filesList) {
+            var files = filesList || document.getElementById('importClusteringFile').files;
+            var display = document.getElementById('importFileName');
+            var btnProcess = document.getElementById('btnProcessClustering');
+            
+            if (files.length > 0) {
+                display.innerText = "✅ Fichier prêt : " + files[0].name;
+                btnProcess.style.display = "block";
+            } else {
+                display.innerText = "";
+                btnProcess.style.display = "none";
+            }
+        }
+
+        function traiterImportClustering() {
+            var input = document.getElementById('importClusteringFile');
+            var btn = document.getElementById('btnProcessClustering');
+            var msg = document.getElementById('importMessage');
+            var progContainer = document.getElementById('progressContainerCluster');
+            var progBar = document.getElementById('progressBarCluster');
+            
+            if (input.files.length === 0) return;
+            
+            btn.disabled = true;
+            msg.innerText = "⏳ Lecture du fichier local...";
+            msg.style.color = "#1a73e8";
+            progContainer.style.display = 'block';
+            progBar.style.width = '10%';
+            progBar.className = 'progress-bar';
+            
+            var file = input.files[0];
+            var reader = new FileReader();
+            
+            reader.onload = function(e) {
+                progBar.style.width = '40%';
+                var jsonContent = e.target.result;
+                msg.innerText = "⏳ Envoi au serveur pour traitement et création du cocon...";
+                progBar.style.width = '70%';
+                
+                google.script.run.withSuccessHandler(function(res) {
+                    btn.disabled = false;
+                    progBar.style.width = '100%';
+                    if(res.status === 'success') {
+                        progBar.classList.add('success');
+                        msg.innerText = "✅ " + res.message;
+                        msg.style.color = "#188038";
+                    } else {
+                        progBar.classList.add('error');
+                        msg.innerText = "❌ " + res.message;
+                        msg.style.color = "#d93025";
+                    }
+                }).withFailureHandler(function(err) {
+                    btn.disabled = false;
+                    progBar.style.width = '100%';
+                    progBar.classList.add('error');
+                    msg.innerText = "❌ Erreur : " + err.message;
+                    msg.style.color = "#d93025";
+                }).preparerDonneesClustering(jsonContent);
+            };
+            
+            reader.onerror = function() {
+                btn.disabled = false;
+                progBar.classList.add('error');
+                msg.innerText = "❌ Erreur de lecture du fichier.";
+                msg.style.color = "#d93025";
+            };
+            
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
