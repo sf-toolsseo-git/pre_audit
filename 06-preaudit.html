@@ -462,8 +462,9 @@
                     btn.innerText = "🤖 Générer besoin & solution";
                     if (res.success) {
                         var data = JSON.parse(res.jsonString);
-                        var texteBesoin = "• " + data.besoin.join("\n• ");
-                        var texteSolution = "• " + data.solution.join("\n• ");
+                        // On utilise \n\n au lieu de \n pour créer un espace entre chaque puce
+                        var texteBesoin = "• " + data.besoin.join("\n\n• ");
+                        var texteSolution = "• " + data.solution.join("\n\n• ");
                         setCeContent('ce-besoin', texteBesoin);
                         setCeContent('ce-solution', texteSolution);
                         document.getElementById('besoin-result-card').style.display = 'block';
