@@ -264,6 +264,8 @@
             var base64ImgTrafic = null;
             var mimeImgTrafic = null;
             var activeDropzone = null;
+            
+            var isInitializingTree = false;
 
             // ========================== INIT ==========================
 
@@ -706,82 +708,105 @@
             // ========================== ONGLET 3 : DIAGNOSTIC ==========================
 
             function applySavedSelection(savedSelection) {
-                if (!savedSelection || savedSelection.length === 0) return;
-                var checkboxes = document.querySelectorAll('.sub-cb');
-                checkboxes.forEach(function(cb) {
-                    var isMatched = savedSelection.some(function(item) {
-                        return item.theme === cb.dataset.theme && item.sub === cb.dataset.sub;
+                    isInitializingTree = true;
+                    if (!savedSelection || savedSelection.length === 0) {
+                        isInitializingTree = false;
+                        return;
+                    }
+                    var checkboxes = document.querySelectorAll('.sub-cb');
+                    checkboxes.forEach(function(cb) {
+                        var isMatched = savedSelection.some(function(item) {
+                            return item.theme === cb.dataset.theme && item.sub === cb.dataset.sub;
+                        });
+                        if (isMatched) cb.checked = true;
                     });
-                    if (isMatched) cb.checked = true;
-                });
-                var themes = document.querySelectorAll('.theme-label input[type="checkbox"]');
-                themes.forEach(function(themeCb) {
-                    var idx = themeCb.id.split('_')[1];
-                    checkIndeterminate(idx);
-                });
-            }
-
-            function renderTree(data) {
-                var container = document.getElementById('treeContainer');
-                if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="empty-state">Aucune donnée trouvée dans l\'onglet Cluster.</div>';
-                    return;
-                }
-                var html = '';
-                data.forEach(function(item, idx) {
-                    html += '<div class="theme-group">';
-                    html += '<label class="theme-label"><input type="checkbox" id="theme_' + idx + '" value="' + item.theme + '" onchange="toggleTheme(' + idx + ', this.checked)"> ' + item.theme + '</label>';
-                    html += '<div class="sub-list">';
-                    item.subs.forEach(function(sub) {
-                        var safeTheme = item.theme.replace(/"/g, '&quot;');
-                        var safeSub = sub.replace(/"/g, '&quot;');
-                        html += '<label class="sub-label"><input type="checkbox" class="sub-cb theme-child-' + idx + '" data-theme="' + safeTheme + '" data-sub="' + safeSub + '" onchange="checkIndeterminate(' + idx + ')"> ' + sub + '</label>';
+                    var themes = document.querySelectorAll('.theme-label input[type="checkbox"]');
+                    themes.forEach(function(themeCb) {
+                        var idx = themeCb.id.split('_')[1];
+                        checkIndeterminate(idx);
                     });
-                    html += '</div></div>';
-                });
-                container.innerHTML = html;
-            }
-
-            function toggleTheme(themeIdx, isChecked) {
-                var checkboxes = document.querySelectorAll('.theme-child-' + themeIdx);
-                checkboxes.forEach(function(cb) { cb.checked = isChecked; });
-            }
-
-            function checkIndeterminate(themeIdx) {
-                var checkboxes = document.querySelectorAll('.theme-child-' + themeIdx);
-                var checkedCount = 0;
-                checkboxes.forEach(function(cb) { if (cb.checked) checkedCount++; });
-                var parentCb = document.getElementById('theme_' + themeIdx);
-                if (checkedCount === 0) {
-                    parentCb.checked = false;
-                    parentCb.indeterminate = false;
-                } else if (checkedCount === checkboxes.length) {
-                    parentCb.checked = true;
-                    parentCb.indeterminate = false;
-                } else {
-                    parentCb.checked = false;
-                    parentCb.indeterminate = true;
+                    isInitializingTree = false;
                 }
-            }
 
-            function lancerAnalyse() {
-                var checkboxes = document.querySelectorAll('.sub-cb:checked');
-                if (checkboxes.length === 0) {
-                    alert("Veuillez sélectionner au moins une sous-thématique.");
-                    return;
+                function autoSaveSelection() {
+                    if (isInitializingTree) return;
+                    var checkboxes = document.querySelectorAll('.sub-cb:checked');
+                    var selection = [];
+                    checkboxes.forEach(function(cb) {
+                        selection.push({ theme: cb.dataset.theme, sub: cb.dataset.sub });
+                    });
+                    google.script.run.sauvegarderSelectionAnalyse(selection);
                 }
-                var selection = [];
-                checkboxes.forEach(function(cb) {
-                    selection.push({ theme: cb.dataset.theme, sub: cb.dataset.sub });
-                });
-                google.script.run.sauvegarderSelectionAnalyse(selection);
-                document.getElementById('btnAnalyze').disabled = true;
-                showLoader("Calcul des parts de marché et analyse SWO...");
-                google.script.run
-                    .withSuccessHandler(renderDashboard)
-                    .withFailureHandler(handleError)
-                    .genererDiagnostic(selection);
-            }
+
+                function renderTree(data) {
+                    var container = document.getElementById('treeContainer');
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<div class="empty-state">Aucune donnée trouvée dans l\'onglet Cluster.</div>';
+                        return;
+                    }
+                    var html = '';
+                    data.forEach(function(item, idx) {
+                        html += '<div class="theme-group">';
+                        html += '<label class="theme-label"><input type="checkbox" id="theme_' + idx + '" value="' + item.theme + '" onchange="toggleTheme(' + idx + ', this.checked)"> ' + item.theme + '</label>';
+                        html += '<div class="sub-list">';
+                        item.subs.forEach(function(sub) {
+                            var safeTheme = item.theme.replace(/"/g, '&quot;');
+                            var safeSub = sub.replace(/"/g, '&quot;');
+                            html += '<label class="sub-label"><input type="checkbox" class="sub-cb theme-child-' + idx + '" data-theme="' + safeTheme + '" data-sub="' + safeSub + '" onchange="checkIndeterminate(' + idx + ')"> ' + sub + '</label>';
+                        });
+                        html += '</div></div>';
+                    });
+                    container.innerHTML = html;
+                }
+
+                function toggleTheme(themeIdx, isChecked) {
+                    var checkboxes = document.querySelectorAll('.theme-child-' + themeIdx);
+                    checkboxes.forEach(function(cb) { cb.checked = isChecked; });
+                    
+                    var parentCb = document.getElementById('theme_' + themeIdx);
+                    parentCb.checked = isChecked;
+                    parentCb.indeterminate = false;
+
+                    autoSaveSelection();
+                }
+
+                function checkIndeterminate(themeIdx) {
+                    var checkboxes = document.querySelectorAll('.theme-child-' + themeIdx);
+                    var checkedCount = 0;
+                    checkboxes.forEach(function(cb) { if (cb.checked) checkedCount++; });
+                    var parentCb = document.getElementById('theme_' + themeIdx);
+                    if (checkedCount === 0) {
+                        parentCb.checked = false;
+                        parentCb.indeterminate = false;
+                    } else if (checkedCount === checkboxes.length) {
+                        parentCb.checked = true;
+                        parentCb.indeterminate = false;
+                    } else {
+                        parentCb.checked = false;
+                        parentCb.indeterminate = true;
+                    }
+                    
+                    autoSaveSelection();
+                }
+
+                function lancerAnalyse() {
+                    var checkboxes = document.querySelectorAll('.sub-cb:checked');
+                    if (checkboxes.length === 0) {
+                        alert("Veuillez sélectionner au moins une sous-thématique.");
+                        return;
+                    }
+                    var selection = [];
+                    checkboxes.forEach(function(cb) {
+                        selection.push({ theme: cb.dataset.theme, sub: cb.dataset.sub });
+                    });
+                    google.script.run.sauvegarderSelectionAnalyse(selection);
+                    document.getElementById('btnAnalyze').disabled = true;
+                    showLoader("Calcul des parts de marché et analyse SWO...");
+                    google.script.run
+                        .withSuccessHandler(renderDashboard)
+                        .withFailureHandler(handleError)
+                        .genererDiagnostic(selection);
+                }
 
             function getBarHtml(val, max, inverseColors) {
                 if (max === 0) return '';

@@ -160,7 +160,7 @@ function recupererArborescenceCluster() {
 
 function sauvegarderSelectionAnalyse(selection) {
     try {
-        var props = PropertiesService.getUserProperties();
+        var props = PropertiesService.getScriptProperties();
         props.setProperty('ANALYSE_SELECTION', JSON.stringify(selection));
         return true;
     } catch (e) {
@@ -170,7 +170,7 @@ function sauvegarderSelectionAnalyse(selection) {
 
 function chargerSelectionAnalyse() {
     try {
-        var props = PropertiesService.getUserProperties();
+        var props = PropertiesService.getScriptProperties();
         var data = props.getProperty('ANALYSE_SELECTION');
         return data ? JSON.parse(data) : [];
     } catch (e) {
@@ -681,4 +681,3 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
         return { success: false, message: error.message };
     }
 }
-

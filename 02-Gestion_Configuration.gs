@@ -91,7 +91,17 @@ function chargerDonneesInitiales() {
         competitorName5: props['COMP_NAME_5'] || "",
         competitor5: props['COMPETITOR_5'] || "",
         competitorStrength5: props['COMP_STRENGTH_5'] || "moyenne",
-        competitorBrand5: props['COMP_BRAND_5'] || ""
+        competitorBrand5: props['COMP_BRAND_5'] || "",
+        ctrPos1: props['CTR_POS_1'] || "0.28",
+        ctrPos2: props['CTR_POS_2'] || "0.20",
+        ctrPos3: props['CTR_POS_3'] || "0.12",
+        ctrPos4: props['CTR_POS_4'] || "0.08",
+        ctrPos5: props['CTR_POS_5'] || "0.07",
+        ctrPos6: props['CTR_POS_6'] || "0.06",
+        ctrPos7: props['CTR_POS_7'] || "0.05",
+        ctrPos8: props['CTR_POS_8'] || "0.05",
+        ctrPos9: props['CTR_POS_9'] || "0.04",
+        ctrPos10: props['CTR_POS_10'] || "0.03"
     };
     return donnees;
 }
@@ -127,7 +137,17 @@ function enregistrerConfiguration(formulaire) {
         'COMP_NAME_5': formulaire.competitorName5,
         'COMPETITOR_5': formulaire.competitor5,
         'COMP_STRENGTH_5': formulaire.competitorStrength5,
-        'COMP_BRAND_5': formulaire.competitorBrand5
+        'COMP_BRAND_5': formulaire.competitorBrand5,
+        'CTR_POS_1': formulaire.ctrPos1,
+        'CTR_POS_2': formulaire.ctrPos2,
+        'CTR_POS_3': formulaire.ctrPos3,
+        'CTR_POS_4': formulaire.ctrPos4,
+        'CTR_POS_5': formulaire.ctrPos5,
+        'CTR_POS_6': formulaire.ctrPos6,
+        'CTR_POS_7': formulaire.ctrPos7,
+        'CTR_POS_8': formulaire.ctrPos8,
+        'CTR_POS_9': formulaire.ctrPos9,
+        'CTR_POS_10': formulaire.ctrPos10
     });
     syncPropertiesToConfigSheet();
     
@@ -550,21 +570,25 @@ function calculerLevenshtein(a, b) {
     return matrix[b.length][a.length];
 }
 
-function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) {
+function recupererDonneesBrutesClustering(contexteClient) {
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = PropertiesService.getScriptProperties().getProperties();
         
+        // Récupération correcte du paramètre conservé en base (coché ou non)
         var isMultiTheme = (props['IS_MULTI_THEME'] === 'true');
+        
+        // Priorité au contexte envoyé depuis l'interface, sinon on prend celui en base
         var ctxFinal = contexteClient || props['CONTEXTE_CLIENT'] || "";
-        var dirFinal = directivePrioritaire || props['DIRECTIVE_PRIORITAIRE'] || "";
 
         var sheet = ss.getSheetByName("Concurrence filtrée");
         if (!sheet) throw new Error("L'onglet 'Concurrence filtrée' est introuvable. Veuillez d'abord générer la vue filtrée.");
+        
         var data = sheet.getDataRange().getValues();
         if (data.length < 2) throw new Error("Aucune donnée à exporter dans 'Concurrence filtrée'.");
-        var headers = data[0];
         
+        var headers = data[0];
+        // Structure de "Concurrence filtrée" : Segment(0), KW(1), Vol(2), Pos...(3 à 3+nb-1), URLs...(3+nb à fin)
         var nbEntites = (headers.length - 3) / 2;
         var urlStartIdx = 3 + nbEntites;
 
@@ -581,6 +605,7 @@ function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) 
                 var pos = parseInt(row[3 + c], 10);
                 var url = String(row[urlStartIdx + c]);
 
+                // On ne récupère l'URL que si le concurrent est dans le top 20
                 if (!isNaN(pos) && pos > 0 && pos <= 20 && url && url !== "-" && url.trim() !== "") {
                     var cleanUrl = url.trim();
                     if (urlsFound.indexOf(cleanUrl) === -1) {
@@ -601,7 +626,6 @@ function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) 
             count: exportList.length,
             mode_multi_thematique: isMultiTheme,
             contexte_client: ctxFinal,
-            directive_prioritaire: dirFinal,
             keywords: exportList
         };
     } catch (e) {
@@ -818,7 +842,7 @@ function preparerDonneesClustering(jsonMotsCles) {
     }
 }
 
-function genererContexteClientIA(urlsTexte, fichiersArray) {
+function genererContexteClientIA(urlsTexte) {
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['GEMINI_API_KEY'];
@@ -842,12 +866,11 @@ function genererContexteClientIA(urlsTexte, fichiersArray) {
             }
         }
 
-        if (urlsPropres.length === 0 && (!fichiersArray || fichiersArray.length === 0)) {
-            throw new Error("Aucune URL ni aucun document valide à analyser.");
+        if (urlsPropres.length === 0) {
+            throw new Error("Aucune URL valide à analyser.");
         }
 
         var contenuGlobal = "";
-        
         for (var j = 0; j < urlsPropres.length; j++) {
             try {
                 var response = UrlFetchApp.fetch(urlsPropres[j], { muteHttpExceptions: true, timeout: 10000 });
@@ -856,38 +879,28 @@ function genererContexteClientIA(urlsTexte, fichiersArray) {
                     var $ = Cheerio.load(html);
                     
                     $('script, style, nav, footer, header, aside, noscript, svg, form, iframe').remove();
+                    
                     var textePage = $('p, h1, h2, h3, h4, h5, h6, li').map(function() {
                         return $(this).text().trim();
                     }).get().join('\n');
-                    contenuGlobal += "--- Contenu de l'URL : " + urlsPropres[j] + " ---\n" + textePage + "\n\n";
+                    
+                    contenuGlobal += "--- Contenu de " + urlsPropres[j] + " ---\n" + textePage + "\n\n";
                 }
             } catch (e) {
                 Logger.log("Erreur scraping " + urlsPropres[j] + " : " + e.message);
             }
         }
 
-        if (fichiersArray && fichiersArray.length > 0) {
-            for (var k = 0; k < fichiersArray.length; k++) {
-                var texteDoc = extraireTexteFichierTemporaire(fichiersArray[k]);
-                if (texteDoc && texteDoc.trim() !== "") {
-                    contenuGlobal += "--- Contenu du document : " + fichiersArray[k].nom + " ---\n" + texteDoc + "\n\n";
-                }
-            }
-        }
-
         if (!contenuGlobal.trim()) {
-            throw new Error("Extraction impossible. Les sites et documents sont vides ou illisibles.");
+            throw new Error("Extraction impossible. Les sites sont vides ou protégés contre le scraping.");
         }
 
-        if (contenuGlobal.length > 150000) {
-            contenuGlobal = contenuGlobal.substring(0, 150000);
+        if (contenuGlobal.length > 25000) {
+            contenuGlobal = contenuGlobal.substring(0, 25000);
         }
 
-        Logger.log("🚀 Envoi à l'IA : payload texte de " + contenuGlobal.length + " caractères.");
-
-        var promptStr = "Tu es un expert SEO. À partir du contenu brut extrait du site web du client et/ou des documents de cadrage fournis, tu dois générer son \"contexte métier\" selon la structure stricte ci-dessous.\n" +
-                        "Extrais un maximum d'informations pertinentes pour nourrir la compréhension globale d'une IA, sans inventer de données. Si des informations manquent dans les sources, indique simplement \"Non précisé\".\n\n" +
-                        "DIRECTIVE ANTI-HALLUCINATION ABSOLUE : Tu as l'interdiction formelle de deviner ou d'inventer le contexte à partir du nom d'un fichier ou d'une URL si le texte source associé est vide ou illisible. Si l'ensemble des textes fournis est vide ou inexploitable, renvoie uniquement : \"Impossible de générer le contexte : sources vides ou illisibles.\"\n\n" +
+        var promptStr = "Tu es un expert SEO. À partir du contenu brut extrait du site web du client, tu dois générer son \"contexte métier\" selon la structure stricte ci-dessous.\n" +
+                        "Extrais un maximum d'informations pertinentes pour nourrir la compréhension globale d'une IA, sans inventer de données.\n\n" +
                         "RÈGLES TYPOGRAPHIQUES OBLIGATOIRES (français) :\n" +
                         "1. Majuscule uniquement au premier mot des labels (sauf noms propres).\n" +
                         "2. Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
@@ -902,17 +915,14 @@ function genererContexteClientIA(urlsTexte, fichiersArray) {
                         "- Périmètre géographique : (ex : national fr, local ciblé, international...)\n" +
                         "- Typologie d'audience : (ex : b2b cible direction, b2c grand public...)\n" +
                         "- Définition de la conversion cible : (ex : achat en ligne, prise de rdv, demande de devis...)\n\n" +
-                        "Texte brut des sources :\n" + contenuGlobal;
+                        "Texte brut du site :\n" + contenuGlobal;
 
         var payload = {
             "contents": [{
                 "parts": [{"text": promptStr}]
-            }],
-            "generationConfig": {
-                "temperature": 0.1
-            }
+            }]
         };
-        
+
         var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent";
         var options = {
             "method": "post",
@@ -946,48 +956,18 @@ function chargerContexteIA() {
     var props = PropertiesService.getScriptProperties().getProperties();
     return {
         urlsContexte: props['URLS_CONTEXTE'] || "",
-        contexteClient: props['CONTEXTE_CLIENT'] || "",
-        directivePrioritaire: props['DIRECTIVE_PRIORITAIRE'] || ""
+        contexteClient: props['CONTEXTE_CLIENT'] || ""
     };
 }
 
-function sauvegarderContexteIA(urls, contexte, directive) {
+function sauvegarderContexteIA(urls, contexte) {
     PropertiesService.getScriptProperties().setProperties({
         'URLS_CONTEXTE': urls || "",
-        'CONTEXTE_CLIENT': contexte || "",
-        'DIRECTIVE_PRIORITAIRE': directive || ""
+        'CONTEXTE_CLIENT': contexte || ""
     });
+    
+    // On synchronise vers l'onglet
     syncPropertiesToConfigSheet();
     
     return true;
-}
-
-function extraireTexteFichierTemporaire(fichier) {
-    try {
-        var blob = Utilities.newBlob(Utilities.base64Decode(fichier.base64), fichier.mimeType, fichier.nom);
-        var texte = "";
-        
-        if (fichier.mimeType.indexOf('text/') === 0) {
-            texte = blob.getDataAsString();
-        } else {
-            var resource = {
-                name: "Temp_OCR_" + fichier.nom,
-                mimeType: MimeType.GOOGLE_DOCS
-            };
-            
-            var docFile = Drive.Files.create(resource, blob, { ocr: true });
-            var doc = DocumentApp.openById(docFile.id);
-            texte = doc.getBody().getText();
-            
-            Drive.Files.remove(docFile.id);
-        }
-        
-        var apercu = texte.length > 100 ? texte.substring(0, 100).replace(/\n/g, " ") + "..." : texte.replace(/\n/g, " ");
-        Logger.log("📄 Extraction du document [" + fichier.nom + "] : " + texte.length + " caractères. Aperçu : " + apercu);
-        
-        return texte;
-    } catch (e) {
-        Logger.log("Erreur d'extraction sur le document " + fichier.nom + " : " + e.message);
-        return "--- Contenu de " + fichier.nom + " (Erreur d'extraction OCR, vérifiez que l'API Drive est activée) ---";
-    }
 }

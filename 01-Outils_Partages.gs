@@ -280,7 +280,12 @@ function syncPropertiesToConfigSheet() {
                 "GEMINI_API_KEY", "URLS_CONTEXTE", "CONTEXTE_CLIENT"
             ],
             "📈 PRÉ-AUDIT": [
-                "SLIDE_PRE_AUDIT_ID", "URL_REPONSES", "BRIEF_PRE_AUDIT"
+                "SLIDE_PRE_AUDIT_ID", "URL_REPONSES", 
+                "BRIEF_PRE_AUDIT"
+            ],
+            "🎯 CTR": [
+                "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
+                "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10"
             ],
             "⚙️ AVANCÉ": [
                 "COMPETITION_COEFF", "REF_POS", "REF_POS_S3", 
@@ -333,25 +338,66 @@ function syncPropertiesToConfigSheet() {
         if (maxRows > 0) {
             var range = sheet.getRange(1, 1, maxRows, numGroups * 3);
             range.setValues(grid);
-            
+
             sheet.setFrozenRows(1);
             sheet.setHiddenGridlines(true);
-            
-            sheet.setRowHeights(1, sheet.getMaxRows(), 21);
-            
+
             for (var i = 0; i < numGroups; i++) {
                 var cBase = (i * 3) + 1;
-                var hRange = sheet.getRange(1, cBase, 1, 2);
-                hRange.setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold").setHorizontalAlignment("center");
-                
-                sheet.getRange(2, cBase, maxRows - 1, 1).setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368");
-                sheet.getRange(2, cBase + 1, maxRows - 1, 1).setWrap(true).setVerticalAlignment("top");
-                
+
+                // Ligne d'en-tête : CLIP + taille police fixe pour bloquer l'auto-resize sur les emojis
+                sheet.getRange(1, cBase, 1, 2)
+                    .setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold")
+                    .setHorizontalAlignment("center").setFontSize(10)
+                    .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+
+                // Colonne clés : CLIP obligatoire (certaines clés dépassent 180px et déclenchent le wrap)
+                sheet.getRange(2, cBase, maxRows - 1, 1)
+                    .setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368")
+                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+
+                // Colonne valeurs
+                sheet.getRange(2, cBase + 1, maxRows - 1, 1)
+                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top");
+
                 sheet.setColumnWidth(cBase, 180);
                 sheet.setColumnWidth(cBase + 1, 300);
                 if (cBase + 2 <= numGroups * 3) {
                     sheet.setColumnWidth(cBase + 2, 30);
                 }
+            }
+
+            // API Sheets v4 : seule méthode qui force pixelSize sans que le client remette "Ajuster aux données"
+            SpreadsheetApp.flush();
+            try {
+                var token = ScriptApp.getOAuthToken();
+                var requests = [{
+                    updateDimensionProperties: {
+                        range: {
+                            sheetId: sheet.getSheetId(),
+                            dimension: "ROWS",
+                            startIndex: 0,
+                            endIndex: maxRows
+                        },
+                        properties: { pixelSize: 21 },
+                        fields: "pixelSize"
+                    }
+                }];
+                var response = UrlFetchApp.fetch(
+                    "https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate",
+                    {
+                        method: "POST",
+                        headers: { "Authorization": "Bearer " + token },
+                        contentType: "application/json",
+                        payload: JSON.stringify({ requests: requests }),
+                        muteHttpExceptions: true
+                    }
+                );
+                if (response.getResponseCode() !== 200) {
+                    Logger.log("Sheets API v4 — erreur hauteurs : " + response.getContentText());
+                }
+            } catch (eV4) {
+                Logger.log("Sheets API v4 — exception : " + eV4.message);
             }
         }
     } catch (e) {
