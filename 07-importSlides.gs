@@ -1,3 +1,142 @@
+function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
+    try {
+        Logger.log("=== DÉBUT EXPORT SLIDE BESOIN / SOLUTION ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+        
+        var tagsTrouves = 0;
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+            
+            shapes.forEach(function(shape) {
+                var titleRaw = shape.getTitle() || "";
+                var descRaw = shape.getDescription() || "";
+
+                var targetKey = null;
+                // Détection via le texte alternatif (titre ou description) uniquement
+                if (titleRaw === "tag_slide_besoin" || descRaw === "tag_slide_besoin") {
+                    targetKey = "besoin";
+                } else if (titleRaw === "tag_slide_solution" || descRaw === "tag_slide_solution") {
+                    targetKey = "solution";
+                }
+
+                if (targetKey === "besoin") {
+                    shape.getText().setText(texteBesoin);
+                    tagsTrouves++;
+                } else if (targetKey === "solution") {
+                    shape.getText().setText(texteSolution);
+                    tagsTrouves++;
+                }
+            });
+        });
+        
+        Logger.log("=== FIN EXPORT SLIDE BESOIN / SOLUTION ===");
+        
+        if (tagsTrouves === 0) {
+            return { success: false, error: "Les tags 'tag_slide_besoin' et 'tag_slide_solution' n'ont pas été trouvés dans le texte alternatif de la présentation." };
+        }
+
+        return { success: true, url: presentation.getUrl() };
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT BESOIN/SOLUTION : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgKwMime, imgTraficB64, imgTraficMime) {
+    try {
+        Logger.log("=== DÉBUT EXPORT SLIDE SEMRUSH ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+        
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        // Helper pour appliquer le style "Open Sans", taille 18, et traiter les *termes en gras orange*
+        function formatRichText(shape, textWithStars) {
+            var textRange = shape.getText();
+            var cleanText = textWithStars.replace(/\*/g, ""); // Texte sans les astérisques
+            
+            textRange.setText(cleanText);
+            textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(16).setForegroundColor("#000000").setBold(false);
+
+            var match;
+            var regex = /\*([^*]+)\*/g;
+            var offset = 0;
+            
+            while ((match = regex.exec(textWithStars)) !== null) {
+                var wordLength = match[1].length;
+                var startIndex = match.index - offset;
+                var endIndex = startIndex + wordLength;
+                
+                var targetRange = textRange.getRange(startIndex, endIndex);
+                targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+                
+                offset += 2; // On compense les 2 astérisques retirés pour les calculs des index suivants
+            }
+        }
+
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+            
+            shapes.forEach(function(shape) {
+                var shapeText = shape.getText().asString().trim();
+                var titleRaw = shape.getTitle() || "";
+                var descRaw = shape.getDescription() || "";
+
+                // Remplacement du titre brut
+                if (shapeText === "titre_slide_semrush" || titleRaw === "titre_slide_semrush" || descRaw === "titre_slide_semrush") {
+                    shape.getText().setText(titre);
+                }
+                
+                // Remplacement des analyses avec formatage enrichi
+                if (shapeText === "analyse_semrush_mot_cle" || titleRaw === "analyse_semrush_mot_cle" || descRaw === "analyse_semrush_mot_cle") {
+                    formatRichText(shape, texteKw);
+                }
+                
+                if (shapeText === "analyse_semrush_trafic" || titleRaw === "analyse_semrush_trafic" || descRaw === "analyse_semrush_trafic") {
+                    formatRichText(shape, texteTrafic);
+                }
+
+                // Remplacement des images avec conservation du texte alternatif
+                if (titleRaw === "placeholder_img_kw" || descRaw === "placeholder_img_kw" || shapeText === "placeholder_img_kw") {
+                    var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
+                    var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                    
+                    // Conservation du texte alternatif
+                    newImageKw.setTitle(titleRaw);
+                    newImageKw.setDescription(descRaw);
+                    
+                    shape.remove();
+                }
+                
+                if (titleRaw === "placeholder_img_trafic" || descRaw === "placeholder_img_trafic" || shapeText === "placeholder_img_trafic") {
+                    var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
+                    var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                    
+                    // Conservation du texte alternatif
+                    newImageTrafic.setTitle(titleRaw);
+                    newImageTrafic.setDescription(descRaw);
+                    
+                    shape.remove();
+                }
+            });
+        });
+
+        Logger.log("=== FIN EXPORT SLIDE SEMRUSH ===");
+        return { success: true, url: presentation.getUrl() };
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT SLIDE SEMRUSH : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
 function exporterPerformanceGlobalSlides(diagnosticData) {
     try {
         Logger.log("=== DÉBUT EXPORT SLIDE GLOBAL & INTENTIONS ===");
@@ -98,111 +237,6 @@ function exporterPerformanceGlobalSlides(diagnosticData) {
 
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT GLOBAL : " + e.message);
-        return { success: false, error: e.message };
-    }
-}
-
-function raccourcirNom(nom, maxLen) {
-    if (!nom) return "";
-    var texte = String(nom).trim();
-    if (texte.length > maxLen) {
-        return texte.substring(0, maxLen - 3) + "...";
-    }
-    return texte;
-}
-
-function extraireDomaineNettoye(str) {
-    if (!str) return "";
-    var d = str.toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-    return d;
-}
-
-function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgKwMime, imgTraficB64, imgTraficMime) {
-    try {
-        Logger.log("=== DÉBUT EXPORT SLIDE SEMRUSH ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var slideId = props['SLIDE_PRE_AUDIT_ID'];
-        
-        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
-        var presentation = SlidesApp.openById(slideId);
-        var slides = presentation.getSlides();
-
-        // Helper pour appliquer le style "Open Sans", taille 18, et traiter les *termes en gras orange*
-        function formatRichText(shape, textWithStars) {
-            var textRange = shape.getText();
-            var cleanText = textWithStars.replace(/\*/g, ""); // Texte sans les astérisques
-            
-            textRange.setText(cleanText);
-            textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(16).setForegroundColor("#000000").setBold(false);
-
-            var match;
-            var regex = /\*([^*]+)\*/g;
-            var offset = 0;
-            
-            while ((match = regex.exec(textWithStars)) !== null) {
-                var wordLength = match[1].length;
-                var startIndex = match.index - offset;
-                var endIndex = startIndex + wordLength;
-                
-                var targetRange = textRange.getRange(startIndex, endIndex);
-                targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                
-                offset += 2; // On compense les 2 astérisques retirés pour les calculs des index suivants
-            }
-        }
-
-        slides.forEach(function(slide) {
-            var shapes = slide.getShapes();
-            
-            shapes.forEach(function(shape) {
-                var shapeText = shape.getText().asString().trim();
-                var titleRaw = shape.getTitle() || "";
-                var descRaw = shape.getDescription() || "";
-
-                // Remplacement du titre brut
-                if (shapeText === "titre_slide_semrush" || titleRaw === "titre_slide_semrush" || descRaw === "titre_slide_semrush") {
-                    shape.getText().setText(titre);
-                }
-                
-                // Remplacement des analyses avec formatage enrichi
-                if (shapeText === "analyse_semrush_mot_cle" || titleRaw === "analyse_semrush_mot_cle" || descRaw === "analyse_semrush_mot_cle") {
-                    formatRichText(shape, texteKw);
-                }
-                
-                if (shapeText === "analyse_semrush_trafic" || titleRaw === "analyse_semrush_trafic" || descRaw === "analyse_semrush_trafic") {
-                    formatRichText(shape, texteTrafic);
-                }
-
-                // Remplacement des images avec conservation du texte alternatif
-                if (titleRaw === "placeholder_img_kw" || descRaw === "placeholder_img_kw" || shapeText === "placeholder_img_kw") {
-                    var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
-                    var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                    
-                    // Conservation du texte alternatif
-                    newImageKw.setTitle(titleRaw);
-                    newImageKw.setDescription(descRaw);
-                    
-                    shape.remove();
-                }
-                
-                if (titleRaw === "placeholder_img_trafic" || descRaw === "placeholder_img_trafic" || shapeText === "placeholder_img_trafic") {
-                    var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
-                    var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                    
-                    // Conservation du texte alternatif
-                    newImageTrafic.setTitle(titleRaw);
-                    newImageTrafic.setDescription(descRaw);
-                    
-                    shape.remove();
-                }
-            });
-        });
-
-        Logger.log("=== FIN EXPORT SLIDE SEMRUSH ===");
-        return { success: true, url: presentation.getUrl() };
-
-    } catch (e) {
-        Logger.log("ERREUR CRITIQUE EXPORT SLIDE SEMRUSH : " + e.message);
         return { success: false, error: e.message };
     }
 }

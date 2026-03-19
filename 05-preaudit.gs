@@ -383,7 +383,7 @@ function genererDiagnostic(selection) {
     };
 }
 
-function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime) {
+function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, contexteClient) {
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['GEMINI_API_KEY'];
@@ -393,17 +393,24 @@ function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime) 
         }
 
         var promptText = "Tu es un expert SEO. Analyse ces deux captures d'écran issues de Semrush : la première montre l'évolution du nombre de mots-clés, la seconde montre l'évolution de l'estimation de trafic.\n\n" +
-                         "CONTRAINTES STRICTES :\n" +
+                         "Contraintes strictes :\n" +
                          "1. Concision maximale : 2 à 3 phrases maximum par bloc d'analyse.\n" +
                          "2. Tendances macro uniquement : concentre-toi sur les dynamiques globales (hausse, baisse, stagnation, pics).\n" +
-                         "3. Zéro hallucination numérique : INTERDICTION ABSOLUE de deviner, d'extrapoler ou de mentionner des chiffres (comme le volume de trafic exact ou le nombre de mots-clés) à partir des axes visuels.\n" +
-                         "4. Rédige une analyse directe et professionnelle à l'attention d'un prospect.\n" +
-                         "5. FORMATAGE IMPORTANT : Encadre les termes ou expressions très importantes de ton analyse avec des astérisques simples (ex: Le trafic est en *forte baisse* depuis l'année dernière). N'utilise pas le gras markdown standard (**).\n\n" +
-                         "Fournis ta réponse STRICTEMENT au format JSON avec les clés exactes suivantes :\n" +
+                         "3. Zéro hallucination numérique : interdiction absolue de deviner, d'extrapoler ou de mentionner des chiffres à partir des axes visuels.\n" +
+                         "4. Rédige une analyse directe et professionnelle à l'attention du prospect. Utilise le vouvoiement.\n" +
+                         "5. Formatage important : encadre les termes ou expressions très importantes de ton analyse avec des astérisques simples (ex: le trafic est en *forte baisse* depuis l'année dernière). N'utilise pas le gras markdown standard (**).\n\n" +
+                         "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
+                         "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
+                         "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
+                         "- Pas de majuscule après les deux-points (:) car ce n'est pas une phrase complète.\n" +
+                         "- Jours, mois et langues toujours en minuscule.\n" +
+                         "- L'acronyme 'SEO' doit toujours être écrit en majuscules.\n\n" +
+                         "Fournis ta réponse strictement au format JSON avec les clés exactes suivantes :\n" +
                          "- 'titre_slide' : un titre percutant résumant la tendance générale (sans astérisques).\n" +
                          "- 'analyse_mots_cles' : l'analyse visuelle de la courbe des mots-clés respectant les contraintes.\n" +
                          "- 'analyse_trafic' : l'analyse visuelle de la courbe de trafic respectant les contraintes.\n\n" +
-                         "Règles typographiques obligatoires : majuscule uniquement au premier mot des phrases/titres, pas de majuscule après les deux-points.";
+                         "Profilage commercial du prospect (pour contextualiser ton analyse visuelle si pertinent) :\n" +
+                         (contexteClient || "non renseigné.");
 
         var payload = {
             "contents": [
@@ -600,6 +607,15 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
 }
 
 function genererSlideBesoinSolutionIA(contextePreaudit) {
+    var catalogueOffres = [
+    "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",
+    "SEO agile (accompagnement continu) : suivi mensuel/trimestriel, monitoring technique, reporting et recommandations d'optimisation.",
+    "Accompagnement refonte : sécurisation SEO lors d'une création/refonte de site (cahier des charges, plan de redirection 301, recettes pré et post-lancement).",
+    "Stratégie et rédaction de contenus SEO (clé en main) : planification éditoriale, rédaction experte et optimisation sémantique complète.",
+    "Accompagnement éditorial (co-création) : fourniture des briefs/mots-clés et optimisation SEO de textes rédigés par le client."
+    ];
+    var texteOffres = "- " + catalogueOffres.join("\n- ");
+    
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['GEMINI_API_KEY'];
@@ -608,18 +624,27 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
             throw new Error("Clé API Gemini introuvable.");
         }
 
-        var promptStr = "Tu es un expert SEO et stratège en avant-vente. À partir du profilage commercial fourni, tu dois extraire les arguments clés pour remplir une slide de présentation divisée en deux colonnes : 'Le constat (Votre Besoin)' et 'La réponse (Notre Solution)'.\n\n" +
-                        "CONTRAINTES STRICTES :\n" +
-                        "1. Tu dois générer EXACTEMENT deux puces pour le Besoin, et EXACTEMENT deux puces pour la Solution. Pas une de plus, pas une de moins.\n" +
-                        "2. Rédige des phrases courtes, percutantes et orientées bénéfice client.\n" +
-                        "3. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON, uniquement le texte brut de la phrase.\n" +
-                        "4. RÈGLES TYPOGRAPHIQUES OBLIGATOIRES : majuscule uniquement au premier mot des phrases, pas de majuscule après les deux-points.\n\n" +
-                        "Format de sortie attendu STRICTEMENT en JSON :\n" +
-                        "{\n" +
-                        "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\"],\n" +
-                        "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\"]\n" +
-                        "}\n\n" +
-                        "PROFILAGE COMMERCIAL :\n" + contextePreaudit;
+        var promptStr = "Tu es un expert SEO et stratège en avant-vente. À partir du profilage commercial fourni, tu dois extraire les arguments clés pour remplir une slide de présentation divisée en deux colonnes : 'Le constat (besoin)' et 'La réponse (solution)'.\n\n" +
+                "Contraintes strictes de copywriting (crucial) :\n" +
+                "1. Tu dois générer exactement 3 phrases pour le besoin, et exactement 3 phrases pour la solution. Pas une de plus, pas une de moins.\n" +
+                "2. Style télégraphique : aucune phrase conversationnelle. N'utilise jamais les mots 'nous', 'notre', 'vous', 'votre', 'vos'.\n" +
+                "3. Pour le 'Besoin', commence chaque puce obligatoirement par un nom commun (ex: Déficit, Nécessité, Manque, Volonté) ou un verbe à l'infinitif (ex: Définir, Structurer, Acquérir).\n" +
+                "4. Pour la 'Solution', tu dois piocher uniquement dans ce catalogue d'offres : \n" + texteOffres + "\n" +
+                "5. Pour la 'Solution', commence obligatoirement ta phrase par le NOM EXACT de l'offre choisie, suivi d'un espace, puis de deux-points, puis d'une phrase très courte de bénéfice.\n" +
+                "6. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON (le script s'en charge).\n\n" +
+                "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
+                "- Espacement : il faut TOUJOURS un espace avant les deux-points (ex: 'Audit SEO : pour...').\n" +
+                "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
+                "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
+                "- Pas de majuscule après les deux-points (:) car ce n'est pas une phrase complète.\n" +
+                "- Jours, mois et langues toujours en minuscule.\n" +
+                "- L'acronyme 'SEO' doit toujours être écrit en majuscules.\n\n" +
+                "Format de sortie attendu strictement en JSON :\n" +
+                "{\n" +
+                "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\", \"Phrase besoin 3\"],\n" +
+                "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\", \"Phrase solution 3\"]\n" +
+                "}\n\n" +
+                "Profilage commercial :\n" + contextePreaudit;
 
         var payload = {
             "contents": [{"parts": [{"text": promptStr}]}],
@@ -657,55 +682,3 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
     }
 }
 
-function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
-    try {
-        Logger.log("=== DÉBUT EXPORT SLIDE BESOIN / SOLUTION ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var slideId = props['SLIDE_PRE_AUDIT_ID'];
-
-        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
-        
-        var presentation = SlidesApp.openById(slideId);
-        var slides = presentation.getSlides();
-        
-        var tagsTrouves = 0;
-
-        slides.forEach(function(slide) {
-            var shapes = slide.getShapes();
-            
-            shapes.forEach(function(shape) {
-                var shapeText = shape.getText().asString().trim();
-                var titleRaw = shape.getTitle() || "";
-                var descRaw = shape.getDescription() || "";
-
-                var targetKey = null;
-                // Détection via le texte brut, le titre ou la description (texte alternatif) de la forme
-                if (shapeText === "tag_slide_besoin" || titleRaw === "tag_slide_besoin" || descRaw === "tag_slide_besoin") {
-                    targetKey = "besoin";
-                } else if (shapeText === "tag_slide_solution" || titleRaw === "tag_slide_solution" || descRaw === "tag_slide_solution") {
-                    targetKey = "solution";
-                }
-
-                if (targetKey === "besoin") {
-                    shape.getText().setText(texteBesoin);
-                    tagsTrouves++;
-                } else if (targetKey === "solution") {
-                    shape.getText().setText(texteSolution);
-                    tagsTrouves++;
-                }
-            });
-        });
-
-        Logger.log("=== FIN EXPORT SLIDE BESOIN / SOLUTION ===");
-        
-        if (tagsTrouves === 0) {
-            return { success: false, error: "Les tags 'tag_slide_besoin' et 'tag_slide_solution' n'ont pas été trouvés dans la présentation." };
-        }
-
-        return { success: true, url: presentation.getUrl() };
-        
-    } catch (e) {
-        Logger.log("ERREUR CRITIQUE EXPORT BESOIN/SOLUTION : " + e.message);
-        return { success: false, error: e.message };
-    }
-}

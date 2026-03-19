@@ -3,94 +3,80 @@
     <head>
         <base target="_top">
         <style>
-            body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f1f3f4; color: #202124; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-            .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0 10px; }
-            .tab { padding: 15px 20px; cursor: pointer; font-weight: 500; color: #5f6368; border-bottom: 2px solid transparent; font-size: 13px; }
-            .tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
-            .tab-content { display: none; flex: 1; overflow: hidden; }
-            .tab-content.active { display: flex; }
-            .sidebar { width: 320px; background: #fff; border-right: 1px solid #dadce0; display: flex; flex-direction: column; flex-shrink: 0; height: 100%; }
-            .sidebar-header { padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 600; font-size: 14px; color: #1a73e8; }
-            .sidebar-content { flex: 1; overflow-y: auto; padding: 10px 0; }
-            .sidebar-footer { padding: 15px 20px; border-top: 1px solid #dadce0; background: #fff; }
-            .theme-group { border-bottom: 1px solid #f1f3f4; }
-            .theme-label { display: flex; align-items: center; padding: 10px 20px; font-weight: 600; font-size: 13px; cursor: pointer; }
-            .theme-label:hover { background: #f8f9fa; }
-            .sub-list { padding-left: 40px; padding-bottom: 5px; }
-            .sub-label { display: flex; align-items: center; padding: 6px 0; font-size: 12px; color: #5f6368; cursor: pointer; }
-            .sub-label:hover { color: #202124; }
-            input[type="checkbox"] { margin-right: 10px; cursor: pointer; }
-            .main-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #fff; padding: 20px; height: 100%; box-sizing: border-box; }
-            .btn { background-color: #08133B; color: #fff; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; width: 100%; transition: background 0.2s; }
-            .btn:hover { background-color: #152255; }
-            .btn:disabled { background: #dadce0; cursor: not-allowed; }
-            .btn-continuer { background-color: #137333; font-size: 14px; padding: 12px 30px; width: auto; }
-            .btn-continuer:hover { background-color: #0d5226; }
-            .btn-continuer:disabled { background: #dadce0; cursor: not-allowed; }
-            .section-title { font-size: 16px; font-weight: 600; margin-top: 0; margin-bottom: 15px; color: #202124; }
-            .kpi-grid { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-            .kpi-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; flex: 1; min-width: 200px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-            .kpi-card.client { border-top: 4px solid #1a73e8; }
-            .kpi-title { font-size: 14px; font-weight: bold; color: #3c4043; margin-bottom: 15px; text-transform: uppercase; }
-            .kpi-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: #5f6368; }
-            .kpi-val { font-weight: bold; color: #202124; }
-            .swo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-            .swo-panel { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-            .swo-panel-full { grid-column: 1 / -1; }
-            .panel-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f1f3f4; }
-            .icon-force { color: #188038; }
-            .icon-faiblesse { color: #d93025; }
-            .icon-opp { color: #fbbc04; }
-            .icon-ocean { color: #1a73e8; }
-            .icon-intent { color: #673ab7; }
-            .icon-theme { color: #ff9800; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            th { text-align: left; color: #5f6368; font-weight: 500; padding: 8px 5px; border-bottom: 1px solid #eee; }
-            td { padding: 8px 5px; border-bottom: 1px solid #f8f9fa; color: #3c4043; }
-            tr:last-child td { border-bottom: none; }
-            .vol-cell { text-align: right; font-family: 'Roboto Mono', monospace; color: #1a73e8; }
-            .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; background: #eee; }
-            .pos-top3 { background: #e6f4ea; color: #137333; }
-            .pos-alert { background: #fce8e6; color: #c5221f; }
-            .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 999; }
-            .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-            .empty-state { text-align: center; padding: 40px; color: #5f6368; font-size: 13px; font-style: italic; }
-            .progress-bar-bg { background: #f1f3f4; height: 6px; border-radius: 3px; width: 50px; display: inline-block; overflow: hidden; margin-left: 5px; vertical-align: middle; }
-            .progress-bar-fill { background: #1a73e8; height: 100%; }
-            .progress-bar-fill.good { background: #137333; }
-            .progress-bar-fill.bad { background: #d93025; }
-            .config-card { padding: 0; margin-bottom: 30px; }
-            .dropzone { border: 2px dashed #1a73e8; background: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 120px; }
-            .dropzone.dragover { background: #e8f0fe; border-color: #1557b0; border-width: 3px; }
-            .dropzone img { max-width: 100%; max-height: 100%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 1; }
-            .dropzone-text { z-index: 2; color: #5f6368; font-size: 13px; font-weight: 500; pointer-events: none; }
-            .input-label { display: block; font-size: 12px; font-weight: 600; color: #3c4043; margin-bottom: 8px; }
-            textarea, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 13px; box-sizing: border-box; margin-bottom: 15px; }
-            textarea { resize: vertical; min-height: 80px; }
-            textarea:focus, input[type="text"]:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
-            .row { display: flex; gap: 15px; margin-bottom: 12px; }
-            .col { flex: 1; display: flex; flex-direction: column; }
-            /* Contenteditable fields */
-            .ce-field {
-                border: 1px solid #dadce0;
-                border-radius: 4px;
-                padding: 10px;
-                min-height: 90px;
-                font-family: inherit;
-                font-size: 13px;
-                line-height: 1.6;
-                box-sizing: border-box;
-                margin-bottom: 15px;
-                cursor: text;
-                outline: none;
-                white-space: pre-wrap;
-                word-break: break-word;
-            }
-            .ce-field:focus { border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
-            .ce-field:empty::before { content: attr(data-placeholder); color: #aaa; pointer-events: none; font-style: italic; }
-            .section-separator { border: 0; border-top: 1px solid #dadce0; margin: 25px 0; }
-            .continuer-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 20px 0 5px; border-top: 1px solid #dadce0; margin-top: 10px; }
+          body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f1f3f4; color: #202124; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+          .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0 10px; }
+          .tab { padding: 10px 20px; cursor: pointer; font-weight: 500; color: #5f6368; border-bottom: 2px solid transparent; font-size: 14px; }
+          .tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+          .tab-content { display: none; flex: 1; overflow: hidden; }
+          .tab-content.active { display: flex; }
+          .sidebar { width: 320px; background: #fff; border-right: 1px solid #dadce0; display: flex; flex-direction: column; flex-shrink: 0; height: 100%; }
+          .sidebar-header { padding: 10px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 600; font-size: 15px; color: #1a73e8; }
+          .sidebar-content { flex: 1; overflow-y: auto; padding: 5px 0; }
+          .sidebar-footer { padding: 10px 20px; border-top: 1px solid #dadce0; background: #fff; }
+          .theme-group { border-bottom: 1px solid #f1f3f4; }
+          .theme-label { display: flex; align-items: center; padding: 8px 20px; font-weight: 600; font-size: 14px; cursor: pointer; }
+          .theme-label:hover { background: #f8f9fa; }
+          .sub-list { padding-left: 40px; padding-bottom: 0; }
+          .sub-label { display: flex; align-items: center; padding: 4px 0; font-size: 13px; color: #5f6368; cursor: pointer; }
+          .sub-label:hover { color: #202124; }
+          input[type="checkbox"] { margin-right: 8px; cursor: pointer; }
+          .main-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #fff; padding: 15px; height: 100%; box-sizing: border-box; }
+          .btn { background-color: #08133B; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; width: auto; transition: background 0.2s; }
+          .btn:hover { background-color: #152255; }
+          .btn:disabled { background: #dadce0; cursor: not-allowed; }
+          .btn-continuer { background-color: #137333; font-size: 15px; padding: 10px 25px; }
+          .btn-continuer:hover { background-color: #0d5226; }
+          .section-title { font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #202124; }
+          .kpi-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+          .kpi-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; flex: 1; min-width: 200px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+          .kpi-card.client { border-top: 4px solid #1a73e8; }
+          .kpi-title { font-size: 14px; font-weight: bold; color: #3c4043; margin-bottom: 10px; text-transform: uppercase; }
+          .kpi-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #5f6368; }
+          .kpi-val { font-weight: bold; color: #202124; }
+          .swo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+          .swo-panel { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+          .swo-panel-full { grid-column: 1 / -1; }
+          .panel-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; }
+          .icon-force { color: #188038; }
+          .icon-faiblesse { color: #d93025; }
+          .icon-opp { color: #fbbc04; }
+          .icon-ocean { color: #1a73e8; }
+          .icon-intent { color: #673ab7; }
+          .icon-theme { color: #ff9800; }
+          .section-description { font-size: 13px; color: #5f6368; }
+          table { width: 100%; border-collapse: collapse; font-size: 13px; }
+          th { text-align: left; color: #5f6368; font-weight: 500; padding: 6px 4px; border-bottom: 1px solid #eee; }
+          td { padding: 6px 4px; border-bottom: 1px solid #f8f9fa; color: #3c4043; }
+          tr:last-child td { border-bottom: none; }
+          .vol-cell { text-align: right; font-family: 'Roboto Mono', monospace; color: #1a73e8; }
+          .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #eee; }
+          .pos-top3 { background: #e6f4ea; color: #137333; }
+          .pos-alert { background: #fce8e6; color: #c5221f; }
+          .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 999; }
+          .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          .empty-state { text-align: center; padding: 30px; color: #5f6368; font-size: 14px; font-style: italic; }
+          .progress-bar-bg { background: #f1f3f4; height: 6px; border-radius: 3px; width: 50px; display: inline-block; overflow: hidden; margin-left: 5px; vertical-align: middle; }
+          .progress-bar-fill { background: #1a73e8; height: 100%; }
+          .progress-bar-fill.good { background: #137333; }
+          .progress-bar-fill.bad { background: #d93025; }
+          .config-card { padding: 0; margin-bottom: 10px; }
+          .dropzone { border: 2px dashed #1a73e8; background: #f8f9fa; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 75px; }
+          .dropzone.dragover { background: #e8f0fe; border-color: #1557b0; border-width: 3px; }
+          .dropzone img { max-width: 100%; max-height: 100%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 1; }
+          .dropzone-text { z-index: 2; color: #5f6368; font-size: 13px; font-weight: 500; pointer-events: none; }
+          .input-label { display: block; font-size: 13px; font-weight: 600; color: #3c4043; margin-bottom: 4px; }
+          textarea, input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; margin-bottom: 5px; }
+          textarea { resize: vertical; min-height: 60px; }
+          textarea:focus, input[type="text"]:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
+          .row { display: flex; gap: 10px; margin-bottom: 5px; }
+          .col { flex: 1; display: flex; flex-direction: column; }
+          .ce-field { border: 1px solid #dadce0; border-radius: 4px; padding: 8px 10px; min-height: 60px; font-family: inherit; font-size: 14px; line-height: 1.5; box-sizing: border-box; margin-bottom: 5px; cursor: text; outline: none; white-space: pre-wrap; word-break: break-word; }
+          .ce-field:focus { border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
+          .ce-field:empty::before { content: attr(data-placeholder); color: #aaa; pointer-events: none; font-style: italic; }
+          .section-separator { border: 0; border-top: 1px solid #dadce0; margin: 15px 0; }
+          .continuer-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 10px 0 0; border-top: 1px solid #dadce0; margin-top: 5px; }
+          .header-inline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         </style>
     </head>
     <body>
@@ -177,12 +163,13 @@
         <div class="tab-content" id="content-semrush">
             <div class="main-area">
 
-                <!-- BLOC 1 : Besoin & solution -->
                 <div class="config-card">
-                    <h2 class="section-title">Besoin & solution</h2>
-                    <p style="font-size: 13px; color: #5f6368; margin-bottom: 15px;">Génère les arguments clés de la slide Besoin/Solution à partir du profilage commercial (onglet 1).</p>
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <button type="button" id="btn-gen-besoin" class="btn" style="width: auto;" onclick="lancerGenerationBesoinSolutionIA()">🤖 Générer besoin & solution</button>
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title">Besoin & solution</h2>
+                            <div class="section-description">Arguments générés par l'IA via le profilage commercial.</div>
+                        </div>
+                        <button type="button" id="btn-gen-besoin" class="btn" onclick="lancerGenerationBesoinSolutionIA()">🤖 Générer besoin & solution</button>
                     </div>
 
                     <div id="besoin-result-card" style="display: none;">
@@ -201,33 +188,34 @@
 
                 <hr class="section-separator">
 
-                <!-- BLOC 2 : Analyse Semrush -->
                 <div class="config-card">
-                    <h2 class="section-title">Analyse de l'évolution (mots-clés et trafic)</h2>
-                    <p style="font-size: 13px; color: #5f6368; margin-bottom: 20px;">Collez (Ctrl+V) ou glissez les captures d'écran depuis Semrush pour générer l'analyse IA.</p>
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title">Analyse de l'évolution (mots-clés et trafic)</h2>
+                            <div class="section-description">Collez (Ctrl+V) ou glissez les captures d'écran depuis Semrush.</div>
+                        </div>
+                        <button class="btn" id="btn-ia" onclick="lancerAnalyseIA()" disabled>🤖 Générer l'analyse IA</button>
+                    </div>
 
-                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 15px; margin-bottom: 8px;">
                         <div style="flex: 1;">
                             <label class="input-label">Image 1 : évolution mots-clés</label>
                             <div class="dropzone" id="dz-kw">
-                                <span class="dropzone-text">Cliquez, glissez ou collez l'image ici</span>
+                                <span class="dropzone-text">Cliquez, glissez ou collez l'image</span>
                                 <img id="img-kw" src="">
                             </div>
                         </div>
                         <div style="flex: 1;">
                             <label class="input-label">Image 2 : évolution trafic</label>
                             <div class="dropzone" id="dz-trafic">
-                                <span class="dropzone-text">Cliquez, glissez ou collez l'image ici</span>
+                                <span class="dropzone-text">Cliquez, glissez ou collez l'image</span>
                                 <img id="img-trafic" src="">
                             </div>
                         </div>
                     </div>
-
-                    <button class="btn" id="btn-ia" onclick="lancerAnalyseIA()" disabled>🤖 Générer l'analyse IA</button>
                 </div>
 
                 <div class="config-card" id="ia-result-card" style="display: none;">
-                    <h2 class="section-title">Résultat de l'analyse</h2>
                     <label class="input-label">Titre de la slide</label>
                     <input type="text" id="ia-titre" placeholder="Titre généré...">
                     <div class="row">
@@ -242,7 +230,6 @@
                     </div>
                 </div>
 
-                <!-- BOUTON CONTINUER -->
                 <div class="continuer-bar">
                     <span id="continuer-msg" style="font-size: 12px; font-weight: bold;"></span>
                     <button class="btn btn-continuer" id="btn-continuer" onclick="continuerVersOnglet3()">Continuer → Diagnostic sémantique</button>
@@ -567,6 +554,9 @@
             function lancerAnalyseIA() {
                 showLoader("Analyse des graphiques par l'IA...");
                 document.getElementById('btn-ia').disabled = true;
+                
+                // Récupération du profilage commercial pour donner du contexte à l'IA
+                var contexte = document.getElementById('conf-contexte-preaudit').value;
 
                 google.script.run
                     .withSuccessHandler(function(res) {
@@ -587,10 +577,10 @@
                         document.getElementById('btn-ia').disabled = false;
                         alert("Erreur critique : " + err.message);
                     })
-                    .analyserEvolutionSemrushIA(base64ImgKw, mimeImgKw, base64ImgTrafic, mimeImgTrafic);
+                    // On ajoute la variable contexte à la fin des paramètres envoyés
+                    .analyserEvolutionSemrushIA(base64ImgKw, mimeImgKw, base64ImgTrafic, mimeImgTrafic, contexte);
             }
-
-            // ========================== ONGLET 2 — BOUTON CONTINUER ==========================
+                        // ========================== ONGLET 2 — BOUTON CONTINUER ==========================
 
             function continuerVersOnglet3() {
                 var btn = document.getElementById('btn-continuer');
