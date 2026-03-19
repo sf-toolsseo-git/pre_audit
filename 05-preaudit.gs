@@ -8,6 +8,7 @@ function ouvrirFenetrePreAudit() {
 
 function chargerConfigurationPreAudit() {
     var props = PropertiesService.getScriptProperties().getProperties();
+    var userProps = PropertiesService.getUserProperties().getProperties();
     return {
         clientName: props['CLIENT_NAME'] || "",
         clientUrl: props['CLIENT_URL'] || "",
@@ -16,7 +17,17 @@ function chargerConfigurationPreAudit() {
         slideId: props['SLIDE_PRE_AUDIT_ID'] || "",
         brief: props['BRIEF_PRE_AUDIT'] || "",
         urlReponses: props['URL_REPONSES'] || "",
-        contextePreaudit: props['CONTEXTE_PRE_AUDIT'] || ""
+        contextePreaudit: props['CONTEXTE_PREAUDIT'] || "",
+        besoinHtml: props['PREAUDIT_BESOIN_HTML'] || "",
+        besoinTexte: props['PREAUDIT_BESOIN_TEXTE'] || "",
+        solutionHtml: props['PREAUDIT_SOLUTION_HTML'] || "",
+        solutionTexte: props['PREAUDIT_SOLUTION_TEXTE'] || "",
+        titreSemrush: props['ANALYSE_SEMRUSH_TITRE'] || "",
+        analyseKwHtml: props['ANALYSE_SEMRUSH_KW_HTML'] || "",
+        analyseKwTexte: props['ANALYSE_SEMRUSH_KW'] || "",
+        analyseTraficHtml: props['ANALYSE_SEMRUSH_TRAFIC_HTML'] || "",
+        analyseTraficTexte: props['ANALYSE_SEMRUSH_TRAFIC'] || "",
+        activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config"
     };
 }
 
@@ -108,64 +119,6 @@ function recupererReponseFormulaire(urlForm) {
     }
 }
 
-function genererSlideBesoinSolutionIA(contextePreaudit) {
-    try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
-
-        if (!apiKey || apiKey.trim() === "") {
-            throw new Error("Clé API Gemini introuvable.");
-        }
-
-        var promptStr = "Tu es un expert SEO et stratège en avant-vente. À partir du profilage commercial fourni, tu dois extraire les arguments clés pour remplir une slide de présentation divisée en deux colonnes : 'Le constat (Votre Besoin)' et 'La réponse (Notre Solution)'.\n\n" +
-                        "CONTRAINTES STRICTES :\n" +
-                        "1. Tu dois générer EXACTEMENT deux puces pour le Besoin, et EXACTEMENT deux puces pour la Solution. Pas une de plus, pas une de moins.\n" +
-                        "2. Rédige des phrases courtes, percutantes et orientées bénéfice client.\n" +
-                        "3. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON, uniquement le texte brut de la phrase.\n" +
-                        "4. RÈGLES TYPOGRAPHIQUES OBLIGATOIRES : majuscule uniquement au premier mot des phrases, pas de majuscule après les deux-points.\n\n" +
-                        "Format de sortie attendu STRICTEMENT en JSON :\n" +
-                        "{\n" +
-                        "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\"],\n" +
-                        "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\"]\n" +
-                        "}\n\n" +
-                        "PROFILAGE COMMERCIAL :\n" + contextePreaudit;
-
-        var payload = {
-            "contents": [{"parts": [{"text": promptStr}]}],
-            "generationConfig": {
-                "responseMimeType": "application/json"
-            }
-        };
-
-        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
-        var options = {
-            "method": "post",
-            "contentType": "application/json",
-            "headers": { "x-goog-api-key": apiKey },
-            "payload": JSON.stringify(payload),
-            "muteHttpExceptions": true
-        };
-
-        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
-        var json = JSON.parse(apiResponse.getContentText());
-
-        if (apiResponse.getResponseCode() !== 200) {
-            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
-        }
-
-        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
-            var responseText = json.candidates[0].content.parts[0].text.trim();
-            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-            return { success: true, jsonString: responseText };
-        } else {
-            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
-        }
-
-    } catch (error) {
-        return { success: false, message: error.message };
-    }
-}
-
 function sauvegarderConfigurationPreAudit(form) {
     var props = PropertiesService.getScriptProperties();
     props.setProperties({
@@ -176,9 +129,8 @@ function sauvegarderConfigurationPreAudit(form) {
         'SLIDE_PRE_AUDIT_ID': form.slideId || "",
         'BRIEF_PRE_AUDIT': form.brief || "",
         'URL_REPONSES': form.urlReponses || "",
-        'CONTEXTE_PRE_AUDIT': form.contextePreaudit || ""
+        'CONTEXTE_PREAUDIT': form.contextePreaudit || ""
     });
-    
     syncPropertiesToConfigSheet();
     
     return true;
@@ -521,6 +473,36 @@ function sauvegarderAnalyseEvolution(titre, texteKw, texteTrafic) {
     }
 }
 
+function sauvegarderOngletActif(tabName) {
+    try {
+        PropertiesService.getUserProperties().setProperty('PREAUDIT_ACTIVE_TAB', tabName);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function sauvegarderDonneesAnalyseGlobale(data) {
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'PREAUDIT_BESOIN_HTML':          data.besoinHtml || "",
+            'PREAUDIT_BESOIN_TEXTE':         data.besoinTexte || "",
+            'PREAUDIT_SOLUTION_HTML':        data.solutionHtml || "",
+            'PREAUDIT_SOLUTION_TEXTE':       data.solutionTexte || "",
+            'ANALYSE_SEMRUSH_TITRE':         data.titreSemrush || "",
+            'ANALYSE_SEMRUSH_KW_HTML':       data.analyseKwHtml || "",
+            'ANALYSE_SEMRUSH_KW':            data.analyseKwTexte || "",
+            'ANALYSE_SEMRUSH_TRAFIC_HTML':   data.analyseTraficHtml || "",
+            'ANALYSE_SEMRUSH_TRAFIC':        data.analyseTraficTexte || ""
+        });
+        syncPropertiesToConfigSheet();
+        return true;
+    } catch (e) {
+        throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
+    }
+}
+
 function testRecuperationFormulaire() {
     var urlTest = "https://docs.google.com/forms/d/1ysuod7lKrpOjqb-wVPnfhauZmslPfnEXDdaRD4tAD2E/edit#response=ACYDBNjTwVbfs3pMEqdYAyukF4w8FbImmoocoXQSBk0VOnT0ZaL6tV8QLzUaYhHhptKRTWU";
     
@@ -537,4 +519,193 @@ function testRecuperationFormulaire() {
     }
     
     Logger.log("=== FIN DU TEST ===");
+}
+
+function genererProfilageCommercialIA(urlForm, brief, contexte) {
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable. Veuillez configurer l'onglet Général.");
+        }
+
+        var reponsesForm = "Non disponible.";
+        if (urlForm && urlForm.trim() !== "") {
+            try {
+                var extraction = recupererReponseFormulaire(urlForm);
+                if (extraction && extraction.indexOf("⚠️ Aucune réponse") === -1) {
+                    reponsesForm = extraction;
+                }
+            } catch (err) {
+                Logger.log("Erreur lors de la récupération du formulaire : " + err.message);
+                reponsesForm = "Erreur de lecture du formulaire : " + err.message;
+            }
+        }
+
+        var promptStr = "Tu es un expert SEO et stratège en avant-vente. Ton objectif est d'analyser les sources d'informations disponibles pour dresser un profilage commercial redoutable du prospect. Ce contexte servira à orienter toutes les futures analyses pour l'aider à signer notre proposition d'accompagnement.\n\n" +
+                        "RÈGLES DE PRIORITÉS (en cas de contradiction) :\n" +
+                        "1. Source 1 : réponses du formulaire (priorité absolue, parole directe du prospect).\n" +
+                        "2. Source 2 : brief commercial (notes du consultant).\n" +
+                        "3. Source 3 : contexte site web (extraction automatisée).\n\n" +
+                        "FORMAT DE SORTIE :\n" +
+                        "Génère une synthèse stratégique en markdown, sans introduction ni conclusion. Utilise exclusivement des listes à puces sous les sections suivantes :\n" +
+                        "- Profil et marché : (modèle économique, maturité perçue, positionnement)\n" +
+                        "- Douleurs et frustrations : (problèmes actuels, échecs passés, ce qui le bloque)\n" +
+                        "- Objectifs prioritaires : (kpi visés, attentes réelles au-delà du trafic, besoins vitaux)\n" +
+                        "- Craintes et freins à l'achat : (objections potentielles, doutes sur le SEO ou le budget)\n" +
+                        "- Angles d'attaque commerciaux : (arguments de réassurance à marteler, leviers psychologiques à activer)\n\n" +
+                        "CONTRAINTES DE RÉDACTION :\n" +
+                        "- Fusionne les informations complémentaires et supprime les redondances.\n" +
+                        "- Rédige de manière incisive, orientée \"closing\" commercial.\n" +
+                        "- Respect strict de la typographie : majuscule uniquement au premier mot des labels et débuts de ligne. Pas de majuscule après les deux-points.\n\n" +
+                        "DONNÉES ENTRANTES :\n" +
+                        "[SOURCE 1 - FORMULAIRE] :\n" + reponsesForm + "\n\n" +
+                        "[SOURCE 2 - BRIEF] :\n" + (brief || "Non renseigné.") + "\n\n" +
+                        "[SOURCE 3 - SITE WEB] :\n" + (contexte || "Non renseigné.");
+
+        var payload = {
+            "contents": [{
+                "parts": [{"text": promptStr}]
+            }]
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": {
+                "x-goog-api-key": apiKey
+            },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+
+        if (apiResponse.getResponseCode() !== 200) {
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates.length > 0 && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            return { success: true, texte: json.candidates[0].content.parts[0].text.trim() };
+        } else {
+            throw new Error("L'API Gemini n'a renvoyé aucun texte.");
+        }
+
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+function genererSlideBesoinSolutionIA(contextePreaudit) {
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un expert SEO et stratège en avant-vente. À partir du profilage commercial fourni, tu dois extraire les arguments clés pour remplir une slide de présentation divisée en deux colonnes : 'Le constat (Votre Besoin)' et 'La réponse (Notre Solution)'.\n\n" +
+                        "CONTRAINTES STRICTES :\n" +
+                        "1. Tu dois générer EXACTEMENT deux puces pour le Besoin, et EXACTEMENT deux puces pour la Solution. Pas une de plus, pas une de moins.\n" +
+                        "2. Rédige des phrases courtes, percutantes et orientées bénéfice client.\n" +
+                        "3. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON, uniquement le texte brut de la phrase.\n" +
+                        "4. RÈGLES TYPOGRAPHIQUES OBLIGATOIRES : majuscule uniquement au premier mot des phrases, pas de majuscule après les deux-points.\n\n" +
+                        "Format de sortie attendu STRICTEMENT en JSON :\n" +
+                        "{\n" +
+                        "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\"],\n" +
+                        "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\"]\n" +
+                        "}\n\n" +
+                        "PROFILAGE COMMERCIAL :\n" + contextePreaudit;
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+
+        if (apiResponse.getResponseCode() !== 200) {
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            return { success: true, jsonString: responseText };
+        } else {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (error) {
+        return { success: false, message: error.message };
+    }
+}
+
+function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
+    try {
+        Logger.log("=== DÉBUT EXPORT SLIDE BESOIN / SOLUTION ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+        
+        var tagsTrouves = 0;
+
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+            
+            shapes.forEach(function(shape) {
+                var shapeText = shape.getText().asString().trim();
+                var titleRaw = shape.getTitle() || "";
+                var descRaw = shape.getDescription() || "";
+
+                var targetKey = null;
+                // Détection via le texte brut, le titre ou la description (texte alternatif) de la forme
+                if (shapeText === "tag_slide_besoin" || titleRaw === "tag_slide_besoin" || descRaw === "tag_slide_besoin") {
+                    targetKey = "besoin";
+                } else if (shapeText === "tag_slide_solution" || titleRaw === "tag_slide_solution" || descRaw === "tag_slide_solution") {
+                    targetKey = "solution";
+                }
+
+                if (targetKey === "besoin") {
+                    shape.getText().setText(texteBesoin);
+                    tagsTrouves++;
+                } else if (targetKey === "solution") {
+                    shape.getText().setText(texteSolution);
+                    tagsTrouves++;
+                }
+            });
+        });
+
+        Logger.log("=== FIN EXPORT SLIDE BESOIN / SOLUTION ===");
+        
+        if (tagsTrouves === 0) {
+            return { success: false, error: "Les tags 'tag_slide_besoin' et 'tag_slide_solution' n'ont pas été trouvés dans la présentation." };
+        }
+
+        return { success: true, url: presentation.getUrl() };
+        
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT BESOIN/SOLUTION : " + e.message);
+        return { success: false, error: e.message };
+    }
 }
