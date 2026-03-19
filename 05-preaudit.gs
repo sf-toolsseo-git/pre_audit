@@ -187,8 +187,20 @@ function genererDiagnostic(selection) {
     if (!selection || selection.length === 0) throw new Error("Aucune thématique sélectionnée.");
 
     var props = PropertiesService.getScriptProperties().getProperties();
-    var isMultiTheme = (props['IS_MULTI_THEME'] === 'true');
-    var minCompForFaiblesse = isMultiTheme ? 1 : 2;
+
+    // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
+    var ctrTable = [];
+    for (var ci = 1; ci <= 10; ci++) {
+        ctrTable.push((parseFloat(props['CTR_POS_' + ci]) || 0) / 100);
+    }
+    function computeTEC(vol, pos) {
+        if (isNaN(pos) || pos <= 0 || pos > 10) return 0;
+        return vol * ctrTable[pos - 1];
+    }
+    function computeTPM(vol) {
+        return vol * (ctrTable[0] || 0);
+    }
+
     var selectedSubs = {};
     selection.forEach(function(item) {
         selectedSubs[item.theme + "|" + item.sub] = true;
@@ -217,33 +229,27 @@ function genererDiagnostic(selection) {
             var name = h.substring(4).trim();
             var urlIdx = -1;
             for (var j = c + 1; j < headers.length; j++) {
-                if (String(headers[j]) === "URL " + name) {
-                    urlIdx = j;
-                    break;
-                }
+                if (String(headers[j]) === "URL " + name) { urlIdx = j; break; }
             }
             entities.push({ name: name, posIdx: c, urlIdx: urlIdx });
         }
     }
 
-    var kpis = {};
-    entities.forEach(function(e) {
-        kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set() };
-    });
-
-    var forces = [];
-    var faiblesses = [];
-    var opp_qw = [];
-    var opp_ob = [];
-    var themeStats = {};
-    var intentStats = {
-        transac: { posAll: 0, top3: 0, top10: 0, vol: 0 },
-        info: { posAll: 0, top3: 0, top10: 0, vol: 0 }
-    };
-
     var clientName = props['CLIENT_NAME'] || "Client";
     if (clientName.trim() === "") clientName = "Client";
     var clientEntity = entities.find(function(e) { return e.name === clientName; });
+
+    var kpis = {};
+    entities.forEach(function(e) {
+        kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set(), TEC: 0, TPM: 0 };
+    });
+
+    var themeStats = {};
+    var intentStats = {
+        transac: { kwCount: 0, top100: 0, TEC: 0, TPM: 0, DDT: 0 },
+        info:    { kwCount: 0, top100: 0, TEC: 0, TPM: 0, DDT: 0 }
+    };
+    var acquis = [], gains = [], pertes = [], territoires = [];
 
     for (var i = 1; i < matriceData.length; i++) {
         var row = matriceData[i];
@@ -252,98 +258,103 @@ function genererDiagnostic(selection) {
         if (!targetKeywords.has(kw)) continue;
 
         var kwMeta = targetKeywords.get(kw);
-        var isNav = kwMeta.intent.indexOf("navigat") > -1;
-        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1;
-        var isInfo = kwMeta.intent.indexOf("information") > -1;
+        var tsKey = kwMeta.theme + " > " + kwMeta.sub;
 
+        if (!themeStats[tsKey]) {
+            themeStats[tsKey] = { kwCount: 0, volTotal: 0, top100: 0, top10: 0, top3: 0, TEC: 0, TPM: 0, DDT: 0, entityStats: {} };
+            entities.forEach(function(e) { themeStats[tsKey].entityStats[e.name] = { TEC: 0 }; });
+        }
+
+        var kwTPM = computeTPM(vol);
         var clientPos = 999;
         var bestCompPos = 999;
         var bestCompName = "-";
-        var compTop5Count = 0;
-
-        var tsKey = kwMeta.theme + " > " + kwMeta.sub;
-        if (!themeStats[tsKey]) {
-            themeStats[tsKey] = { kwCount: 0, volTotal: 0, top3: 0, top10: 0, top100: 0, compTop10: {} };
-            entities.forEach(function(e) {
-                if (e.name !== clientName) {
-                    themeStats[tsKey].compTop10[e.name] = 0;
-                }
-            });
-        }
-
-        themeStats[tsKey].kwCount++;
-        themeStats[tsKey].volTotal += vol;
+        var compInTop10Count = 0;
 
         entities.forEach(function(e) {
             var pos = parseInt(row[e.posIdx]);
-            var url = row[e.urlIdx] ? String(row[e.urlIdx]).trim() : "";
-            
-            if (!isNaN(pos) && pos > 0) {
-                kpis[e.name].posAll++;
-                if (pos <= 3) kpis[e.name].top3++;
-                if (pos <= 10) kpis[e.name].top10++;
-            }
-            if (url && url !== "-" && url !== "") {
-                kpis[e.name].urls.add(url);
-            }
-            
+            var p = (!isNaN(pos) && pos > 0) ? pos : 999;
+            var url = (e.urlIdx >= 0 && row[e.urlIdx]) ? String(row[e.urlIdx]).trim() : "";
+
+            if (p <= 100) kpis[e.name].posAll++;
+            if (p <= 3)   kpis[e.name].top3++;
+            if (p <= 10)  kpis[e.name].top10++;
+            if (url && url !== "-") kpis[e.name].urls.add(url);
+
+            var eTEC = computeTEC(vol, p);
+            kpis[e.name].TEC += eTEC;
+            kpis[e.name].TPM += kwTPM;
+            themeStats[tsKey].entityStats[e.name].TEC += eTEC;
+
             if (e.name === clientName) {
-                if (!isNaN(pos) && pos > 0) {
-                    clientPos = pos;
-                    if (pos <= 100) themeStats[tsKey].top100++;
-                    if (pos <= 10) themeStats[tsKey].top10++;
-                    if (pos <= 3) themeStats[tsKey].top3++;
-                }
+                clientPos = p;
             } else {
-                if (!isNaN(pos) && pos > 0) {
-                    if (pos <= 5) compTop5Count++;
-                    if (pos <= 10) themeStats[tsKey].compTop10[e.name]++;
-                    
-                    if (pos < bestCompPos) {
-                        bestCompPos = pos;
-                        bestCompName = e.name;
-                    }
-                }
+                if (p <= 10) compInTop10Count++;
+                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name; }
             }
         });
 
+        var clientTEC = computeTEC(vol, clientPos);
+        var kwDDT = kwTPM - clientTEC;
+
+        themeStats[tsKey].kwCount++;
+        themeStats[tsKey].volTotal += vol;
+        themeStats[tsKey].TPM += kwTPM;
+        themeStats[tsKey].TEC += clientTEC;
+        themeStats[tsKey].DDT += kwDDT;
+        if (clientPos <= 100) themeStats[tsKey].top100++;
+        if (clientPos <= 10)  themeStats[tsKey].top10++;
+        if (clientPos <= 3)   themeStats[tsKey].top3++;
+
+        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1;
+        var isInfo    = kwMeta.intent.indexOf("information") > -1;
+
         if (clientEntity) {
-            if (isTransac && clientPos <= 100) {
-                intentStats.transac.posAll++;
-                intentStats.transac.vol += vol;
-                if (clientPos <= 3) intentStats.transac.top3++;
-                if (clientPos <= 10) intentStats.transac.top10++;
+            if (isTransac) {
+                intentStats.transac.kwCount++;
+                if (clientPos <= 100) intentStats.transac.top100++;
+                intentStats.transac.TEC += clientTEC;
+                intentStats.transac.TPM += kwTPM;
+                intentStats.transac.DDT += kwDDT;
             }
-            if (isInfo && clientPos <= 100) {
-                intentStats.info.posAll++;
-                intentStats.info.vol += vol;
-                if (clientPos <= 3) intentStats.info.top3++;
-                if (clientPos <= 10) intentStats.info.top10++;
+            if (isInfo) {
+                intentStats.info.kwCount++;
+                if (clientPos <= 100) intentStats.info.top100++;
+                intentStats.info.TEC += clientTEC;
+                intentStats.info.TPM += kwTPM;
+                intentStats.info.DDT += kwDDT;
             }
+
+            // Segmentation SWO
             if (clientPos <= 3) {
-                forces.push({ kw: kw, vol: vol, pos: clientPos });
-            } else if (!isNav) {
-                if (clientPos >= 11 && clientPos <= 20) {
-                    opp_qw.push({ kw: kw, vol: vol, pos: clientPos });
-                } else if ((clientPos > 10 || isNaN(clientPos)) && compTop5Count >= minCompForFaiblesse) {
-                    faiblesses.push({ kw: kw, vol: vol, clientPos: clientPos === 999 ? "-" : clientPos, compName: bestCompName, compPos: bestCompPos });
-                } else if (clientPos > 3 && bestCompPos > 3 && vol > 50) {
-                    var topPos = Math.min(clientPos, bestCompPos);
-                    opp_ob.push({ kw: kw, vol: vol, bestPos: topPos === 999 ? "-" : topPos });
-                }
+                acquis.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
+            } else if (clientPos >= 4 && clientPos <= 20) {
+                gains.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
+            } else if (clientPos > 20 && compInTop10Count >= 1) {
+                pertes.push({ kw: kw, vol: vol, pos: clientPos < 999 ? clientPos : null, DDT: kwDDT, bestCompName: bestCompName, bestCompPos: bestCompPos < 999 ? bestCompPos : null });
+            }
+            if (clientPos > 10 && bestCompPos > 10 && vol > 50) {
+                var bm = Math.min(clientPos, bestCompPos);
+                territoires.push({ kw: kw, vol: vol, DDT: kwDDT, bestPos: bm < 999 ? bm : null });
             }
         }
     }
 
+    // Calcul des KPI par entité
     var kpisArray = [];
     entities.forEach(function(e) {
+        var eTPM = kpis[e.name].TPM;
+        var eTEC = kpis[e.name].TEC;
         kpisArray.push({
             name: e.name,
             isClient: (e.name === clientName),
             posAll: kpis[e.name].posAll,
             top3: kpis[e.name].top3,
             top10: kpis[e.name].top10,
-            urlsCount: kpis[e.name].urls.size
+            urlsCount: kpis[e.name].urls.size,
+            TEC: Math.round(eTEC),
+            TPM: Math.round(eTPM),
+            PdM: eTPM > 0 ? (eTEC / eTPM) * 100 : 0
         });
     });
     kpisArray.sort(function(a, b) {
@@ -352,34 +363,60 @@ function genererDiagnostic(selection) {
         return b.top10 - a.top10;
     });
 
+    // Construction du tableau des thématiques avec tous les ratios
     var themeArray = [];
     for (var k in themeStats) {
+        var ts = themeStats[k];
+        var PdM = ts.TPM > 0 ? (ts.TEC / ts.TPM) * 100 : 0;
+        var TdP = ts.kwCount > 0 ? (ts.top100 / ts.kwCount) * 100 : 0;
+        var entityPdM = {};
+        entities.forEach(function(e) {
+            var eTEC = ts.entityStats[e.name] ? ts.entityStats[e.name].TEC : 0;
+            entityPdM[e.name] = ts.TPM > 0 ? (eTEC / ts.TPM) * 100 : 0;
+        });
         themeArray.push({
-            name: k,
-            kwCount: themeStats[k].kwCount,
-            volTotal: themeStats[k].volTotal,
-            top100: themeStats[k].top100,
-            top10: themeStats[k].top10,
-            top3: themeStats[k].top3,
-            compTop10: themeStats[k].compTop10
+            name: k, kwCount: ts.kwCount, volTotal: ts.volTotal,
+            top100: ts.top100, top10: ts.top10, top3: ts.top3,
+            TEC: Math.round(ts.TEC), TPM: Math.round(ts.TPM), DDT: Math.round(ts.DDT),
+            PdM: PdM, TdP: TdP, entityPdM: entityPdM
         });
     }
     themeArray.sort(function(a, b) { return b.volTotal - a.volTotal; });
 
-    var sortByVol = function(a, b) { return b.vol - a.vol; };
-    forces.sort(sortByVol);
-    faiblesses.sort(sortByVol);
-    opp_qw.sort(sortByVol);
-    opp_ob.sort(sortByVol);
+    // Identification top / flop thématique
+    var topTheme = null, flopTheme = null;
+    if (themeArray.length > 0) {
+        var sortedPdM = themeArray.slice().sort(function(a, b) { return b.PdM - a.PdM || b.TdP - a.TdP; });
+        topTheme = sortedPdM[0].name;
+        var sortedDDT = themeArray.slice().sort(function(a, b) { return b.DDT - a.DDT || b.TPM - a.TPM || a.TdP - b.TdP; });
+        flopTheme = sortedDDT[0].name;
+    }
+
+    // Ratios intentStats
+    ['transac', 'info'].forEach(function(k) {
+        var s = intentStats[k];
+        s.PdM = s.TPM > 0 ? (s.TEC / s.TPM) * 100 : 0;
+        s.TdP = s.kwCount > 0 ? (s.top100 / s.kwCount) * 100 : 0;
+        s.TEC = Math.round(s.TEC);
+        s.TPM = Math.round(s.TPM);
+        s.DDT = Math.round(s.DDT);
+    });
+
+    acquis.sort(function(a, b) { return b.vol - a.vol; });
+    gains.sort(function(a, b) { return b.DDT - a.DDT; });
+    pertes.sort(function(a, b) { return b.DDT - a.DDT; });
+    territoires.sort(function(a, b) { return b.vol - a.vol; });
 
     return {
         kpis: kpisArray,
         themeStats: themeArray,
         intentStats: intentStats,
-        forces: forces.slice(0, 10),
-        faiblesses: faiblesses.slice(0, 15),
-        opp_qw: opp_qw.slice(0, 15),
-        opp_ob: opp_ob.slice(0, 10)
+        topTheme: topTheme,
+        flopTheme: flopTheme,
+        acquis:      acquis.slice(0, 10),
+        gains:       gains.slice(0, 10),
+        pertes:      pertes.slice(0, 10),
+        territoires: territoires.slice(0, 10)
     };
 }
 

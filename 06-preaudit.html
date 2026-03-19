@@ -77,6 +77,29 @@
           .section-separator { border: 0; border-top: 1px solid #dadce0; margin: 15px 0; }
           .continuer-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 10px 0 0; border-top: 1px solid #dadce0; margin-top: 5px; }
           .header-inline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+          .glossaire-bloc { background:#f8f9fa; border:1px solid #e8eaed; border-radius:6px; padding:10px 14px; font-size:12px; color:#5f6368; margin-bottom:15px; line-height:1.9; }
+          .acro { font-weight:700; color:#08133B; }
+          .panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,.05); margin-bottom:12px; }
+          .kpi-card-big { text-align:center; min-width:120px; }
+          .kpi-big-val { font-size:26px; font-weight:700; line-height:1.2; }
+          .kpi-big-label { font-size:11px; color:#5f6368; font-weight:500; margin-top:4px; }
+          .kpi-big-sub { font-size:10px; color:#9aa0a6; }
+          .pct-badge { display:inline-block; background:#e8f0fe; color:#1a73e8; border-radius:4px; padding:1px 5px; font-size:12px; font-weight:600; }
+          .ra { text-align:right; }
+          .num { font-family:'Roboto Mono',monospace; color:#1a73e8; }
+          .ddt-val { color:#d93025; font-weight:600; font-family:'Roboto Mono',monospace; }
+          .swo-4col { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:15px; }
+          .swo-col-panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:10px; overflow-x:auto; }
+          .tag { display:inline-block; border-radius:3px; font-size:10px; font-weight:700; padding:1px 4px; margin-left:4px; vertical-align:middle; }
+          .tag-top { background:#e6f4ea; color:#137333; }
+          .tag-flop { background:#fce8e6; color:#c5221f; }
+          .row-top > td { background:#f6fef8; }
+          .row-flop > td { background:#fff8f8; }
+          .table-wrap { overflow-x:auto; }
+          .col-th { width:180px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .col-ent { width:80px; max-width:80px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .col-cli { color:#1a73e8 !important; font-weight:700; }
+          .section-sep { border:0; border-top:2px solid #dadce0; margin:18px 0 15px; }
         </style>
     </head>
     <body>
@@ -823,93 +846,186 @@
                 hideLoader();
                 document.getElementById('btnAnalyze').disabled = false;
                 var container = document.getElementById('dashboardArea');
-
                 window.lastDiagnosticData = data;
 
-                var exportBtnHtml = '<div style="text-align:right; margin-bottom:15px;"><button class="btn" id="btnExportSlides" onclick="lancerExportSlidesDiagnostic()" style="width:auto;">📥 Importer dans Google Slides</button><div id="exportMsgDiagnostic" style="font-size:12px; margin-top:5px; font-weight:bold;"></div></div>';
-
-                var kpiHtml = exportBtnHtml + '<h2 class="section-title">Performances globales (sur le périmètre sélectionné)</h2><div class="kpi-grid">';
-                data.kpis.forEach(function(kpi) {
-                    var clientClass = kpi.isClient ? ' client' : '';
-                    kpiHtml += '<div class="kpi-card' + clientClass + '">';
-                    kpiHtml += '<div class="kpi-title">' + kpi.name + '</div>';
-                    kpiHtml += '<div class="kpi-row"><span>Mots-clés classés (top 100)</span><span class="kpi-val">' + kpi.posAll + '</span></div>';
-                    kpiHtml += '<div class="kpi-row"><span>Mots-clés top 10</span><span class="kpi-val" style="color:#fbbc04">' + kpi.top10 + '</span></div>';
-                    kpiHtml += '<div class="kpi-row"><span>Mots-clés top 3</span><span class="kpi-val" style="color:#188038">' + kpi.top3 + '</span></div>';
-                    kpiHtml += '<div class="kpi-row" style="margin-top:10px; border-top:1px solid #eee; padding-top:8px;"><span>URLs positionnées</span><span class="kpi-val">' + kpi.urlsCount + '</span></div>';
-                    kpiHtml += '</div>';
-                });
-                kpiHtml += '</div>';
-
-                var intentHtml = '<div class="swo-grid"><div class="swo-panel swo-panel-full">';
-                intentHtml += '<div class="panel-header"><span class="icon-intent">🎯</span> Performances par intention</div>';
-                intentHtml += '<table><thead><tr><th>Intention</th><th style="text-align:right">Mots-clés classés</th><th style="text-align:right">Volume capté</th><th style="text-align:right">Part en top 10</th><th style="text-align:right">Part en top 3</th></tr></thead><tbody>';
-
-                var tData = data.intentStats.transac;
-                var tTop10 = tData.posAll > 0 ? ((tData.top10 / tData.posAll) * 100).toFixed(1) + '%' : '0%';
-                var tTop3 = tData.posAll > 0 ? ((tData.top3 / tData.posAll) * 100).toFixed(1) + '%' : '0%';
-                intentHtml += '<tr><td><strong>Transactionnel</strong></td><td style="text-align:right">' + tData.posAll + '</td><td class="vol-cell">' + tData.vol.toLocaleString('fr-FR') + '</td><td style="text-align:right">' + tTop10 + getBarHtml(tData.top10, tData.posAll, false) + '</td><td style="text-align:right">' + tTop3 + getBarHtml(tData.top3, tData.posAll, false) + '</td></tr>';
-
-                var iData = data.intentStats.info;
-                var iTop10 = iData.posAll > 0 ? ((iData.top10 / iData.posAll) * 100).toFixed(1) + '%' : '0%';
-                var iTop3 = iData.posAll > 0 ? ((iData.top3 / iData.posAll) * 100).toFixed(1) + '%' : '0%';
-                intentHtml += '<tr><td><strong>Informationnel</strong></td><td style="text-align:right">' + iData.posAll + '</td><td class="vol-cell">' + iData.vol.toLocaleString('fr-FR') + '</td><td style="text-align:right">' + iTop10 + getBarHtml(iData.top10, iData.posAll, false) + '</td><td style="text-align:right">' + iTop3 + getBarHtml(iData.top3, iData.posAll, false) + '</td></tr>';
-                intentHtml += '</tbody></table></div></div>';
-
-                var themeHtml = '<div class="swo-grid"><div class="swo-panel swo-panel-full">';
-                themeHtml += '<div class="panel-header"><span class="icon-theme">📑</span> Performances par thématiques</div>';
-                themeHtml += '<table><thead><tr><th>Thématiques</th><th style="text-align:right">Mots-clés (Périmètre)</th><th style="text-align:right">Volume total</th><th style="text-align:right">Mots-clés top 100</th><th style="text-align:right">Mots-clés top 10</th><th style="text-align:right">Mots-clés top 3</th></tr></thead><tbody>';
-
-                data.themeStats.forEach(function(ts) {
-                    themeHtml += '<tr>';
-                    themeHtml += '<td>' + ts.name + '</td>';
-                    themeHtml += '<td style="text-align:right">' + ts.kwCount + '</td>';
-                    themeHtml += '<td class="vol-cell">' + ts.volTotal.toLocaleString('fr-FR') + '</td>';
-                    themeHtml += '<td style="text-align:right">' + ts.top100 + getBarHtml(ts.top100, ts.kwCount, false) + '</td>';
-                    themeHtml += '<td style="text-align:right">' + ts.top10 + getBarHtml(ts.top10, ts.kwCount, false) + '</td>';
-                    themeHtml += '<td style="text-align:right">' + ts.top3 + getBarHtml(ts.top3, ts.kwCount, false) + '</td>';
-                    themeHtml += '</tr>';
-                });
-                themeHtml += '</tbody></table></div></div>';
-
-                var compThemeHtml = '<div class="swo-grid"><div class="swo-panel swo-panel-full">';
-                compThemeHtml += '<div class="panel-header"><span class="icon-theme">⚔️</span> Performances par thématiques VS Concurrents (Mots-clés en Top 10)</div>';
-                compThemeHtml += '<table><thead><tr><th>Thématiques</th>';
-
                 var clientKpi = data.kpis.find(function(k) { return k.isClient; });
-                var compKpis = data.kpis.filter(function(k) { return !k.isClient; });
-                var allEntities = [];
-                if (clientKpi) allEntities.push(clientKpi);
-                allEntities = allEntities.concat(compKpis);
+                var compKpis  = data.kpis.filter(function(k) { return !k.isClient; });
+                var html = '';
 
-                allEntities.forEach(function(ent) {
-                    var headerStyle = ent.isClient ? 'style="text-align:right; color:#1a73e8;"' : 'style="text-align:right"';
-                    compThemeHtml += '<th ' + headerStyle + '>' + ent.name + '</th>';
+                // ── Bouton export ──────────────────────────────────────────────────────
+                html += '<div style="text-align:right;margin-bottom:12px;">';
+                html += '<button class="btn" id="btnExportSlides" onclick="lancerExportSlidesDiagnostic()" style="width:auto;">📥 Importer dans Google Slides</button>';
+                html += '<div id="exportMsgDiagnostic" style="font-size:12px;margin-top:4px;font-weight:bold;"></div></div>';
+
+                // ── Glossaire ──────────────────────────────────────────────────────────
+                html += '<div class="glossaire-bloc">';
+                html += '<strong>Glossaire :</strong>&nbsp; ';
+                html += '<span class="acro">TEC</span> trafic estimé client (volume × CTR de sa position) &nbsp;·&nbsp; ';
+                html += '<span class="acro">TPM</span> trafic potentiel max (volume × CTR pos. 1) &nbsp;·&nbsp; ';
+                html += '<span class="acro">DDT</span> déficit de trafic (TPM − TEC) &nbsp;·&nbsp; ';
+                html += '<span class="acro">PdM</span> part de marché (TEC ÷ TPM) &nbsp;·&nbsp; ';
+                html += '<span class="acro">TdP</span> taux de présence (mots-clés top 100 ÷ périmètre)';
+                html += '</div>';
+
+                // ── Section client ─────────────────────────────────────────────────────
+                html += '<h2 class="section-title">Performance client</h2>';
+
+                if (clientKpi) {
+                    html += '<div class="kpi-grid" style="margin-bottom:15px;">';
+                    html += mkKpiCard('Mots-clés positionnés', clientKpi.posAll, '(top 100)', '#1a73e8');
+                    html += mkKpiCard('Mots-clés top 10', clientKpi.top10, '', '#fbbc04');
+                    html += mkKpiCard('Mots-clés top 3', clientKpi.top3, '', '#188038');
+                    html += mkKpiCard('Pages positionnées', clientKpi.urlsCount, '(URLs uniques)', '#5f6368');
+                    html += '</div>';
+                }
+
+                // Performance par intention
+                html += '<div class="panel">';
+                html += '<div class="panel-header"><span class="icon-intent">🎯</span> Performance par intention</div>';
+                html += '<table><thead><tr>';
+                html += '<th>Intention</th><th class="ra">TEC</th><th class="ra">TPM</th><th class="ra">PdM</th><th class="ra">TdP</th><th class="ra">DDT</th>';
+                html += '</tr></thead><tbody>';
+                [{ label: 'Transactionnel', d: data.intentStats.transac }, { label: 'Informationnel', d: data.intentStats.info }].forEach(function(r) {
+                    html += '<tr>';
+                    html += '<td><strong>' + r.label + '</strong></td>';
+                    html += '<td class="ra num">' + r.d.TEC.toLocaleString('fr-FR') + '</td>';
+                    html += '<td class="ra num">' + r.d.TPM.toLocaleString('fr-FR') + '</td>';
+                    html += '<td class="ra"><span class="pct-badge">' + r.d.PdM.toFixed(1) + ' %</span></td>';
+                    html += '<td class="ra"><span class="pct-badge">' + r.d.TdP.toFixed(1) + ' %</span></td>';
+                    html += '<td class="ra ddt-val">' + r.d.DDT.toLocaleString('fr-FR') + '</td>';
+                    html += '</tr>';
                 });
-                compThemeHtml += '</tr></thead><tbody>';
+                html += '</tbody></table></div>';
 
+                // Performance par thématiques
+                html += '<div class="panel">';
+                html += '<div class="panel-header"><span class="icon-theme">📑</span> Performance par thématiques</div>';
+                html += '<div class="table-wrap"><table><thead><tr>';
+                html += '<th>Thématique</th>';
+                html += '<th class="ra">Mots-clés (périmètre)</th>';
+                html += '<th class="ra">Volume total</th>';
+                html += '<th class="ra">Top 100</th>';
+                html += '<th class="ra">Top 10</th>';
+                html += '<th class="ra">TEC</th>';
+                html += '<th class="ra">TPM</th>';
+                html += '<th class="ra">PdM</th>';
+                html += '<th class="ra">TdP</th>';
+                html += '<th class="ra">DDT</th>';
+                html += '</tr></thead><tbody>';
                 data.themeStats.forEach(function(ts) {
-                    compThemeHtml += '<tr>';
-                    compThemeHtml += '<td>' + ts.name + '</td>';
-
-                    allEntities.forEach(function(ent) {
-                        var val = ent.isClient ? ts.top10 : (ts.compTop10[ent.name] || 0);
-                        var styleStr = ent.isClient ? 'font-weight:bold; color:#1a73e8;' : 'color:#5f6368;';
-                        compThemeHtml += '<td style="text-align:right; ' + styleStr + '">' + val + '</td>';
-                    });
-
-                    compThemeHtml += '</tr>';
+                    var isTop  = ts.name === data.topTheme;
+                    var isFlop = ts.name === data.flopTheme;
+                    html += '<tr' + (isTop ? ' class="row-top"' : isFlop ? ' class="row-flop"' : '') + '>';
+                    html += '<td>' + ts.name;
+                    if (isTop)  html += ' <span class="tag tag-top">▲ top PdM</span>';
+                    if (isFlop) html += ' <span class="tag tag-flop">▼ DDT max</span>';
+                    html += '</td>';
+                    html += '<td class="ra">' + ts.kwCount + '</td>';
+                    html += '<td class="ra num">' + ts.volTotal.toLocaleString('fr-FR') + '</td>';
+                    html += '<td class="ra">' + ts.top100 + '</td>';
+                    html += '<td class="ra">' + ts.top10 + '</td>';
+                    html += '<td class="ra num">' + ts.TEC.toLocaleString('fr-FR') + '</td>';
+                    html += '<td class="ra num">' + ts.TPM.toLocaleString('fr-FR') + '</td>';
+                    html += '<td class="ra"><span class="pct-badge">' + ts.PdM.toFixed(1) + ' %</span></td>';
+                    html += '<td class="ra"><span class="pct-badge">' + ts.TdP.toFixed(1) + ' %</span></td>';
+                    html += '<td class="ra ddt-val">' + ts.DDT.toLocaleString('fr-FR') + '</td>';
+                    html += '</tr>';
                 });
-                compThemeHtml += '</tbody></table></div></div>';
+                html += '</tbody></table></div></div>';
 
-                var swoHtml = '<h2 class="section-title">Diagnostic SWO (synthèse avant-vente)</h2><div class="swo-grid">';
-                swoHtml += renderPanel('Fuites de trafic (à récupérer d\'urgence)', 'icon-faiblesse', 'faiblesse', data.faiblesses, ['Mot-clé', 'Vol.', 'Pos. client', 'Concurrent menaçant']);
-                swoHtml += renderPanel('Quick wins (ROI immédiat)', 'icon-opp', 'qw', data.opp_qw, ['Mot-clé', 'Vol.', 'Pos. client']);
-                swoHtml += renderPanel('Océans bleus (concurrence faible)', 'icon-ocean', 'ob', data.opp_ob, ['Mot-clé', 'Vol.', 'Meilleure pos. marché']);
-                swoHtml += renderPanel('Piliers d\'autorité (à consolider)', 'icon-force', 'force', data.forces, ['Mot-clé', 'Vol.', 'Pos. client']);
-                swoHtml += '</div>';
+                // Diagnostic SWO
+                html += '<h2 class="section-title" style="margin-top:5px;">Diagnostic mots-clés (SWO)</h2>';
+                html += '<div class="swo-4col">';
+                html += renderSwoPanel('🛡️', 'Acquis stratégiques', 'acquis', data.acquis, 'Pos.', '#188038');
+                html += renderSwoPanel('⚡', 'Gains immédiats', 'gains', data.gains, 'Pos.', '#b06000');
+                html += renderSwoPanel('🚨', 'Pertes de conquête', 'pertes', data.pertes, 'Concurrent menaçant', '#c5221f');
+                html += renderSwoPanel('🌊', 'Territoires à prendre', 'territoires', data.territoires, 'Meilleure pos. marché', '#1a73e8');
+                html += '</div>';
 
-                container.innerHTML = kpiHtml + intentHtml + themeHtml + compThemeHtml + swoHtml;
+                // ── Section concurrents ────────────────────────────────────────────────
+                html += '<hr class="section-sep">';
+                html += '<h2 class="section-title">Performances concurrents</h2>';
+
+                if (compKpis.length > 0) {
+                    html += '<div class="kpi-grid" style="margin-bottom:15px;">';
+                    compKpis.forEach(function(ck) {
+                        html += '<div class="kpi-card">';
+                        html += '<div class="kpi-title">' + ck.name + '</div>';
+                        html += '<div class="kpi-row"><span>Mots-clés (top 100)</span><span class="kpi-val">' + ck.posAll + '</span></div>';
+                        html += '<div class="kpi-row"><span>Top 10</span><span class="kpi-val" style="color:#fbbc04">' + ck.top10 + '</span></div>';
+                        html += '<div class="kpi-row"><span>Top 3</span><span class="kpi-val" style="color:#188038">' + ck.top3 + '</span></div>';
+                        html += '<div class="kpi-row"><span>Pages positionnées</span><span class="kpi-val">' + ck.urlsCount + '</span></div>';
+                        html += '<div class="kpi-row" style="margin-top:6px;border-top:1px solid #eee;padding-top:6px;">';
+                        html += '<span>TEC</span><span class="kpi-val num">' + ck.TEC.toLocaleString('fr-FR') + '</span></div>';
+                        html += '<div class="kpi-row"><span>PdM</span><span class="kpi-val">' + ck.PdM.toFixed(1) + ' %</span></div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+
+                // Comparaison PdM par thématique
+                html += '<div class="panel">';
+                html += '<div class="panel-header"><span>⚔️</span> Comparaison PdM par thématique</div>';
+                html += '<div class="table-wrap"><table style="table-layout:fixed;"><thead><tr>';
+                html += '<th class="col-th">Thématique</th>';
+                data.kpis.forEach(function(ent) {
+                    var lbl = ent.name.length > 11 ? ent.name.substring(0, 10) + '…' : ent.name;
+                    html += '<th class="ra col-ent' + (ent.isClient ? ' col-cli' : '') + '" title="' + ent.name + '">' + lbl + '</th>';
+                });
+                html += '</tr></thead><tbody>';
+                data.themeStats.forEach(function(ts) {
+                    var sn = ts.name.length > 28 ? ts.name.substring(0, 27) + '…' : ts.name;
+                    html += '<tr>';
+                    html += '<td class="col-th" title="' + ts.name + '">' + sn + '</td>';
+                    data.kpis.forEach(function(ent) {
+                        var pdm = ts.entityPdM && ts.entityPdM[ent.name] !== undefined ? ts.entityPdM[ent.name] : 0;
+                        html += '<td class="ra col-ent' + (ent.isClient ? ' col-cli' : '') + '">' + pdm.toFixed(1) + ' %</td>';
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div></div>';
+
+                container.innerHTML = html;
+            }
+
+            function mkKpiCard(label, val, sub, color) {
+                var h = '<div class="kpi-card kpi-card-big">';
+                h += '<div class="kpi-big-val" style="color:' + color + '">' + val.toLocaleString('fr-FR') + '</div>';
+                h += '<div class="kpi-big-label">' + label + '</div>';
+                if (sub) h += '<div class="kpi-big-sub">' + sub + '</div>';
+                h += '</div>';
+                return h;
+            }
+
+            function renderSwoPanel(icon, title, type, items, colLabel, color) {
+                var h = '<div class="swo-col-panel">';
+                h += '<div class="panel-header" style="border-left:3px solid ' + color + ';padding-left:8px;">' + icon + ' ' + title + '</div>';
+                if (!items || items.length === 0) {
+                    h += '<div class="empty-state" style="padding:15px;font-size:12px;">Aucune donnée.</div></div>';
+                    return h;
+                }
+                h += '<table><thead><tr>';
+                h += '<th>Mot-clé</th><th class="ra">Volume</th><th class="ra">DDT</th><th class="ra">' + colLabel + '</th>';
+                h += '</tr></thead><tbody>';
+                items.forEach(function(item) {
+                    h += '<tr>';
+                    h += '<td style="font-size:12px;">' + item.kw + '</td>';
+                    h += '<td class="ra num">' + item.vol.toLocaleString('fr-FR') + '</td>';
+                    h += '<td class="ra ddt-val">' + Math.round(item.DDT).toLocaleString('fr-FR') + '</td>';
+                    if (type === 'acquis') {
+                        h += '<td class="ra"><span class="pos-badge pos-top3">' + (item.pos || '-') + '</span></td>';
+                    } else if (type === 'gains') {
+                        h += '<td class="ra"><span class="pos-badge" style="background:#fef7e0;color:#b06000;">' + (item.pos || '-') + '</span></td>';
+                    } else if (type === 'pertes') {
+                        var ps = item.bestCompPos ? '#' + item.bestCompPos : '-';
+                        h += '<td style="font-size:11px;">' + (item.bestCompName || '-') + ' <span class="pos-badge pos-top3">' + ps + '</span></td>';
+                    } else if (type === 'territoires') {
+                        h += '<td class="ra"><span class="pos-badge">' + (item.bestPos ? '#' + item.bestPos : '-') + '</span></td>';
+                    }
+                    h += '</tr>';
+                });
+                h += '</tbody></table></div>';
+                return h;
             }
 
             function lancerExportSlidesDiagnostic() {
@@ -942,43 +1058,6 @@
                     .exporterPerformanceGlobalSlides(window.lastDiagnosticData);
             }
 
-            function renderPanel(title, iconClass, type, items, headers) {
-                var icons = { 'icon-faiblesse': '🚨', 'icon-opp': '⚡', 'icon-ocean': '🌊', 'icon-force': '🛡️' };
-                var html = '<div class="swo-panel ' + (type === 'faiblesse' ? 'swo-panel-full' : '') + '">';
-                html += '<div class="panel-header"><span class="' + iconClass + '">' + icons[iconClass] + '</span> ' + title + '</div>';
-
-                if (items.length === 0) {
-                    html += '<div class="empty-state" style="padding:20px;">Aucune donnée sur ce critère.</div></div>';
-                    return html;
-                }
-
-                html += '<table><thead><tr>';
-                headers.forEach(function(h) {
-                    html += '<th' + (h === 'Vol.' ? ' style="text-align:right;"' : '') + '>' + h + '</th>';
-                });
-                html += '</tr></thead><tbody>';
-
-                items.forEach(function(item) {
-                    html += '<tr>';
-                    html += '<td>' + item.kw + '</td>';
-                    html += '<td class="vol-cell">' + item.vol.toLocaleString('fr-FR') + '</td>';
-
-                    if (type === 'faiblesse') {
-                        html += '<td><span class="pos-badge pos-alert">' + item.clientPos + '</span></td>';
-                        html += '<td style="font-size:11px;">' + item.compName + ' <span class="pos-badge pos-top3">#' + item.compPos + '</span></td>';
-                    } else if (type === 'qw') {
-                        html += '<td><span class="pos-badge" style="background:#fef7e0; color:#b06000;">' + item.pos + '</span></td>';
-                    } else if (type === 'ob') {
-                        html += '<td><span class="pos-badge">' + item.bestPos + '</span></td>';
-                    } else if (type === 'force') {
-                        html += '<td><span class="pos-badge pos-top3">' + item.pos + '</span></td>';
-                    }
-                    html += '</tr>';
-                });
-
-                html += '</tbody></table></div>';
-                return html;
-            }
 
             // ========================== UTILITAIRES ==========================
 
