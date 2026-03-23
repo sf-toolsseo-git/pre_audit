@@ -671,36 +671,49 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
     }
 }
 
-function genererAnalyseTopThemesIA(donneesTableau, contexteCommercial) {
-    console.log("=== Début genererAnalyseTopThemesIA ===");
-    console.log("Données Tableau : " + donneesTableau);
-    console.log("Contexte : " + contexteCommercial);
+function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommercial) {
+    Logger.log("=== DÉBUT : genererAnalyseTopFlopThemesIA ===");
+    Logger.log("Données Top reçues : " + donneesTop);
+    Logger.log("Données Flop reçues : " + donneesFlop);
+    Logger.log("Contexte commercial : " + contexteCommercial);
+
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['GEMINI_API_KEY'];
         
         if (!apiKey || apiKey.trim() === "") {
+            Logger.log("Erreur : Clé API Gemini manquante.");
             throw new Error("Clé API Gemini introuvable.");
         }
 
-        var promptStr = "Tu es un expert SEO. Analyse ce tableau des 5 thématiques 'Top' (celles avec la meilleure part de marché ou le plus fort potentiel) pour ton prospect.\n\n" +
-                        "Données du tableau :\n" + donneesTableau + "\n\n" +
-                        "Profilage commercial du prospect :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
-                        "Objectif du discours :\n" +
-                        "Valoriser les acquis et rassurer. Montre que certaines bases sont solides et que tu vas capitaliser dessus.\n\n" +
-                        "Contraintes strictes :\n" +
-                        "1. Limite ton analyse à EXACTEMENT 3 phrases percutantes (style télégraphique).\n" +
-                        "2. Encadre les 2 ou 3 termes les plus forts avec de simples astérisques (ex: Vous avez une *très bonne assise* sur...).\n" +
-                        "3. Rédige une analyse directe et professionnelle à l'attention du prospect (vouvoiement).\n\n" +
-                        "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
-                        "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
-                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
-                        "- Toujours un espace avant les deux-points (:). Pas de majuscule après les deux-points.\n" +
-                        "- Jours, mois et langues toujours en minuscule.\n" +
-                        "- Les acronymes (SEO, ROI, TEC, DDT...) toujours en majuscules.\n\n" +
-                        "Fournis ta réponse strictement au format JSON avec les clés exactes :\n" +
-                        "- 'titre_slide' : Un titre accrocheur valorisant les acquis.\n" +
-                        "- 'analyse' : Les 3 phrases d'analyse avec les astérisques.\n";
+        var promptStr = "Tu es un expert SEO et stratège commercial. Analyse simultanément ces deux tableaux JSON des thématiques du client : le 'Top 3' (trafic actuel) et le 'Flop 3' (manque à gagner).\n\n" +
+                        "Lexique des métriques :\n" +
+                        "- TEC (Trafic estimé client) : trafic actuel généré.\n" +
+                        "- TPM (Trafic potentiel max) : trafic atteignable si 1ère position.\n" +
+                        "- DDT (Déficit de trafic) : manque à gagner (TPM - TEC).\n\n" +
+                        "Données JSON Top 3 :\n" + donneesTop + "\n\n" +
+                        "Données JSON Flop 3 :\n" + donneesFlop + "\n\n" +
+                        "Profilage commercial :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
+                        "RÈGLES DE RÉDACTION CRUCIALES (VERROUILLAGE SÉMANTIQUE) :\n" +
+                        "1. NOMMAGE STRICT : tu dois obligatoirement utiliser le NOM EXACT des segments fournis (ex : 'Sophrologie > Général'). Il est strictement interdit de simplifier ou de généraliser (ne transforme jamais 'Sophrologie > Général' en 'La sophrologie').\n" +
+                        "2. CONTEXTE '> GÉNÉRAL' : si un segment se nomme '> Général', interprète-le comme des requêtes de notoriété, de définition ou de découverte du métier (intentions informationnelles larges) et non comme l'intégralité de la thématique parente.\n" +
+                        "3. STRUCTURE DES PUCES : commence chaque puce impérativement par le nom du segment concerné entre guillemets ou en gras pour ancrer l'analyse sur la donnée réelle.\n" +
+                        "4. EXHAUSTIVITÉ : génère EXACTEMENT 3 puces pour le Top et EXACTEMENT 3 puces pour le Flop (une par thématique du JSON).\n" +
+                        "5. INTELLIGENCE CROISÉE : si une thématique est présente dans les deux listes, souligne ce paradoxe (ex : c'est votre pilier actuel, mais aussi votre plus gros manque à gagner).\n\n" +
+                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE :\n" +
+                        "- Style télégraphique : phrases courtes, percutantes, sans points-virgules. Un constat, un chiffre, une action.\n" +
+                        "- IMPÉRATIF VISUEL : encadre les expressions clés avec des astérisques simples pour le gras orange (ex : *socle solide*, *manque à gagner colossal*).\n" +
+                        "- Règles FR : un espace avant les deux-points (:), pas de majuscule après. Jours, mois et langues en minuscule. Acronymes (SEO, TEC, TPM, DDT) en majuscules.\n\n" +
+                        "Format de sortie STRICTEMENT JSON :\n" +
+                        "{\n" +
+                        "  \"titre_slide_top\": \"Titre valorisant vos acquis\",\n" +
+                        "  \"analyse_top\": [\"Le segment 'Nom exact' est un *socle solide* avec 491 visites (TEC). Notre objectif : combler le *déficit* (DDT).\", \"...\", \"...\"],\n" +
+                        "  \"titre_slide_flop\": \"Titre d'alerte sur le manque à gagner\",\n" +
+                        "  \"analyse_flop\": [\"Sur 'Nom exact', vous accusez un *manque à gagner colossal* (DDT de 24 965). C'est une priorité de conquête.\", \"...\", \"...\"]\n" +
+                        "}\n" +
+                        "Ne mets pas de tirets au début des phrases.";
+
+        Logger.log("Envoi du payload à Gemini...");
 
         var payload = {
             "contents": [{"parts": [{"text": promptStr}]}],
@@ -718,87 +731,24 @@ function genererAnalyseTopThemesIA(donneesTableau, contexteCommercial) {
 
         var apiResponse = UrlFetchApp.fetch(apiUrl, options);
         var json = JSON.parse(apiResponse.getContentText());
-        console.log("Réponse API Gemini : " + JSON.stringify(json));
 
         if (apiResponse.getResponseCode() !== 200) {
+            Logger.log("Erreur API Gemini : " + apiResponse.getContentText());
             throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
         }
 
         if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
             var responseText = json.candidates[0].content.parts[0].text.trim();
             responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            Logger.log("Analyse générée avec succès.");
             return { success: true, jsonString: responseText };
         } else {
+            Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");
             throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
         }
 
     } catch (e) {
-        return { success: false, error: e.message };
-    }
-}
-
-function genererAnalyseFlopThemesIA(donneesTableau, contexteCommercial) {
-    console.log("=== Début genererAnalyseFlopThemesIA ===");
-    console.log("Données Tableau : " + donneesTableau);
-    console.log("Contexte : " + contexteCommercial);
-    try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
-        
-        if (!apiKey || apiKey.trim() === "") {
-            throw new Error("Clé API Gemini introuvable.");
-        }
-
-        var promptStr = "Tu es un expert SEO. Analyse ce tableau des 5 thématiques 'Flop' (celles avec le plus grand déficit de trafic / DDT) pour ton prospect.\n\n" +
-                        "Données du tableau :\n" + donneesTableau + "\n\n" +
-                        "Profilage commercial du prospect :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
-                        "Objectif du discours :\n" +
-                        "Appuyer sur les opportunités manquées (Déficit De Trafic) et le manque à gagner, pour créer un besoin urgent d'agir. Fais réaliser l'ampleur du trafic perdu face aux concurrents.\n\n" +
-                        "Contraintes strictes :\n" +
-                        "1. Limite ton analyse à EXACTEMENT 3 phrases percutantes (style télégraphique).\n" +
-                        "2. Encadre les 2 ou 3 termes les plus forts avec de simples astérisques (ex: Vous avez un *fort déficit* sur...).\n" +
-                        "3. Rédige une analyse directe et professionnelle à l'attention du prospect (vouvoiement).\n\n" +
-                        "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
-                        "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
-                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
-                        "- Toujours un espace avant les deux-points (:). Pas de majuscule après les deux-points.\n" +
-                        "- Jours, mois et langues toujours en minuscule.\n" +
-                        "- Les acronymes (SEO, ROI, TEC, DDT...) toujours en majuscules.\n\n" +
-                        "Fournis ta réponse strictement au format JSON avec les clés exactes :\n" +
-                        "- 'titre_slide' : Un titre d'alerte ou d'opportunité manquée.\n" +
-                        "- 'analyse' : Les 3 phrases d'analyse avec les astérisques.\n";
-
-        var payload = {
-            "contents": [{"parts": [{"text": promptStr}]}],
-            "generationConfig": { "responseMimeType": "application/json" }
-        };
-
-        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
-        var options = {
-            "method": "post",
-            "contentType": "application/json",
-            "headers": { "x-goog-api-key": apiKey },
-            "payload": JSON.stringify(payload),
-            "muteHttpExceptions": true
-        };
-
-        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
-        var json = JSON.parse(apiResponse.getContentText());
-        console.log("Réponse API Gemini : " + JSON.stringify(json));
-
-        if (apiResponse.getResponseCode() !== 200) {
-            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
-        }
-
-        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
-            var responseText = json.candidates[0].content.parts[0].text.trim();
-            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-            return { success: true, jsonString: responseText };
-        } else {
-            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
-        }
-
-    } catch (e) {
+        Logger.log("ERREUR CRITIQUE : " + e.message);
         return { success: false, error: e.message };
     }
 }
