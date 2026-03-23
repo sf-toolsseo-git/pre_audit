@@ -671,6 +671,138 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
     }
 }
 
+function genererAnalyseTopThemesIA(donneesTableau, contexteCommercial) {
+    console.log("=== Début genererAnalyseTopThemesIA ===");
+    console.log("Données Tableau : " + donneesTableau);
+    console.log("Contexte : " + contexteCommercial);
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un expert SEO. Analyse ce tableau des 5 thématiques 'Top' (celles avec la meilleure part de marché ou le plus fort potentiel) pour ton prospect.\n\n" +
+                        "Données du tableau :\n" + donneesTableau + "\n\n" +
+                        "Profilage commercial du prospect :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
+                        "Objectif du discours :\n" +
+                        "Valoriser les acquis et rassurer. Montre que certaines bases sont solides et que tu vas capitaliser dessus.\n\n" +
+                        "Contraintes strictes :\n" +
+                        "1. Limite ton analyse à EXACTEMENT 3 phrases percutantes (style télégraphique).\n" +
+                        "2. Encadre les 2 ou 3 termes les plus forts avec de simples astérisques (ex: Vous avez une *très bonne assise* sur...).\n" +
+                        "3. Rédige une analyse directe et professionnelle à l'attention du prospect (vouvoiement).\n\n" +
+                        "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
+                        "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
+                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
+                        "- Toujours un espace avant les deux-points (:). Pas de majuscule après les deux-points.\n" +
+                        "- Jours, mois et langues toujours en minuscule.\n" +
+                        "- Les acronymes (SEO, ROI, TEC, DDT...) toujours en majuscules.\n\n" +
+                        "Fournis ta réponse strictement au format JSON avec les clés exactes :\n" +
+                        "- 'titre_slide' : Un titre accrocheur valorisant les acquis.\n" +
+                        "- 'analyse' : Les 3 phrases d'analyse avec les astérisques.\n";
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+        console.log("Réponse API Gemini : " + JSON.stringify(json));
+
+        if (apiResponse.getResponseCode() !== 200) {
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            return { success: true, jsonString: responseText };
+        } else {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function genererAnalyseFlopThemesIA(donneesTableau, contexteCommercial) {
+    console.log("=== Début genererAnalyseFlopThemesIA ===");
+    console.log("Données Tableau : " + donneesTableau);
+    console.log("Contexte : " + contexteCommercial);
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un expert SEO. Analyse ce tableau des 5 thématiques 'Flop' (celles avec le plus grand déficit de trafic / DDT) pour ton prospect.\n\n" +
+                        "Données du tableau :\n" + donneesTableau + "\n\n" +
+                        "Profilage commercial du prospect :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
+                        "Objectif du discours :\n" +
+                        "Appuyer sur les opportunités manquées (Déficit De Trafic) et le manque à gagner, pour créer un besoin urgent d'agir. Fais réaliser l'ampleur du trafic perdu face aux concurrents.\n\n" +
+                        "Contraintes strictes :\n" +
+                        "1. Limite ton analyse à EXACTEMENT 3 phrases percutantes (style télégraphique).\n" +
+                        "2. Encadre les 2 ou 3 termes les plus forts avec de simples astérisques (ex: Vous avez un *fort déficit* sur...).\n" +
+                        "3. Rédige une analyse directe et professionnelle à l'attention du prospect (vouvoiement).\n\n" +
+                        "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
+                        "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
+                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
+                        "- Toujours un espace avant les deux-points (:). Pas de majuscule après les deux-points.\n" +
+                        "- Jours, mois et langues toujours en minuscule.\n" +
+                        "- Les acronymes (SEO, ROI, TEC, DDT...) toujours en majuscules.\n\n" +
+                        "Fournis ta réponse strictement au format JSON avec les clés exactes :\n" +
+                        "- 'titre_slide' : Un titre d'alerte ou d'opportunité manquée.\n" +
+                        "- 'analyse' : Les 3 phrases d'analyse avec les astérisques.\n";
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+        console.log("Réponse API Gemini : " + JSON.stringify(json));
+
+        if (apiResponse.getResponseCode() !== 200) {
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            return { success: true, jsonString: responseText };
+        } else {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
 function genererSlideBesoinSolutionIA(contextePreaudit) {
     var catalogueOffres = [
     "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",

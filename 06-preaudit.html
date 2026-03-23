@@ -126,8 +126,8 @@
             <div class="tab active" onclick="switchTab('config')" id="tab-btn-config">1. Configuration</div>
             <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush">2. Analyse globale</div>
             <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic">3. Diagnostic sémantique</div>
+            <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux">4. État des lieux du référencement</div>
         </div>
-
         <!-- ===================== ONGLET 1 : CONFIGURATION ===================== -->
         <div class="tab-content active" id="content-config">
             <div class="main-area">
@@ -292,6 +292,25 @@
                 </div>
             </div>
         </div>
+        
+        <!-- ===================== ONGLET 4 : ÉTAT DES LIEUX ===================== -->
+        <div class="tab-content" id="content-etat-lieux">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">Votre positionnement</h2>
+                    <div class="section-description">Vue d'ensemble des performances du client sur la sélection de mots-clés.</div>
+                    
+                    <div id="kpi-client-container" style="margin-top: 15px;">
+                        <div class="empty-state">Veuillez d'abord générer le diagnostic à l'étape 3.</div>
+                    </div>
+                </div>
+                
+                <div class="continuer-bar">
+                    <span id="exportMsgDiagnostic" style="font-size: 12px; font-weight: bold;"></span>
+                    <button class="btn btn-continuer" id="btnExportSlides" onclick="lancerExportSlidesDiagnostic()">📥 Importer dans Google Slides</button>
+                </div>
+            </div>
+        </div>
 
         <script>
             var base64ImgKw = null;
@@ -354,7 +373,17 @@
                             .withSuccessHandler(function(treeData) {
                                 renderTree(treeData);
                                 google.script.run
-                                    .withSuccessHandler(applySavedSelection)
+                                    .withSuccessHandler(function(savedSelection) {
+                                        applySavedSelection(savedSelection);
+                                        // Recharger le diagnostic silencieusement en fond si une sélection existe
+                                        if (savedSelection && savedSelection.length > 0) {
+                                            google.script.run
+                                                .withSuccessHandler(function(data) {
+                                                    window.lastDiagnosticData = data;
+                                                })
+                                                .genererDiagnostic(savedSelection);
+                                        }
+                                    })
                                     .chargerSelectionAnalyse();
                                 hideLoader();
                             })
@@ -864,10 +893,10 @@
                 var compKpis  = data.kpis.filter(function(k) { return !k.isClient; });
                 var html = '';
 
-                // ── Bouton export ──────────────────────────────────────────────────────
+                // ── Bouton transition étape 4 ───────────────────────────────────────────
                 html += '<div style="text-align:right;margin-bottom:12px;">';
-                html += '<button class="btn" id="btnExportSlides" onclick="lancerExportSlidesDiagnostic()" style="width:auto;">📥 Importer dans Google Slides</button>';
-                html += '<div id="exportMsgDiagnostic" style="font-size:12px;margin-top:4px;font-weight:bold;"></div></div>';
+                html += '<button class="btn btn-continuer" id="btnVersEtatLieux" onclick="preparerOngletEtatLieux()" style="width:auto;">Données à exporter →</button>';
+                html += '</div>';
 
                 // ── Glossaire ──────────────────────────────────────────────────────────
                 html += '<details class="glossaire-details">';
@@ -1003,6 +1032,206 @@
                 html += '</tbody></table></div></div>';
 
                 container.innerHTML = html;
+            }
+
+            function preparerOngletEtatLieux() {
+                if (!window.lastDiagnosticData) {
+                    alert("Aucune donnée de diagnostic disponible.");
+                    return;
+                }
+
+                var data = window.lastDiagnosticData;
+                var clientKpi = data.kpis.find(function(k) { return k.isClient; });
+                var container = document.getElementById('kpi-client-container');
+
+                if (clientKpi) {
+                    var html = '<div class="kpi-grid" style="margin-bottom:15px;">';
+                    html += mkKpiCard('Mots-clés positionnés', clientKpi.posAll, '(top 100)', '#1a73e8');
+                    html += mkKpiCard('Mots-clés top 10', clientKpi.top10, '', '#fbbc04');
+                    html += mkKpiCard('Mots-clés top 3', clientKpi.top3, '', '#188038');
+                    html += mkKpiCard('Pages positionnées', clientKpi.urlsCount, '(URLs uniques)', '#5f6368');
+                    html += '</div>';
+
+                    // 1. Performance par intention
+                    html += '<div class="panel">';
+                    html += '<div class="panel-header"><span class="icon-intent">🎯</span> Performance par intention</div>';
+                    html += '<table><thead><tr>';
+                    html += '<th>Intention</th><th class="ra">Mots-clés classés</th><th class="ra">Mots-clés en top 10</th><th class="ra">Part en top 10</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    var tInfo = data.intentStats.info;
+                    var tTransac = data.intentStats.transac;
+                    var top10Client = clientKpi.top10 > 0 ? clientKpi.top10 : 1;
+                    
+                    [{ label: 'Transactionnel', d: tTransac }, { label: 'Informationnel', d: tInfo }].forEach(function(r) {
+                        var partTop10 = (r.d.top10 / top10Client) * 100;
+                        html += '<tr>';
+                        html += '<td><strong>' + r.label + '</strong></td>';
+                        html += '<td class="ra">' + r.d.top100 + '</td>';
+                        html += '<td class="ra">' + r.d.top10 + '</td>';
+                        html += '<td class="ra"><span class="pct-badge">' + partTop10.toFixed(1) + ' %</span></td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table></div>';
+                    
+                    // 2. Thématiques Top
+                    var themesSortedByPdM = data.themeStats.slice().sort(function(a, b) { return b.PdM - a.PdM; }).slice(0, 5);
+                    html += '<div class="panel">';
+                    html += '<div class="header-inline">';
+                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-theme">🏆</span> Thématiques Top (Top 5 par PdM)</div></div>';
+                    html += '<button type="button" class="btn" onclick="lancerAnalyseTopIA()">🤖 Générer analyse IA (Top)</button>';
+                    html += '</div>';
+                    
+                    html += '<table id="table-top-themes" style="margin-top:10px;"><thead><tr>';
+                    html += '<th>Thématique</th><th class="ra">Mots-clés top 10</th>';
+                    html += '<th class="ra"><span class="tooltip">TEC<span class="tooltip-text">Trafic estimé client (Vol. rech. × CTR pos. actuelle)</span></span></th>';
+                    html += '<th class="ra"><span class="tooltip">TPM<span class="tooltip-text">Trafic potentiel max (Vol. rech. × CTR pos. 1)</span></span></th>';
+                    html += '<th class="ra"><span class="tooltip">DDT<span class="tooltip-text">Déficit de trafic (TPM - TEC)</span></span></th>';
+                    html += '</tr></thead><tbody>';
+                    themesSortedByPdM.forEach(function(ts) {
+                        html += '<tr>';
+                        html += '<td>' + ts.name + '</td>';
+                        html += '<td class="ra">' + ts.top10 + '</td>';
+                        html += '<td class="ra num">' + Math.round(ts.TEC).toLocaleString('fr-FR') + '</td>';
+                        html += '<td class="ra num">' + Math.round(ts.TPM).toLocaleString('fr-FR') + '</td>';
+                        html += '<td class="ra ddt-val">' + Math.round(ts.DDT).toLocaleString('fr-FR') + '</td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                    
+                    html += '<div id="ia-result-top" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    html += '<label class="input-label">Titre de la slide (Top)</label>';
+                    html += '<input type="text" id="ia-titre-top" placeholder="Titre généré...">';
+                    html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
+                    html += '<div id="ce-analyse-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..."></div>';
+                    html += '</div>';
+                    html += '</div>';
+
+                    // 3. Thématiques Flop
+                    var themesSortedByDDT = data.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 5);
+                    html += '<div class="panel">';
+                    html += '<div class="header-inline">';
+                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-faiblesse">📉</span> Thématiques Flop (Top 5 par DDT)</div></div>';
+                    html += '<button type="button" class="btn" onclick="lancerAnalyseFlopIA()">🤖 Générer analyse IA (Flop)</button>';
+                    html += '</div>';
+                    
+                    html += '<table id="table-flop-themes" style="margin-top:10px;"><thead><tr>';
+                    html += '<th>Thématique</th><th class="ra">Mots-clés top 10</th>';
+                    html += '<th class="ra"><span class="tooltip">TEC<span class="tooltip-text">Trafic estimé client (Vol. rech. × CTR pos. actuelle)</span></span></th>';
+                    html += '<th class="ra"><span class="tooltip">TPM<span class="tooltip-text">Trafic potentiel max (Vol. rech. × CTR pos. 1)</span></span></th>';
+                    html += '<th class="ra"><span class="tooltip">DDT<span class="tooltip-text">Déficit de trafic (TPM - TEC)</span></span></th>';
+                    html += '</tr></thead><tbody>';
+                    themesSortedByDDT.forEach(function(ts) {
+                        html += '<tr>';
+                        html += '<td>' + ts.name + '</td>';
+                        html += '<td class="ra">' + ts.top10 + '</td>';
+                        html += '<td class="ra num">' + Math.round(ts.TEC).toLocaleString('fr-FR') + '</td>';
+                        html += '<td class="ra num">' + Math.round(ts.TPM).toLocaleString('fr-FR') + '</td>';
+                        html += '<td class="ra ddt-val">' + Math.round(ts.DDT).toLocaleString('fr-FR') + '</td>';
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+
+                    html += '<div id="ia-result-flop" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    html += '<label class="input-label">Titre de la slide (Flop)</label>';
+                    html += '<input type="text" id="ia-titre-flop" placeholder="Titre généré...">';
+                    html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
+                    html += '<div id="ce-analyse-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..."></div>';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="empty-state">Aucune donnée client trouvée.</div>';
+                }
+
+                // Bascule sur l'onglet 4
+                switchTab('etat-lieux');
+            }
+
+            function extractTableData(tableId) {
+                var table = document.getElementById(tableId);
+                if (!table) return "";
+                var data = [];
+                for (var i = 1; i < table.rows.length; i++) {
+                    var row = table.rows[i];
+                    var rowData = [];
+                    for (var j = 0; j < row.cells.length; j++) {
+                        rowData.push(row.cells[j].innerText.trim());
+                    }
+                    data.push(rowData.join(' | '));
+                }
+                return data.join('\n');
+            }
+
+            function lancerAnalyseTopIA() {
+                var contexte = document.getElementById('conf-contexte-preaudit').value;
+                var tableData = extractTableData('table-top-themes');
+                
+                console.log("=== Lancement Analyse Top IA ===");
+                console.log("Contexte :", contexte);
+                console.log("Données Tableau :", tableData);
+                
+                if (!tableData) {
+                    alert("Aucune donnée dans le tableau Top.");
+                    return;
+                }
+                
+                showLoader("Analyse des thématiques Top par l'IA...");
+                
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        console.log("Réponse backend (Top) :", res);
+                        hideLoader();
+                        if (res.success) {
+                            var data = JSON.parse(res.jsonString);
+                            document.getElementById('ia-titre-top').value = data.titre_slide || '';
+                            setCeContent('ce-analyse-top', data.analyse || '');
+                            document.getElementById('ia-result-top').style.display = 'block';
+                        } else {
+                            alert("Erreur de l'IA : " + res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoader();
+                        alert("Erreur critique : " + err.message);
+                    })
+                    .genererAnalyseTopThemesIA(tableData, contexte);
+            }
+
+            function lancerAnalyseFlopIA() {
+                var contexte = document.getElementById('conf-contexte-preaudit').value;
+                var tableData = extractTableData('table-flop-themes');
+                
+                console.log("=== Lancement Analyse Flop IA ===");
+                console.log("Contexte :", contexte);
+                console.log("Données Tableau :", tableData);
+                
+                if (!tableData) {
+                    alert("Aucune donnée dans le tableau Flop.");
+                    return;
+                }
+                
+                showLoader("Analyse des thématiques Flop par l'IA...");
+                
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        console.log("Réponse backend (Flop) :", res);
+                        hideLoader();
+                        if (res.success) {
+                            var data = JSON.parse(res.jsonString);
+                            document.getElementById('ia-titre-flop').value = data.titre_slide || '';
+                            setCeContent('ce-analyse-flop', data.analyse || '');
+                            document.getElementById('ia-result-flop').style.display = 'block';
+                        } else {
+                            alert("Erreur de l'IA : " + res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoader();
+                        alert("Erreur critique : " + err.message);
+                    })
+                    .genererAnalyseFlopThemesIA(tableData, contexte);
             }
 
             function mkKpiCard(label, val, sub, color) {
