@@ -114,6 +114,17 @@
           .col-ent { flex:1; min-width:100px; word-wrap:break-word; }
           .col-cli { color:#1a73e8 !important; font-weight:700; }
           .section-sep { border:0; border-top:2px solid #dadce0; margin:18px 0 15px; }
+          .comp-grid { display:flex; gap:10px; margin-top:25px; overflow:visible; padding-bottom:10px; }
+          .comp-card { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:15px; flex:1; min-width:140px; text-align:center; position:relative; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-top:10px; }
+          .comp-card.client { border:2px solid #1a73e8; background:#f8fbff; }
+          .comp-card.leader { border:2px solid #188038; background:#f6fef8; }
+          .comp-logo { width:40px; height:40px; border-radius:50%; margin:0 auto 10px; display:block; object-fit:contain; background:#f1f3f4; padding:5px; }
+          .comp-name { font-size:14px; font-weight:700; color:#202124; margin-bottom:10px; word-break:break-word; }
+          .comp-stat { display:flex; justify-content:space-between; font-size:12px; color:#5f6368; margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid #f1f3f4; }
+          .comp-stat:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+          .comp-val { font-weight:700; color:#08133b; }
+          .badge-leader { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#188038; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
+          .badge-client { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#1a73e8; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
         </style>
     </head>
     <body>
@@ -1246,6 +1257,78 @@
                     html += '<div id="ce-analyse-segments-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + sFlopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(sFlopAn) + '</div>';
                     html += '</div>';
                     
+                    // 5. Paysage concurrentiel
+                    console.log("Étape clé : génération du paysage concurrentiel.");
+                    var allComps = data.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.top10 - a.top10; });
+                    var leaderKpi = allComps.length > 0 ? allComps[0] : null;
+                    var otherComps = allComps.slice(1, 5); // Jusqu'à 4 autres
+
+                    html += '<div class="panel" style="margin-top:20px;">';
+                    html += '<div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span>🏆</span> Paysage concurrentiel</div>';
+                    html += '<div class="section-description">Analyse du client face au leader et aux principaux concurrents sur la sélection de mots-clés.</div>';
+                    html += '<div class="comp-grid">';
+
+                    // Helper pour l'URL du favicon en utilisant Google V2 qui est bien plus performant
+                    function getFaviconUrl(domain) {
+                        if (!domain) return '';
+                        // Nettoyage de l'URL pour ne garder que le domaine (ex: https://www.domaine.com/page -> domaine.com)
+                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://' + cleanDomain + '&size=128';
+                    }
+
+                    // Helper pour trouver le domaine via la config (par nom du concurrent)
+                    function findDomainByName(name) {
+                        var conf = window.globalConfig || {};
+                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                        for (var i = 1; i <= 10; i++) {
+                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                        }
+                        // Si introuvable dans la config, on tente de nettoyer le nom pour extraire un nom de domaine basique
+                        var domainFallback = name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                        return domainFallback;
+                    }
+
+                    // Fallback local transparent si l'image casse au chargement
+                    var fbImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><text x='50' y='55' font-family='Arial' font-size='40' font-weight='bold' fill='%239e9e9e' text-anchor='middle' dominant-baseline='middle'>?</text></svg>";
+
+                    // Carte Client
+                    var clientDomain = findDomainByName(clientKpi.name);
+                    var clientLogoUrl = getFaviconUrl(clientDomain);
+                    html += '<div class="comp-card client">';
+                    html += '<div class="badge-client">Vous</div>';
+                    html += '<img class="comp-logo" src="' + clientLogoUrl + '" alt="Logo ' + clientKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                    html += '<div class="comp-name">' + clientKpi.name + '</div>';
+                    html += '<div class="comp-stat"><span>Top 10 :</span><span class="comp-val">' + clientKpi.top10 + '</span></div>';
+                    html += '<div class="comp-stat"><span>Pages :</span><span class="comp-val">' + clientKpi.urlsCount + '</span></div>';
+                    html += '</div>';
+
+                    // Carte Leader
+                    if (leaderKpi) {
+                        var leaderDomain = findDomainByName(leaderKpi.name);
+                        var leaderLogoUrl = getFaviconUrl(leaderDomain);
+                        html += '<div class="comp-card leader">';
+                        html += '<div class="badge-leader">Leader</div>';
+                        html += '<img class="comp-logo" src="' + leaderLogoUrl + '" alt="Logo ' + leaderKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                        html += '<div class="comp-name">' + leaderKpi.name + '</div>';
+                        html += '<div class="comp-stat"><span>Top 10 :</span><span class="comp-val">' + leaderKpi.top10 + '</span></div>';
+                        html += '<div class="comp-stat"><span>Pages :</span><span class="comp-val">' + leaderKpi.urlsCount + '</span></div>';
+                        html += '</div>';
+                    }
+
+                    // Cartes autres concurrents
+                    otherComps.forEach(function(comp, idx) {
+                        var compDomain = findDomainByName(comp.name);
+                        var compLogoUrl = getFaviconUrl(compDomain);
+                        html += '<div class="comp-card">';
+                        html += '<img class="comp-logo" src="' + compLogoUrl + '" alt="Logo ' + comp.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                        html += '<div class="comp-name">' + comp.name + '</div>';
+                        html += '<div class="comp-stat"><span>Top 10 :</span><span class="comp-val">' + comp.top10 + '</span></div>';
+                        html += '<div class="comp-stat"><span>Pages :</span><span class="comp-val">' + comp.urlsCount + '</span></div>';
+                        html += '</div>';
+                    });
+
+                    html += '</div></div>';
+
                     container.innerHTML = html;
                     console.log("Interface d'état des lieux générée avec succès.");
                 } else {
@@ -1442,7 +1525,60 @@
                     analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? (document.getElementById('ce-analyse-segments-flop').dataset.raw || document.getElementById('ce-analyse-segments-flop').innerText) : ""
                 };
                 
+                // Préparation des données du paysage concurrentiel pour l'export
+                console.log("Génération de l'objet concurrenceData...");
+                var concurrenceData = null;
+                if (window.lastDiagnosticData) {
+                    var allComps = window.lastDiagnosticData.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.top10 - a.top10; });
+                    var clientKpi = window.lastDiagnosticData.kpis.find(function(k) { return k.isClient; });
+                    var leaderKpi = allComps.length > 0 ? allComps[0] : null;
+                    var otherComps = allComps.slice(1, 5); // 4 concurrents max
+                    
+                    function findDomainByNameForExport(name) {
+                        var conf = window.globalConfig || {};
+                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                        for (var i = 1; i <= 10; i++) {
+                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                        }
+                        // Si introuvable, fallback basique pour l'export
+                        var domainFallback = name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                        return domainFallback;
+                    }
+                    
+                    function getFavUrl(domain) {
+                        if (!domain) return '';
+                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://' + cleanDomain + '&size=128';
+                    }
+
+                    if (clientKpi) {
+                        concurrenceData = {
+                            client: {
+                                name: clientKpi.name,
+                                top10: clientKpi.top10,
+                                pages: clientKpi.urlsCount,
+                                logoUrl: getFavUrl(findDomainByNameForExport(clientKpi.name))
+                            },
+                            leader: leaderKpi ? {
+                                name: leaderKpi.name,
+                                top10: leaderKpi.top10,
+                                pages: leaderKpi.urlsCount,
+                                logoUrl: getFavUrl(findDomainByNameForExport(leaderKpi.name))
+                            } : null,
+                            comps: otherComps.map(function(c) {
+                                return {
+                                    name: c.name,
+                                    top10: c.top10,
+                                    pages: c.urlsCount,
+                                    logoUrl: getFavUrl(findDomainByNameForExport(c.name))
+                                };
+                            })
+                        };
+                    }
+                }
+                
                 console.log("Données IA prêtes pour l'export :", iaData);
+                console.log("Données Concurrence prêtes pour l'export :", concurrenceData);
 
                 google.script.run
                     .withSuccessHandler(function(res) {
@@ -1453,6 +1589,8 @@
                                 btn.disabled = false;
                                 btn.innerText = "📥 Importer dans Slides & continuer";
                                 msg.innerHTML = "";
+                                // Transition vers l'onglet suivant (qui n'existe pas encore mais préparé logiquement)
+                                if (typeof switchTab === 'function') switchTab('focus-mots-cles');
                             }, 3000);
                         } else {
                             btn.disabled = false;
@@ -1465,7 +1603,7 @@
                         btn.innerText = "📥 Importer dans Slides & continuer";
                         msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
                     })
-                    .exporterPerformanceGlobalSlides(window.lastDiagnosticData, iaData);
+                    .exporterPerformanceGlobalSlides(window.lastDiagnosticData, iaData, concurrenceData);
                 console.log("=== FIN : appel google.script.run lancé ===");
             }
 

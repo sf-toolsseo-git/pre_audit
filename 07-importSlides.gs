@@ -137,7 +137,7 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
     }
 }
 
-function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
+function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData) {
     try {
         Logger.log("=== DÉBUT EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
         var props = PropertiesService.getScriptProperties().getProperties();
@@ -177,6 +177,42 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
         }
 
         // 4. Mapping textuel & dictionnaire de remplacement
+        // Mapping paysage concurrentiel
+        var mappingComp = {};
+        if (concurrenceData) {
+            mappingComp['titre_slide_concurrence'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
+            
+            // Client
+            if (concurrenceData.client) {
+                mappingComp['nom_client'] = concurrenceData.client.name;
+                mappingComp['valeur_top10_client'] = safeNum(concurrenceData.client.top10);
+                mappingComp['valeur_pages_client'] = safeNum(concurrenceData.client.pages);
+            }
+            // Leader
+            if (concurrenceData.leader) {
+                mappingComp['nom_leader'] = concurrenceData.leader.name;
+                mappingComp['valeur_top10_leader'] = safeNum(concurrenceData.leader.top10);
+                mappingComp['valeur_pages_leader'] = safeNum(concurrenceData.leader.pages);
+            } else {
+                mappingComp['nom_leader'] = "";
+                mappingComp['valeur_top10_leader'] = "";
+                mappingComp['valeur_pages_leader'] = "";
+            }
+            // Concurrents
+            for (var c = 1; c <= 4; c++) {
+                var comp = concurrenceData.comps && concurrenceData.comps[c-1] ? concurrenceData.comps[c-1] : null;
+                if (comp) {
+                    mappingComp['nom_comp' + c] = comp.name;
+                    mappingComp['valeur_top10_comp' + c] = safeNum(comp.top10);
+                    mappingComp['valeur_pages_comp' + c] = safeNum(comp.pages);
+                } else {
+                    mappingComp['nom_comp' + c] = "";
+                    mappingComp['valeur_top10_comp' + c] = "";
+                    mappingComp['valeur_pages_comp' + c] = "";
+                }
+            }
+        }
+
         var mapping = {
             'mot_cle_client_global': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
             'mot_cle_client_top3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
@@ -302,6 +338,47 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
 
                 if (targetKey) {
                     shape.getText().setText(mapping[targetKey].toString());
+                }
+
+                var targetCompKey = mappingComp && mappingComp[shapeText] !== undefined ? shapeText : (mappingComp && mappingComp[titleRaw] !== undefined ? titleRaw : (mappingComp && mappingComp[descRaw] !== undefined ? descRaw : null));
+                if (targetCompKey) {
+                    shape.getText().setText(mappingComp[targetCompKey].toString());
+                }
+
+                // Traitement des favicons du paysage concurrentiel
+                if (concurrenceData && (titleRaw.indexOf("placeholder_logo_") === 0 || descRaw.indexOf("placeholder_logo_") === 0 || shapeText.indexOf("placeholder_logo_") === 0)) {
+                    var tagParts = titleRaw.indexOf("placeholder_logo_") === 0 ? titleRaw : (descRaw.indexOf("placeholder_logo_") === 0 ? descRaw : shapeText);
+                    var imgUrl = null;
+                    if (tagParts === "placeholder_logo_client" && concurrenceData.client && concurrenceData.client.logoUrl) {
+                        imgUrl = concurrenceData.client.logoUrl;
+                    } else if (tagParts === "placeholder_logo_leader" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
+                        imgUrl = concurrenceData.leader.logoUrl;
+                    } else {
+                        var m = tagParts.match(/placeholder_logo_comp(\d+)/);
+                        if (m && m[1]) {
+                            var idx = parseInt(m[1]) - 1;
+                            if (concurrenceData.comps && concurrenceData.comps[idx] && concurrenceData.comps[idx].logoUrl) {
+                                imgUrl = concurrenceData.comps[idx].logoUrl;
+                            }
+                        }
+                    }
+
+                    if (imgUrl) {
+                        try {
+                            Logger.log("Téléchargement de l'image : " + imgUrl);
+                            var blob = UrlFetchApp.fetch(imgUrl).getBlob();
+                            var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                            newImg.setTitle(titleRaw);
+                            newImg.setDescription(descRaw);
+                            shape.remove();
+                        } catch (errImg) {
+                            Logger.log("Erreur chargement image " + imgUrl + " : " + errImg.message);
+                            shape.remove();
+                        }
+                    } else {
+                        // Pas d'image fournie ou composant inexistant : on supprime le placeholder
+                        shape.remove();
+                    }
                 }
 
                 // 2. Titres IA
