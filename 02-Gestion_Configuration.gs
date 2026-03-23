@@ -91,18 +91,32 @@ function chargerDonneesInitiales() {
         competitorName5: props['COMP_NAME_5'] || "",
         competitor5: props['COMPETITOR_5'] || "",
         competitorStrength5: props['COMP_STRENGTH_5'] || "moyenne",
-        competitorBrand5: props['COMP_BRAND_5'] || "",
-        ctrPos1: props['CTR_POS_1'] || "0.28",
-        ctrPos2: props['CTR_POS_2'] || "0.20",
-        ctrPos3: props['CTR_POS_3'] || "0.12",
-        ctrPos4: props['CTR_POS_4'] || "0.08",
-        ctrPos5: props['CTR_POS_5'] || "0.07",
-        ctrPos6: props['CTR_POS_6'] || "0.06",
-        ctrPos7: props['CTR_POS_7'] || "0.05",
-        ctrPos8: props['CTR_POS_8'] || "0.05",
-        ctrPos9: props['CTR_POS_9'] || "0.04",
-        ctrPos10: props['CTR_POS_10'] || "0.03"
+        competitorBrand5: props['COMP_BRAND_5'] || ""
     };
+    
+    function parseAndMigrateCTR(val, defaultVal) {
+        if (val === undefined || val === null || String(val).trim() === "") return defaultVal;
+        var num = parseFloat(String(val).replace(',', '.'));
+        if (isNaN(num)) return defaultVal;
+        // Si la valeur est en décimale (ex: 0.28), on la convertit en pourcentage (28)
+        // Les pourcentages habituels de CTR pour le top 10 sont généralement supérieurs à 1%
+        if (num > 0 && num < 1) {
+            return (num * 100).toString();
+        }
+        return num.toString();
+    }
+
+    donnees.ctrPos1 = parseAndMigrateCTR(props['CTR_POS_1'], "28");
+    donnees.ctrPos2 = parseAndMigrateCTR(props['CTR_POS_2'], "20");
+    donnees.ctrPos3 = parseAndMigrateCTR(props['CTR_POS_3'], "12");
+    donnees.ctrPos4 = parseAndMigrateCTR(props['CTR_POS_4'], "8");
+    donnees.ctrPos5 = parseAndMigrateCTR(props['CTR_POS_5'], "7");
+    donnees.ctrPos6 = parseAndMigrateCTR(props['CTR_POS_6'], "6");
+    donnees.ctrPos7 = parseAndMigrateCTR(props['CTR_POS_7'], "5");
+    donnees.ctrPos8 = parseAndMigrateCTR(props['CTR_POS_8'], "5");
+    donnees.ctrPos9 = parseAndMigrateCTR(props['CTR_POS_9'], "4");
+    donnees.ctrPos10 = parseAndMigrateCTR(props['CTR_POS_10'], "3");
+
     return donnees;
 }
 

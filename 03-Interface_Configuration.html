@@ -277,27 +277,27 @@
             <div id="tab-ctr" class="tab-content">
                 <div class="config-card">
                     <h3>Taux de clics (CTR) par position</h3>
-                    <p class="helper-text" style="margin-bottom: 15px;">Définissez les valeurs par défaut pour l'estimation du trafic (en décimal, ex : 0.28 pour 28%).</p>
+                    <p class="helper-text" style="margin-bottom: 15px;">Définissez les valeurs par défaut pour l'estimation du trafic (en pourcentage, ex : 28.5 pour 28,5%).</p>
                     
                     <div class="row">
-                        <div class="col"><label>Position 1 :</label><input type="number" step="0.01" id="ctrPos1" name="ctrPos1"></div>
-                        <div class="col"><label>Position 2 :</label><input type="number" step="0.01" id="ctrPos2" name="ctrPos2"></div>
+                        <div class="col"><label>Position 1 :</label><input type="number" step="0.1" id="ctrPos1" name="ctrPos1"></div>
+                        <div class="col"><label>Position 2 :</label><input type="number" step="0.1" id="ctrPos2" name="ctrPos2"></div>
                     </div>
                     <div class="row">
-                        <div class="col"><label>Position 3 :</label><input type="number" step="0.01" id="ctrPos3" name="ctrPos3"></div>
-                        <div class="col"><label>Position 4 :</label><input type="number" step="0.01" id="ctrPos4" name="ctrPos4"></div>
+                        <div class="col"><label>Position 3 :</label><input type="number" step="0.1" id="ctrPos3" name="ctrPos3"></div>
+                        <div class="col"><label>Position 4 :</label><input type="number" step="0.1" id="ctrPos4" name="ctrPos4"></div>
                     </div>
                     <div class="row">
-                        <div class="col"><label>Position 5 :</label><input type="number" step="0.01" id="ctrPos5" name="ctrPos5"></div>
-                        <div class="col"><label>Position 6 :</label><input type="number" step="0.01" id="ctrPos6" name="ctrPos6"></div>
+                        <div class="col"><label>Position 5 :</label><input type="number" step="0.1" id="ctrPos5" name="ctrPos5"></div>
+                        <div class="col"><label>Position 6 :</label><input type="number" step="0.1" id="ctrPos6" name="ctrPos6"></div>
                     </div>
                     <div class="row">
-                        <div class="col"><label>Position 7 :</label><input type="number" step="0.01" id="ctrPos7" name="ctrPos7"></div>
-                        <div class="col"><label>Position 8 :</label><input type="number" step="0.01" id="ctrPos8" name="ctrPos8"></div>
+                        <div class="col"><label>Position 7 :</label><input type="number" step="0.1" id="ctrPos7" name="ctrPos7"></div>
+                        <div class="col"><label>Position 8 :</label><input type="number" step="0.1" id="ctrPos8" name="ctrPos8"></div>
                     </div>
                     <div class="row">
-                        <div class="col"><label>Position 9 :</label><input type="number" step="0.01" id="ctrPos9" name="ctrPos9"></div>
-                        <div class="col"><label>Position 10 :</label><input type="number" step="0.01" id="ctrPos10" name="ctrPos10"></div>
+                        <div class="col"><label>Position 9 :</label><input type="number" step="0.1" id="ctrPos9" name="ctrPos9"></div>
+                        <div class="col"><label>Position 10 :</label><input type="number" step="0.1" id="ctrPos10" name="ctrPos10"></div>
                     </div>
                 </div>
 
@@ -476,16 +476,16 @@
                 safeSetValue('competitor5', data.competitor5 || '');
                 safeSetValue('competitorStrength5', data.competitorStrength5 || 'moyenne');
                 safeSetValue('competitorBrand5', data.competitorBrand5 || '');
-                safeSetValue('ctrPos1', data.ctrPos1 || 0.28);
-                safeSetValue('ctrPos2', data.ctrPos2 || 0.20);
-                safeSetValue('ctrPos3', data.ctrPos3 || 0.12);
-                safeSetValue('ctrPos4', data.ctrPos4 || 0.08);
-                safeSetValue('ctrPos5', data.ctrPos5 || 0.07);
-                safeSetValue('ctrPos6', data.ctrPos6 || 0.06);
-                safeSetValue('ctrPos7', data.ctrPos7 || 0.05);
-                safeSetValue('ctrPos8', data.ctrPos8 || 0.05);
-                safeSetValue('ctrPos9', data.ctrPos9 || 0.04);
-                safeSetValue('ctrPos10', data.ctrPos10 || 0.03);
+                safeSetValue('ctrPos1', data.ctrPos1 || 28);
+                safeSetValue('ctrPos2', data.ctrPos2 || 20);
+                safeSetValue('ctrPos3', data.ctrPos3 || 12);
+                safeSetValue('ctrPos4', data.ctrPos4 || 8);
+                safeSetValue('ctrPos5', data.ctrPos5 || 7);
+                safeSetValue('ctrPos6', data.ctrPos6 || 6);
+                safeSetValue('ctrPos7', data.ctrPos7 || 5);
+                safeSetValue('ctrPos8', data.ctrPos8 || 5);
+                safeSetValue('ctrPos9', data.ctrPos9 || 4);
+                safeSetValue('ctrPos10', data.ctrPos10 || 3);
                 
                 toggleProjectType();
 

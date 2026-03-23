@@ -209,12 +209,28 @@ function genererDiagnostic(selection) {
     var clusterData = sheetCluster.getDataRange().getValues();
     var targetKeywords = new Map();
     for (var i = 1; i < clusterData.length; i++) {
-        var theme = String(clusterData[i][0]).trim();
-        var subTheme = String(clusterData[i][1]).trim();
-        var kw = String(clusterData[i][3]).trim().toLowerCase();
-        var intent = String(clusterData[i][5]).trim().toLowerCase();
-        if (selectedSubs[theme + "|" + subTheme]) {
-            targetKeywords.set(kw, { theme: theme, sub: subTheme, intent: intent });
+        var theme = String(clusterData[i][0] || "").trim();
+        var subTheme = String(clusterData[i][1] || "").trim();
+        if (!selectedSubs[theme + "|" + subTheme]) continue;
+
+        var intent = String(clusterData[i][5] || "").trim().toLowerCase();
+        
+        var mainKw = String(clusterData[i][3] || "").trim().toLowerCase();
+        if (mainKw) {
+            if (!targetKeywords.has(mainKw) || !targetKeywords.get(mainKw).isMain) {
+                targetKeywords.set(mainKw, { theme: theme, sub: subTheme, intent: intent, isMain: true });
+            }
+        }
+        
+        var secKwStr = String(clusterData[i][10] || "").trim();
+        if (secKwStr) {
+            var secKws = secKwStr.split(/[\n,]+/);
+            for (var j = 0; j < secKws.length; j++) {
+                var sk = secKws[j].trim().toLowerCase();
+                if (sk && !targetKeywords.has(sk)) {
+                    targetKeywords.set(sk, { theme: theme, sub: subTheme, intent: intent, isMain: false });
+                }
+            }
         }
     }
 
@@ -246,8 +262,8 @@ function genererDiagnostic(selection) {
 
     var themeStats = {};
     var intentStats = {
-        transac: { kwCount: 0, top100: 0, TEC: 0, TPM: 0, DDT: 0 },
-        info:    { kwCount: 0, top100: 0, TEC: 0, TPM: 0, DDT: 0 }
+        transac: { kwCount: 0, top100: 0, top10: 0, TEC: 0, TPM: 0 },
+        info:    { kwCount: 0, top100: 0, top10: 0, TEC: 0, TPM: 0 }
     };
     var acquis = [], gains = [], pertes = [], territoires = [];
 
@@ -306,23 +322,36 @@ function genererDiagnostic(selection) {
         if (clientPos <= 10)  themeStats[tsKey].top10++;
         if (clientPos <= 3)   themeStats[tsKey].top3++;
 
-        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1;
-        var isInfo    = kwMeta.intent.indexOf("information") > -1;
+        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 || kwMeta.intent === "t" || kwMeta.intent === "c";
+        var isInfo    = kwMeta.intent.indexOf("information") > -1 || kwMeta.intent === "i";
+
+        if (isTransac) {
+            intentStats.transac.TPM += kwTPM;
+            if (kwMeta.isMain) {
+                intentStats.transac.kwCount++;
+            }
+        }
+        if (isInfo) {
+            intentStats.info.TPM += kwTPM;
+            if (kwMeta.isMain) {
+                intentStats.info.kwCount++;
+            }
+        }
 
         if (clientEntity) {
             if (isTransac) {
-                intentStats.transac.kwCount++;
-                if (clientPos <= 100) intentStats.transac.top100++;
                 intentStats.transac.TEC += clientTEC;
-                intentStats.transac.TPM += kwTPM;
-                intentStats.transac.DDT += kwDDT;
+                if (kwMeta.isMain) {
+                    if (clientPos <= 100) intentStats.transac.top100++;
+                    if (clientPos <= 10)  intentStats.transac.top10++;
+                }
             }
             if (isInfo) {
-                intentStats.info.kwCount++;
-                if (clientPos <= 100) intentStats.info.top100++;
                 intentStats.info.TEC += clientTEC;
-                intentStats.info.TPM += kwTPM;
-                intentStats.info.DDT += kwDDT;
+                if (kwMeta.isMain) {
+                    if (clientPos <= 100) intentStats.info.top100++;
+                    if (clientPos <= 10)  intentStats.info.top10++;
+                }
             }
 
             // Segmentation SWO
@@ -399,7 +428,6 @@ function genererDiagnostic(selection) {
         s.TdP = s.kwCount > 0 ? (s.top100 / s.kwCount) * 100 : 0;
         s.TEC = Math.round(s.TEC);
         s.TPM = Math.round(s.TPM);
-        s.DDT = Math.round(s.DDT);
     });
 
     acquis.sort(function(a, b) { return b.vol - a.vol; });
