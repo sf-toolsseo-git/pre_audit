@@ -331,6 +331,7 @@
 
                 google.script.run
                     .withSuccessHandler(function(config) {
+                        window.globalConfig = config || {}; // <-- AJOUTER CETTE LIGNE ICI
                         if (config) {
                             // Onglet 1
                             document.getElementById('conf-client-name').value = config.clientName;
@@ -367,7 +368,12 @@
 
                             // Restauration de l'onglet actif
                             if (config.activeTab && config.activeTab !== 'config') {
+                                console.log("Restauration de l'onglet actif : " + config.activeTab);
                                 switchTab(config.activeTab, true); // true = sans re-sauvegarder
+                                if (config.activeTab === 'etat-lieux') {
+                                    console.log("Étape clé : préparation de l'état des lieux au chargement");
+                                    preparerOngletEtatLieux();
+                                }
                             }
                         }
 
@@ -762,6 +768,32 @@
 
             // ========================== HELPERS CONTENTEDITABLE ==========================
 
+            function autoSaveEtatLieux() {
+                var data = {
+                    titreTopThematiques: document.getElementById('ia-titre-top') ? document.getElementById('ia-titre-top').value : "",
+                    analyseTopThematiques: document.getElementById('ce-analyse-top') ? (document.getElementById('ce-analyse-top').dataset.raw || document.getElementById('ce-analyse-top').innerText) : "",
+                    titreFlopThematiques: document.getElementById('ia-titre-flop') ? document.getElementById('ia-titre-flop').value : "",
+                    analyseFlopThematiques: document.getElementById('ce-analyse-flop') ? (document.getElementById('ce-analyse-flop').dataset.raw || document.getElementById('ce-analyse-flop').innerText) : "",
+                    titreTopSegments: document.getElementById('ia-titre-segments-top') ? document.getElementById('ia-titre-segments-top').value : "",
+                    analyseTopSegments: document.getElementById('ce-analyse-segments-top') ? (document.getElementById('ce-analyse-segments-top').dataset.raw || document.getElementById('ce-analyse-segments-top').innerText) : "",
+                    titreFlopSegments: document.getElementById('ia-titre-segments-flop') ? document.getElementById('ia-titre-segments-flop').value : "",
+                    analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? (document.getElementById('ce-analyse-segments-flop').dataset.raw || document.getElementById('ce-analyse-segments-flop').innerText) : ""
+                };
+                google.script.run.sauvegarderAnalysesEtatLieux(data);
+                
+                // Mettre à jour l'objet global pour le garder en mémoire lors des rechargements de l'onglet
+                if (window.globalConfig) {
+                    window.globalConfig.analyseThemeTopTitre = data.titreTopThematiques;
+                    window.globalConfig.analyseThemeTop = data.analyseTopThematiques;
+                    window.globalConfig.analyseThemeFlopTitre = data.titreFlopThematiques;
+                    window.globalConfig.analyseThemeFlop = data.analyseFlopThematiques;
+                    window.globalConfig.analyseSegmentTopTitre = data.titreTopSegments;
+                    window.globalConfig.analyseSegmentTop = data.analyseTopSegments;
+                    window.globalConfig.analyseSegmentFlopTitre = data.titreFlopSegments;
+                    window.globalConfig.analyseSegmentFlop = data.analyseFlopSegments;
+                }
+            }
+            
             function renderMarkupToHtml(text) {
                 if (!text) return '';
                 return text
@@ -1040,19 +1072,33 @@
                 html += '</tbody></table></div></div>';
 
                 container.innerHTML = html;
+                console.log("Fin de la génération du diagnostic.");
+
+                // Mise à jour de l'onglet 4 si l'utilisateur est déjà dessus (ou s'il l'attendait)
+                if (document.getElementById('content-etat-lieux').classList.contains('active')) {
+                    console.log("Mise à jour automatique de l'onglet : état des lieux");
+                    preparerOngletEtatLieux();
+                }
             }
 
             function preparerOngletEtatLieux() {
                 console.log("=== DÉBUT : preparerOngletEtatLieux ===");
+                
+                // Forcer l'affichage de l'onglet
+                switchTab('etat-lieux');
+
+                var container = document.getElementById('kpi-client-container');
+
                 if (!window.lastDiagnosticData) {
-                    console.log("Erreur : aucune donnée de diagnostic en mémoire.");
-                    alert("Aucune donnée de diagnostic disponible.");
+                    console.log("Information : aucune donnée de diagnostic en mémoire.");
+                    container.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Analyse en cours de chargement...<br>Si l\'attente se prolonge, veuillez générer le diagnostic à l\'étape 3.</div>';
+                    console.log("=== FIN : preparerOngletEtatLieux (mise en attente) ===");
                     return;
                 }
 
+                console.log("Étape clé : données trouvées, début de la construction de l'interface.");
                 var data = window.lastDiagnosticData;
                 var clientKpi = data.kpis.find(function(k) { return k.isClient; });
-                var container = document.getElementById('kpi-client-container');
 
                 if (clientKpi) {
                     var html = '<div class="kpi-grid-4" style="margin-bottom:15px;">';
@@ -1062,6 +1108,7 @@
                     html += mkKpiCard('Pages positionnées', clientKpi.urlsCount, '(URLs uniques)', '#5f6368');
                     html += '</div>';
 
+                    console.log("Étape clé : génération des performances par intention.");
                     // 1. Performance par intention
                     html += '<div class="panel">';
                     html += '<div class="panel-header"><span class="icon-intent">🎯</span> Performance par intention</div>';
@@ -1090,12 +1137,12 @@
                     html += '<strong>ℹ️ Méthodologie de classement :</strong> les thématiques <strong>Top</strong> sont identifiées selon le volume de trafic qu\'elles vous rapportent actuellement (TEC). À l\'inverse, les thématiques <strong>Flop</strong> mettent en lumière vos plus grands manques à gagner en comparant votre trafic actuel au potentiel maximum du marché (DDT).';
                     html += '</div></div>';
                     
+                    console.log("Étape clé : génération des thématiques top et flop.");
                     // 2. Thématiques Top
                     var themesSortedByTEC = data.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3);
                     html += '<div class="panel">';
                     html += '<div class="header-inline">';
                     html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-theme">🏆</span> Thématiques Top (Top 3 par TEC)</div></div>';
-                    // Nouveau bouton unique pour l'analyse croisée
                     html += '<button type="button" class="btn" onclick="lancerAnalyseTopFlopIA()">🤖 Générer les analyses IA (Top & Flop)</button>';
                     html += '</div>';
                     
@@ -1116,20 +1163,23 @@
                     });
                     html += '</tbody></table>';
                     
-                    html += '<div id="ia-result-top" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    var cnf = window.globalConfig || {};
+                    var tTopTit = cnf.analyseThemeTopTitre || "";
+                    var tTopAn = cnf.analyseThemeTop || "";
+                    var dispTop = (tTopTit || tTopAn) ? 'block' : 'none';
+
+                    html += '<div id="ia-result-top" style="display:' + dispTop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
                     html += '<label class="input-label">Titre de la slide (Top)</label>';
-                    html += '<input type="text" id="ia-titre-top" placeholder="Titre généré...">';
+                    html += '<input type="text" id="ia-titre-top" placeholder="Titre généré..." value="' + tTopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
-                    html += '<div id="ce-analyse-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..."></div>';
-                    html += '</div>';
-                    html += '</div>';
+                    html += '<div id="ce-analyse-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + tTopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(tTopAn) + '</div>';
+                    html += '</div></div>';
 
                     // 3. Thématiques Flop
                     var themesSortedByDDT = data.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 3);
                     html += '<div class="panel">';
                     html += '<div class="header-inline">';
                     html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-faiblesse">📉</span> Thématiques Flop (Top 3 par DDT)</div></div>';
-                    // Le bouton a été retiré ici car il est géré au-dessus
                     html += '</div>';
                     
                     html += '<table id="table-flop-themes" style="margin-top:10px;"><thead><tr>';
@@ -1149,21 +1199,121 @@
                     });
                     html += '</tbody></table>';
 
-                    html += '<div id="ia-result-flop" style="display:none; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    var tFlopTit = cnf.analyseThemeFlopTitre || "";
+                    var tFlopAn = cnf.analyseThemeFlop || "";
+                    var dispFlop = (tFlopTit || tFlopAn) ? 'block' : 'none';
+
+                    html += '<div id="ia-result-flop" style="display:' + dispFlop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
                     html += '<label class="input-label">Titre de la slide (Flop)</label>';
-                    html += '<input type="text" id="ia-titre-flop" placeholder="Titre généré...">';
+                    html += '<input type="text" id="ia-titre-flop" placeholder="Titre généré..." value="' + tFlopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
-                    html += '<div id="ce-analyse-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..."></div>';
+                    html += '<div id="ce-analyse-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + tFlopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(tFlopAn) + '</div>';
+                    html += '</div></div>';
+                    
+                    console.log("Étape clé : intégration des segments d'attaque.");
+                    // 4. Segments d'attaque (top 5)
+                    html += '<div class="header-inline" style="margin-top:20px; margin-bottom:10px;">';
+                    html += '<div><h2 class="section-title" style="margin-bottom:0;">Segments d\'attaque (top 5 mots-clés)</h2></div>';
+                    html += '<button type="button" class="btn" onclick="lancerAnalyseSegmentsIA()">🤖 Générer l\'analyse IA (Segments)</button>';
                     html += '</div>';
+
+                    html += '<div class="swo-4col">';
+                    html += renderSwoPanel('🛡️', 'Acquis stratégiques', 'acquis', data.acquis.slice(0, 5), 'Pos.', '#188038');
+                    html += renderSwoPanel('⚡', 'Gains immédiats', 'gains', data.gains.slice(0, 5), 'Pos.', '#b06000');
+                    html += renderSwoPanel('🚨', 'Pertes de conquête', 'pertes', data.pertes.slice(0, 5), 'Concurrent menaçant', '#c5221f');
+                    html += renderSwoPanel('🌊', 'Territoires à prendre', 'territoires', data.territoires.slice(0, 5), 'Meilleure pos. marché', '#1a73e8');
+                    html += '</div>';
+
+                    var sTopTit = cnf.analyseSegmentTopTitre || "";
+                    var sTopAn = cnf.analyseSegmentTop || "";
+                    var sDispTop = (sTopTit || sTopAn) ? 'block' : 'none';
+
+                    html += '<div id="ia-result-segments-top" style="display:' + sDispTop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    html += '<label class="input-label">Titre de la slide (Top)</label>';
+                    html += '<input type="text" id="ia-titre-segments-top" placeholder="Titre généré..." value="' + sTopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
+                    html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
+                    html += '<div id="ce-analyse-segments-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + sTopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(sTopAn) + '</div>';
+                    html += '</div>';
+
+                    var sFlopTit = cnf.analyseSegmentFlopTitre || "";
+                    var sFlopAn = cnf.analyseSegmentFlop || "";
+                    var sDispFlop = (sFlopTit || sFlopAn) ? 'block' : 'none';
+
+                    html += '<div id="ia-result-segments-flop" style="display:' + sDispFlop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
+                    html += '<label class="input-label">Titre de la slide (Flop)</label>';
+                    html += '<input type="text" id="ia-titre-segments-flop" placeholder="Titre généré..." value="' + sFlopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
+                    html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
+                    html += '<div id="ce-analyse-segments-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + sFlopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(sFlopAn) + '</div>';
                     html += '</div>';
                     
                     container.innerHTML = html;
                     console.log("Interface d'état des lieux générée avec succès.");
                 } else {
                     container.innerHTML = '<div class="empty-state">Aucune donnée client trouvée.</div>';
+                    console.log("Information : donnée client introuvable dans le diagnostic.");
                 }
 
-                switchTab('etat-lieux');
+                console.log("=== FIN : preparerOngletEtatLieux ===");
+            }
+
+            function lancerAnalyseSegmentsIA() {
+                console.log("=== DÉBUT : lancerAnalyseSegmentsIA ===");
+                var contexte = document.getElementById('conf-contexte-preaudit').value;
+                
+                if (!window.lastDiagnosticData) {
+                    console.log("Erreur : Aucune donnée diagnostique en mémoire.");
+                    alert("Aucune donnée diagnostique disponible.");
+                    return;
+                }
+                
+                var data = window.lastDiagnosticData;
+                
+                // Extraire les 5 premiers éléments de chaque segment
+                var acquis5 = (data.acquis || []).slice(0, 5);
+                var gains5 = (data.gains || []).slice(0, 5);
+                var pertes5 = (data.pertes || []).slice(0, 5);
+                var territoires5 = (data.territoires || []).slice(0, 5);
+                
+                var payloadTop = JSON.stringify({ acquis: acquis5, gains: gains5 });
+                var payloadFlop = JSON.stringify({ pertes: pertes5, territoires: territoires5 });
+                
+                console.log("Payload Top prêt");
+                console.log("Payload Flop prêt");
+                
+                showLoader("Analyse des segments d'attaque par l'IA...");
+                
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        console.log("=== SUCCÈS : Réponse backend IA reçue ===", res);
+                        hideLoader();
+                        if (res.success) {
+                            var dataResp = JSON.parse(res.jsonString);
+                            
+                            // Remplissage Top
+                            document.getElementById('ia-titre-segments-top').value = dataResp.titre_slide_top || '';
+                            var texteAnalyseTop = Array.isArray(dataResp.analyse_top) ? "• " + dataResp.analyse_top.join("\n\n• ") : (dataResp.analyse_top || '');
+                            setCeContent('ce-analyse-segments-top', texteAnalyseTop);
+                            document.getElementById('ia-result-segments-top').style.display = 'block';
+
+                            // Remplissage Flop
+                            document.getElementById('ia-titre-segments-flop').value = dataResp.titre_slide_flop || '';
+                            var texteAnalyseFlop = Array.isArray(dataResp.analyse_flop) ? "• " + dataResp.analyse_flop.join("\n\n• ") : (dataResp.analyse_flop || '');
+                            setCeContent('ce-analyse-segments-flop', texteAnalyseFlop);
+                            document.getElementById('ia-result-segments-flop').style.display = 'block';
+                            
+                            console.log("Injection HTML terminée.");
+                            autoSaveEtatLieux();
+                        } else {
+                            console.log("Erreur renvoyée par l'IA :", res.error);
+                            alert("Erreur de l'IA : " + res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        console.log("=== ÉCHEC : Erreur réseau ou serveur ===", err);
+                        hideLoader();
+                        alert("Erreur critique : " + err.message);
+                    })
+                    .genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexte);
             }
 
             function lancerAnalyseTopFlopIA() {
@@ -1213,6 +1363,7 @@
                             document.getElementById('ia-result-flop').style.display = 'block';
                             
                             console.log("Injection HTML terminée.");
+                            autoSaveEtatLieux();
                         } else {
                             console.log("Erreur renvoyée par l'IA :", res.error);
                             alert("Erreur de l'IA : " + res.error);
@@ -1272,11 +1423,27 @@
             }
 
             function lancerExportSlidesDiagnostic() {
+                console.log("=== DÉBUT : lancerExportSlidesDiagnostic ===");
                 var btn = document.getElementById('btnExportSlides');
                 var msg = document.getElementById('exportMsgDiagnostic');
                 btn.disabled = true;
                 btn.innerText = "⏳ Import en cours...";
                 msg.innerText = "";
+                
+                // Récupération des données IA
+                var iaData = {
+                    titreTopThematiques: document.getElementById('ia-titre-top') ? document.getElementById('ia-titre-top').value : "",
+                    analyseTopThematiques: document.getElementById('ce-analyse-top') ? (document.getElementById('ce-analyse-top').dataset.raw || document.getElementById('ce-analyse-top').innerText) : "",
+                    titreFlopThematiques: document.getElementById('ia-titre-flop') ? document.getElementById('ia-titre-flop').value : "",
+                    analyseFlopThematiques: document.getElementById('ce-analyse-flop') ? (document.getElementById('ce-analyse-flop').dataset.raw || document.getElementById('ce-analyse-flop').innerText) : "",
+                    titreTopSegments: document.getElementById('ia-titre-segments-top') ? document.getElementById('ia-titre-segments-top').value : "",
+                    analyseTopSegments: document.getElementById('ce-analyse-segments-top') ? (document.getElementById('ce-analyse-segments-top').dataset.raw || document.getElementById('ce-analyse-segments-top').innerText) : "",
+                    titreFlopSegments: document.getElementById('ia-titre-segments-flop') ? document.getElementById('ia-titre-segments-flop').value : "",
+                    analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? (document.getElementById('ce-analyse-segments-flop').dataset.raw || document.getElementById('ce-analyse-segments-flop').innerText) : ""
+                };
+                
+                console.log("Données IA prêtes pour l'export :", iaData);
+
                 google.script.run
                     .withSuccessHandler(function(res) {
                         if(res.success) {
@@ -1298,7 +1465,8 @@
                         btn.innerText = "📥 Importer dans Google Slides";
                         msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
                     })
-                    .exporterPerformanceGlobalSlides(window.lastDiagnosticData);
+                    .exporterPerformanceGlobalSlides(window.lastDiagnosticData, iaData);
+                console.log("=== FIN : appel google.script.run lancé ===");
             }
 
 

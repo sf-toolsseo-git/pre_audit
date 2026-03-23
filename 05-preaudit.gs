@@ -27,7 +27,15 @@ function chargerConfigurationPreAudit() {
         analyseKwTexte: props['ANALYSE_SEMRUSH_KW'] || "",
         analyseTraficHtml: props['ANALYSE_SEMRUSH_TRAFIC_HTML'] || "",
         analyseTraficTexte: props['ANALYSE_SEMRUSH_TRAFIC'] || "",
-        activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config"
+        activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config",
+        analyseThemeTopTitre: props['ANALYSE_THEME_TOP_TITRE'] || "",
+        analyseThemeTop: props['ANALYSE_THEME_TOP'] || "",
+        analyseThemeFlopTitre: props['ANALYSE_THEME_FLOP_TITRE'] || "",
+        analyseThemeFlop: props['ANALYSE_THEME_FLOP'] || "",
+        analyseSegmentTopTitre: props['ANALYSE_SEGMENT_TOP_TITRE'] || "",
+        analyseSegmentTop: props['ANALYSE_SEGMENT_TOP'] || "",
+        analyseSegmentFlopTitre: props['ANALYSE_SEGMENT_FLOP_TITRE'] || "",
+        analyseSegmentFlop: props['ANALYSE_SEGMENT_FLOP'] || ""
     };
 }
 
@@ -175,6 +183,27 @@ function chargerSelectionAnalyse() {
         return data ? JSON.parse(data) : [];
     } catch (e) {
         return [];
+    }
+}
+
+function sauvegarderAnalysesEtatLieux(data) {
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'ANALYSE_THEME_TOP_TITRE': data.titreTopThematiques || "",
+            'ANALYSE_THEME_TOP': data.analyseTopThematiques || "",
+            'ANALYSE_THEME_FLOP_TITRE': data.titreFlopThematiques || "",
+            'ANALYSE_THEME_FLOP': data.analyseFlopThematiques || "",
+            'ANALYSE_SEGMENT_TOP_TITRE': data.titreTopSegments || "",
+            'ANALYSE_SEGMENT_TOP': data.analyseTopSegments || "",
+            'ANALYSE_SEGMENT_FLOP_TITRE': data.titreFlopSegments || "",
+            'ANALYSE_SEGMENT_FLOP': data.analyseFlopSegments || ""
+        });
+        syncPropertiesToConfigSheet();
+        return true;
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde des analyses IA : " + e.message);
+        return false;
     }
 }
 
@@ -354,17 +383,19 @@ function genererDiagnostic(selection) {
                 }
             }
 
-            // Segmentation SWO
-            if (clientPos <= 3) {
-                acquis.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
-            } else if (clientPos >= 4 && clientPos <= 20) {
-                gains.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
-            } else if (clientPos > 20 && compInTop10Count >= 1) {
-                pertes.push({ kw: kw, vol: vol, pos: clientPos < 999 ? clientPos : null, DDT: kwDDT, bestCompName: bestCompName, bestCompPos: bestCompPos < 999 ? bestCompPos : null });
-            }
-            if (clientPos > 10 && bestCompPos > 10 && vol > 50) {
-                var bm = Math.min(clientPos, bestCompPos);
-                territoires.push({ kw: kw, vol: vol, DDT: kwDDT, bestPos: bm < 999 ? bm : null });
+            // Segmentation SWO (Uniquement les mots-clés principaux)
+            if (kwMeta.isMain) {
+                if (clientPos <= 3) {
+                    acquis.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
+                } else if (clientPos >= 4 && clientPos <= 20) {
+                    gains.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
+                } else if (clientPos > 20 && compInTop10Count >= 1) {
+                    pertes.push({ kw: kw, vol: vol, pos: clientPos < 999 ? clientPos : null, DDT: kwDDT, bestCompName: bestCompName, bestCompPos: bestCompPos < 999 ? bestCompPos : null });
+                }
+                if (clientPos > 10 && bestCompPos > 10 && vol > 50) {
+                    var bm = Math.min(clientPos, bestCompPos);
+                    territoires.push({ kw: kw, vol: vol, DDT: kwDDT, bestPos: bm < 999 ? bm : null });
+                }
             }
         }
     }
@@ -671,88 +702,6 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
     }
 }
 
-function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommercial) {
-    Logger.log("=== DÉBUT : genererAnalyseTopFlopThemesIA ===");
-    Logger.log("Données Top reçues : " + donneesTop);
-    Logger.log("Données Flop reçues : " + donneesFlop);
-    Logger.log("Contexte commercial : " + contexteCommercial);
-
-    try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
-        
-        if (!apiKey || apiKey.trim() === "") {
-            Logger.log("Erreur : Clé API Gemini manquante.");
-            throw new Error("Clé API Gemini introuvable.");
-        }
-
-        var promptStr = "Tu es un expert SEO et stratège commercial. Analyse simultanément ces deux tableaux JSON des thématiques du client : le 'Top 3' (trafic actuel) et le 'Flop 3' (manque à gagner).\n\n" +
-                        "Lexique des métriques :\n" +
-                        "- TEC (Trafic estimé client) : trafic actuel généré.\n" +
-                        "- TPM (Trafic potentiel max) : trafic atteignable si 1ère position.\n" +
-                        "- DDT (Déficit de trafic) : manque à gagner (TPM - TEC).\n\n" +
-                        "Données JSON Top 3 :\n" + donneesTop + "\n\n" +
-                        "Données JSON Flop 3 :\n" + donneesFlop + "\n\n" +
-                        "Profilage commercial :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
-                        "RÈGLES DE RÉDACTION CRUCIALES (VERROUILLAGE SÉMANTIQUE) :\n" +
-                        "1. NOMMAGE STRICT : tu dois obligatoirement utiliser le NOM EXACT des segments fournis (ex : 'Sophrologie > Général'). Il est strictement interdit de simplifier ou de généraliser (ne transforme jamais 'Sophrologie > Général' en 'La sophrologie').\n" +
-                        "2. CONTEXTE '> GÉNÉRAL' : si un segment se nomme '> Général', interprète-le comme des requêtes de notoriété, de définition ou de découverte du métier (intentions informationnelles larges) et non comme l'intégralité de la thématique parente.\n" +
-                        "3. STRUCTURE DES PUCES : commence chaque puce impérativement par le nom du segment concerné entre guillemets ou en gras pour ancrer l'analyse sur la donnée réelle.\n" +
-                        "4. EXHAUSTIVITÉ : génère EXACTEMENT 3 puces pour le Top et EXACTEMENT 3 puces pour le Flop (une par thématique du JSON).\n" +
-                        "5. INTELLIGENCE CROISÉE : si une thématique est présente dans les deux listes, souligne ce paradoxe (ex : c'est votre pilier actuel, mais aussi votre plus gros manque à gagner).\n\n" +
-                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE :\n" +
-                        "- Style télégraphique : phrases courtes, percutantes, sans points-virgules. Un constat, un chiffre, une action.\n" +
-                        "- IMPÉRATIF VISUEL : encadre les expressions clés avec des astérisques simples pour le gras orange (ex : *socle solide*, *manque à gagner colossal*).\n" +
-                        "- Règles FR : un espace avant les deux-points (:), pas de majuscule après. Jours, mois et langues en minuscule. Acronymes (SEO, TEC, TPM, DDT) en majuscules.\n\n" +
-                        "Format de sortie STRICTEMENT JSON :\n" +
-                        "{\n" +
-                        "  \"titre_slide_top\": \"Titre valorisant vos acquis\",\n" +
-                        "  \"analyse_top\": [\"Le segment 'Nom exact' est un *socle solide* avec 491 visites (TEC). Notre objectif : combler le *déficit* (DDT).\", \"...\", \"...\"],\n" +
-                        "  \"titre_slide_flop\": \"Titre d'alerte sur le manque à gagner\",\n" +
-                        "  \"analyse_flop\": [\"Sur 'Nom exact', vous accusez un *manque à gagner colossal* (DDT de 24 965). C'est une priorité de conquête.\", \"...\", \"...\"]\n" +
-                        "}\n" +
-                        "Ne mets pas de tirets au début des phrases.";
-
-        Logger.log("Envoi du payload à Gemini...");
-
-        var payload = {
-            "contents": [{"parts": [{"text": promptStr}]}],
-            "generationConfig": { "responseMimeType": "application/json" }
-        };
-
-        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
-        var options = {
-            "method": "post",
-            "contentType": "application/json",
-            "headers": { "x-goog-api-key": apiKey },
-            "payload": JSON.stringify(payload),
-            "muteHttpExceptions": true
-        };
-
-        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
-        var json = JSON.parse(apiResponse.getContentText());
-
-        if (apiResponse.getResponseCode() !== 200) {
-            Logger.log("Erreur API Gemini : " + apiResponse.getContentText());
-            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
-        }
-
-        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
-            var responseText = json.candidates[0].content.parts[0].text.trim();
-            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-            Logger.log("Analyse générée avec succès.");
-            return { success: true, jsonString: responseText };
-        } else {
-            Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");
-            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
-        }
-
-    } catch (e) {
-        Logger.log("ERREUR CRITIQUE : " + e.message);
-        return { success: false, error: e.message };
-    }
-}
-
 function genererSlideBesoinSolutionIA(contextePreaudit) {
     var catalogueOffres = [
     "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",
@@ -826,5 +775,175 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
 
     } catch (error) {
         return { success: false, message: error.message };
+    }
+}
+
+function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommercial) {
+    Logger.log("=== DÉBUT : genererAnalyseTopFlopThemesIA ===");
+    Logger.log("Données Top reçues : " + donneesTop);
+    Logger.log("Données Flop reçues : " + donneesFlop);
+    Logger.log("Contexte commercial : " + contexteCommercial);
+
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            Logger.log("Erreur : Clé API Gemini manquante.");
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un consultant SEO senior, pédagogue et fin stratège. Analyse simultanément ces deux tableaux JSON des thématiques du client : le 'Top 3' (trafic actuel) et le 'Flop 3' (manque à gagner). Ton objectif est d'en tirer un diagnostic clinique, factuel et orienté conseil, sans jamais tomber dans un discours commercial agressif.\n\n" +
+                        "Lexique des métriques :\n" +
+                        "- TEC (Trafic estimé client) : trafic actuel généré.\n" +
+                        "- TPM (Trafic potentiel max) : trafic atteignable si 1ère position.\n" +
+                        "- DDT (Déficit de trafic) : manque à gagner (TPM - TEC).\n\n" +
+                        "Données JSON Top 3 :\n" + donneesTop + "\n\n" +
+                        "Données JSON Flop 3 :\n" + donneesFlop + "\n\n" +
+                        "Profilage commercial :\n" + (contexteCommercial || "Non renseigné.") + "\n\n" +
+                        "RÈGLES DE RÉDACTION CRUCIALES (VERROUILLAGE SÉMANTIQUE) :\n" +
+                        "1. NOMMAGE STRICT : tu dois obligatoirement utiliser le NOM EXACT des thématiques fournies (ex : « Sophrologie > Général »). Utilise exclusivement des guillemets français (« et ») pour les encadrer. N'utilise JAMAIS de guillemets simples ('), de doubles quotes standard (\") ou de backticks (`).\n" +
+                        "2. CONTEXTE '> GÉNÉRAL' : si un segment se nomme '> Général', interprète-le comme des requêtes de notoriété ou de découverte (intentions informationnelles) et non comme l'intégralité de la thématique parente.\n" +
+                        "3. STRUCTURE DES PUCES : commence chaque puce impérativement par le nom de la thématique concernée entre guillemets français pour ancrer l'analyse sur la donnée réelle.\n" +
+                        "4. EXHAUSTIVITÉ : génère EXACTEMENT 3 puces pour le Top et EXACTEMENT 3 puces pour le Flop (une par thématique du JSON).\n" +
+                        "5. PERSONNALISATION ET TON : Croise les données avec le profilage commercial. Adopte un ton d'expert SEO : sois rassurant sur le Top (protéger l'existant) et objectif sur le Flop (constater le décalage de visibilité sans dramatiser excessivement). Fuis les mots comme 'colossal', 'contre-attaquer', 'rentabilité immédiate'.\n\n" +
+                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE (STRICT) :\n" +
+                        "- Style télégraphique : phrases courtes, factuelles. Un constat, un chiffre, une recommandation.\n" +
+                        "- IMPÉRATIF VISUEL : encadre les concepts clés de ton analyse avec des astérisques simples pour le gras orange (ex : *effort de consolidation*, *potentiel inexploité*).\n" +
+                        "- Règles FR : un espace obligatoire avant les deux-points (:). Pas de majuscule après les deux-points. Jours, mois et langues en minuscule. Acronymes (SEO, TEC, TPM, DDT) en majuscules.\n" +
+                        "- TITRES (CRITIQUE) : Majuscule UNIQUEMENT au premier mot du titre. Tout le reste en minuscules (sauf noms propres). Exemple correct : 'Vos acquis actuels : une fondation solide à valoriser'. Exemple interdit : 'Vos Acquis Actuels : Une Fondation...'.\n\n" +
+                        "Format de sortie STRICTEMENT JSON :\n" +
+                        "{\n" +
+                        "  \"titre_slide_top\": \"Titre valorisant vos acquis (règles de minuscules respectées)\",\n" +
+                        "  \"analyse_top\": [\"La thématique « Nom exact » est un *socle solide* avec 491 visites (TEC). Notre objectif : combler le *déficit* (DDT).\", \"...\", \"...\"],\n" +
+                        "  \"titre_slide_flop\": \"Titre d'alerte sur le manque à gagner (règles de minuscules respectées)\",\n" +
+                        "  \"analyse_flop\": [\"Sur « Nom exact », vous accusez un *manque à gagner objectif* (DDT de 24 965). C'est un territoire à prioriser.\", \"...\", \"...\"]\n" +
+                        "}\n" +
+                        "Ne mets pas de tirets au début des phrases.";
+
+        Logger.log("Envoi du payload à Gemini...");
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+
+        if (apiResponse.getResponseCode() !== 200) {
+            Logger.log("Erreur API Gemini : " + apiResponse.getContentText());
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            Logger.log("Analyse générée avec succès.");
+            return { success: true, jsonString: responseText };
+        } else {
+            Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
+    Logger.log("=== DÉBUT : genererAnalyseSegmentsIA ===");
+    Logger.log("Payload Top reçu : " + payloadTop);
+    Logger.log("Payload Flop reçu : " + payloadFlop);
+    Logger.log("Contexte commercial : " + contexteCommercial);
+
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['GEMINI_API_KEY'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            Logger.log("Erreur : Clé API Gemini manquante.");
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var promptStr = "Tu es un consultant SEO senior, pédagogue et fin stratège. Ton objectif est de transformer des données SEO brutes (4 segments d'attaque) en une restitution d'audit percutante, factuelle et orientée conseil. Tu dois te baser sur le profilage psychologique et commercial du prospect fourni ci-dessous pour formuler des recommandations qui résonnent avec ses enjeux, sans jamais tomber dans un discours de vendeur agressif. Tu rédiges le contenu de 2 slides (une top et une flop) pour l'aider à prendre conscience de son potentiel inexploité.\n\n" +
+                        "RÈGLE ABSOLUE DE PERSONNALISATION :\n" +
+                        "Si un mot-clé présent dans les données JSON correspond à une thématique, un service, une douleur ou un objectif explicitement mentionné par le prospect dans le 'Profilage commercial', tu dois absolument le mettre en avant dans ton analyse pour montrer que cet audit répond directement à ses priorités métiers.\n\n" +
+                        "Pour chaque slide, croise la donnée avec le profilage commercial selon cette méthode exacte :\n\n" +
+                        "Slide 1 : 'top' (capitalisation et quick-wins - 3 puces au total)\n" +
+                        "- Acquis stratégiques (top 3) : adopte une posture rassurante. Connecte ces mots-clés à ses 'objectifs' ou à sa 'maturité'. L'enjeu est factuel : protéger cet actif et cette notoriété historique face à l'inflation concurrentielle en ligne.\n" +
+                        "- Gains immédiats (positions 4 à 20) : utilise ces mots-clés pour apaiser ses 'craintes et freins à l'achat' (ex : budget limité, niveau technique). Explique de façon experte qu'un effort SEO ciblé sur ces requêtes très proches du but permettra de consolider la visibilité rapidement sans nécessiter un budget colossal.\n\n" +
+                        "Slide 2 : 'flop' (manque à gagner et vision - 3 puces au total)\n" +
+                        "- Pertes de conquête (concurrents présents, pas lui) : appuie sur ses 'douleurs et frustrations' de façon objective. Cite les concurrents qui capitalisent sur son absence pour souligner le décalage entre sa légitimité métier et sa visibilité digitale. Adopte un ton de constat clinique (ex : 'visibilité captée par des pure-players' plutôt que 'ils vous volent des clients').\n" +
+                        "- Territoires à prendre (océan bleu) : utilise ses 'angles d'attaque commerciaux'. Présente ces mots-clés (où la concurrence est plus faible) comme des espaces vierges parfaits pour évangéliser sa cible sur sa 'proposition de valeur unique' (ex : faire valoir ses propres certifications hors des sentiers battus).\n\n" +
+                        "Adapte ton niveau de langage à sa 'maturité perçue' et ses 'craintes'. S'il est débutant, vulgarise et fuis le jargon (pas de backlinks ou de crawl). S'il cherche un cadre, parle de méthode et de structuration. Utilise le vouvoiement. Fuis le vocabulaire commercial agressif (interdit d'utiliser des termes comme 'rentabilité immédiate', 'contre-attaquer', 'notre méthode va...'). Tu es le spécialiste qui pose un diagnostic clair.\n\n" +
+                        "Règles d'or et typographie :\n" +
+                        "- Concision extrême : un constat chiffré (issu des mots-clés), une implication stratégique, une recommandation d'expert.\n" +
+                        "- Répartition stricte : génère exactement 3 puces pour la slide top, et 3 puces pour la slide flop.\n" +
+                        "- Mise en valeur : encadre les concepts clés de ta recommandation avec des astérisques simples (ex : *effort SEO ciblé*, *manque à gagner objectif*).\n" +
+                        "- Typographie FR : un espace obligatoire avant les deux-points (:). Pas de majuscule après les deux-points (sauf nom propre). Jours, mois et langues en minuscule. Acronymes (SEO, ROI) en majuscules.\n" +
+                        "- Vérité des données : cite les mots-clés exacts fournis dans les données JSON. N'invente aucun chiffre. N'utilise pas de backticks (`) pour encadrer les mots-clés, utilise des guillemets simples.\n\n" +
+                        "Format de sortie JSON attendu :\n" +
+                        "{\n" +
+                        "  \"titre_slide_top\": \"Titre de la slide 1 (factuel et valorisant)\",\n" +
+                        "  \"analyse_top\": [\"Puce 1\", \"Puce 2\", \"Puce 3\"],\n" +
+                        "  \"titre_slide_flop\": \"Titre de la slide 2 (constat et opportunités)\",\n" +
+                        "  \"analyse_flop\": [\"Puce 1\", \"Puce 2\", \"Puce 3\"]\n" +
+                        "}\n\n" +
+                        "Données JSON Top :\n" + payloadTop + "\n\n" +
+                        "Données JSON Flop :\n" + payloadFlop + "\n\n" +
+                        "Profilage commercial :\n" + (contexteCommercial || "Non renseigné.");
+
+        Logger.log("Envoi du payload à Gemini pour les segments...");
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var apiResponse = UrlFetchApp.fetch(apiUrl, options);
+        var json = JSON.parse(apiResponse.getContentText());
+
+        if (apiResponse.getResponseCode() !== 200) {
+            Logger.log("Erreur API Gemini : " + apiResponse.getContentText());
+            throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            var responseText = json.candidates[0].content.parts[0].text.trim();
+            responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            
+            Logger.log("Analyse segments générée avec succès.");
+            Logger.log("=== RÉPONSE BRUTE DE L'IA ===");
+            Logger.log(responseText);
+            
+            return { success: true, jsonString: responseText };
+        } else {
+            Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE (Segments) : " + e.message);
+        return { success: false, error: e.message };
     }
 }

@@ -137,9 +137,9 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
     }
 }
 
-function exporterPerformanceGlobalSlides(diagnosticData) {
+function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
     try {
-        Logger.log("=== DÉBUT EXPORT SLIDE GLOBAL & INTENTIONS ===");
+        Logger.log("=== DÉBUT EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
         var props = PropertiesService.getScriptProperties().getProperties();
         var slideId = props['SLIDE_PRE_AUDIT_ID'];
 
@@ -158,34 +158,161 @@ function exporterPerformanceGlobalSlides(diagnosticData) {
         var transacPctDec = totalTop10 > 0 ? (intentStats.transac.top10 / totalTop10) : 0;
         var infoPctDec = totalTop10 > 0 ? (intentStats.info.top10 / totalTop10) : 0;
 
-        // 3. Mapping textuel
+        // 3. Préparation des tableaux triés (Thèmes et Segments)
+        Logger.log("Préparation des tableaux triés pour l'injection...");
+        var topThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3) : [];
+        var flopThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 3) : [];
+        
+        var acquis = diagnosticData.acquis ? diagnosticData.acquis.slice(0, 5) : [];
+        var gains = diagnosticData.gains ? diagnosticData.gains.slice(0, 5) : [];
+        var pertes = diagnosticData.pertes ? diagnosticData.pertes.slice(0, 5) : [];
+        var territoires = diagnosticData.territoires ? diagnosticData.territoires.slice(0, 5) : [];
+
+        // Fonctions utilitaires pour éviter les erreurs "undefined"
+        function safeNum(val) {
+            return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
+        }
+        function safePos(val) {
+            return (val !== null && val !== undefined && !isNaN(val)) ? Number(val).toLocaleString('fr-FR') : "-";
+        }
+
+        // 4. Mapping textuel & dictionnaire de remplacement
         var mapping = {
-            'mot_cle_client_global': clientKpi.posAll.toLocaleString('fr-FR'),
-            'mot_cle_client_top3': clientKpi.top3.toLocaleString('fr-FR'),
-            'mot_cle_client_top10': clientKpi.top10.toLocaleString('fr-FR'),
-            'mot_cle_client_url': clientKpi.urlsCount.toLocaleString('fr-FR'),
-            'mot_cle_transac_client': intentStats.transac.posAll.toLocaleString('fr-FR'),
-            'mot_cle_info_client': intentStats.info.posAll.toLocaleString('fr-FR'),
-            'mot_cle_transac_client_top_10': intentStats.transac.top10.toLocaleString('fr-FR'),
-            'mot_cle_info_client_top_10': intentStats.info.top10.toLocaleString('fr-FR'),
+            'mot_cle_client_global': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
+            'mot_cle_client_top3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
+            'mot_cle_client_top10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
+            'mot_cle_client_url': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
+            'mot_cle_transac_client': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'), // Remplacement de posAll par top100
+            'mot_cle_info_client': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),       // Remplacement de posAll par top100
+            'mot_cle_transac_client_top_10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
+            'mot_cle_info_client_top_10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
             'mot_cle_transac_pct': Math.round(transacPctDec * 100) + "%",
             'mot_cle_info_pct': Math.round(infoPctDec * 100) + "%"
         };
+        
+        var replaceDict = {};
+
+        // Thèmes Top (1 à 3)
+        for (var i = 1; i <= 3; i++) {
+            var thm = topThemes[i - 1];
+            replaceDict["{{top_thm_client_" + i + "}}"] = thm ? thm.name : "-";
+            replaceDict["{{top_thm_client_top10_" + i + "}}"] = thm ? safeNum(thm.top10) : "-";
+            replaceDict["{{top_thm_client_tec_" + i + "}}"] = thm ? safeNum(thm.TEC) : "-";
+            replaceDict["{{top_thm_client_tpm_" + i + "}}"] = thm ? safeNum(thm.TPM) : "-";
+            replaceDict["{{top_thm_client_ddt_" + i + "}}"] = thm ? safeNum(thm.DDT) : "-";
+        }
+
+        // Thèmes Flop (1 à 3)
+        for (var i = 1; i <= 3; i++) {
+            var thm = flopThemes[i - 1];
+            replaceDict["{{flop_thm_client_" + i + "}}"] = thm ? thm.name : "-";
+            replaceDict["{{flop_thm_client_flop10_" + i + "}}"] = thm ? safeNum(thm.top10) : "-";
+            replaceDict["{{flop_thm_client_tec_" + i + "}}"] = thm ? safeNum(thm.TEC) : "-";
+            replaceDict["{{flop_thm_client_tpm_" + i + "}}"] = thm ? safeNum(thm.TPM) : "-";
+            replaceDict["{{flop_thm_client_ddt_" + i + "}}"] = thm ? safeNum(thm.DDT) : "-";
+        }
+
+        // Segments (1 à 5)
+        for (var i = 1; i <= 5; i++) {
+            var acq = acquis[i - 1];
+            replaceDict["{{top_MC_client_" + i + "}}"] = acq ? acq.kw : "-";
+            replaceDict["{{top_MC_client_vol_" + i + "}}"] = acq ? safeNum(acq.vol) : "-";
+            replaceDict["{{top_MC_client_ddt_" + i + "}}"] = acq ? safeNum(acq.DDT) : "-";
+            replaceDict["{{top_MC_client_pos_" + i + "}}"] = acq ? safePos(acq.pos) : "-";
+
+            var gn = gains[i - 1];
+            replaceDict["{{QW_MC_client_" + i + "}}"] = gn ? gn.kw : "-";
+            replaceDict["{{QW_MC_client_vol_" + i + "}}"] = gn ? safeNum(gn.vol) : "-";
+            replaceDict["{{QW_MC_client_ddt_" + i + "}}"] = gn ? safeNum(gn.DDT) : "-";
+            replaceDict["{{QW_MC_client_pos_" + i + "}}"] = gn ? safePos(gn.pos) : "-";
+
+            var prt = pertes[i - 1];
+            replaceDict["{{PC_MC_client_" + i + "}}"] = prt ? prt.kw : "-";
+            replaceDict["{{PC_MC_client_vol_" + i + "}}"] = prt ? safeNum(prt.vol) : "-";
+            replaceDict["{{PC_MC_client_ddt_" + i + "}}"] = prt ? safeNum(prt.DDT) : "-";
+            replaceDict["{{PC_MC_conc_pos_" + i + "}}"] = prt ? safePos(prt.bestCompPos) : "-";
+
+            var terr = territoires[i - 1];
+            replaceDict["{{TaP_MC_client_" + i + "}}"] = terr ? terr.kw : "-";
+            replaceDict["{{TaP_MC_client_vol_" + i + "}}"] = terr ? safeNum(terr.vol) : "-";
+            replaceDict["{{TaP_MC_client_ddt_" + i + "}}"] = terr ? safeNum(terr.DDT) : "-";
+            replaceDict["{{TaP_MC_conc_pos_" + i + "}}"] = terr ? safePos(terr.bestPos) : "-";
+        }
+
+        Logger.log("Remplacement massif des tags de tableaux en cours...");
+        for (var key in replaceDict) {
+            presentation.replaceAllText(key, String(replaceDict[key]));
+        }
+        Logger.log("Remplacement massif terminé.");
+
+        // Fonction utilitaire de formatage pour l'IA
+        function formatRichText(shape, textWithStars) {
+            if (!textWithStars) return;
+            var textRange = shape.getText();
+            var cleanText = textWithStars.replace(/\*/g, "");
+            
+            textRange.setText(cleanText);
+            // On force 18px comme demandé
+            textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(18).setForegroundColor("#000000").setBold(false);
+
+            var match;
+            var regex = /\*([^*]+)\*/g;
+            var offset = 0;
+            
+            while ((match = regex.exec(textWithStars)) !== null) {
+                var wordLength = match[1].length;
+                var startIndex = match.index - offset;
+                var endIndex = startIndex + wordLength;
+                
+                var targetRange = textRange.getRange(startIndex, endIndex);
+                targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+                
+                offset += 2;
+            }
+        }
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
 
-            // Étape A : Remplacement des textes classiques
+            // Étape A : Remplacement des textes classiques et IA
             shapes.forEach(function(shape) {
                 var shapeText = shape.getText().asString().trim();
                 var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
 
-                // On vérifie le texte, le titre de la forme ou la description
+                // 1. Textes basiques (KPI client & intent)
                 var targetKey = mapping[shapeText] ? shapeText : (mapping[titleRaw] ? titleRaw : (mapping[descRaw] ? descRaw : null));
 
                 if (targetKey) {
                     shape.getText().setText(mapping[targetKey].toString());
+                }
+
+                // 2. Titres IA
+                if (shapeText === "titre_slide_thematiquetop_client" || titleRaw === "titre_slide_thematiquetop_client" || descRaw === "titre_slide_thematiquetop_client") {
+                    if (iaData && iaData.titreTopThematiques) shape.getText().setText(iaData.titreTopThematiques);
+                }
+                if (shapeText === "titre_slide_thematiqueflop_client" || titleRaw === "titre_slide_thematiqueflop_client" || descRaw === "titre_slide_thematiqueflop_client") {
+                    if (iaData && iaData.titreFlopThematiques) shape.getText().setText(iaData.titreFlopThematiques);
+                }
+                if (shapeText === "titre_slide_MCtop_client" || titleRaw === "titre_slide_MCtop_client" || descRaw === "titre_slide_MCtop_client") {
+                    if (iaData && iaData.titreTopSegments) shape.getText().setText(iaData.titreTopSegments);
+                }
+                if (shapeText === "titre_slide_MCflop_client" || titleRaw === "titre_slide_MCflop_client" || descRaw === "titre_slide_MCflop_client") {
+                    if (iaData && iaData.titreFlopSegments) shape.getText().setText(iaData.titreFlopSegments);
+                }
+
+                // 3. Analyses IA (formatage enrichi)
+                if (shapeText === "analyse_thematiquetop_client" || titleRaw === "analyse_thematiquetop_client" || descRaw === "analyse_thematiquetop_client") {
+                    if (iaData && iaData.analyseTopThematiques) formatRichText(shape, iaData.analyseTopThematiques);
+                }
+                if (shapeText === "analyse_thematiqueflop_client" || titleRaw === "analyse_thematiqueflop_client" || descRaw === "analyse_thematiqueflop_client") {
+                    if (iaData && iaData.analyseFlopThematiques) formatRichText(shape, iaData.analyseFlopThematiques);
+                }
+                if (shapeText === "analyse_MCtop_client" || titleRaw === "analyse_MCtop_client" || descRaw === "analyse_MCtop_client") {
+                    if (iaData && iaData.analyseTopSegments) formatRichText(shape, iaData.analyseTopSegments);
+                }
+                if (shapeText === "analyse_MCflop_client" || titleRaw === "analyse_MCflop_client" || descRaw === "analyse_MCflop_client") {
+                    if (iaData && iaData.analyseFlopSegments) formatRichText(shape, iaData.analyseFlopSegments);
                 }
             });
 
@@ -232,7 +359,7 @@ function exporterPerformanceGlobalSlides(diagnosticData) {
             });
         });
 
-        Logger.log("=== FIN EXPORT SLIDE GLOBAL & INTENTIONS ===");
+        Logger.log("=== FIN EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
         return { success: true, url: presentation.getUrl() };
 
     } catch (e) {
