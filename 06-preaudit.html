@@ -269,7 +269,7 @@
 
                 <div class="continuer-bar">
                     <span id="continuer-msg" style="font-size: 12px; font-weight: bold;"></span>
-                    <button class="btn btn-continuer" id="btn-continuer" onclick="continuerVersOnglet3()">Continuer → Diagnostic sémantique</button>
+                    <button class="btn btn-continuer" id="btn-continuer" onclick="continuerVersOnglet3()">Importer dans Slides & continuer</button>
                 </div>
 
             </div>
@@ -1142,8 +1142,8 @@
                     var themesSortedByTEC = data.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3);
                     html += '<div class="panel">';
                     html += '<div class="header-inline">';
-                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-theme">🏆</span> Thématiques Top (Top 3 par TEC)</div></div>';
-                    html += '<button type="button" class="btn" onclick="lancerAnalyseTopFlopIA()">🤖 Générer les analyses IA (Top & Flop)</button>';
+                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-theme">🏆</span> Top thématiques </div></div>';
+                    html += '<button type="button" class="btn" onclick="lancerAnalyseTopFlopIA()">🤖 Générer les analyses thématiques</button>';
                     html += '</div>';
                     
                     html += '<table id="table-top-themes" style="margin-top:10px;"><thead><tr>';
@@ -1169,7 +1169,7 @@
                     var dispTop = (tTopTit || tTopAn) ? 'block' : 'none';
 
                     html += '<div id="ia-result-top" style="display:' + dispTop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
-                    html += '<label class="input-label">Titre de la slide (Top)</label>';
+                    html += '<label class="input-label">Titre de la slide</label>';
                     html += '<input type="text" id="ia-titre-top" placeholder="Titre généré..." value="' + tTopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
                     html += '<div id="ce-analyse-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + tTopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(tTopAn) + '</div>';
@@ -1179,7 +1179,7 @@
                     var themesSortedByDDT = data.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 3);
                     html += '<div class="panel">';
                     html += '<div class="header-inline">';
-                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-faiblesse">📉</span> Thématiques Flop (Top 3 par DDT)</div></div>';
+                    html += '<div><div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span class="icon-faiblesse">📉</span> Flop thématiques </div></div>';
                     html += '</div>';
                     
                     html += '<table id="table-flop-themes" style="margin-top:10px;"><thead><tr>';
@@ -1204,7 +1204,7 @@
                     var dispFlop = (tFlopTit || tFlopAn) ? 'block' : 'none';
 
                     html += '<div id="ia-result-flop" style="display:' + dispFlop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
-                    html += '<label class="input-label">Titre de la slide (Flop)</label>';
+                    html += '<label class="input-label">Titre de la slide</label>';
                     html += '<input type="text" id="ia-titre-flop" placeholder="Titre généré..." value="' + tFlopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
                     html += '<div id="ce-analyse-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + tFlopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(tFlopAn) + '</div>';
@@ -1213,8 +1213,8 @@
                     console.log("Étape clé : intégration des segments d'attaque.");
                     // 4. Segments d'attaque (top 5)
                     html += '<div class="header-inline" style="margin-top:20px; margin-bottom:10px;">';
-                    html += '<div><h2 class="section-title" style="margin-bottom:0;">Segments d\'attaque (top 5 mots-clés)</h2></div>';
-                    html += '<button type="button" class="btn" onclick="lancerAnalyseSegmentsIA()">🤖 Générer l\'analyse IA (Segments)</button>';
+                    html += '<div><h2 class="section-title" style="margin-bottom:0;">Segments d\'attaque</h2></div>';
+                    html += '<button type="button" class="btn" onclick="lancerAnalyseSegmentsIA()">🤖 Générer l\'analyse mots-clés</button>';
                     html += '</div>';
 
                     html += '<div class="swo-4col">';
@@ -1229,7 +1229,7 @@
                     var sDispTop = (sTopTit || sTopAn) ? 'block' : 'none';
 
                     html += '<div id="ia-result-segments-top" style="display:' + sDispTop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
-                    html += '<label class="input-label">Titre de la slide (Top)</label>';
+                    html += '<label class="input-label">Titre de la slide</label>';
                     html += '<input type="text" id="ia-titre-segments-top" placeholder="Titre généré..." value="' + sTopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
                     html += '<div id="ce-analyse-segments-top" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + sTopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(sTopAn) + '</div>';
@@ -1240,7 +1240,7 @@
                     var sDispFlop = (sFlopTit || sFlopAn) ? 'block' : 'none';
 
                     html += '<div id="ia-result-segments-flop" style="display:' + sDispFlop + '; margin-top:15px; border-top:1px solid #eee; padding-top:15px;">';
-                    html += '<label class="input-label">Titre de la slide (Flop)</label>';
+                    html += '<label class="input-label">Titre de la slide</label>';
                     html += '<input type="text" id="ia-titre-segments-flop" placeholder="Titre généré..." value="' + sFlopTit.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">';
                     html += '<label class="input-label" style="margin-top:10px;">Analyse</label>';
                     html += '<div id="ce-analyse-segments-flop" contenteditable="true" class="ce-field" data-placeholder="L\'analyse IA apparaîtra ici..." data-raw="' + sFlopAn.replace(/"/g, '&quot;') + '" onblur="autoSaveEtatLieux()">' + renderMarkupToHtml(sFlopAn) + '</div>';
@@ -1451,18 +1451,18 @@
                             msg.innerHTML = '<span style="color:#188038">Données injectées avec succès !</span>';
                             setTimeout(function() {
                                 btn.disabled = false;
-                                btn.innerText = "📥 Importer dans Google Slides";
+                                btn.innerText = "📥 Importer dans Slides & continuer";
                                 msg.innerHTML = "";
                             }, 3000);
                         } else {
                             btn.disabled = false;
-                            btn.innerText = "📥 Importer dans Google Slides";
+                            btn.innerText = "📥 Importer dans Slides & continuer";
                             msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
                         }
                     })
                     .withFailureHandler(function(err) {
                         btn.disabled = false;
-                        btn.innerText = "📥 Importer dans Google Slides";
+                        btn.innerText = "📥 Importer dans Slides & continuer";
                         msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
                     })
                     .exporterPerformanceGlobalSlides(window.lastDiagnosticData, iaData);

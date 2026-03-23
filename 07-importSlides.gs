@@ -271,6 +271,23 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
             }
         }
 
+        // Helper pour découper l'analyse IA en 3 blocs distincts (en retirant les puces)
+        function splitAnalysis(text) {
+            if (!text) return ["", "", ""];
+            // Split par puce ou tiret en début de ligne
+            var parts = text.split(/(?:^|\n)[•-]\s*/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+            // Sécurité : si pas de puces trouvées, on tente le double saut de ligne
+            if (parts.length === 1 && text.indexOf('\n\n') !== -1) {
+                parts = text.split('\n\n').map(function(s) { return s.trim().replace(/^[•-]\s*/, ''); });
+            }
+            return [parts[0] || "", parts[1] || "", parts[2] || ""];
+        }
+
+        var topThemParts = splitAnalysis(iaData ? iaData.analyseTopThematiques : "");
+        var flopThemParts = splitAnalysis(iaData ? iaData.analyseFlopThematiques : "");
+        var topSegParts = splitAnalysis(iaData ? iaData.analyseTopSegments : "");
+        var flopSegParts = splitAnalysis(iaData ? iaData.analyseFlopSegments : "");
+
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
 
@@ -301,18 +318,27 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
                     if (iaData && iaData.titreFlopSegments) shape.getText().setText(iaData.titreFlopSegments);
                 }
 
-                // 3. Analyses IA (formatage enrichi)
-                if (shapeText === "analyse_thematiquetop_client" || titleRaw === "analyse_thematiquetop_client" || descRaw === "analyse_thematiquetop_client") {
-                    if (iaData && iaData.analyseTopThematiques) formatRichText(shape, iaData.analyseTopThematiques);
-                }
-                if (shapeText === "analyse_thematiqueflop_client" || titleRaw === "analyse_thematiqueflop_client" || descRaw === "analyse_thematiqueflop_client") {
-                    if (iaData && iaData.analyseFlopThematiques) formatRichText(shape, iaData.analyseFlopThematiques);
-                }
-                if (shapeText === "analyse_MCtop_client" || titleRaw === "analyse_MCtop_client" || descRaw === "analyse_MCtop_client") {
-                    if (iaData && iaData.analyseTopSegments) formatRichText(shape, iaData.analyseTopSegments);
-                }
-                if (shapeText === "analyse_MCflop_client" || titleRaw === "analyse_MCflop_client" || descRaw === "analyse_MCflop_client") {
-                    if (iaData && iaData.analyseFlopSegments) formatRichText(shape, iaData.analyseFlopSegments);
+                // 3. Analyses IA découpées en blocs (1, 2, 3)
+                for (var idx = 1; idx <= 3; idx++) {
+                    var tagTopThem = "analyse_thematiquetop_client_" + idx;
+                    if (shapeText === tagTopThem || titleRaw === tagTopThem || descRaw === tagTopThem) {
+                        formatRichText(shape, topThemParts[idx-1]);
+                    }
+
+                    var tagFlopThem = "analyse_thematiqueflop_client_" + idx;
+                    if (shapeText === tagFlopThem || titleRaw === tagFlopThem || descRaw === tagFlopThem) {
+                        formatRichText(shape, flopThemParts[idx-1]);
+                    }
+
+                    var tagTopSeg = "analyse_MCtop_client_" + idx;
+                    if (shapeText === tagTopSeg || titleRaw === tagTopSeg || descRaw === tagTopSeg) {
+                        formatRichText(shape, topSegParts[idx-1]);
+                    }
+
+                    var tagFlopSeg = "analyse_MCflop_client_" + idx;
+                    if (shapeText === tagFlopSeg || titleRaw === tagFlopSeg || descRaw === tagFlopSeg) {
+                        formatRichText(shape, flopSegParts[idx-1]);
+                    }
                 }
             });
 
@@ -338,11 +364,12 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData) {
                     // 1. Dessiner la jauge verte en DUPLIQUANT la forme originale (conserve l'arrondi exact)
                     if (pct > 0) {
                         var fgShape = slide.insertShape(shape);
-                        var fillWidth = Math.max(10, width * pct); // Minimum 10px pour que l'arrondi s'affiche correctement
+                        // La largeur minimale doit être au moins égale à la hauteur de la forme pour que l'arrondi (en "pilule") ne se casse pas
+                        var fillWidth = Math.max(shape.getHeight(), width * pct); 
                         fgShape.setWidth(fillWidth);
                         fgShape.setLeft(left);
                         fgShape.setTop(top); // Réalignement strict
-                        fgShape.getFill().setSolidFill("#00b050"); // Vert
+                        fgShape.getFill().setSolidFill("#00b050"); // Forcer le vert pour toutes les jauges !
                         fgShape.getBorder().setTransparent();
                         fgShape.getText().clear();
                         fgShape.setTitle("");

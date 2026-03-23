@@ -807,15 +807,15 @@ function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommerci
                         "3. STRUCTURE DES PUCES : commence chaque puce impérativement par le nom de la thématique concernée entre guillemets français pour ancrer l'analyse sur la donnée réelle.\n" +
                         "4. EXHAUSTIVITÉ : génère EXACTEMENT 3 puces pour le Top et EXACTEMENT 3 puces pour le Flop (une par thématique du JSON).\n" +
                         "5. PERSONNALISATION ET TON : Croise les données avec le profilage commercial. Adopte un ton d'expert SEO : sois rassurant sur le Top (protéger l'existant) et objectif sur le Flop (constater le décalage de visibilité sans dramatiser excessivement). Fuis les mots comme 'colossal', 'contre-attaquer', 'rentabilité immédiate'.\n\n" +
-                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE (STRICT) :\n" +
-                        "- Style télégraphique : phrases courtes, factuelles. Un constat, un chiffre, une recommandation.\n" +
+                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE (HYPER-CONCISION OBLIGATOIRE) :\n" +
+                        "- Concision extrême : MAXIMUM 2 lignes très courtes par puce. Rédige de façon chirurgicale. Élimine tout le blabla. Va droit au but : un constat, une recommandation, point final.\n" +
                         "- IMPÉRATIF VISUEL : encadre les concepts clés de ton analyse avec des astérisques simples pour le gras orange (ex : *effort de consolidation*, *potentiel inexploité*).\n" +
                         "- Règles FR : un espace obligatoire avant les deux-points (:). Pas de majuscule après les deux-points. Jours, mois et langues en minuscule. Acronymes (SEO, TEC, TPM, DDT) en majuscules.\n" +
                         "- TITRES (CRITIQUE) : Majuscule UNIQUEMENT au premier mot du titre. Tout le reste en minuscules (sauf noms propres). Exemple correct : 'Vos acquis actuels : une fondation solide à valoriser'. Exemple interdit : 'Vos Acquis Actuels : Une Fondation...'.\n\n" +
                         "Format de sortie STRICTEMENT JSON :\n" +
                         "{\n" +
                         "  \"titre_slide_top\": \"Titre valorisant vos acquis (règles de minuscules respectées)\",\n" +
-                        "  \"analyse_top\": [\"La thématique « Nom exact » est un *socle solide* avec 491 visites (TEC). Notre objectif : combler le *déficit* (DDT).\", \"...\", \"...\"],\n" +
+                        "  \"analyse_top\": [\"La thématique « Nom exact » est un *socle solide* (491 visites). Notre objectif : combler le *déficit*.\", \"...\", \"...\"],\n" +
                         "  \"titre_slide_flop\": \"Titre d'alerte sur le manque à gagner (règles de minuscules respectées)\",\n" +
                         "  \"analyse_flop\": [\"Sur « Nom exact », vous accusez un *manque à gagner objectif* (DDT de 24 965). C'est un territoire à prioriser.\", \"...\", \"...\"]\n" +
                         "}\n" +
@@ -886,19 +886,21 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
                         "Slide 2 : 'flop' (manque à gagner et vision - 3 puces au total)\n" +
                         "- Pertes de conquête (concurrents présents, pas lui) : appuie sur ses 'douleurs et frustrations' de façon objective. Cite les concurrents qui capitalisent sur son absence pour souligner le décalage entre sa légitimité métier et sa visibilité digitale. Adopte un ton de constat clinique (ex : 'visibilité captée par des pure-players' plutôt que 'ils vous volent des clients').\n" +
                         "- Territoires à prendre (océan bleu) : utilise ses 'angles d'attaque commerciaux'. Présente ces mots-clés (où la concurrence est plus faible) comme des espaces vierges parfaits pour évangéliser sa cible sur sa 'proposition de valeur unique' (ex : faire valoir ses propres certifications hors des sentiers battus).\n\n" +
-                        "Adapte ton niveau de langage à sa 'maturité perçue' et ses 'craintes'. S'il est débutant, vulgarise et fuis le jargon (pas de backlinks ou de crawl). S'il cherche un cadre, parle de méthode et de structuration. Utilise le vouvoiement. Fuis le vocabulaire commercial agressif (interdit d'utiliser des termes comme 'rentabilité immédiate', 'contre-attaquer', 'notre méthode va...'). Tu es le spécialiste qui pose un diagnostic clair.\n\n" +
-                        "Règles d'or et typographie :\n" +
-                        "- Concision extrême : un constat chiffré (issu des mots-clés), une implication stratégique, une recommandation d'expert.\n" +
+                        "Adapte ton niveau de langage à sa 'maturité perçue' et ses 'craintes'. S'il est débutant, vulgarise et fuis le jargon. Fuis le vocabulaire commercial agressif. Tu es le spécialiste qui pose un diagnostic clair.\n\n" +
+                        "CONTRAINTES DE STYLE ET TYPOGRAPHIE (HYPER-CONCISION OBLIGATOIRE) :\n" +
+                        "- NOMMAGE STRICT : Utilise exclusivement des guillemets français (« et ») pour encadrer les mots-clés. N'utilise JAMAIS de guillemets simples ('), de doubles quotes standard (\") ou de backticks (`).\n" +
+                        "- Concision extrême : MAXIMUM 2 lignes très courtes par puce. Rédige de façon chirurgicale. Élimine tout le blabla. Va droit au but : un constat, une recommandation.\n" +
                         "- Répartition stricte : génère exactement 3 puces pour la slide top, et 3 puces pour la slide flop.\n" +
                         "- Mise en valeur : encadre les concepts clés de ta recommandation avec des astérisques simples (ex : *effort SEO ciblé*, *manque à gagner objectif*).\n" +
                         "- Typographie FR : un espace obligatoire avant les deux-points (:). Pas de majuscule après les deux-points (sauf nom propre). Jours, mois et langues en minuscule. Acronymes (SEO, ROI) en majuscules.\n" +
-                        "- Vérité des données : cite les mots-clés exacts fournis dans les données JSON. N'invente aucun chiffre. N'utilise pas de backticks (`) pour encadrer les mots-clés, utilise des guillemets simples.\n\n" +
+                        "- TITRES : Majuscule UNIQUEMENT au premier mot du titre. Tout le reste en minuscules (sauf noms propres).\n" +
+                        "- Vérité des données : cite les mots-clés exacts fournis dans les données JSON. N'invente aucun chiffre.\n\n" +
                         "Format de sortie JSON attendu :\n" +
                         "{\n" +
                         "  \"titre_slide_top\": \"Titre de la slide 1 (factuel et valorisant)\",\n" +
-                        "  \"analyse_top\": [\"Puce 1\", \"Puce 2\", \"Puce 3\"],\n" +
+                        "  \"analyse_top\": [\"Puce 1 ultra courte sur le mot-clé « Mot-clé »\", \"Puce 2 ultra courte\", \"Puce 3 ultra courte\"],\n" +
                         "  \"titre_slide_flop\": \"Titre de la slide 2 (constat et opportunités)\",\n" +
-                        "  \"analyse_flop\": [\"Puce 1\", \"Puce 2\", \"Puce 3\"]\n" +
+                        "  \"analyse_flop\": [\"Puce 1 ultra courte sur le mot-clé « Mot-clé »\", \"Puce 2 ultra courte\", \"Puce 3 ultra courte\"]\n" +
                         "}\n\n" +
                         "Données JSON Top :\n" + payloadTop + "\n\n" +
                         "Données JSON Flop :\n" + payloadFlop + "\n\n" +
