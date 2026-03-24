@@ -1268,23 +1268,37 @@
                     html += '<div class="section-description">Analyse du client face au leader et aux principaux concurrents sur la sélection de mots-clés.</div>';
                     html += '<div class="comp-grid">';
 
-                    // Helper pour l'URL du favicon en utilisant Google V2 qui est bien plus performant
+                    // Helper pour l'URL du favicon en utilisant le service historique (plus fiable)
                     function getFaviconUrl(domain) {
-                        if (!domain) return '';
-                        // Nettoyage de l'URL pour ne garder que le domaine (ex: https://www.domaine.com/page -> domaine.com)
+                        console.log("Génération URL favicon pour le domaine : " + domain);
+                        if (!domain) {
+                            console.log("Domaine vide, retour d'une chaîne vide.");
+                            return '';
+                        }
                         var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://' + cleanDomain + '&size=128';
+                        var finalUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                        console.log("URL favicon générée : " + finalUrl);
+                        return finalUrl;
                     }
 
-                    // Helper pour trouver le domaine via la config (par nom du concurrent)
+                    // Helper pour trouver le domaine via la config (correction de la variable competitor)
                     function findDomainByName(name) {
+                        console.log("Recherche du domaine pour : " + name);
                         var conf = window.globalConfig || {};
-                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
-                        for (var i = 1; i <= 10; i++) {
-                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                        if (conf.clientName === name && conf.clientUrl) {
+                            console.log("Domaine client trouvé : " + conf.clientUrl);
+                            return conf.clientUrl;
                         }
-                        // Si introuvable dans la config, on tente de nettoyer le nom pour extraire un nom de domaine basique
+                        for (var i = 1; i <= 5; i++) {
+                            if (conf['competitorName' + i] === name) {
+                                var compDomain = conf['competitor' + i];
+                                console.log("Domaine concurrent trouvé : " + compDomain);
+                                return compDomain;
+                            }
+                        }
+                        // Fallback basique
                         var domainFallback = name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                        console.log("Domaine introuvable en configuration, utilisation du fallback : " + domainFallback);
                         return domainFallback;
                     }
 
@@ -1525,6 +1539,22 @@
                     analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? (document.getElementById('ce-analyse-segments-flop').dataset.raw || document.getElementById('ce-analyse-segments-flop').innerText) : ""
                 };
                 
+                // Helpers d'export déclarés en haut pour éviter les erreurs de portée (ReferenceError)
+                function findDomainByNameForExport(name) {
+                    var conf = window.globalConfig || {};
+                    if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                    for (var i = 1; i <= 5; i++) {
+                        if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                    }
+                    return name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                }
+                
+                function getFavUrl(domain) {
+                    if (!domain) return '';
+                    var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                    return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                }
+
                 // Préparation des données du paysage concurrentiel pour l'export
                 console.log("Génération de l'objet concurrenceData...");
                 var concurrenceData = null;
@@ -1533,23 +1563,6 @@
                     var clientKpi = window.lastDiagnosticData.kpis.find(function(k) { return k.isClient; });
                     var leaderKpi = allComps.length > 0 ? allComps[0] : null;
                     var otherComps = allComps.slice(1, 5); // 4 concurrents max
-                    
-                    function findDomainByNameForExport(name) {
-                        var conf = window.globalConfig || {};
-                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
-                        for (var i = 1; i <= 10; i++) {
-                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
-                        }
-                        // Si introuvable, fallback basique pour l'export
-                        var domainFallback = name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
-                        return domainFallback;
-                    }
-                    
-                    function getFavUrl(domain) {
-                        if (!domain) return '';
-                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://' + cleanDomain + '&size=128';
-                    }
 
                     if (clientKpi) {
                         concurrenceData = {
@@ -1589,7 +1602,6 @@
                                 btn.disabled = false;
                                 btn.innerText = "📥 Importer dans Slides & continuer";
                                 msg.innerHTML = "";
-                                // Transition vers l'onglet suivant (qui n'existe pas encore mais préparé logiquement)
                                 if (typeof switchTab === 'function') switchTab('focus-mots-cles');
                             }, 3000);
                         } else {
@@ -1606,7 +1618,6 @@
                     .exporterPerformanceGlobalSlides(window.lastDiagnosticData, iaData, concurrenceData);
                 console.log("=== FIN : appel google.script.run lancé ===");
             }
-
 
             // ========================== UTILITAIRES ==========================
 

@@ -153,21 +153,17 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
         var intentStats = diagnosticData.intentStats;
         var totalTop10 = clientKpi.top10;
-
         // 2. Calcul des pourcentages (Parts de l'intention dans le top 10 global du client)
         var transacPctDec = totalTop10 > 0 ? (intentStats.transac.top10 / totalTop10) : 0;
         var infoPctDec = totalTop10 > 0 ? (intentStats.info.top10 / totalTop10) : 0;
-
         // 3. Préparation des tableaux triés (Thèmes et Segments)
         Logger.log("Préparation des tableaux triés pour l'injection...");
         var topThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3) : [];
         var flopThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 3) : [];
-        
         var acquis = diagnosticData.acquis ? diagnosticData.acquis.slice(0, 5) : [];
         var gains = diagnosticData.gains ? diagnosticData.gains.slice(0, 5) : [];
         var pertes = diagnosticData.pertes ? diagnosticData.pertes.slice(0, 5) : [];
         var territoires = diagnosticData.territoires ? diagnosticData.territoires.slice(0, 5) : [];
-
         // Fonctions utilitaires pour éviter les erreurs "undefined"
         function safeNum(val) {
             return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
@@ -181,7 +177,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         var mappingComp = {};
         if (concurrenceData) {
             mappingComp['titre_slide_concurrence'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
-            
             // Client
             if (concurrenceData.client) {
                 mappingComp['nom_client'] = concurrenceData.client.name;
@@ -218,8 +213,8 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             'mot_cle_client_top3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
             'mot_cle_client_top10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
             'mot_cle_client_url': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
-            'mot_cle_transac_client': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'), // Remplacement de posAll par top100
-            'mot_cle_info_client': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),       // Remplacement de posAll par top100
+            'mot_cle_transac_client': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'),
+            'mot_cle_info_client': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),
             'mot_cle_transac_client_top_10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
             'mot_cle_info_client_top_10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
             'mot_cle_transac_pct': Math.round(transacPctDec * 100) + "%",
@@ -227,7 +222,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         };
         
         var replaceDict = {};
-
         // Thèmes Top (1 à 3)
         for (var i = 1; i <= 3; i++) {
             var thm = topThemes[i - 1];
@@ -280,7 +274,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             presentation.replaceAllText(key, String(replaceDict[key]));
         }
         Logger.log("Remplacement massif terminé.");
-
         // Fonction utilitaire de formatage pour l'IA
         function formatRichText(shape, textWithStars) {
             if (!textWithStars) return;
@@ -290,11 +283,9 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             textRange.setText(cleanText);
             // On force 18px comme demandé
             textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(18).setForegroundColor("#000000").setBold(false);
-
             var match;
             var regex = /\*([^*]+)\*/g;
             var offset = 0;
-            
             while ((match = regex.exec(textWithStars)) !== null) {
                 var wordLength = match[1].length;
                 var startIndex = match.index - offset;
@@ -302,7 +293,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 
                 var targetRange = textRange.getRange(startIndex, endIndex);
                 targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                
                 offset += 2;
             }
         }
@@ -366,10 +356,15 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     if (imgUrl) {
                         try {
                             Logger.log("Téléchargement de l'image : " + imgUrl);
-                            var blob = UrlFetchApp.fetch(imgUrl).getBlob();
-                            var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                            newImg.setTitle(titleRaw);
-                            newImg.setDescription(descRaw);
+                            var response = UrlFetchApp.fetch(imgUrl, { muteHttpExceptions: true });
+                            if (response.getResponseCode() === 200) {
+                                var blob = response.getBlob();
+                                var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                                newImg.setTitle(titleRaw);
+                                newImg.setDescription(descRaw);
+                            } else {
+                                Logger.log("Image ignorée (code " + response.getResponseCode() + ") : " + imgUrl);
+                            }
                             shape.remove();
                         } catch (errImg) {
                             Logger.log("Erreur chargement image " + imgUrl + " : " + errImg.message);
@@ -418,7 +413,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     }
                 }
             });
-
             // Étape B : Traitement des jauges dynamiques (Conservation de l'arrondi)
             var shapesForGauges = slide.getShapes();
             shapesForGauges.forEach(function(shape) {
@@ -432,6 +426,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 var targetGauge = isTransacGauge ? "transac" : (isInfoGauge ? "info" : null);
 
                 if (targetGauge) {
+                   
                     var pct = (targetGauge === "transac") ? transacPctDec : infoPctDec;
 
                     var left = shape.getLeft();
@@ -442,11 +437,12 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     if (pct > 0) {
                         var fgShape = slide.insertShape(shape);
                         // La largeur minimale doit être au moins égale à la hauteur de la forme pour que l'arrondi (en "pilule") ne se casse pas
-                        var fillWidth = Math.max(shape.getHeight(), width * pct); 
+                        var fillWidth = Math.max(shape.getHeight(), width * pct);
                         fgShape.setWidth(fillWidth);
                         fgShape.setLeft(left);
                         fgShape.setTop(top); // Réalignement strict
-                        fgShape.getFill().setSolidFill("#00b050"); // Forcer le vert pour toutes les jauges !
+                        fgShape.getFill().setSolidFill("#00b050");
+                        // Forcer le vert pour toutes les jauges !
                         fgShape.getBorder().setTransparent();
                         fgShape.getText().clear();
                         fgShape.setTitle("");
@@ -454,7 +450,8 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     }
 
                     // 2. Transformer la forme originale en fond gris
-                    shape.getFill().setSolidFill("#f1f3f4"); // Gris clair
+                    shape.getFill().setSolidFill("#f1f3f4");
+                    // Gris clair
                     shape.getBorder().setTransparent();
                     shape.getText().clear();
                     shape.setTitle("");
@@ -462,10 +459,8 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 }
             });
         });
-
         Logger.log("=== FIN EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
         return { success: true, url: presentation.getUrl() };
-
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT GLOBAL : " + e.message);
         return { success: false, error: e.message };

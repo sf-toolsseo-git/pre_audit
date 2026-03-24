@@ -35,7 +35,19 @@ function chargerConfigurationPreAudit() {
         analyseSegmentTopTitre: props['ANALYSE_SEGMENT_TOP_TITRE'] || "",
         analyseSegmentTop: props['ANALYSE_SEGMENT_TOP'] || "",
         analyseSegmentFlopTitre: props['ANALYSE_SEGMENT_FLOP_TITRE'] || "",
-        analyseSegmentFlop: props['ANALYSE_SEGMENT_FLOP'] || ""
+        analyseSegmentFlop: props['ANALYSE_SEGMENT_FLOP'] || "",
+        
+        // Ajout des concurrents pour que le HTML puisse faire la liaison avec les favicons
+        competitorName1: props['COMP_NAME_1'] || "",
+        competitor1: props['COMPETITOR_1'] || "",
+        competitorName2: props['COMP_NAME_2'] || "",
+        competitor2: props['COMPETITOR_2'] || "",
+        competitorName3: props['COMP_NAME_3'] || "",
+        competitor3: props['COMPETITOR_3'] || "",
+        competitorName4: props['COMP_NAME_4'] || "",
+        competitor4: props['COMPETITOR_4'] || "",
+        competitorName5: props['COMP_NAME_5'] || "",
+        competitor5: props['COMPETITOR_5'] || ""
     };
 }
 
