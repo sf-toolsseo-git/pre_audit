@@ -868,12 +868,14 @@ function preparerDonneesClustering(jsonMotsCles) {
     }
 }
 
-function genererContexteClientIA(urlsTexte) {
+function genererContexteClientIA(urlsTexte, briefTexte) {
+    Logger.log("=== DÉBUT : genererContexteClientIA ===");
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['GEMINI_API_KEY'];
         
         if (!apiKey || apiKey.trim() === "") {
+            Logger.log("Erreur : Clé API Gemini introuvable.");
             throw new Error("Clé API Gemini introuvable. Veuillez configurer et sauvegarder l'onglet Général.");
         }
 
@@ -924,14 +926,19 @@ function genererContexteClientIA(urlsTexte) {
         if (contenuGlobal.length > 25000) {
             contenuGlobal = contenuGlobal.substring(0, 25000);
         }
+        
+        Logger.log("Longueur du contenu extrait du site : " + contenuGlobal.length);
+        Logger.log("Longueur de la prise de brief : " + (briefTexte ? briefTexte.length : 0));
 
-        var promptStr = "Tu es un expert SEO. À partir du contenu brut extrait du site web du client, tu dois générer son \"contexte métier\" selon la structure stricte ci-dessous.\n" +
-                        "Extrais un maximum d'informations pertinentes pour nourrir la compréhension globale d'une IA, sans inventer de données.\n\n" +
+        var promptStr = "Tu es un expert SEO. Ton objectif est de croiser les informations du 'Texte brut du site' avec la 'Prise de brief du consultant' pour générer le \"contexte métier\" du client selon la structure stricte ci-dessous.\n" +
+                        "Extrais un maximum d'informations pertinentes pour nourrir la compréhension globale d'une IA. Accorde une priorité forte aux éléments mentionnés dans la prise de brief, car ce sont des informations validées directement par le client.\n\n" +
                         "RÈGLES TYPOGRAPHIQUES OBLIGATOIRES (français) :\n" +
                         "1. Majuscule uniquement au premier mot des labels (sauf noms propres).\n" +
                         "2. Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
                         "3. Jours, mois et langues toujours en minuscule.\n" +
-                        "4. Pas de majuscule après les deux points (:) car ce ne sont pas des phrases complètes.\n\n" +
+                        "4. Toujours un espace avant le deux-points (:).\n" +
+                        "5. Pas de majuscule après les deux-points (:) car ce ne sont pas des phrases complètes.\n" +
+                        "6. Acronymes toujours en majuscules (ex : SEO, IA, API, SERP, HTML).\n\n" +
                         "STRUCTURE ATTENDUE :\n" +
                         "- Modèle économique : (ex : e-commerce b2b, génération de leads locaux, saas...)\n" +
                         "- Secteur d'activité principal : (définition précise du cœur de métier)\n" +
@@ -941,7 +948,8 @@ function genererContexteClientIA(urlsTexte) {
                         "- Périmètre géographique : (ex : national fr, local ciblé, international...)\n" +
                         "- Typologie d'audience : (ex : b2b cible direction, b2c grand public...)\n" +
                         "- Définition de la conversion cible : (ex : achat en ligne, prise de rdv, demande de devis...)\n\n" +
-                        "Texte brut du site :\n" + contenuGlobal;
+                        "[PRISE DE BRIEF DU CONSULTANT] :\n" + (briefTexte || "Non renseigné.") + "\n\n" +
+                        "[TEXTE BRUT DU SITE] :\n" + contenuGlobal;
 
         var payload = {
             "contents": [{
@@ -964,16 +972,20 @@ function genererContexteClientIA(urlsTexte) {
         var json = JSON.parse(apiResponse.getContentText());
 
         if (apiResponse.getResponseCode() !== 200) {
+            Logger.log("Erreur API Gemini : " + apiResponse.getContentText());
             throw new Error(json.error ? json.error.message : "Erreur inattendue de l'API Gemini.");
         }
 
         if (json.candidates && json.candidates.length > 0 && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            Logger.log("=== FIN : genererContexteClientIA (Succès) ===");
             return { success: true, texte: json.candidates[0].content.parts[0].text.trim() };
         } else {
+            Logger.log("Erreur : L'API Gemini n'a renvoyé aucun texte.");
             throw new Error("L'API Gemini n'a renvoyé aucun texte.");
         }
 
     } catch (error) {
+        Logger.log("Erreur dans genererContexteClientIA : " + error.message);
         return { success: false, message: error.message };
     }
 }

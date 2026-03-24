@@ -158,9 +158,9 @@
         <div class="tab-content active" id="content-config">
             <div class="main-area">
                 <div class="config-card">
-                    <h2 class="section-title">Projet et contexte</h2>
-
-                    <div class="row">
+                    <!-- Bloc 1 : Projet -->
+                    <h2 class="section-title">Projet</h2>
+                    <div class="row" style="margin-bottom: 20px;">
                         <div class="col">
                             <label class="input-label">Identité client</label>
                             <input type="text" id="conf-client-name" placeholder="Nom du client">
@@ -169,44 +169,53 @@
                             <label class="input-label">URL page d'accueil</label>
                             <input type="text" id="conf-client-url" placeholder="https://...">
                         </div>
-                    </div>
-
-                    <div class="row">
                         <div class="col">
                             <label class="input-label">ID du Google Slides</label>
                             <input type="text" id="conf-slide-id" placeholder="ID de la présentation">
+                        </div>
+                    </div>
+                    
+                    <hr class="section-separator">
+
+                    <!-- Bloc 2 : Brief -->
+                    <h2 class="section-title">Brief</h2>
+                    <div class="row" style="margin-bottom: 20px;">
+                        <div class="col">
+                            <label class="input-label">Prise de brief</label>
+                            <textarea id="conf-brief" placeholder="Notes et résumés..." style="min-height: 100px;"></textarea>
                         </div>
                         <div class="col">
                             <label class="input-label">URL des réponses (Google Form)</label>
                             <input type="text" id="conf-url-reponses" placeholder="https://..." value="https://docs.google.com/forms/d/1ysuod7lKrpOjqb-wVPnfhauZmslPfnEXDdaRD4tAD2E/">
                         </div>
                     </div>
+                    
+                    <hr class="section-separator">
 
-                    <div class="row">
-                        <div class="col">
+                    <!-- Bloc 3 : Contexte -->
+                    <h2 class="section-title">Contexte</h2>
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+                        <div>
                             <label class="input-label">URL de contexte (une par ligne)</label>
-                            <textarea id="conf-urls-contexte" placeholder="https://..." style="min-height: 100px;"></textarea>
-                            <div style="text-align: center; margin-top: 10px;">
-                                <button type="button" id="btn-gen-contexte" class="btn" style="width: auto;" onclick="lancerGenerationIAContexte()">🤖 Générer le contexte par IA</button>
-                            </div>
+                            <textarea id="conf-urls-contexte" placeholder="https://..." style="min-height: 60px;"></textarea>
                         </div>
-                        <div class="col">
+                        
+                        <div style="text-align: center;">
+                            <button type="button" id="btn-gen-contexte" class="btn" style="width: auto;" onclick="lancerGenerationIAContexte()">🤖 Générer le contexte par IA</button>
+                        </div>
+                        
+                        <div>
                             <label class="input-label">Contexte client</label>
-                            <textarea id="conf-contexte-client" placeholder="Description de l'activité, cibles..." style="min-height: 140px;"></textarea>
+                            <textarea id="conf-contexte-client" placeholder="Description de l'activité, cibles..." style="min-height: 120px;"></textarea>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <label class="input-label">Prise de brief</label>
-                            <textarea id="conf-brief" placeholder="Notes et résumés..." style="min-height: 150px;"></textarea>
+                        
+                        <div style="text-align: center;">
+                            <button type="button" id="btn-gen-profilage" class="btn" style="width: auto;" onclick="lancerGenerationProfilageIA()">🤖 Générer le profilage commercial</button>
                         </div>
-                        <div class="col">
-                            <label class="input-label">Profilage commercial (Contexte IA)</label>
-                            <textarea id="conf-contexte-preaudit" placeholder="Profil, douleurs, objectifs, craintes, angles d'attaque..." style="min-height: 100px;"></textarea>
-                            <div style="text-align: center; margin-top: 10px;">
-                                <button type="button" id="btn-gen-profilage" class="btn" style="width: auto;" onclick="lancerGenerationProfilageIA()">🤖 Générer le profilage commercial (IA)</button>
-                            </div>
+                        
+                        <div>
+                            <label class="input-label">Profilage commercial</label>
+                            <textarea id="conf-contexte-preaudit" placeholder="Profil, douleurs, objectifs, craintes, angles d'attaque..." style="min-height: 120px;"></textarea>
                         </div>
                     </div>
 
@@ -603,8 +612,10 @@
             }
 
             function lancerGenerationIAContexte() {
+                console.log("=== DÉBUT : lancerGenerationIAContexte ===");
                 var btn = document.getElementById('btn-gen-contexte');
                 var urlsTexteBrut = document.getElementById('conf-urls-contexte').value;
+                var briefTexte = document.getElementById('conf-brief').value;
                 var contexteField = document.getElementById('conf-contexte-client');
 
                 if (!urlsTexteBrut || urlsTexteBrut.trim() === "") {
@@ -616,7 +627,9 @@
 
                 btn.disabled = true;
                 btn.innerText = "⏳ Génération en cours...";
-                showLoader("Analyse sémantique par l'IA...");
+                showLoader("Génération du contexte client");
+
+                console.log("Envoi de la requête au backend avec " + urlsFormatees.split(',').length + " URL(s) et le brief.");
 
                 google.script.run.withSuccessHandler(function(res) {
                     hideLoader();
@@ -624,15 +637,18 @@
                     btn.innerText = "🤖 Générer le contexte par IA";
                     if (res.success) {
                         contexteField.value = res.texte;
+                        console.log("=== FIN : lancerGenerationIAContexte (Succès) ===");
                     } else {
                         alert("Échec de l'IA : " + res.message);
+                        console.error("=== FIN : lancerGenerationIAContexte (Erreur IA) ===");
                     }
                 }).withFailureHandler(function(err) {
                     hideLoader();
                     btn.disabled = false;
                     btn.innerText = "🤖 Générer le contexte par IA";
                     alert("Erreur critique : " + err.message);
-                }).genererContexteClientIA(urlsFormatees);
+                    console.error("=== FIN : lancerGenerationIAContexte (Erreur critique) ===");
+                }).genererContexteClientIA(urlsFormatees, briefTexte);
             }
 
             function lancerGenerationProfilageIA() {
@@ -644,12 +660,12 @@
 
                 btn.disabled = true;
                 btn.innerText = "⏳ Analyse en cours...";
-                showLoader("Génération du profilage commercial par l'IA...");
+                showLoader("Génération du profilage commercial...");
 
                 google.script.run.withSuccessHandler(function(res) {
                     hideLoader();
                     btn.disabled = false;
-                    btn.innerText = "🤖 Générer le profilage commercial (IA)";
+                    btn.innerText = "🤖 Générer le profilage commercial";
                     if (res.success) {
                         profilageField.value = res.texte;
                         sauvegarderConfiguration();
@@ -659,7 +675,7 @@
                 }).withFailureHandler(function(err) {
                     hideLoader();
                     btn.disabled = false;
-                    btn.innerText = "🤖 Générer le profilage commercial (IA)";
+                    btn.innerText = "🤖 Générer le profilage commercial";
                     alert("Erreur critique : " + err.message);
                 }).genererProfilageCommercialIA(urlForm, brief, contexte);
             }
@@ -1801,7 +1817,7 @@
                     })
                     .sauvegarderConfigurationPreAudit(form);
             }
-            
+
             function preparerOngletFocusMotCle() {
                 console.log("=== DÉBUT : preparerOngletFocusMotCle ===");
                 switchTab('focus-mot-cle');
