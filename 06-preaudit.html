@@ -140,6 +140,7 @@
             <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush">2. Analyse globale</div>
             <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic">3. Diagnostic sémantique</div>
             <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux">4. État des lieux du référencement</div>
+            <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
         </div>
         <!-- ===================== ONGLET 1 : CONFIGURATION ===================== -->
         <div class="tab-content active" id="content-config">
@@ -325,6 +326,52 @@
             </div>
         </div>
 
+        <!-- ===================== ONGLET 5 : FOCUS MOT-CLÉ ===================== -->
+        <div class="tab-content" id="content-focus-mot-cle">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">Analyse spécifique d'un mot-clé</h2>
+                    <div class="section-description">Validez ou éditez le mot-clé stratégique, son volume et les URLs associées.</div>
+                    
+                    <div class="row" style="margin-top: 15px; align-items: flex-end;">
+                        <div class="col" style="flex: 2;">
+                            <label class="input-label" for="focus-kw">Mot-clé cible</label>
+                            <input type="text" id="focus-kw" placeholder="Ex: agence seo paris">
+                        </div>
+                        <div class="col" style="flex: 1;">
+                            <button class="btn" id="btn-search-kw" onclick="lancerRechercheMotCle()" style="margin-bottom: 5px;">🔍 Rechercher les données</button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="focus-vol">Volume de recherche</label>
+                            <input type="text" id="focus-vol" placeholder="Ex: 1500">
+                        </div>
+                        <div class="col">
+                            <label class="input-label" for="focus-comp-url">Meilleure page concurrente</label>
+                            <input type="text" id="focus-comp-url" placeholder="URL concurrente">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="focus-client-url">Page positionnée client</label>
+                            <input type="text" id="focus-client-url" placeholder="URL client">
+                            <label style="font-size: 13px; color: #5f6368; display: flex; align-items: center; margin-top: 5px; cursor: pointer;">
+                                <input type="checkbox" id="focus-no-page" onchange="toggleFocusClientUrl()"> (pas de page positionnée)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="continuer-bar">
+                    <span id="focus-msg" style="font-size: 12px; font-weight: bold;"></span>
+                    <button class="btn btn-continuer" id="btn-save-focus" onclick="sauvegarderFocusMotCle()">💾 Enregistrer le focus</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             var base64ImgKw = null;
             var mimeImgKw = null;
@@ -385,6 +432,20 @@
                                     console.log("Étape clé : préparation de l'état des lieux au chargement");
                                     preparerOngletEtatLieux();
                                 }
+                                if (config.activeTab === 'focus-mot-cle') {
+                                    preparerOngletFocusMotCle();
+                                }
+                            }
+
+                            // Restauration de l'onglet 5
+                            if (config.focusKw) document.getElementById('focus-kw').value = config.focusKw;
+                            if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
+                            if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
+                            if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
+                            if (config.focusNoPage === "true") {
+                                var cb = document.getElementById('focus-no-page');
+                                cb.checked = true;
+                                toggleFocusClientUrl();
                             }
                         }
 
@@ -1602,7 +1663,7 @@
                                 btn.disabled = false;
                                 btn.innerText = "📥 Importer dans Slides & continuer";
                                 msg.innerHTML = "";
-                                if (typeof switchTab === 'function') switchTab('focus-mots-cles');
+                                preparerOngletFocusMotCle();
                             }, 3000);
                         } else {
                             btn.disabled = false;
@@ -1620,6 +1681,140 @@
             }
 
             // ========================== UTILITAIRES ==========================
+
+            // ========================== ONGLET 5 : FOCUS MOT-CLÉ ==========================
+
+            function preparerOngletFocusMotCle() {
+                console.log("=== DÉBUT : preparerOngletFocusMotCle ===");
+                switchTab('focus-mot-cle');
+
+                var kwInput = document.getElementById('focus-kw');
+                if (kwInput.value.trim() === "" && window.lastDiagnosticData) {
+                    var data = window.lastDiagnosticData;
+                    var defaultKw = "";
+                    if (data.gains && data.gains.length > 0) {
+                        defaultKw = data.gains[0].kw;
+                    } else if (data.pertes && data.pertes.length > 0) {
+                        defaultKw = data.pertes[0].kw;
+                    } else if (data.territoires && data.territoires.length > 0) {
+                        defaultKw = data.territoires[0].kw;
+                    }
+
+                    if (defaultKw !== "") {
+                        kwInput.value = defaultKw;
+                        lancerRechercheMotCle();
+                    }
+                }
+                console.log("=== FIN : preparerOngletFocusMotCle ===");
+            }
+
+            function toggleFocusClientUrl() {
+                var cb = document.getElementById('focus-no-page');
+                var input = document.getElementById('focus-client-url');
+                if (cb.checked) {
+                    input.value = "";
+                    input.disabled = true;
+                } else {
+                    input.disabled = false;
+                }
+            }
+
+            function lancerRechercheMotCle() {
+                var motCle = document.getElementById('focus-kw').value.trim();
+                if (motCle === "") {
+                    alert("Veuillez saisir un mot-clé.");
+                    return;
+                }
+
+                console.log("Lancement de la recherche pour le mot-clé : " + motCle);
+                var btn = document.getElementById('btn-search-kw');
+                btn.disabled = true;
+                showLoader("Recherche des données du mot-clé...");
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        hideLoader();
+                        btn.disabled = false;
+                        console.log("Données reçues :", res);
+                        
+                        if (res.success) {
+                            document.getElementById('focus-vol').value = res.volume || "";
+                            document.getElementById('focus-comp-url').value = res.compUrl || "";
+                            
+                            var clientUrl = res.clientUrl || "";
+                            var cbNoPage = document.getElementById('focus-no-page');
+                            var inputClient = document.getElementById('focus-client-url');
+                            
+                            if (clientUrl === "" || clientUrl === "-") {
+                                cbNoPage.checked = true;
+                                inputClient.value = "";
+                                inputClient.disabled = true;
+                            } else {
+                                cbNoPage.checked = false;
+                                inputClient.disabled = false;
+                                inputClient.value = clientUrl;
+                            }
+                        } else {
+                            alert("Mot-clé non trouvé dans la Matrice.");
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoader();
+                        btn.disabled = false;
+                        alert("Erreur lors de la recherche : " + err.message);
+                    })
+                    .recupererDetailsMotCle(motCle);
+            }
+
+            function sauvegarderFocusMotCle() {
+                var btn = document.getElementById('btn-save-focus');
+                var msg = document.getElementById('focus-msg');
+                
+                var data = {
+                    kw: document.getElementById('focus-kw').value,
+                    vol: document.getElementById('focus-vol').value,
+                    clientUrl: document.getElementById('focus-client-url').value,
+                    noPage: document.getElementById('focus-no-page').checked ? "true" : "false",
+                    compUrl: document.getElementById('focus-comp-url').value
+                };
+
+                console.log("Sauvegarde du focus mot-clé avec les données :", data);
+
+                btn.disabled = true;
+                btn.innerText = "⏳ Enregistrement...";
+                msg.innerText = "";
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        console.log("Sauvegarde réussie :", res);
+                        btn.innerText = "✅ Enregistré";
+                        msg.style.color = '#188038';
+                        msg.innerText = "Focus mot-clé enregistré avec succès !";
+                        
+                        // MAJ de la conf globale locale
+                        if (window.globalConfig) {
+                            window.globalConfig.focusKw = data.kw;
+                            window.globalConfig.focusVol = data.vol;
+                            window.globalConfig.focusClientUrl = data.clientUrl;
+                            window.globalConfig.focusNoPage = data.noPage;
+                            window.globalConfig.focusCompUrl = data.compUrl;
+                        }
+
+                        setTimeout(function() {
+                            btn.disabled = false;
+                            btn.innerText = "💾 Enregistrer le focus";
+                            msg.innerText = "";
+                        }, 2500);
+                    })
+                    .withFailureHandler(function(err) {
+                        console.log("Erreur lors de la sauvegarde :", err);
+                        btn.disabled = false;
+                        btn.innerText = "💾 Enregistrer le focus";
+                        msg.style.color = '#d93025';
+                        msg.innerText = "❌ Erreur : " + err.message;
+                    })
+                    .sauvegarderConfigFocusMotCle(data);
+            }
 
             function showLoader(msg) {
                 document.getElementById('loaderMsg').innerText = msg;

@@ -47,8 +47,122 @@ function chargerConfigurationPreAudit() {
         competitorName4: props['COMP_NAME_4'] || "",
         competitor4: props['COMPETITOR_4'] || "",
         competitorName5: props['COMP_NAME_5'] || "",
-        competitor5: props['COMPETITOR_5'] || ""
+        competitor5: props['COMPETITOR_5'] || "",
+        
+        // Focus mot-clé
+        focusKw: props['FOCUS_KW'] || "",
+        focusVol: props['FOCUS_VOL'] || "",
+        focusClientUrl: props['FOCUS_CLIENT_URL'] || "",
+        focusNoPage: props['FOCUS_NO_PAGE'] || "false",
+        focusCompUrl: props['FOCUS_COMP_URL'] || ""
     };
+}
+
+function recupererDetailsMotCle(motCle) {
+    Logger.log("=== DÉBUT : recupererDetailsMotCle ===");
+    Logger.log("Mot-clé recherché : " + motCle);
+    
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Matrice");
+    if (!sheet) {
+        Logger.log("Erreur : l'onglet 'Matrice' est introuvable.");
+        return { success: false, error: "Onglet Matrice introuvable." };
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+        Logger.log("Erreur : la Matrice ne contient pas assez de données.");
+        return { success: false, error: "Matrice vide." };
+    }
+    
+    var headers = data[0];
+    
+    // Identifier les colonnes "URL "
+    var urlClientIdx = -1;
+    var urlCompIndices = [];
+    var posCompIndices = [];
+    
+    var props = PropertiesService.getScriptProperties().getProperties();
+    var clientName = props['CLIENT_NAME'] || "Client";
+    
+    for (var j = 0; j < headers.length; j++) {
+        var h = String(headers[j]);
+        if (h.indexOf("URL ") === 0) {
+            var entName = h.substring(4).trim();
+            if (entName === clientName || (urlClientIdx === -1 && entName === "Client")) {
+                urlClientIdx = j;
+            } else {
+                urlCompIndices.push(j);
+                // Trouver la position correspondante
+                for (var c = 0; c < headers.length; c++) {
+                    if (String(headers[c]) === "Pos " + entName) {
+                        posCompIndices.push({ posIdx: c, urlIdx: j });
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    Logger.log("Index URL Client : " + urlClientIdx);
+    Logger.log("Index Positions Concurrents : " + JSON.stringify(posCompIndices));
+    
+    var kwLower = motCle.toLowerCase();
+    for (var i = 1; i < data.length; i++) {
+        var row = data[i];
+        if (String(row[0]).trim().toLowerCase() === kwLower) {
+            Logger.log("Match trouvé à la ligne : " + (i + 1));
+            var volume = row[1];
+            var clientUrl = urlClientIdx > -1 ? String(row[urlClientIdx]).trim() : "";
+            
+            var bestCompUrl = "";
+            var bestCompPos = 9999;
+            
+            for (var k = 0; k < posCompIndices.length; k++) {
+                var pos = parseInt(row[posCompIndices[k].posIdx]);
+                if (!isNaN(pos) && pos > 0 && pos < bestCompPos) {
+                    bestCompPos = pos;
+                    bestCompUrl = String(row[posCompIndices[k].urlIdx]).trim();
+                }
+            }
+            
+            if (bestCompUrl === "-" || bestCompUrl === "") bestCompUrl = "";
+            
+            var result = {
+                success: true,
+                volume: volume,
+                clientUrl: clientUrl,
+                compUrl: bestCompUrl
+            };
+            
+            Logger.log("Résultat : " + JSON.stringify(result));
+            return result;
+        }
+    }
+    
+    Logger.log("Aucun match trouvé pour le mot-clé.");
+    return { success: false, error: "Mot-clé non trouvé." };
+}
+
+function sauvegarderConfigFocusMotCle(data) {
+    Logger.log("=== DÉBUT : sauvegarderConfigFocusMotCle ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'FOCUS_KW': data.kw || "",
+            'FOCUS_VOL': data.vol || "",
+            'FOCUS_CLIENT_URL': data.clientUrl || "",
+            'FOCUS_NO_PAGE': data.noPage || "false",
+            'FOCUS_COMP_URL': data.compUrl || ""
+        });
+        
+        syncPropertiesToConfigSheet();
+        Logger.log("Sauvegarde réussie.");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur : " + e.message);
+        throw new Error("Erreur lors de la sauvegarde du focus mot-clé : " + e.message);
+    }
 }
 
 function recupererReponseFormulaire(urlForm) {
@@ -397,9 +511,9 @@ function genererDiagnostic(selection) {
 
             // Segmentation SWO (Uniquement les mots-clés principaux)
             if (kwMeta.isMain) {
-                if (clientPos <= 3) {
+                if (clientPos <= 10) {
                     acquis.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
-                } else if (clientPos >= 4 && clientPos <= 20) {
+                } else if (clientPos >= 11 && clientPos <= 20) {
                     gains.push({ kw: kw, vol: vol, pos: clientPos, DDT: kwDDT });
                 } else if (clientPos > 20 && compInTop10Count >= 1) {
                     pertes.push({ kw: kw, vol: vol, pos: clientPos < 999 ? clientPos : null, DDT: kwDDT, bestCompName: bestCompName, bestCompPos: bestCompPos < 999 ? bestCompPos : null });

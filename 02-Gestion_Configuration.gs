@@ -432,7 +432,9 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
             // 3. Condition de conservation et Segmentation
             if (concurrentsDansLeSeuil >= minConcurrents) {
                 var segment = "";
-                if (isInstall && clientPos <= 20) {
+                if (isInstall && clientPos <= 10) {
+                    segment = "🛡️ Acquis";
+                } else if (isInstall && clientPos >= 11 && clientPos <= 20) {
                     segment = "⚡ Quick-win";
                 } else {
                     var thresholdForte = isMultiTheme ? 2 : 3;
