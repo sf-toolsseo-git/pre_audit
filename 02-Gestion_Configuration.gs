@@ -63,35 +63,35 @@ function chargerDonneesInitiales() {
     var hasMatrix = (ss.getSheetByName("Matrice") !== null);
     var donnees = {
         hasMatrix: hasMatrix,
-        geminiApiKey: props['GEMINI_API_KEY'] || "",
-        urlsContexte: props['URLS_CONTEXTE'] || "",
-        contexteClient: props['CONTEXTE_CLIENT'] || "",
-        isMultiTheme: props['IS_MULTI_THEME'] === 'true',
-        projectType: props['PROJECT_TYPE'] || "installe",
-        clientName: props['CLIENT_NAME'] || "",
-        clientUrl: props['CLIENT_URL'] || "",
-        clientStrength: props['CLIENT_STRENGTH'] || "moyenne",
-        clientBrand: props['CLIENT_BRAND'] || "",
-        competitorName1: props['COMP_NAME_1'] || "",
-        competitor1: props['COMPETITOR_1'] || "",
-        competitorStrength1: props['COMP_STRENGTH_1'] || "moyenne",
-        competitorBrand1: props['COMP_BRAND_1'] || "",
-        competitorName2: props['COMP_NAME_2'] || "",
-        competitor2: props['COMPETITOR_2'] || "",
-        competitorStrength2: props['COMP_STRENGTH_2'] || "moyenne",
-        competitorBrand2: props['COMP_BRAND_2'] || "",
-        competitorName3: props['COMP_NAME_3'] || "",
-        competitor3: props['COMPETITOR_3'] || "",
-        competitorStrength3: props['COMP_STRENGTH_3'] || "moyenne",
-        competitorBrand3: props['COMP_BRAND_3'] || "",
-        competitorName4: props['COMP_NAME_4'] || "",
-        competitor4: props['COMPETITOR_4'] || "",
-        competitorStrength4: props['COMP_STRENGTH_4'] || "moyenne",
-        competitorBrand4: props['COMP_BRAND_4'] || "",
-        competitorName5: props['COMP_NAME_5'] || "",
-        competitor5: props['COMPETITOR_5'] || "",
-        competitorStrength5: props['COMP_STRENGTH_5'] || "moyenne",
-        competitorBrand5: props['COMP_BRAND_5'] || ""
+        geminiApiKey: props['CONF_API_KEY_GEMINI'] || "",
+        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
+        contexteClient: props['PA_CONTEXTE_CLIENT'] || "",
+        isMultiTheme: props['CONF_IS_MULTI_THEME'] === 'true',
+        projectType: props['CONF_PROJECT_TYPE'] || "installe",
+        clientName: props['CONF_CLIENT_NAME'] || "",
+        clientUrl: props['CONF_CLIENT_URL'] || "",
+        clientStrength: props['CONF_CLIENT_STRENGTH'] || "moyenne",
+        clientBrand: props['CONF_CLIENT_BRAND'] || "",
+        competitorName1: props['CONF_COMP_NAME_1'] || "",
+        competitor1: props['CONF_COMP_URL_1'] || "",
+        competitorStrength1: props['CONF_COMP_STRENGTH_1'] || "moyenne",
+        competitorBrand1: props['CONF_COMP_BRAND_1'] || "",
+        competitorName2: props['CONF_COMP_NAME_2'] || "",
+        competitor2: props['CONF_COMP_URL_2'] || "",
+        competitorStrength2: props['CONF_COMP_STRENGTH_2'] || "moyenne",
+        competitorBrand2: props['CONF_COMP_BRAND_2'] || "",
+        competitorName3: props['CONF_COMP_NAME_3'] || "",
+        competitor3: props['CONF_COMP_URL_3'] || "",
+        competitorStrength3: props['CONF_COMP_STRENGTH_3'] || "moyenne",
+        competitorBrand3: props['CONF_COMP_BRAND_3'] || "",
+        competitorName4: props['CONF_COMP_NAME_4'] || "",
+        competitor4: props['CONF_COMP_URL_4'] || "",
+        competitorStrength4: props['CONF_COMP_STRENGTH_4'] || "moyenne",
+        competitorBrand4: props['CONF_COMP_BRAND_4'] || "",
+        competitorName5: props['CONF_COMP_NAME_5'] || "",
+        competitor5: props['CONF_COMP_URL_5'] || "",
+        competitorStrength5: props['CONF_COMP_STRENGTH_5'] || "moyenne",
+        competitorBrand5: props['CONF_COMP_BRAND_5'] || ""
     };
     
     function parseAndMigrateCTR(val, defaultVal) {
@@ -121,7 +121,7 @@ function chargerDonneesInitiales() {
 }
 
 function enregistrerConfiguration(formulaire) {
-    Logger.log("Début de l'enregistrement de la configuration");
+    Logger.log("=== DÉBUT : enregistrerConfiguration ===");
     var props = PropertiesService.getScriptProperties();
     
     // Configuration silencieuse des clés API SERP
@@ -132,35 +132,35 @@ function enregistrerConfiguration(formulaire) {
     
     props.setProperties({
         'LISTE_CLES_API': JSON.stringify(listeClesAPI),
-        'GEMINI_API_KEY': formulaire.geminiApiKey || "",
-        'URLS_CONTEXTE': formulaire.urlsContexte || "",
-        'CONTEXTE_CLIENT': formulaire.contexteClient || "",
-        'IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
-        'PROJECT_TYPE': formulaire.projectType,
-        'CLIENT_NAME': formulaire.clientName,
-        'CLIENT_URL': formulaire.clientUrl,
-        'CLIENT_STRENGTH': formulaire.clientStrength,
-        'CLIENT_BRAND': formulaire.clientBrand,
-        'COMP_NAME_1': formulaire.competitorName1,
-        'COMPETITOR_1': formulaire.competitor1,
-        'COMP_STRENGTH_1': formulaire.competitorStrength1,
-        'COMP_BRAND_1': formulaire.competitorBrand1,
-        'COMP_NAME_2': formulaire.competitorName2,
-        'COMPETITOR_2': formulaire.competitor2,
-        'COMP_STRENGTH_2': formulaire.competitorStrength2,
-        'COMP_BRAND_2': formulaire.competitorBrand2,
-        'COMP_NAME_3': formulaire.competitorName3,
-        'COMPETITOR_3': formulaire.competitor3,
-        'COMP_STRENGTH_3': formulaire.competitorStrength3,
-        'COMP_BRAND_3': formulaire.competitorBrand3,
-        'COMP_NAME_4': formulaire.competitorName4,
-        'COMPETITOR_4': formulaire.competitor4,
-        'COMP_STRENGTH_4': formulaire.competitorStrength4,
-        'COMP_BRAND_4': formulaire.competitorBrand4,
-        'COMP_NAME_5': formulaire.competitorName5,
-        'COMPETITOR_5': formulaire.competitor5,
-        'COMP_STRENGTH_5': formulaire.competitorStrength5,
-        'COMP_BRAND_5': formulaire.competitorBrand5,
+        'CONF_API_KEY_GEMINI': formulaire.geminiApiKey || "",
+        'PA_URLS_CONTEXTE': formulaire.urlsContexte || "",
+        'PA_CONTEXTE_CLIENT': formulaire.contexteClient || "",
+        'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
+        'CONF_PROJECT_TYPE': formulaire.projectType,
+        'CONF_CLIENT_NAME': formulaire.clientName,
+        'CONF_CLIENT_URL': formulaire.clientUrl,
+        'CONF_CLIENT_STRENGTH': formulaire.clientStrength,
+        'CONF_CLIENT_BRAND': formulaire.clientBrand,
+        'CONF_COMP_NAME_1': formulaire.competitorName1,
+        'CONF_COMP_URL_1': formulaire.competitor1,
+        'CONF_COMP_STRENGTH_1': formulaire.competitorStrength1,
+        'CONF_COMP_BRAND_1': formulaire.competitorBrand1,
+        'CONF_COMP_NAME_2': formulaire.competitorName2,
+        'CONF_COMP_URL_2': formulaire.competitor2,
+        'CONF_COMP_STRENGTH_2': formulaire.competitorStrength2,
+        'CONF_COMP_BRAND_2': formulaire.competitorBrand2,
+        'CONF_COMP_NAME_3': formulaire.competitorName3,
+        'CONF_COMP_URL_3': formulaire.competitor3,
+        'CONF_COMP_STRENGTH_3': formulaire.competitorStrength3,
+        'CONF_COMP_BRAND_3': formulaire.competitorBrand3,
+        'CONF_COMP_NAME_4': formulaire.competitorName4,
+        'CONF_COMP_URL_4': formulaire.competitor4,
+        'CONF_COMP_STRENGTH_4': formulaire.competitorStrength4,
+        'CONF_COMP_BRAND_4': formulaire.competitorBrand4,
+        'CONF_COMP_NAME_5': formulaire.competitorName5,
+        'CONF_COMP_URL_5': formulaire.competitor5,
+        'CONF_COMP_STRENGTH_5': formulaire.competitorStrength5,
+        'CONF_COMP_BRAND_5': formulaire.competitorBrand5,
         'CTR_POS_1': formulaire.ctrPos1,
         'CTR_POS_2': formulaire.ctrPos2,
         'CTR_POS_3': formulaire.ctrPos3,
@@ -174,7 +174,7 @@ function enregistrerConfiguration(formulaire) {
     });
     syncPropertiesToConfigSheet();
     
-    Logger.log("Configuration enregistrée avec succès");
+    Logger.log("=== FIN : enregistrerConfiguration ===");
     return { success: true };
 }
 
@@ -185,20 +185,21 @@ function extractDomainForMatrix(url) {
 }
 
 function traiterConcurrence(projectType, headersRaw, allRows) {
+    Logger.log("=== DÉBUT : traiterConcurrence ===");
     try {
         if (!allRows || allRows.length === 0) throw new Error("Aucune donnée CSV trouvée.");
         
         var props = PropertiesService.getScriptProperties().getProperties();
         var isInstall = (projectType === 'installe');
         
-        var clientDomain = isInstall ? extractDomainForMatrix(props['CLIENT_URL'] || "") : "";
-        var clientNameRaw = props['CLIENT_NAME'] || "";
+        var clientDomain = isInstall ? extractDomainForMatrix(props['CONF_CLIENT_URL'] || "") : "";
+        var clientNameRaw = props['CONF_CLIENT_NAME'] || "";
         var clientLabel = clientNameRaw.trim() !== "" ? clientNameRaw.trim() : "Client";
 
         var comps = [];
         for (var i = 1; i <= 5; i++) {
-            var d = extractDomainForMatrix(props['COMPETITOR_' + i] || "");
-            if (d) comps.push({ id: 'comp' + i, domain: d, name: props['COMP_NAME_' + i] || d });
+            var d = extractDomainForMatrix(props['CONF_COMP_URL_' + i] || "");
+            if (d) comps.push({ id: 'comp' + i, domain: d, name: props['CONF_COMP_NAME_' + i] || d });
         }
         
         if (comps.length === 0) throw new Error("Aucun concurrent configuré.");
@@ -324,20 +325,23 @@ function traiterConcurrence(projectType, headersRaw, allRows) {
             feuille.deleteRows(finalRows.length + 2, maxRows - (finalRows.length + 1));
         }
 
+        Logger.log("=== FIN : traiterConcurrence ===");
         return { status: "success", message: "Matrice générée : " + finalRows.length + " mots-clés." };
 
     } catch(e) {
+        Logger.log("Erreur dans traiterConcurrence : " + e.message);
         return { status: "error", message: e.message };
     }
 }
 
 function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) {
+    Logger.log("=== DÉBUT : traiterConcurrenceFiltrer ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         ss.setSpreadsheetLocale('fr_FR');
         
         var props = PropertiesService.getScriptProperties().getProperties();
-        var isInstall = (props['PROJECT_TYPE'] === 'installe');
+        var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
         
         var feuilleSource = ss.getSheetByName("Matrice");
         if (!feuilleSource) throw new Error("La feuille 'Matrice' est introuvable.");
@@ -363,11 +367,11 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
         }
 
         addExclusion(exclusionTexte);
-        addExclusion(props['CLIENT_NAME']);
-        addExclusion(props['CLIENT_BRAND']);
+        addExclusion(props['CONF_CLIENT_NAME']);
+        addExclusion(props['CONF_CLIENT_BRAND']);
         for (var i = 1; i <= 5; i++) {
-            addExclusion(props['COMP_NAME_' + i]);
-            addExclusion(props['COMP_BRAND_' + i]);
+            addExclusion(props['CONF_COMP_NAME_' + i]);
+            addExclusion(props['CONF_COMP_BRAND_' + i]);
         }
 
         var finalExclusions = [];
@@ -563,9 +567,11 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
             }
         }
 
+        Logger.log("=== FIN : traiterConcurrenceFiltrer ===");
         return { status: "success", message: "Filtrage terminé : " + lignesGardees.length + " mots-clés conservés." };
 
     } catch (e) {
+        Logger.log("Erreur dans traiterConcurrenceFiltrer : " + e.message);
         return { status: "error", message: e.message };
     }
 }
@@ -597,15 +603,16 @@ function calculerLevenshtein(a, b) {
 }
 
 function recupererDonneesBrutesClustering(contexteClient) {
+    Logger.log("=== DÉBUT : recupererDonneesBrutesClustering ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = PropertiesService.getScriptProperties().getProperties();
         
         // Récupération correcte du paramètre conservé en base (coché ou non)
-        var isMultiTheme = (props['IS_MULTI_THEME'] === 'true');
+        var isMultiTheme = (props['CONF_IS_MULTI_THEME'] === 'true');
         
         // Priorité au contexte envoyé depuis l'interface, sinon on prend celui en base
-        var ctxFinal = contexteClient || props['CONTEXTE_CLIENT'] || "";
+        var ctxFinal = contexteClient || props['PA_CONTEXTE_CLIENT'] || "";
 
         var sheet = ss.getSheetByName("Concurrence filtrée");
         if (!sheet) throw new Error("L'onglet 'Concurrence filtrée' est introuvable. Veuillez d'abord générer la vue filtrée.");
@@ -647,6 +654,7 @@ function recupererDonneesBrutesClustering(contexteClient) {
             });
         }
 
+        Logger.log("=== FIN : recupererDonneesBrutesClustering ===");
         return {
             source: "export_seo_multi_urls",
             count: exportList.length,
@@ -655,15 +663,17 @@ function recupererDonneesBrutesClustering(contexteClient) {
             keywords: exportList
         };
     } catch (e) {
+        Logger.log("Erreur dans recupererDonneesBrutesClustering : " + e.message);
         return { error: e.message };
     }
 }
 
 function preparerDonneesClustering(jsonMotsCles) {
+    Logger.log("=== DÉBUT : preparerDonneesClustering ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = PropertiesService.getScriptProperties().getProperties();
-        var isInstall = (props['PROJECT_TYPE'] === 'installe');
+        var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
 
         var sheetSource = ss.getSheetByName("Concurrence filtrée");
         var mapKw = {};
@@ -861,9 +871,11 @@ function preparerDonneesClustering(jsonMotsCles) {
             }
         }
 
+        Logger.log("=== FIN : preparerDonneesClustering ===");
         return { status: "success", message: "Clusters importés avec succès : " + rowsFinal.length + " grappes formées." };
 
     } catch (e) {
+        Logger.log("Erreur dans preparerDonneesClustering : " + e.message);
         return { status: "error", message: e.message };
     }
 }
@@ -872,14 +884,14 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
     Logger.log("=== DÉBUT : genererContexteClientIA ===");
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini introuvable.");
             throw new Error("Clé API Gemini introuvable. Veuillez configurer et sauvegarder l'onglet Général.");
         }
 
-        var clientUrl = props['CLIENT_URL'] || "";
+        var clientUrl = props['CONF_CLIENT_URL'] || "";
         var urlsArray = urlsTexte ? urlsTexte.split('\n') : [];
         
         if (clientUrl && clientUrl.trim() !== "") {
@@ -991,21 +1003,25 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
 }
 
 function chargerContexteIA() {
+    Logger.log("=== DÉBUT : chargerContexteIA ===");
     var props = PropertiesService.getScriptProperties().getProperties();
+    Logger.log("=== FIN : chargerContexteIA ===");
     return {
-        urlsContexte: props['URLS_CONTEXTE'] || "",
-        contexteClient: props['CONTEXTE_CLIENT'] || ""
+        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
+        contexteClient: props['PA_CONTEXTE_CLIENT'] || ""
     };
 }
 
 function sauvegarderContexteIA(urls, contexte) {
+    Logger.log("=== DÉBUT : sauvegarderContexteIA ===");
     PropertiesService.getScriptProperties().setProperties({
-        'URLS_CONTEXTE': urls || "",
-        'CONTEXTE_CLIENT': contexte || ""
+        'PA_URLS_CONTEXTE': urls || "",
+        'PA_CONTEXTE_CLIENT': contexte || ""
     });
     
     // On synchronise vers l'onglet
     syncPropertiesToConfigSheet();
     
+    Logger.log("=== FIN : sauvegarderContexteIA ===");
     return true;
 }

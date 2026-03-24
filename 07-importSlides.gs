@@ -176,49 +176,49 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         // Mapping paysage concurrentiel
         var mappingComp = {};
         if (concurrenceData) {
-            mappingComp['titre_slide_concurrence'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
+            mappingComp['TITRE_SLIDE_CONCURRENCE'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
             // Client
             if (concurrenceData.client) {
-                mappingComp['nom_client'] = concurrenceData.client.name;
-                mappingComp['valeur_top10_client'] = safeNum(concurrenceData.client.top10);
-                mappingComp['valeur_pages_client'] = safeNum(concurrenceData.client.pages);
+                mappingComp['NOM_CLIENT'] = concurrenceData.client.name;
+                mappingComp['VALEUR_TOP10_CLIENT'] = safeNum(concurrenceData.client.top10);
+                mappingComp['VALEUR_PAGES_CLIENT'] = safeNum(concurrenceData.client.pages);
             }
             // Leader
             if (concurrenceData.leader) {
-                mappingComp['nom_leader'] = concurrenceData.leader.name;
-                mappingComp['valeur_top10_leader'] = safeNum(concurrenceData.leader.top10);
-                mappingComp['valeur_pages_leader'] = safeNum(concurrenceData.leader.pages);
+                mappingComp['NOM_LEADER'] = concurrenceData.leader.name;
+                mappingComp['VALEUR_TOP10_LEADER'] = safeNum(concurrenceData.leader.top10);
+                mappingComp['VALEUR_PAGES_LEADER'] = safeNum(concurrenceData.leader.pages);
             } else {
-                mappingComp['nom_leader'] = "";
-                mappingComp['valeur_top10_leader'] = "";
-                mappingComp['valeur_pages_leader'] = "";
+                mappingComp['NOM_LEADER'] = "";
+                mappingComp['VALEUR_TOP10_LEADER'] = "";
+                mappingComp['VALEUR_PAGES_LEADER'] = "";
             }
             // Concurrents
             for (var c = 1; c <= 4; c++) {
                 var comp = concurrenceData.comps && concurrenceData.comps[c-1] ? concurrenceData.comps[c-1] : null;
                 if (comp) {
-                    mappingComp['nom_comp' + c] = comp.name;
-                    mappingComp['valeur_top10_comp' + c] = safeNum(comp.top10);
-                    mappingComp['valeur_pages_comp' + c] = safeNum(comp.pages);
+                    mappingComp['NOM_COMP' + c] = comp.name;
+                    mappingComp['VALEUR_TOP10_COMP' + c] = safeNum(comp.top10);
+                    mappingComp['VALEUR_PAGES_COMP' + c] = safeNum(comp.pages);
                 } else {
-                    mappingComp['nom_comp' + c] = "";
-                    mappingComp['valeur_top10_comp' + c] = "";
-                    mappingComp['valeur_pages_comp' + c] = "";
+                    mappingComp['NOM_COMP' + c] = "";
+                    mappingComp['VALEUR_TOP10_COMP' + c] = "";
+                    mappingComp['VALEUR_PAGES_COMP' + c] = "";
                 }
             }
         }
 
         var mapping = {
-            'mot_cle_client_global': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
-            'mot_cle_client_top3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
-            'mot_cle_client_top10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
-            'mot_cle_client_url': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
-            'mot_cle_transac_client': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'),
-            'mot_cle_info_client': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),
-            'mot_cle_transac_client_top_10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
-            'mot_cle_info_client_top_10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
-            'mot_cle_transac_pct': Math.round(transacPctDec * 100) + "%",
-            'mot_cle_info_pct': Math.round(infoPctDec * 100) + "%"
+            'MOTCLE_CLIENT_GLOBAL': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_TOP3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_TOP10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_URL': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_TRANSAC': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_INFO': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_TRANSAC_TOP10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_INFO_TOP10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
+            'MOTCLE_CLIENT_TRANSAC_PCT': Math.round(transacPctDec * 100) + "%",
+            'MOTCLE_CLIENT_INFO_PCT': Math.round(infoPctDec * 100) + "%"
         };
         
         var replaceDict = {};
@@ -245,28 +245,28 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         // Segments (1 à 5)
         for (var i = 1; i <= 5; i++) {
             var acq = acquis[i - 1];
-            replaceDict["{{top_MC_client_" + i + "}}"] = acq ? acq.kw : "-";
-            replaceDict["{{top_MC_client_vol_" + i + "}}"] = acq ? safeNum(acq.vol) : "-";
-            replaceDict["{{top_MC_client_ddt_" + i + "}}"] = acq ? safeNum(acq.DDT) : "-";
-            replaceDict["{{top_MC_client_pos_" + i + "}}"] = acq ? safePos(acq.pos) : "-";
+            replaceDict["{{top_mc_client_" + i + "}}"] = acq ? acq.kw : "-";
+            replaceDict["{{top_mc_client_vol_" + i + "}}"] = acq ? safeNum(acq.vol) : "-";
+            replaceDict["{{top_mc_client_ddt_" + i + "}}"] = acq ? safeNum(acq.DDT) : "-";
+            replaceDict["{{top_mc_client_pos_" + i + "}}"] = acq ? safePos(acq.pos) : "-";
 
             var gn = gains[i - 1];
-            replaceDict["{{QW_MC_client_" + i + "}}"] = gn ? gn.kw : "-";
-            replaceDict["{{QW_MC_client_vol_" + i + "}}"] = gn ? safeNum(gn.vol) : "-";
-            replaceDict["{{QW_MC_client_ddt_" + i + "}}"] = gn ? safeNum(gn.DDT) : "-";
-            replaceDict["{{QW_MC_client_pos_" + i + "}}"] = gn ? safePos(gn.pos) : "-";
+            replaceDict["{{qw_mc_client_" + i + "}}"] = gn ? gn.kw : "-";
+            replaceDict["{{qw_mc_client_vol_" + i + "}}"] = gn ? safeNum(gn.vol) : "-";
+            replaceDict["{{qw_mc_client_ddt_" + i + "}}"] = gn ? safeNum(gn.DDT) : "-";
+            replaceDict["{{qw_mc_client_pos_" + i + "}}"] = gn ? safePos(gn.pos) : "-";
 
             var prt = pertes[i - 1];
-            replaceDict["{{PC_MC_client_" + i + "}}"] = prt ? prt.kw : "-";
-            replaceDict["{{PC_MC_client_vol_" + i + "}}"] = prt ? safeNum(prt.vol) : "-";
-            replaceDict["{{PC_MC_client_ddt_" + i + "}}"] = prt ? safeNum(prt.DDT) : "-";
-            replaceDict["{{PC_MC_conc_pos_" + i + "}}"] = prt ? safePos(prt.bestCompPos) : "-";
+            replaceDict["{{pc_mc_client_" + i + "}}"] = prt ? prt.kw : "-";
+            replaceDict["{{pc_mc_client_vol_" + i + "}}"] = prt ? safeNum(prt.vol) : "-";
+            replaceDict["{{pc_mc_client_ddt_" + i + "}}"] = prt ? safeNum(prt.DDT) : "-";
+            replaceDict["{{pc_mc_conc_pos_" + i + "}}"] = prt ? safePos(prt.bestCompPos) : "-";
 
             var terr = territoires[i - 1];
-            replaceDict["{{TaP_MC_client_" + i + "}}"] = terr ? terr.kw : "-";
-            replaceDict["{{TaP_MC_client_vol_" + i + "}}"] = terr ? safeNum(terr.vol) : "-";
-            replaceDict["{{TaP_MC_client_ddt_" + i + "}}"] = terr ? safeNum(terr.DDT) : "-";
-            replaceDict["{{TaP_MC_conc_pos_" + i + "}}"] = terr ? safePos(terr.bestPos) : "-";
+            replaceDict["{{tap_mc_client_" + i + "}}"] = terr ? terr.kw : "-";
+            replaceDict["{{tap_mc_client_vol_" + i + "}}"] = terr ? safeNum(terr.vol) : "-";
+            replaceDict["{{tap_mc_client_ddt_" + i + "}}"] = terr ? safeNum(terr.DDT) : "-";
+            replaceDict["{{tap_mc_conc_pos_" + i + "}}"] = terr ? safePos(terr.bestPos) : "-";
         }
 
         Logger.log("Remplacement massif des tags de tableaux en cours...");
@@ -336,15 +336,15 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 }
 
                 // Traitement des favicons du paysage concurrentiel
-                if (concurrenceData && (titleRaw.indexOf("placeholder_logo_") === 0 || descRaw.indexOf("placeholder_logo_") === 0 || shapeText.indexOf("placeholder_logo_") === 0)) {
-                    var tagParts = titleRaw.indexOf("placeholder_logo_") === 0 ? titleRaw : (descRaw.indexOf("placeholder_logo_") === 0 ? descRaw : shapeText);
+                if (concurrenceData && (titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || shapeText.indexOf("PLACEHOLDER_LOGO_") === 0)) {
+                    var tagParts = titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? titleRaw : (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? descRaw : shapeText);
                     var imgUrl = null;
-                    if (tagParts === "placeholder_logo_client" && concurrenceData.client && concurrenceData.client.logoUrl) {
+                    if (tagParts === "PLACEHOLDER_LOGO_CLIENT" && concurrenceData.client && concurrenceData.client.logoUrl) {
                         imgUrl = concurrenceData.client.logoUrl;
-                    } else if (tagParts === "placeholder_logo_leader" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
+                    } else if (tagParts === "PLACEHOLDER_LOGO_LEADER" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
                         imgUrl = concurrenceData.leader.logoUrl;
                     } else {
-                        var m = tagParts.match(/placeholder_logo_comp(\d+)/);
+                        var m = tagParts.match(/PLACEHOLDER_LOGO_COMP(\d+)/);
                         if (m && m[1]) {
                             var idx = parseInt(m[1]) - 1;
                             if (concurrenceData.comps && concurrenceData.comps[idx] && concurrenceData.comps[idx].logoUrl) {

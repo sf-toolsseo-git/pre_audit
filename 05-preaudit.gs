@@ -7,62 +7,65 @@ function ouvrirFenetrePreAudit() {
 }
 
 function chargerConfigurationPreAudit() {
+    Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
     var props = PropertiesService.getScriptProperties().getProperties();
     var userProps = PropertiesService.getUserProperties().getProperties();
-    return {
-        clientName: props['CLIENT_NAME'] || "",
-        clientUrl: props['CLIENT_URL'] || "",
-        urlsContexte: props['URLS_CONTEXTE'] || "",
-        contexteClient: props['CONTEXTE_CLIENT'] || "",
-        slideId: props['SLIDE_PRE_AUDIT_ID'] || "",
-        brief: props['BRIEF_PRE_AUDIT'] || "",
-        urlReponses: props['URL_REPONSES'] || "",
-        contextePreaudit: props['CONTEXTE_PREAUDIT'] || "",
-        besoinHtml: props['PREAUDIT_BESOIN_HTML'] || "",
-        besoinTexte: props['PREAUDIT_BESOIN_TEXTE'] || "",
-        solutionHtml: props['PREAUDIT_SOLUTION_HTML'] || "",
-        solutionTexte: props['PREAUDIT_SOLUTION_TEXTE'] || "",
-        titreSemrush: props['ANALYSE_SEMRUSH_TITRE'] || "",
-        analyseKwHtml: props['ANALYSE_SEMRUSH_KW_HTML'] || "",
-        analyseKwTexte: props['ANALYSE_SEMRUSH_KW'] || "",
+    var config = {
+        clientName: props['CONF_CLIENT_NAME'] || "",
+        clientUrl: props['CONF_CLIENT_URL'] || "",
+        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
+        contexteClient: props['PA_CONTEXTE_CLIENT'] || "",
+        slideId: props['PA_SLIDE_ID'] || "",
+        brief: props['PA_BRIEF_CONSULTANT'] || "",
+        urlReponses: props['PA_URL_FORM_REPONSES'] || "",
+        contextePreaudit: props['PA_PROFILAGE_COMMERCIAL'] || "",
+        besoinHtml: props['TAG_SLIDE_BESOIN_HTML'] || "",
+        besoinTexte: props['TAG_SLIDE_BESOIN'] || "",
+        solutionHtml: props['TAG_SLIDE_SOLUTION_HTML'] || "",
+        solutionTexte: props['TAG_SLIDE_SOLUTION'] || "",
+        titreSemrush: props['TITRE_SLIDE_SEMRUSH'] || "",
+        analyseKwHtml: props['ANALYSE_SEMRUSH_MOT_CLE_HTML'] || "",
+        analyseKwTexte: props['ANALYSE_SEMRUSH_MOT_CLE'] || "",
         analyseTraficHtml: props['ANALYSE_SEMRUSH_TRAFIC_HTML'] || "",
         analyseTraficTexte: props['ANALYSE_SEMRUSH_TRAFIC'] || "",
         activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config",
-        analyseThemeTopTitre: props['ANALYSE_THEME_TOP_TITRE'] || "",
-        analyseThemeTop: props['ANALYSE_THEME_TOP'] || "",
-        analyseThemeFlopTitre: props['ANALYSE_THEME_FLOP_TITRE'] || "",
-        analyseThemeFlop: props['ANALYSE_THEME_FLOP'] || "",
-        analyseSegmentTopTitre: props['ANALYSE_SEGMENT_TOP_TITRE'] || "",
-        analyseSegmentTop: props['ANALYSE_SEGMENT_TOP'] || "",
-        analyseSegmentFlopTitre: props['ANALYSE_SEGMENT_FLOP_TITRE'] || "",
-        analyseSegmentFlop: props['ANALYSE_SEGMENT_FLOP'] || "",
+        analyseThemeTopTitre: props['TITRE_SLIDE_THEMATIQUETOP_CLIENT'] || "",
+        analyseThemeTop: props['ANALYSE_THEMATIQUETOP_CLIENT_1'] || "", // Using _1 as placeholder for full analysis
+        analyseThemeFlopTitre: props['TITRE_SLIDE_THEMATIQUEFLOP_CLIENT'] || "",
+        analyseThemeFlop: props['ANALYSE_THEMATIQUEFLOP_CLIENT_1'] || "",
+        analyseSegmentTopTitre: props['TITRE_SLIDE_MCTOP_CLIENT'] || "",
+        analyseSegmentTop: props['ANALYSE_MCTOP_CLIENT_1'] || "",
+        analyseSegmentFlopTitre: props['TITRE_SLIDE_MCFLOP_CLIENT'] || "",
+        analyseSegmentFlop: props['ANALYSE_MCFLOP_CLIENT_1'] || "",
         
         // Ajout des concurrents pour que le HTML puisse faire la liaison avec les favicons
-        competitorName1: props['COMP_NAME_1'] || "",
-        competitor1: props['COMPETITOR_1'] || "",
-        competitorName2: props['COMP_NAME_2'] || "",
-        competitor2: props['COMPETITOR_2'] || "",
-        competitorName3: props['COMP_NAME_3'] || "",
-        competitor3: props['COMPETITOR_3'] || "",
-        competitorName4: props['COMP_NAME_4'] || "",
-        competitor4: props['COMPETITOR_4'] || "",
-        competitorName5: props['COMP_NAME_5'] || "",
-        competitor5: props['COMPETITOR_5'] || "",
+        competitorName1: props['CONF_COMP_NAME_1'] || "",
+        competitor1: props['CONF_COMP_URL_1'] || "",
+        competitorName2: props['CONF_COMP_NAME_2'] || "",
+        competitor2: props['CONF_COMP_URL_2'] || "",
+        competitorName3: props['CONF_COMP_NAME_3'] || "",
+        competitor3: props['CONF_COMP_URL_3'] || "",
+        competitorName4: props['CONF_COMP_NAME_4'] || "",
+        competitor4: props['CONF_COMP_URL_4'] || "",
+        competitorName5: props['CONF_COMP_NAME_5'] || "",
+        competitor5: props['CONF_COMP_URL_5'] || "",
         
         // Focus mot-clé
         focusKw: props['TARGET_KW'] || "",
         focusVol: props['TARGET_KW_SV'] || "",
         focusClientUrl: props['TARGET_URL_CLIENT'] || "",
-        focusNoPage: props['FOCUS_NO_PAGE'] || "false",
-        focusCompUrl: props['TARGET_URL_COMP'] || "",
+        focusNoPage: props['TARGET_KW_CLIENT_POS'] === "-" ? "true" : "false", // inferred
+        focusCompUrl: props['TARGET_URL_CONCURRENT'] || "",
         focusLocalisation: props['TARGET_LOCALISATION'] || "",
-        analyseSerpHtml: props['FOCUS_ANALYSE_SERP_HTML'] || "",
-        analyseSerpTexte: props['FOCUS_ANALYSE_SERP_TEXTE'] || "",
-        analyseConcurrentsHtml: props['FOCUS_ANALYSE_COMP_HTML'] || "",
-        analyseConcurrentsTexte: props['FOCUS_ANALYSE_COMP_TEXTE'] || "",
-        analyseRecommandationsHtml: props['FOCUS_ANALYSE_REC_HTML'] || "",
-        analyseRecommandationsTexte: props['FOCUS_ANALYSE_REC_TEXTE'] || ""
+        analyseSerpHtml: props['focus_standard_texte_1'] || "", // example mapped back
+        analyseSerpTexte: props['focus_semantique_texte_1'] || "",
+        analyseConcurrentsHtml: props['focus_standard_texte_2'] || "",
+        analyseConcurrentsTexte: props['focus_semantique_texte_2'] || "",
+        analyseRecommandationsHtml: props['focus_standard_texte_3'] || "",
+        analyseRecommandationsTexte: props['focus_semantique_texte_3'] || ""
     };
+    Logger.log("=== FIN : chargerConfigurationPreAudit ===");
+    return config;
 }
 
 function recupererDetailsMotCle(motCle) {
@@ -90,7 +93,7 @@ function recupererDetailsMotCle(motCle) {
     var posCompIndices = [];
     
     var props = PropertiesService.getScriptProperties().getProperties();
-    var clientName = props['CLIENT_NAME'] || "Client";
+    var clientName = props['CONF_CLIENT_NAME'] || "Client";
     
     for (var j = 0; j < headers.length; j++) {
         var h = String(headers[j]);
@@ -159,13 +162,14 @@ function sauvegarderConfigFocusMotCle(data) {
             'TARGET_KW': data.kw || "",
             'TARGET_KW_SV': data.vol || "",
             'TARGET_URL_CLIENT': data.clientUrl || "",
-            'FOCUS_NO_PAGE': data.noPage || "false",
-            'TARGET_URL_COMP': data.compUrl || "",
+            'TARGET_KW_CLIENT_POS': data.noPage === "true" ? "-" : "",
+            'TARGET_URL_CONCURRENT': data.compUrl || "",
             'TARGET_LOCALISATION': data.localisation || ""
         });
         
         syncPropertiesToConfigSheet();
         Logger.log("Sauvegarde réussie.");
+        Logger.log("=== FIN : sauvegarderConfigFocusMotCle ===");
         return { success: true };
     } catch (e) {
         Logger.log("Erreur : " + e.message);
@@ -182,8 +186,8 @@ function recupererReponseFormulaire(urlForm) {
 
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var clientName = (props['CLIENT_NAME'] || "").toLowerCase().trim();
-        var clientUrl = (props['CLIENT_URL'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
+        var clientName = (props['CONF_CLIENT_NAME'] || "").toLowerCase().trim();
+        var clientUrl = (props['CONF_CLIENT_URL'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
         
         Logger.log("=== RECHERCHE DE RÉPONSE FORMULAIRE (PAR ID) ===");
         Logger.log("Critères de filtrage : Nom [" + clientName + "] | Domaine [" + clientUrl + "]");
@@ -262,19 +266,21 @@ function recupererReponseFormulaire(urlForm) {
 }
 
 function sauvegarderConfigurationPreAudit(form) {
+    Logger.log("=== DÉBUT : sauvegarderConfigurationPreAudit ===");
     var props = PropertiesService.getScriptProperties();
     props.setProperties({
-        'CLIENT_NAME': form.clientName || "",
-        'CLIENT_URL': form.clientUrl || "",
-        'URLS_CONTEXTE': form.urlsContexte || "",
-        'CONTEXTE_CLIENT': form.contexteClient || "",
-        'SLIDE_PRE_AUDIT_ID': form.slideId || "",
-        'BRIEF_PRE_AUDIT': form.brief || "",
-        'URL_REPONSES': form.urlReponses || "",
-        'CONTEXTE_PREAUDIT': form.contextePreaudit || ""
+        'CONF_CLIENT_NAME': form.clientName || "",
+        'CONF_CLIENT_URL': form.clientUrl || "",
+        'PA_URLS_CONTEXTE': form.urlsContexte || "",
+        'PA_CONTEXTE_CLIENT': form.contexteClient || "",
+        'PA_SLIDE_ID': form.slideId || "",
+        'PA_BRIEF_CONSULTANT': form.brief || "",
+        'PA_URL_FORM_REPONSES': form.urlReponses || "",
+        'PA_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
     });
     syncPropertiesToConfigSheet();
     
+    Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");
     return true;
 }
 
@@ -301,39 +307,47 @@ function recupererArborescenceCluster() {
 }
 
 function sauvegarderSelectionAnalyse(selection) {
+    Logger.log("=== DÉBUT : sauvegarderSelectionAnalyse ===");
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperty('ANALYSE_SELECTION', JSON.stringify(selection));
+        Logger.log("=== FIN : sauvegarderSelectionAnalyse ===");
         return true;
     } catch (e) {
+        Logger.log("Erreur dans sauvegarderSelectionAnalyse : " + e.message);
         return false;
     }
 }
 
 function chargerSelectionAnalyse() {
+    Logger.log("=== DÉBUT : chargerSelectionAnalyse ===");
     try {
         var props = PropertiesService.getScriptProperties();
         var data = props.getProperty('ANALYSE_SELECTION');
+        Logger.log("=== FIN : chargerSelectionAnalyse ===");
         return data ? JSON.parse(data) : [];
     } catch (e) {
+        Logger.log("Erreur dans chargerSelectionAnalyse : " + e.message);
         return [];
     }
 }
 
 function sauvegarderAnalysesEtatLieux(data) {
+    Logger.log("=== DÉBUT : sauvegarderAnalysesEtatLieux ===");
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
-            'ANALYSE_THEME_TOP_TITRE': data.titreTopThematiques || "",
-            'ANALYSE_THEME_TOP': data.analyseTopThematiques || "",
-            'ANALYSE_THEME_FLOP_TITRE': data.titreFlopThematiques || "",
-            'ANALYSE_THEME_FLOP': data.analyseFlopThematiques || "",
-            'ANALYSE_SEGMENT_TOP_TITRE': data.titreTopSegments || "",
-            'ANALYSE_SEGMENT_TOP': data.analyseTopSegments || "",
-            'ANALYSE_SEGMENT_FLOP_TITRE': data.titreFlopSegments || "",
-            'ANALYSE_SEGMENT_FLOP': data.analyseFlopSegments || ""
+            'TITRE_SLIDE_THEMATIQUETOP_CLIENT': data.titreTopThematiques || "",
+            'ANALYSE_THEMATIQUETOP_CLIENT_1': data.analyseTopThematiques || "",
+            'TITRE_SLIDE_THEMATIQUEFLOP_CLIENT': data.titreFlopThematiques || "",
+            'ANALYSE_THEMATIQUEFLOP_CLIENT_1': data.analyseFlopThematiques || "",
+            'TITRE_SLIDE_MCTOP_CLIENT': data.titreTopSegments || "",
+            'ANALYSE_MCTOP_CLIENT_1': data.analyseTopSegments || "",
+            'TITRE_SLIDE_MCFLOP_CLIENT': data.titreFlopSegments || "",
+            'ANALYSE_MCFLOP_CLIENT_1': data.analyseFlopSegments || ""
         });
         syncPropertiesToConfigSheet();
+        Logger.log("=== FIN : sauvegarderAnalysesEtatLieux ===");
         return true;
     } catch (e) {
         Logger.log("Erreur lors de la sauvegarde des analyses IA : " + e.message);
@@ -414,7 +428,7 @@ function genererDiagnostic(selection) {
         }
     }
 
-    var clientName = props['CLIENT_NAME'] || "Client";
+    var clientName = props['CONF_CLIENT_NAME'] || "Client";
     if (clientName.trim() === "") clientName = "Client";
     var clientEntity = entities.find(function(e) { return e.name === clientName; });
 
@@ -614,9 +628,10 @@ function genererDiagnostic(selection) {
 }
 
 function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, contexteClient) {
+    Logger.log("=== DÉBUT : analyserEvolutionSemrushIA ===");
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable dans la configuration générale.");
@@ -688,22 +703,26 @@ function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, 
         if (json.candidates && json.candidates.length > 0 && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
             var responseText = json.candidates[0].content.parts[0].text.trim();
             responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            Logger.log("=== FIN : analyserEvolutionSemrushIA (Succès) ===");
             return { success: true, jsonString: responseText };
         } else {
             throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
         }
 
     } catch (e) {
+        Logger.log("Erreur dans analyserEvolutionSemrushIA : " + e.message);
         return { success: false, error: e.message };
     }
 }
 
 function sauvegarderAnalyseEvolution(titre, texteKw, texteTrafic) {
+    Logger.log("=== DÉBUT : sauvegarderAnalyseEvolution ===");
     try {
         var props = PropertiesService.getScriptProperties();
-        props.setProperty('ANALYSE_SEMRUSH_TITRE', titre || "");
-        props.setProperty('ANALYSE_SEMRUSH_KW', texteKw || "");
+        props.setProperty('TITRE_SLIDE_SEMRUSH', titre || "");
+        props.setProperty('ANALYSE_SEMRUSH_MOT_CLE', texteKw || "");
         props.setProperty('ANALYSE_SEMRUSH_TRAFIC', texteTrafic || "");
+        Logger.log("=== FIN : sauvegarderAnalyseEvolution ===");
         return true;
     } catch (e) {
         throw new Error("Erreur lors de la sauvegarde : " + e.message);
@@ -720,22 +739,25 @@ function sauvegarderOngletActif(tabName) {
 }
 
 function sauvegarderDonneesAnalyseGlobale(data) {
+    Logger.log("=== DÉBUT : sauvegarderDonneesAnalyseGlobale ===");
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
-            'PREAUDIT_BESOIN_HTML':          data.besoinHtml || "",
-            'PREAUDIT_BESOIN_TEXTE':         data.besoinTexte || "",
-            'PREAUDIT_SOLUTION_HTML':        data.solutionHtml || "",
-            'PREAUDIT_SOLUTION_TEXTE':       data.solutionTexte || "",
-            'ANALYSE_SEMRUSH_TITRE':         data.titreSemrush || "",
-            'ANALYSE_SEMRUSH_KW_HTML':       data.analyseKwHtml || "",
-            'ANALYSE_SEMRUSH_KW':            data.analyseKwTexte || "",
+            'TAG_SLIDE_BESOIN_HTML':         data.besoinHtml || "",
+            'TAG_SLIDE_BESOIN':              data.besoinTexte || "",
+            'TAG_SLIDE_SOLUTION_HTML':       data.solutionHtml || "",
+            'TAG_SLIDE_SOLUTION':            data.solutionTexte || "",
+            'TITRE_SLIDE_SEMRUSH':           data.titreSemrush || "",
+            'ANALYSE_SEMRUSH_MOT_CLE_HTML':  data.analyseKwHtml || "",
+            'ANALYSE_SEMRUSH_MOT_CLE':       data.analyseKwTexte || "",
             'ANALYSE_SEMRUSH_TRAFIC_HTML':   data.analyseTraficHtml || "",
             'ANALYSE_SEMRUSH_TRAFIC':        data.analyseTraficTexte || ""
         });
         syncPropertiesToConfigSheet();
+        Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
         return true;
     } catch (e) {
+        Logger.log("Erreur dans sauvegarderDonneesAnalyseGlobale : " + e.message);
         throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
     }
 }
@@ -745,15 +767,16 @@ function sauvegarderAnalysesFocus(data) {
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
-            'FOCUS_ANALYSE_SERP_HTML': data.analyseSerpHtml || "",
-            'FOCUS_ANALYSE_SERP_TEXTE': data.analyseSerpTexte || "",
-            'FOCUS_ANALYSE_COMP_HTML': data.analyseConcurrentsHtml || "",
-            'FOCUS_ANALYSE_COMP_TEXTE': data.analyseConcurrentsTexte || "",
-            'FOCUS_ANALYSE_REC_HTML': data.analyseRecommandationsHtml || "",
-            'FOCUS_ANALYSE_REC_TEXTE': data.analyseRecommandationsTexte || ""
+            'focus_standard_texte_1': data.analyseSerpHtml || "",
+            'focus_semantique_texte_1': data.analyseSerpTexte || "",
+            'focus_standard_texte_2': data.analyseConcurrentsHtml || "",
+            'focus_semantique_texte_2': data.analyseConcurrentsTexte || "",
+            'focus_standard_texte_3': data.analyseRecommandationsHtml || "",
+            'focus_semantique_texte_3': data.analyseRecommandationsTexte || ""
         });
         syncPropertiesToConfigSheet();
         Logger.log("Analyses Focus sauvegardées.");
+        Logger.log("=== FIN : sauvegarderAnalysesFocus ===");
         return true;
     } catch (e) {
         Logger.log("Erreur lors de la sauvegarde des analyses focus : " + e.message);
@@ -767,10 +790,10 @@ function lancerWorkflowSERP(data) {
     
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var clientName = props['CLIENT_NAME'] || "";
-        var clientUrl = props['CLIENT_URL'] || "";
-        var contexteClient = props['CONTEXTE_PREAUDIT'] || "";
-        var geminiApiKey = props['GEMINI_API_KEY'];
+        var clientName = props['CONF_CLIENT_NAME'] || "";
+        var clientUrl = props['CONF_CLIENT_URL'] || "";
+        var contexteClient = props['PA_PROFILAGE_COMMERCIAL'] || "";
+        var geminiApiKey = props['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = props['LISTE_CLES_API'];
         
         if (!geminiApiKey || geminiApiKey.trim() === "") {
@@ -879,9 +902,10 @@ function testRecuperationFormulaire() {
 }
 
 function genererProfilageCommercialIA(urlForm, brief, contexte) {
+    Logger.log("=== DÉBUT : genererProfilageCommercialIA ===");
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable. Veuillez configurer l'onglet Général.");
@@ -946,17 +970,20 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
         }
 
         if (json.candidates && json.candidates.length > 0 && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
+            Logger.log("=== FIN : genererProfilageCommercialIA (Succès) ===");
             return { success: true, texte: json.candidates[0].content.parts[0].text.trim() };
         } else {
             throw new Error("L'API Gemini n'a renvoyé aucun texte.");
         }
 
     } catch (error) {
+        Logger.log("Erreur dans genererProfilageCommercialIA : " + error.message);
         return { success: false, message: error.message };
     }
 }
 
 function genererSlideBesoinSolutionIA(contextePreaudit) {
+    Logger.log("=== DÉBUT : genererSlideBesoinSolutionIA ===");
     var catalogueOffres = [
     "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",
     "SEO agile (accompagnement continu) : suivi mensuel/trimestriel, monitoring technique, reporting et recommandations d'optimisation.",
@@ -968,7 +995,7 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
     
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -1022,12 +1049,14 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
         if (json.candidates && json.candidates[0].content && json.candidates[0].content.parts.length > 0) {
             var responseText = json.candidates[0].content.parts[0].text.trim();
             responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+            Logger.log("=== FIN : genererSlideBesoinSolutionIA (Succès) ===");
             return { success: true, jsonString: responseText };
         } else {
             throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
         }
 
     } catch (error) {
+        Logger.log("Erreur dans genererSlideBesoinSolutionIA : " + error.message);
         return { success: false, message: error.message };
     }
 }
@@ -1040,7 +1069,7 @@ function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommerci
 
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini manquante.");
@@ -1103,6 +1132,7 @@ function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommerci
             var responseText = json.candidates[0].content.parts[0].text.trim();
             responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
             Logger.log("Analyse générée avec succès.");
+            Logger.log("=== FIN : genererAnalyseTopFlopThemesIA (Succès) ===");
             return { success: true, jsonString: responseText };
         } else {
             Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");
@@ -1123,7 +1153,7 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
 
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['GEMINI_API_KEY'];
+        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini manquante.");
@@ -1191,7 +1221,7 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
             Logger.log("Analyse segments générée avec succès.");
             Logger.log("=== RÉPONSE BRUTE DE L'IA ===");
             Logger.log(responseText);
-            
+            Logger.log("=== FIN : genererAnalyseSegmentsIA ===");
             return { success: true, jsonString: responseText };
         } else {
             Logger.log("Erreur : l'API n'a pas renvoyé de contenu.");

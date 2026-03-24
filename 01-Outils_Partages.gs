@@ -249,6 +249,7 @@ function extraireDomaineNettoye(str) {
 }
 
 function syncPropertiesToConfigSheet() {
+    Logger.log("=== DÉBUT : syncPropertiesToConfigSheet ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var sheetName = "CONFIG";
@@ -262,55 +263,58 @@ function syncPropertiesToConfigSheet() {
         sheet.hideSheet();
         var props = PropertiesService.getScriptProperties().getProperties();
         
-        var groups = {
-            "🛠️ GÉNÉRAL": [
-                "PROJECT_TYPE", "CLIENT_NAME", "CLIENT_URL", 
-                "CLIENT_STRENGTH", "CLIENT_BRAND"
-            ],
-            "📊 CONCURRENTS": [
-                "COMP_NAME_1", "COMPETITOR_1", "COMP_STRENGTH_1", "COMP_BRAND_1",
-                "COMP_NAME_2", "COMPETITOR_2", "COMP_STRENGTH_2", "COMP_BRAND_2",
-                "COMP_NAME_3", "COMPETITOR_3", "COMP_STRENGTH_3", "COMP_BRAND_3",
-                "COMP_NAME_4", "COMPETITOR_4", "COMP_STRENGTH_4", "COMP_BRAND_4",
-                "COMP_NAME_5", "COMPETITOR_5", "COMP_STRENGTH_5", "COMP_BRAND_5",
-                "IS_MULTI_THEME"
-            ],
-            "🔑 API KEY": [
-                "GEMINI_API_KEY"
-            ],
-            "📈 PRÉ-AUDIT (contexte et brief)": [
-                "SLIDE_PRE_AUDIT_ID", "URL_REPONSES", "BRIEF_PRE_AUDIT", 
-                "URLS_CONTEXTE", "CONTEXTE_CLIENT", "CONTEXTE_PREAUDIT"
-            ],
-            "📈 PRÉ-AUDIT (besoin et solution)": [
-                "PREAUDIT_BESOIN_HTML", "PREAUDIT_BESOIN_TEXTE", 
-                "PREAUDIT_SOLUTION_HTML", "PREAUDIT_SOLUTION_TEXTE"
-            ],
-            "📈 PRÉ-AUDIT (semrush)": [
-                "ANALYSE_SEMRUSH_TITRE", "ANALYSE_SEMRUSH_KW_HTML", "ANALYSE_SEMRUSH_KW", 
-                "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"
-            ],
-            "📈 PRÉ-AUDIT (diagnostic et segments)": [
-                "ANALYSE_THEME_TOP_TITRE", "ANALYSE_THEME_TOP", "ANALYSE_THEME_FLOP_TITRE", "ANALYSE_THEME_FLOP",
-                "ANALYSE_SEGMENT_TOP_TITRE", "ANALYSE_SEGMENT_TOP", "ANALYSE_SEGMENT_FLOP_TITRE", "ANALYSE_SEGMENT_FLOP"
-            ],
-            "🔍 FOCUS MOT-CLÉ": [
-                "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_URL_COMP", "FOCUS_NO_PAGE"
-            ],
-            "🎯 CTR": [
-                "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
-                "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10"
-            ],
-            "⚙️ AVANCÉ": [
-                "COMPETITION_COEFF", "REF_POS", "REF_POS_S3", 
-                "SEO_AGILE_JOURS", "SEO_AGILE_FREQ", "NB_CONTENUS_DEVISES", 
-                "COEFF_S2", "COEFF_S3"
-            ],
-            "📦 AUTRES": []
-        };
+        var groups = [
+            {
+                name: "⚙️ CONFIG GLOBALE & CONTEXTE",
+                keys: [
+                    "CONF_PROJECT_TYPE", "CONF_API_KEY_GEMINI", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID",
+                    "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND",
+                    "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1",
+                    "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2",
+                    "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_STRENGTH_3", "CONF_COMP_BRAND_3",
+                    "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4",
+                    "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
+                    "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
+                    "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10",
+                    "PA_URL_FORM_REPONSES", "PA_URLS_CONTEXTE", "PA_BRIEF_CONSULTANT", "PA_CONTEXTE_CLIENT", "PA_PROFILAGE_COMMERCIAL",
+                    "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS"
+                ]
+            },
+            {
+                name: "🖼️ EXPORT SLIDES",
+                keys: [
+                    "TAG_SLIDE_BESOIN", "TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_SOLUTION", "TAG_SLIDE_SOLUTION_HTML",
+                    "---BORDER---",
+                    "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_TRAFIC", "ANALYSE_SEMRUSH_TRAFIC_HTML",
+                    "---BORDER---",
+                    "MOTCLE_CLIENT_GLOBAL", "MOTCLE_CLIENT_TOP10", "MOTCLE_CLIENT_TOP3", "MOTCLE_CLIENT_URL", "MOTCLE_CLIENT_TRANSAC", "MOTCLE_CLIENT_TRANSAC_TOP10", "MOTCLE_CLIENT_TRANSAC_PCT", "JAUGE_TRANSAC_TOP10", "MOTCLE_CLIENT_INFO", "MOTCLE_CLIENT_INFO_TOP10", "MOTCLE_CLIENT_INFO_PCT", "JAUGE_INFO_TOP10",
+                    "---BORDER---",
+                    "TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "ANALYSE_THEMATIQUETOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_2", "ANALYSE_THEMATIQUETOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_3", "ANALYSE_THEMATIQUETOP_CLIENT_3_HTML", "top_thm_client_1", "top_thm_client_top10_1", "top_thm_client_tec_1", "top_thm_client_tpm_1", "top_thm_client_ddt_1", "top_thm_client_2", "top_thm_client_top10_2", "top_thm_client_tec_2", "top_thm_client_tpm_2", "top_thm_client_ddt_2", "top_thm_client_3", "top_thm_client_top10_3", "top_thm_client_tec_3", "top_thm_client_tpm_3", "top_thm_client_ddt_3",
+                    "---BORDER---",
+                    "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "ANALYSE_THEMATIQUEFLOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_2", "ANALYSE_THEMATIQUEFLOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_3", "ANALYSE_THEMATIQUEFLOP_CLIENT_3_HTML", "flop_thm_client_1", "flop_thm_client_flop10_1", "flop_thm_client_tec_1", "flop_thm_client_tpm_1", "flop_thm_client_ddt_1", "flop_thm_client_2", "flop_thm_client_flop10_2", "flop_thm_client_tec_2", "flop_thm_client_tpm_2", "flop_thm_client_ddt_2", "flop_thm_client_3", "flop_thm_client_flop10_3", "flop_thm_client_tec_3", "flop_thm_client_tpm_3", "flop_thm_client_ddt_3",
+                    "---BORDER---",
+                    "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1_HTML", "ANALYSE_MCTOP_CLIENT_2", "ANALYSE_MCTOP_CLIENT_2_HTML", "ANALYSE_MCTOP_CLIENT_3", "ANALYSE_MCTOP_CLIENT_3_HTML", "top_mc_client_1", "top_mc_client_vol_1", "top_mc_client_ddt_1", "top_mc_client_pos_1", "qw_mc_client_1", "qw_mc_client_vol_1", "qw_mc_client_ddt_1", "qw_mc_client_pos_1", "top_mc_client_2", "top_mc_client_vol_2", "top_mc_client_ddt_2", "top_mc_client_pos_2", "qw_mc_client_2", "qw_mc_client_vol_2", "qw_mc_client_ddt_2", "qw_mc_client_pos_2", "top_mc_client_3", "top_mc_client_vol_3", "top_mc_client_ddt_3", "top_mc_client_pos_3", "qw_mc_client_3", "qw_mc_client_vol_3", "qw_mc_client_ddt_3", "qw_mc_client_pos_3", "top_mc_client_4", "top_mc_client_vol_4", "top_mc_client_ddt_4", "top_mc_client_pos_4", "qw_mc_client_4", "qw_mc_client_vol_4", "qw_mc_client_ddt_4", "qw_mc_client_pos_4", "top_mc_client_5", "top_mc_client_vol_5", "top_mc_client_ddt_5", "top_mc_client_pos_5", "qw_mc_client_5", "qw_mc_client_vol_5", "qw_mc_client_ddt_5", "qw_mc_client_pos_5",
+                    "---BORDER---",
+                    "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1_HTML", "ANALYSE_MCFLOP_CLIENT_2", "ANALYSE_MCFLOP_CLIENT_2_HTML", "ANALYSE_MCFLOP_CLIENT_3", "ANALYSE_MCFLOP_CLIENT_3_HTML", "pc_mc_client_1", "pc_mc_client_vol_1", "pc_mc_client_ddt_1", "pc_mc_conc_pos_1", "tap_mc_client_1", "tap_mc_client_vol_1", "tap_mc_client_ddt_1", "tap_mc_conc_pos_1", "pc_mc_client_2", "pc_mc_client_vol_2", "pc_mc_client_ddt_2", "pc_mc_conc_pos_2", "tap_mc_client_2", "tap_mc_client_vol_2", "tap_mc_client_ddt_2", "tap_mc_conc_pos_2", "pc_mc_client_3", "pc_mc_client_vol_3", "pc_mc_client_ddt_3", "pc_mc_conc_pos_3", "tap_mc_client_3", "tap_mc_client_vol_3", "tap_mc_client_ddt_3", "tap_mc_conc_pos_3", "pc_mc_client_4", "pc_mc_client_vol_4", "pc_mc_client_ddt_4", "pc_mc_conc_pos_4", "tap_mc_client_4", "tap_mc_client_vol_4", "tap_mc_client_ddt_4", "tap_mc_conc_pos_4", "pc_mc_client_5", "pc_mc_client_vol_5", "pc_mc_client_ddt_5", "pc_mc_conc_pos_5", "tap_mc_client_5", "tap_mc_client_vol_5", "tap_mc_client_ddt_5", "tap_mc_conc_pos_5",
+                    "---BORDER---",
+                    "TITRE_SLIDE_CONCURRENCE", "NOM_CLIENT", "VALEUR_TOP10_CLIENT", "VALEUR_PAGES_CLIENT", "PLACEHOLDER_LOGO_CLIENT", "NOM_LEADER", "VALEUR_TOP10_LEADER", "VALEUR_PAGES_LEADER", "PLACEHOLDER_LOGO_LEADER", "NOM_COMP1", "VALEUR_TOP10_COMP1", "VALEUR_PAGES_COMP1", "PLACEHOLDER_LOGO_COMP1", "NOM_COMP2", "VALEUR_TOP10_COMP2", "VALEUR_PAGES_COMP2", "PLACEHOLDER_LOGO_COMP2", "NOM_COMP3", "VALEUR_TOP10_COMP3", "VALEUR_PAGES_COMP3", "PLACEHOLDER_LOGO_COMP3", "NOM_COMP4", "VALEUR_TOP10_COMP4", "VALEUR_PAGES_COMP4", "PLACEHOLDER_LOGO_COMP4",
+                    "---BORDER---",
+                    "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_semantique_texte_1", "focus_standard_texte_2", "focus_semantique_texte_2", "focus_standard_texte_3", "focus_semantique_texte_3"
+                ]
+            },
+            {
+                name: "📦 AUTRES",
+                keys: []
+            }
+        ];
+        
         var knownKeys = [];
-        for (var g in groups) {
-            knownKeys = knownKeys.concat(groups[g]);
+        for (var i = 0; i < groups.length; i++) {
+            for (var j = 0; j < groups[i].keys.length; j++) {
+                if (groups[i].keys[j] !== "---BORDER---") {
+                    knownKeys.push(groups[i].keys[j]);
+                }
+            }
         }
         
         for (var key in props) {
@@ -318,35 +322,43 @@ function syncPropertiesToConfigSheet() {
                 continue;
             }
             if (knownKeys.indexOf(key) === -1) {
-                groups["📦 AUTRES"].push(key);
+                groups[groups.length - 1].keys.push(key);
             }
         }
         
         var maxRows = 0;
-        for (var g in groups) {
-            if (groups[g].length + 1 > maxRows) {
-                maxRows = groups[g].length + 1;
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i].keys.length + 1 > maxRows) {
+                maxRows = groups[i].keys.length + 1;
             }
         }
         
-        var numGroups = Object.keys(groups).length;
+        var numGroups = groups.length;
         var grid = [];
         for (var r = 0; r < maxRows; r++) {
             grid[r] = new Array(numGroups * 3).fill("");
         }
         
-        var gIdx = 0;
-        for (var g in groups) {
+        var borderRanges = [];
+
+        for (var gIdx = 0; gIdx < numGroups; gIdx++) {
+            var g = groups[gIdx];
             var cBase = gIdx * 3;
-            grid[0][cBase] = g;
+            grid[0][cBase] = g.name;
             grid[0][cBase + 1] = "Valeur";
             
-            for (var i = 0; i < groups[g].length; i++) {
-                var k = groups[g][i];
-                grid[i + 1][cBase] = k;
-                grid[i + 1][cBase + 1] = props[k] || "";
+            var rowOffset = 1;
+            for (var i = 0; i < g.keys.length; i++) {
+                var k = g.keys[i];
+                if (k === "---BORDER---") {
+                    // Mémoriser la ligne pour appliquer une bordure plus tard
+                    borderRanges.push({row: rowOffset, colBase: cBase});
+                } else {
+                    grid[rowOffset][cBase] = k;
+                    grid[rowOffset][cBase + 1] = props[k] || "";
+                    rowOffset++;
+                }
             }
-            gIdx++;
         }
         
         if (maxRows > 0) {
@@ -359,18 +371,15 @@ function syncPropertiesToConfigSheet() {
             for (var i = 0; i < numGroups; i++) {
                 var cBase = (i * 3) + 1;
 
-                // Ligne d'en-tête : CLIP + taille police fixe pour bloquer l'auto-resize sur les emojis
                 sheet.getRange(1, cBase, 1, 2)
                     .setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold")
                     .setHorizontalAlignment("center").setFontSize(10)
                     .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
 
-                // Colonne clés : CLIP obligatoire (certaines clés dépassent 180px et déclenchent le wrap)
                 sheet.getRange(2, cBase, maxRows - 1, 1)
                     .setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368")
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
 
-                // Colonne valeurs
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top");
 
@@ -381,7 +390,15 @@ function syncPropertiesToConfigSheet() {
                 }
             }
 
-            // API Sheets v4 : seule méthode qui force pixelSize sans que le client remette "Ajuster aux données"
+            // Appliquer les bordures pour le groupe Slides
+            for (var b = 0; b < borderRanges.length; b++) {
+                var br = borderRanges[b];
+                var cell1 = sheet.getRange(br.row, br.colBase + 1);
+                var cell2 = sheet.getRange(br.row, br.colBase + 2);
+                cell1.setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+                cell2.setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+            }
+
             SpreadsheetApp.flush();
             try {
                 var token = ScriptApp.getOAuthToken();
@@ -417,6 +434,7 @@ function syncPropertiesToConfigSheet() {
     } catch (e) {
         Logger.log("Erreur lors de la synchronisation vers l'onglet CONFIG : " + e.toString());
     }
+    Logger.log("=== FIN : syncPropertiesToConfigSheet ===");
 }
 
 function sauvegarderPreAudit() {
