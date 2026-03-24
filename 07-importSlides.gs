@@ -1,8 +1,8 @@
 function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
     try {
-        Logger.log("=== DÉBUT EXPORT SLIDE BESOIN / SOLUTION ===");
+        Logger.log("=== DÉBUT : exporterSlideBesoinSolution ===");
         var props = PropertiesService.getScriptProperties().getProperties();
-        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+        var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -17,10 +17,10 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 var descRaw = shape.getDescription() || "";
 
                 var targetKey = null;
-                // Détection via le texte alternatif (titre ou description) uniquement
-                if (titleRaw === "tag_slide_besoin" || descRaw === "tag_slide_besoin") {
+                // Détection via le texte alternatif en MAJUSCULE
+                if (titleRaw === "TAG_SLIDE_BESOIN" || descRaw === "TAG_SLIDE_BESOIN") {
                     targetKey = "besoin";
-                } else if (titleRaw === "tag_slide_solution" || descRaw === "tag_slide_solution") {
+                } else if (titleRaw === "TAG_SLIDE_SOLUTION" || descRaw === "TAG_SLIDE_SOLUTION") {
                     targetKey = "solution";
                 }
 
@@ -33,11 +33,10 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 }
             });
         });
-        
-        Logger.log("=== FIN EXPORT SLIDE BESOIN / SOLUTION ===");
+        Logger.log("=== FIN : exporterSlideBesoinSolution ===");
         
         if (tagsTrouves === 0) {
-            return { success: false, error: "Les tags 'tag_slide_besoin' et 'tag_slide_solution' n'ont pas été trouvés dans le texte alternatif de la présentation." };
+            return { success: false, error: "Les tags 'TAG_SLIDE_BESOIN' et 'TAG_SLIDE_SOLUTION' n'ont pas été trouvés dans le texte alternatif de la présentation." };
         }
 
         return { success: true, url: presentation.getUrl() };
@@ -49,9 +48,9 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
 
 function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgKwMime, imgTraficB64, imgTraficMime) {
     try {
-        Logger.log("=== DÉBUT EXPORT SLIDE SEMRUSH ===");
+        Logger.log("=== DÉBUT : exporterAnalyseSemrushSlide ===");
         var props = PropertiesService.getScriptProperties().getProperties();
-        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+        var slideId = props['PA_SLIDE_ID'];
         
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -68,7 +67,6 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
             var match;
             var regex = /\*([^*]+)\*/g;
             var offset = 0;
-            
             while ((match = regex.exec(textWithStars)) !== null) {
                 var wordLength = match[1].length;
                 var startIndex = match.index - offset;
@@ -76,7 +74,6 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 
                 var targetRange = textRange.getRange(startIndex, endIndex);
                 targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                
                 offset += 2; // On compense les 2 astérisques retirés pour les calculs des index suivants
             }
         }
@@ -85,26 +82,27 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
             var shapes = slide.getShapes();
             
             shapes.forEach(function(shape) {
+                
                 var shapeText = shape.getText().asString().trim();
                 var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
 
-                // Remplacement du titre brut
-                if (shapeText === "titre_slide_semrush" || titleRaw === "titre_slide_semrush" || descRaw === "titre_slide_semrush") {
+                // Remplacement du titre brut (MAJUSCULE)
+                if (shapeText === "TITRE_SLIDE_SEMRUSH" || titleRaw === "TITRE_SLIDE_SEMRUSH" || descRaw === "TITRE_SLIDE_SEMRUSH") {
                     shape.getText().setText(titre);
                 }
                 
-                // Remplacement des analyses avec formatage enrichi
-                if (shapeText === "analyse_semrush_mot_cle" || titleRaw === "analyse_semrush_mot_cle" || descRaw === "analyse_semrush_mot_cle") {
+                // Remplacement des analyses avec formatage enrichi (MAJUSCULE)
+                if (shapeText === "ANALYSE_SEMRUSH_MOT_CLE" || titleRaw === "ANALYSE_SEMRUSH_MOT_CLE" || descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
                     formatRichText(shape, texteKw);
                 }
                 
-                if (shapeText === "analyse_semrush_trafic" || titleRaw === "analyse_semrush_trafic" || descRaw === "analyse_semrush_trafic") {
+                if (shapeText === "ANALYSE_SEMRUSH_TRAFIC" || titleRaw === "ANALYSE_SEMRUSH_TRAFIC" || descRaw === "ANALYSE_SEMRUSH_TRAFIC") {
                     formatRichText(shape, texteTrafic);
                 }
 
                 // Remplacement des images avec conservation du texte alternatif
-                if (titleRaw === "placeholder_img_kw" || descRaw === "placeholder_img_kw" || shapeText === "placeholder_img_kw") {
+                if (titleRaw === "PLACEHOLDER_IMG_KW" || descRaw === "PLACEHOLDER_IMG_KW" || shapeText === "PLACEHOLDER_IMG_KW") {
                     var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
                     var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
                     
@@ -115,7 +113,7 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                     shape.remove();
                 }
                 
-                if (titleRaw === "placeholder_img_trafic" || descRaw === "placeholder_img_trafic" || shapeText === "placeholder_img_trafic") {
+                if (titleRaw === "PLACEHOLDER_IMG_TRAFIC" || descRaw === "PLACEHOLDER_IMG_TRAFIC" || shapeText === "PLACEHOLDER_IMG_TRAFIC") {
                     var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
                     var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
                     
@@ -127,10 +125,8 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 }
             });
         });
-
-        Logger.log("=== FIN EXPORT SLIDE SEMRUSH ===");
+        Logger.log("=== FIN : exporterAnalyseSemrushSlide ===");
         return { success: true, url: presentation.getUrl() };
-
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT SLIDE SEMRUSH : " + e.message);
         return { success: false, error: e.message };

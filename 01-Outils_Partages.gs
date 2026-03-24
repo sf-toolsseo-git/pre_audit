@@ -277,7 +277,7 @@ function syncPropertiesToConfigSheet() {
                     "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
                     "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10",
                     "PA_URL_FORM_REPONSES", "PA_URLS_CONTEXTE", "PA_BRIEF_CONSULTANT", "PA_CONTEXTE_CLIENT", "PA_PROFILAGE_COMMERCIAL",
-                    "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS"
+                    "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION"
                 ]
             },
             {
