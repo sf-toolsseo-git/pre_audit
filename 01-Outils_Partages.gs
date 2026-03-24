@@ -285,7 +285,7 @@ function syncPropertiesToConfigSheet() {
                 keys: [
                     "TAG_SLIDE_BESOIN", "TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_SOLUTION", "TAG_SLIDE_SOLUTION_HTML",
                     "---BORDER---",
-                    "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_TRAFIC", "ANALYSE_SEMRUSH_TRAFIC_HTML",
+                    "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_TRAFIC", "ANALYSE_SEMRUSH_TRAFIC_HTML", "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE", "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC",
                     "---BORDER---",
                     "MOTCLE_CLIENT_GLOBAL", "MOTCLE_CLIENT_TOP10", "MOTCLE_CLIENT_TOP3", "MOTCLE_CLIENT_URL", "MOTCLE_CLIENT_TRANSAC", "MOTCLE_CLIENT_TRANSAC_TOP10", "MOTCLE_CLIENT_TRANSAC_PCT", "JAUGE_TRANSAC_TOP10", "MOTCLE_CLIENT_INFO", "MOTCLE_CLIENT_INFO_TOP10", "MOTCLE_CLIENT_INFO_PCT", "JAUGE_INFO_TOP10",
                     "---BORDER---",
@@ -340,7 +340,6 @@ function syncPropertiesToConfigSheet() {
         }
         
         var borderRanges = [];
-
         for (var gIdx = 0; gIdx < numGroups; gIdx++) {
             var g = groups[gIdx];
             var cBase = gIdx * 3;
@@ -351,7 +350,6 @@ function syncPropertiesToConfigSheet() {
             for (var i = 0; i < g.keys.length; i++) {
                 var k = g.keys[i];
                 if (k === "---BORDER---") {
-                    // Mémoriser la ligne pour appliquer une bordure plus tard
                     borderRanges.push({row: rowOffset, colBase: cBase});
                 } else {
                     grid[rowOffset][cBase] = k;
@@ -370,19 +368,23 @@ function syncPropertiesToConfigSheet() {
 
             for (var i = 0; i < numGroups; i++) {
                 var cBase = (i * 3) + 1;
-
+                // En-têtes centrés
                 sheet.getRange(1, cBase, 1, 2)
                     .setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold")
                     .setHorizontalAlignment("center").setFontSize(10)
                     .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-
+                
+                // Alignement à gauche pour les clés
                 sheet.getRange(2, cBase, maxRows - 1, 1)
                     .setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368")
-                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-
+                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
+                    .setHorizontalAlignment("left");
+                
+                // Alignement à gauche pour les valeurs
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
-                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top");
-
+                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top")
+                    .setHorizontalAlignment("left");
+                
                 sheet.setColumnWidth(cBase, 350);
                 sheet.setColumnWidth(cBase + 1, 350);
                 if (cBase + 2 <= numGroups * 3) {

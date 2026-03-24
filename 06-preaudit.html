@@ -431,16 +431,59 @@
                     </div>
 
                     <div class="analysis-results" id="analysis-results" style="display: none; margin-top: 25px; border-top: 1px solid #dadce0; padding-top: 20px;">
-                        <label class="input-label">Éléments de SERP</label>
-                        <div id="ce-analyse-serp" contenteditable="true" class="ce-field" data-placeholder="Résultats des éléments de la SERP..." onblur="autoSaveAnalyseFocus()"></div>
+    
+                        <h3 class="section-title">1. Résultat de recherche (SERP)</h3>
+                        <div class="section-description" style="margin-bottom: 10px;">Éléments remarquables détectés dans les résultats de recherche.</div>
                         
-                        <label class="input-label" style="margin-top: 15px;">Analyse de la SERP (concurrents)</label>
-                        <div id="ce-analyse-concurrents" contenteditable="true" class="ce-field" data-placeholder="Analyse des concurrents..." onblur="autoSaveAnalyseFocus()"></div>
-                        
-                        <label class="input-label" style="margin-top: 15px;">Analyse client et recommandations</label>
-                        <div id="ce-analyse-recommandations" contenteditable="true" class="ce-field" data-placeholder="Recommandations stratégiques..." onblur="autoSaveAnalyseFocus()"></div>
+                        <div class="row">
+                            <div class="col"><input type="text" id="serp-titre-1" placeholder="Titre élément 1" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><input type="text" id="serp-desc-1" placeholder="Description élément 1" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><textarea id="serp-svg-1" placeholder="Code SVG 1..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
+                        </div>
+                        <div class="row">
+                            <div class="col"><input type="text" id="serp-titre-2" placeholder="Titre élément 2" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><input type="text" id="serp-desc-2" placeholder="Description élément 2" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><textarea id="serp-svg-2" placeholder="Code SVG 2..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
+                        </div>
+                        <div class="row">
+                            <div class="col"><input type="text" id="serp-titre-3" placeholder="Titre élément 3" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><input type="text" id="serp-desc-3" placeholder="Description élément 3" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><textarea id="serp-svg-3" placeholder="Code SVG 3..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
+                        </div>
+                        <div class="row">
+                            <div class="col"><input type="text" id="serp-titre-4" placeholder="Titre élément 4" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><input type="text" id="serp-desc-4" placeholder="Description élément 4" onblur="autoSaveAnalyseFocus()"></div>
+                            <div class="col"><textarea id="serp-svg-4" placeholder="Code SVG 4..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top: 20px;">2. Intention</h3>
+                        <div class="row">
+                            <div class="col" style="flex: 0 0 300px;">
+                                <input type="text" id="intention-titre" placeholder="Titre de l'intention (ex : Transactionnelle)" onblur="autoSaveAnalyseFocus()">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div id="intention-desc" contenteditable="true" class="ce-field" data-placeholder="Description de l'intention de recherche..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top: 20px;">3. Standard de contenus</h3>
+                        <div class="row">
+                            <div class="col"><div id="standard-1" contenteditable="true" class="ce-field" data-placeholder="Standard observé 1..." onblur="autoSaveAnalyseFocus()"></div></div>
+                            <div class="col"><div id="standard-2" contenteditable="true" class="ce-field" data-placeholder="Standard observé 2..." onblur="autoSaveAnalyseFocus()"></div></div>
+                            <div class="col"><div id="standard-3" contenteditable="true" class="ce-field" data-placeholder="Standard observé 3..." onblur="autoSaveAnalyseFocus()"></div></div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top: 20px;">4. Besoin sémantique</h3>
+                        <div class="row">
+                            <div class="col"><div id="semantique-1" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 1..." onblur="autoSaveAnalyseFocus()"></div></div>
+                            <div class="col"><div id="semantique-2" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 2..." onblur="autoSaveAnalyseFocus()"></div></div>
+                            <div class="col"><div id="semantique-3" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 3..." onblur="autoSaveAnalyseFocus()"></div></div>
+                        </div>
+
                     </div>
-                    
+                                        
                 </div>
             </div>
         </div>
@@ -521,10 +564,36 @@
                                 cb.checked = true;
                                 toggleFocusClientUrl();
                             }
-                            if (config.analyseSerpHtml || config.analyseConcurrentsHtml || config.analyseRecommandationsHtml) {
-                                if (config.analyseSerpHtml) setCeContent('ce-analyse-serp', config.analyseSerpTexte);
-                                if (config.analyseConcurrentsHtml) setCeContent('ce-analyse-concurrents', config.analyseConcurrentsTexte);
-                                if (config.analyseRecommandationsHtml) setCeContent('ce-analyse-recommandations', config.analyseRecommandationsTexte);
+                            // Restauration de l'onglet 5 (Analyses détaillées)
+                            if (config.intentionTitre || config.standard1 || config.serpTitre1) {
+                                // SERP
+                                document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
+                                document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
+                                document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
+                                document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
+                                document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
+                                document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
+                                document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
+                                document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
+                                document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
+                                document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
+                                document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
+                                document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
+
+                                // Intention
+                                document.getElementById('intention-titre').value = config.intentionTitre || "";
+                                if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
+
+                                // Standard
+                                if (config.standard1Html) setCeContent('standard-1', config.standard1);
+                                if (config.standard2Html) setCeContent('standard-2', config.standard2);
+                                if (config.standard3Html) setCeContent('standard-3', config.standard3);
+
+                                // Sémantique
+                                if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
+                                if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
+                                if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
+
                                 document.getElementById('analysis-results').style.display = 'block';
                             }
                         }
@@ -683,11 +752,13 @@
             // ========================== ONGLET 2 — BESOIN/SOLUTION ==========================
 
             function lancerGenerationBesoinSolutionIA() {
+                console.log("=== DÉBUT : lancerGenerationBesoinSolutionIA ===");
                 var btn = document.getElementById('btn-gen-besoin');
                 var contexte = document.getElementById('conf-contexte-preaudit').value;
 
                 if (!contexte || contexte.trim() === "") {
                     alert("Veuillez d'abord générer ou saisir le profilage commercial (onglet 1).");
+                    console.log("Erreur : profilage commercial manquant.");
                     return;
                 }
 
@@ -700,21 +771,29 @@
                     btn.disabled = false;
                     btn.innerText = "🤖 Générer besoin & solution";
                     if (res.success) {
+                        console.log("Génération réussie, formatage des listes.");
                         var data = JSON.parse(res.jsonString);
-                        // On utilise \n\n au lieu de \n pour créer un espace entre chaque puce
-                        var texteBesoin = "• " + data.besoin.join("\n\n• ");
-                        var texteSolution = "• " + data.solution.join("\n\n• ");
+                        
+                        // On utilise \n au lieu de \n\n pour l'affichage HTML (un seul saut de ligne)
+                        // Le double saut sera ajouté dynamiquement lors de l'export Slides
+                        var texteBesoin = "• " + data.besoin.join("\n• ");
+                        var texteSolution = "• " + data.solution.join("\n• ");
+                        
                         setCeContent('ce-besoin', texteBesoin);
                         setCeContent('ce-solution', texteSolution);
                         document.getElementById('besoin-result-card').style.display = 'block';
+                        
+                        console.log("=== FIN : lancerGenerationBesoinSolutionIA ===");
                     } else {
                         alert("Échec de l'IA : " + res.message);
+                        console.log("Échec de l'IA : " + res.message);
                     }
                 }).withFailureHandler(function(err) {
                     hideLoader();
                     btn.disabled = false;
                     btn.innerText = "🤖 Générer besoin & solution";
                     alert("Erreur critique IA : " + err.message);
+                    console.log("Erreur critique : " + err.message);
                 }).genererSlideBesoinSolutionIA(contexte);
             }
 
@@ -1908,22 +1987,46 @@
 
             function autoSaveAnalyseFocus() {
                 var data = {
-                    analyseSerpHtml: document.getElementById('ce-analyse-serp').innerHTML,
-                    analyseSerpTexte: document.getElementById('ce-analyse-serp').dataset.raw || document.getElementById('ce-analyse-serp').innerText,
-                    analyseConcurrentsHtml: document.getElementById('ce-analyse-concurrents').innerHTML,
-                    analyseConcurrentsTexte: document.getElementById('ce-analyse-concurrents').dataset.raw || document.getElementById('ce-analyse-concurrents').innerText,
-                    analyseRecommandationsHtml: document.getElementById('ce-analyse-recommandations').innerHTML,
-                    analyseRecommandationsTexte: document.getElementById('ce-analyse-recommandations').dataset.raw || document.getElementById('ce-analyse-recommandations').innerText
+                    // Bloc 1 : SERP
+                    serpTitre1: document.getElementById('serp-titre-1').value,
+                    serpDesc1: document.getElementById('serp-desc-1').value,
+                    serpSvg1: document.getElementById('serp-svg-1').value,
+                    serpTitre2: document.getElementById('serp-titre-2').value,
+                    serpDesc2: document.getElementById('serp-desc-2').value,
+                    serpSvg2: document.getElementById('serp-svg-2').value,
+                    serpTitre3: document.getElementById('serp-titre-3').value,
+                    serpDesc3: document.getElementById('serp-desc-3').value,
+                    serpSvg3: document.getElementById('serp-svg-3').value,
+                    serpTitre4: document.getElementById('serp-titre-4').value,
+                    serpDesc4: document.getElementById('serp-desc-4').value,
+                    serpSvg4: document.getElementById('serp-svg-4').value,
+                    
+                    // Bloc 2 : Intention
+                    intentionTitre: document.getElementById('intention-titre').value,
+                    intentionDesc: document.getElementById('intention-desc').dataset.raw || document.getElementById('intention-desc').innerText,
+                    intentionDescHtml: document.getElementById('intention-desc').innerHTML,
+                    
+                    // Bloc 3 : Standard
+                    standard1: document.getElementById('standard-1').dataset.raw || document.getElementById('standard-1').innerText,
+                    standard1Html: document.getElementById('standard-1').innerHTML,
+                    standard2: document.getElementById('standard-2').dataset.raw || document.getElementById('standard-2').innerText,
+                    standard2Html: document.getElementById('standard-2').innerHTML,
+                    standard3: document.getElementById('standard-3').dataset.raw || document.getElementById('standard-3').innerText,
+                    standard3Html: document.getElementById('standard-3').innerHTML,
+                    
+                    // Bloc 4 : Sémantique
+                    semantique1: document.getElementById('semantique-1').dataset.raw || document.getElementById('semantique-1').innerText,
+                    semantique1Html: document.getElementById('semantique-1').innerHTML,
+                    semantique2: document.getElementById('semantique-2').dataset.raw || document.getElementById('semantique-2').innerText,
+                    semantique2Html: document.getElementById('semantique-2').innerHTML,
+                    semantique3: document.getElementById('semantique-3').dataset.raw || document.getElementById('semantique-3').innerText,
+                    semantique3Html: document.getElementById('semantique-3').innerHTML
                 };
+                
                 google.script.run.sauvegarderAnalysesFocus(data);
                 
                 if (window.globalConfig) {
-                    window.globalConfig.analyseSerpHtml = data.analyseSerpHtml;
-                    window.globalConfig.analyseSerpTexte = data.analyseSerpTexte;
-                    window.globalConfig.analyseConcurrentsHtml = data.analyseConcurrentsHtml;
-                    window.globalConfig.analyseConcurrentsTexte = data.analyseConcurrentsTexte;
-                    window.globalConfig.analyseRecommandationsHtml = data.analyseRecommandationsHtml;
-                    window.globalConfig.analyseRecommandationsTexte = data.analyseRecommandationsTexte;
+                    Object.assign(window.globalConfig, data);
                 }
             }
 

@@ -9,6 +9,13 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
         var slides = presentation.getSlides();
         
         var tagsTrouves = 0;
+        
+        // Formatage : on ajoute un saut de ligne vide entre chaque puce pour aérer dans Slides
+        var slideTexteBesoin = texteBesoin.replace(/\n/g, '\n\n');
+        var slideTexteSolution = texteSolution.replace(/\n/g, '\n\n');
+        
+        Logger.log("Recherche des tags TAG_SLIDE_BESOIN et TAG_SLIDE_SOLUTION");
+
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
             
@@ -17,7 +24,7 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 var descRaw = shape.getDescription() || "";
 
                 var targetKey = null;
-                // Détection via le texte alternatif en MAJUSCULE
+                // Détection via le texte alternatif en majuscule
                 if (titleRaw === "TAG_SLIDE_BESOIN" || descRaw === "TAG_SLIDE_BESOIN") {
                     targetKey = "besoin";
                 } else if (titleRaw === "TAG_SLIDE_SOLUTION" || descRaw === "TAG_SLIDE_SOLUTION") {
@@ -25,14 +32,16 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 }
 
                 if (targetKey === "besoin") {
-                    shape.getText().setText(texteBesoin);
+                    shape.getText().setText(slideTexteBesoin);
                     tagsTrouves++;
                 } else if (targetKey === "solution") {
-                    shape.getText().setText(texteSolution);
+                    shape.getText().setText(slideTexteSolution);
                     tagsTrouves++;
                 }
             });
         });
+        
+        Logger.log("Tags trouvés et remplacés : " + tagsTrouves);
         Logger.log("=== FIN : exporterSlideBesoinSolution ===");
         
         if (tagsTrouves === 0) {
@@ -56,10 +65,10 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        // Helper pour appliquer le style "Open Sans", taille 18, et traiter les *termes en gras orange*
+        // Helper pour appliquer le style "Open Sans", taille 18, et traiter les termes en gras orange
         function formatRichText(shape, textWithStars) {
             var textRange = shape.getText();
-            var cleanText = textWithStars.replace(/\*/g, ""); // Texte sans les astérisques
+            var cleanText = textWithStars.replace(/\*/g, ""); 
             
             textRange.setText(cleanText);
             textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(16).setForegroundColor("#000000").setBold(false);
@@ -74,9 +83,11 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 
                 var targetRange = textRange.getRange(startIndex, endIndex);
                 targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                offset += 2; // On compense les 2 astérisques retirés pour les calculs des index suivants
+                offset += 2; 
             }
         }
+
+        Logger.log("Parcours des slides pour l'analyse Semrush en cours");
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
@@ -87,12 +98,12 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
 
-                // Remplacement du titre brut (MAJUSCULE)
+                // Remplacement du titre brut
                 if (shapeText === "TITRE_SLIDE_SEMRUSH" || titleRaw === "TITRE_SLIDE_SEMRUSH" || descRaw === "TITRE_SLIDE_SEMRUSH") {
                     shape.getText().setText(titre);
                 }
                 
-                // Remplacement des analyses avec formatage enrichi (MAJUSCULE)
+                // Remplacement des analyses avec formatage enrichi
                 if (shapeText === "ANALYSE_SEMRUSH_MOT_CLE" || titleRaw === "ANALYSE_SEMRUSH_MOT_CLE" || descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
                     formatRichText(shape, texteKw);
                 }
@@ -101,26 +112,24 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                     formatRichText(shape, texteTrafic);
                 }
 
-                // Remplacement des images avec conservation du texte alternatif
-                if (titleRaw === "PLACEHOLDER_IMG_KW" || descRaw === "PLACEHOLDER_IMG_KW" || shapeText === "PLACEHOLDER_IMG_KW") {
+                // Remplacement des images avec les nouveaux placeholders
+                if (titleRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE" || descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE" || shapeText === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE") {
+                    Logger.log("Remplacement image mots-clés");
                     var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
                     var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
                     
-                    // Conservation du texte alternatif
                     newImageKw.setTitle(titleRaw);
                     newImageKw.setDescription(descRaw);
-                    
                     shape.remove();
                 }
                 
-                if (titleRaw === "PLACEHOLDER_IMG_TRAFIC" || descRaw === "PLACEHOLDER_IMG_TRAFIC" || shapeText === "PLACEHOLDER_IMG_TRAFIC") {
+                if (titleRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC" || descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC" || shapeText === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC") {
+                    Logger.log("Remplacement image trafic");
                     var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
                     var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
                     
-                    // Conservation du texte alternatif
                     newImageTrafic.setTitle(titleRaw);
                     newImageTrafic.setDescription(descRaw);
-                    
                     shape.remove();
                 }
             });
@@ -152,6 +161,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         // 2. Calcul des pourcentages (Parts de l'intention dans le top 10 global du client)
         var transacPctDec = totalTop10 > 0 ? (intentStats.transac.top10 / totalTop10) : 0;
         var infoPctDec = totalTop10 > 0 ? (intentStats.info.top10 / totalTop10) : 0;
+        
         // 3. Préparation des tableaux triés (Thèmes et Segments)
         Logger.log("Préparation des tableaux triés pour l'injection...");
         var topThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3) : [];
@@ -160,6 +170,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         var gains = diagnosticData.gains ? diagnosticData.gains.slice(0, 5) : [];
         var pertes = diagnosticData.pertes ? diagnosticData.pertes.slice(0, 5) : [];
         var territoires = diagnosticData.territoires ? diagnosticData.territoires.slice(0, 5) : [];
+        
         // Fonctions utilitaires pour éviter les erreurs "undefined"
         function safeNum(val) {
             return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
@@ -284,7 +295,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         // SAUVEGARDE EN BASE DES VARIABLES DYNAMIQUES
         // ==========================================
         var propsToSave = {};
-        
         for (var k in mapping) { propsToSave[k] = String(mapping[k]); }
         for (var k in mappingComp) { propsToSave[k] = String(mappingComp[k]); }
         
@@ -299,6 +309,14 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             propsToSave["ANALYSE_MCTOP_CLIENT_" + idx] = topSegParts[idx-1];
             propsToSave["ANALYSE_MCFLOP_CLIENT_" + idx] = flopSegParts[idx-1];
         }
+
+        // Forçage de la valeur "IMAGE" pour tous les placeholders de logos afin qu'ils apparaissent correctement dans CONFIG
+        propsToSave["PLACEHOLDER_LOGO_CLIENT"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_LEADER"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP1"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP2"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP3"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP4"] = "IMAGE";
 
         PropertiesService.getScriptProperties().setProperties(propsToSave);
         syncPropertiesToConfigSheet();
@@ -357,6 +375,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 if (concurrenceData && (titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || shapeText.indexOf("PLACEHOLDER_LOGO_") === 0)) {
                     var tagParts = titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? titleRaw : (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? descRaw : shapeText);
                     var imgUrl = null;
+                    
                     if (tagParts === "PLACEHOLDER_LOGO_CLIENT" && concurrenceData.client && concurrenceData.client.logoUrl) {
                         imgUrl = concurrenceData.client.logoUrl;
                     } else if (tagParts === "PLACEHOLDER_LOGO_LEADER" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
@@ -430,7 +449,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     }
                 }
             });
-
+            
             // Étape B : Traitement des jauges dynamiques (Conservation de l'arrondi)
             var shapesForGauges = slide.getShapes();
             shapesForGauges.forEach(function(shape) {
@@ -456,7 +475,9 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                         var fillWidth = Math.max(shape.getHeight(), width * pct);
                         fgShape.setWidth(fillWidth);
                         fgShape.setLeft(left);
-                        fgShape.setTop(top); // Réalignement strict
+                        fgShape.setTop(top);
+                        
+                        // Réalignement strict
                         fgShape.getFill().setSolidFill("#00b050");
                         fgShape.getBorder().setTransparent();
                         fgShape.getText().clear();

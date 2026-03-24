@@ -54,15 +54,41 @@ function chargerConfigurationPreAudit() {
         focusKw: props['TARGET_KW'] || "",
         focusVol: props['TARGET_KW_SV'] || "",
         focusClientUrl: props['TARGET_URL_CLIENT'] || "",
-        focusNoPage: props['TARGET_KW_CLIENT_POS'] === "-" ? "true" : "false", // inferred
+        focusNoPage: props['TARGET_KW_CLIENT_POS'] === "-" ? "true" : "false",
         focusCompUrl: props['TARGET_URL_CONCURRENT'] || "",
         focusLocalisation: props['TARGET_LOCALISATION'] || "",
-        analyseSerpHtml: props['focus_standard_texte_1'] || "", // example mapped back
-        analyseSerpTexte: props['focus_semantique_texte_1'] || "",
-        analyseConcurrentsHtml: props['focus_standard_texte_2'] || "",
-        analyseConcurrentsTexte: props['focus_semantique_texte_2'] || "",
-        analyseRecommandationsHtml: props['focus_standard_texte_3'] || "",
-        analyseRecommandationsTexte: props['focus_semantique_texte_3'] || ""
+        
+        // Nouveaux champs granulaires
+        serpTitre1: props['SERP_ELEMENT_TITRE_1'] || "",
+        serpDesc1: props['SERP_ELEMENT_DESC_1'] || "",
+        serpSvg1: props['PLACEHOLDER_SERPELEMENT_1'] || "",
+        serpTitre2: props['SERP_ELEMENT_TITRE_2'] || "",
+        serpDesc2: props['SERP_ELEMENT_DESC_2'] || "",
+        serpSvg2: props['PLACEHOLDER_SERPELEMENT_2'] || "",
+        serpTitre3: props['SERP_ELEMENT_TITRE_3'] || "",
+        serpDesc3: props['SERP_ELEMENT_DESC_3'] || "",
+        serpSvg3: props['PLACEHOLDER_SERPELEMENT_3'] || "",
+        serpTitre4: props['SERP_ELEMENT_TITRE_4'] || "",
+        serpDesc4: props['SERP_ELEMENT_DESC_4'] || "",
+        serpSvg4: props['PLACEHOLDER_SERPELEMENT_4'] || "",
+        
+        intentionTitre: props['FOCUS_INTENTION_TITRE'] || "",
+        intentionDesc: props['FOCUS_INTENTION_DESC'] || "",
+        intentionDescHtml: props['FOCUS_INTENTION_DESC'] || "", // On triche avec le texte brut pour le chargement s'il n'y a pas de HTML distinct stocké
+        
+        standard1: props['focus_standard_texte_1'] || "",
+        standard1Html: props['focus_standard_texte_1'] || "",
+        standard2: props['focus_standard_texte_2'] || "",
+        standard2Html: props['focus_standard_texte_2'] || "",
+        standard3: props['focus_standard_texte_3'] || "",
+        standard3Html: props['focus_standard_texte_3'] || "",
+        
+        semantique1: props['focus_semantique_texte_1'] || "",
+        semantique1Html: props['focus_semantique_texte_1'] || "",
+        semantique2: props['focus_semantique_texte_2'] || "",
+        semantique2Html: props['focus_semantique_texte_2'] || "",
+        semantique3: props['focus_semantique_texte_3'] || "",
+        semantique3Html: props['focus_semantique_texte_3'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -157,18 +183,84 @@ function recupererDetailsMotCle(motCle) {
 function sauvegarderConfigFocusMotCle(data) {
     Logger.log("=== DÉBUT : sauvegarderConfigFocusMotCle ===");
     try {
+        var motCle = (data.kw || "").trim().toLowerCase();
+        var clientUrl = (data.clientUrl || "").trim();
+        var compUrl = (data.compUrl || "").trim();
+        var localisation = (data.localisation || "").trim();
+        
+        // Valeur par défaut pour la localisation
+        if (localisation === "") localisation = "france";
+
+        var clientPos = "-";
+        var compPos = "-";
+
+        // Recherche des positions exactes dans la Matrice si le mot-clé existe
+        if (motCle !== "") {
+            var ss = SpreadsheetApp.getActiveSpreadsheet();
+            var sheet = ss.getSheetByName("Matrice");
+            if (sheet) {
+                var matriceData = sheet.getDataRange().getValues();
+                var headers = matriceData[0];
+                
+                var targetRow = null;
+                for (var i = 1; i < matriceData.length; i++) {
+                    if (String(matriceData[i][0]).trim().toLowerCase() === motCle) {
+                        targetRow = matriceData[i];
+                        break;
+                    }
+                }
+                
+                if (targetRow) {
+                    for (var j = 2; j < headers.length; j++) {
+                        var h = String(headers[j]);
+                        if (h.indexOf("URL ") === 0) {
+                            var entityName = h.substring(4).trim();
+                            var posIdx = -1;
+                            
+                            // Trouver la colonne "Pos" correspondante
+                            for (var k = 2; k < headers.length; k++) {
+                                if (String(headers[k]) === "Pos " + entityName) {
+                                    posIdx = k;
+                                    break;
+                                }
+                            }
+                            
+                            if (posIdx !== -1) {
+                                var cellUrl = String(targetRow[j]).trim();
+                                var cellPos = parseInt(targetRow[posIdx], 10);
+                                
+                                if (clientUrl !== "" && cellUrl === clientUrl && data.noPage !== "true") {
+                                    if (!isNaN(cellPos) && cellPos > 0) clientPos = cellPos;
+                                }
+                                if (compUrl !== "" && cellUrl === compUrl) {
+                                    if (!isNaN(cellPos) && cellPos > 0) compPos = cellPos;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Écrasement si la case "Pas de page" est cochée
+        if (data.noPage === "true") {
+            clientPos = "-";
+        }
+
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
             'TARGET_KW': data.kw || "",
             'TARGET_KW_SV': data.vol || "",
             'TARGET_URL_CLIENT': data.clientUrl || "",
-            'TARGET_KW_CLIENT_POS': data.noPage === "true" ? "-" : "",
+            'TARGET_KW_CLIENT_POS': String(clientPos),
             'TARGET_URL_CONCURRENT': data.compUrl || "",
-            'TARGET_LOCALISATION': data.localisation || ""
+            'TARGET_KW_CONCURRENT_POS': String(compPos),
+            'TARGET_LOCALISATION': localisation
         });
         
         syncPropertiesToConfigSheet();
-        Logger.log("Sauvegarde réussie.");
+        
+        Logger.log("Sauvegarde réussie. Pos Client: " + clientPos + " | Pos Concurrent: " + compPos);
         Logger.log("=== FIN : sauvegarderConfigFocusMotCle ===");
         return { success: true };
     } catch (e) {
@@ -751,9 +843,14 @@ function sauvegarderDonneesAnalyseGlobale(data) {
             'ANALYSE_SEMRUSH_MOT_CLE_HTML':  data.analyseKwHtml || "",
             'ANALYSE_SEMRUSH_MOT_CLE':       data.analyseKwTexte || "",
             'ANALYSE_SEMRUSH_TRAFIC_HTML':   data.analyseTraficHtml || "",
-            'ANALYSE_SEMRUSH_TRAFIC':        data.analyseTraficTexte || ""
+            'ANALYSE_SEMRUSH_TRAFIC':        data.analyseTraficTexte || "",
+            'PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE': "IMAGE",
+            'PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC': "IMAGE"
         });
+        
+        Logger.log("Propriétés enregistrées, synchronisation en cours vers CONFIG...");
         syncPropertiesToConfigSheet();
+        
         Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
         return true;
     } catch (e) {
@@ -767,15 +864,33 @@ function sauvegarderAnalysesFocus(data) {
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
-            'focus_standard_texte_1': data.analyseSerpHtml || "",
-            'focus_semantique_texte_1': data.analyseSerpTexte || "",
-            'focus_standard_texte_2': data.analyseConcurrentsHtml || "",
-            'focus_semantique_texte_2': data.analyseConcurrentsTexte || "",
-            'focus_standard_texte_3': data.analyseRecommandationsHtml || "",
-            'focus_semantique_texte_3': data.analyseRecommandationsTexte || ""
+            'SERP_ELEMENT_TITRE_1': data.serpTitre1 || "",
+            'SERP_ELEMENT_DESC_1': data.serpDesc1 || "",
+            'PLACEHOLDER_SERPELEMENT_1': data.serpSvg1 || "",
+            'SERP_ELEMENT_TITRE_2': data.serpTitre2 || "",
+            'SERP_ELEMENT_DESC_2': data.serpDesc2 || "",
+            'PLACEHOLDER_SERPELEMENT_2': data.serpSvg2 || "",
+            'SERP_ELEMENT_TITRE_3': data.serpTitre3 || "",
+            'SERP_ELEMENT_DESC_3': data.serpDesc3 || "",
+            'PLACEHOLDER_SERPELEMENT_3': data.serpSvg3 || "",
+            'SERP_ELEMENT_TITRE_4': data.serpTitre4 || "",
+            'SERP_ELEMENT_DESC_4': data.serpDesc4 || "",
+            'PLACEHOLDER_SERPELEMENT_4': data.serpSvg4 || "",
+            
+            'FOCUS_INTENTION_TITRE': data.intentionTitre || "",
+            'FOCUS_INTENTION_DESC': data.intentionDesc || "",
+            
+            'focus_standard_texte_1': data.standard1 || "",
+            'focus_standard_texte_2': data.standard2 || "",
+            'focus_standard_texte_3': data.standard3 || "",
+            
+            'focus_semantique_texte_1': data.semantique1 || "",
+            'focus_semantique_texte_2': data.semantique2 || "",
+            'focus_semantique_texte_3': data.semantique3 || ""
         });
+        
         syncPropertiesToConfigSheet();
-        Logger.log("Analyses Focus sauvegardées.");
+        Logger.log("Analyses Focus sauvegardées avec la nouvelle granularité.");
         Logger.log("=== FIN : sauvegarderAnalysesFocus ===");
         return true;
     } catch (e) {
@@ -858,16 +973,119 @@ function lancerWorkflowSERP(data) {
             pages: scrapedPages
         };
 
-        Logger.log("=== FIN : lancerWorkflowSERP (Extraction OK) ===");
+        Logger.log("Étape 3 : Création du prompt et appel API Gemini 2.5 Pro");
+
+        var svgMap = {
+            "ads": "<svg><text y='15'>Ads Placeholder</text></svg>",
+            "maps": "<svg><text y='15'>Maps Placeholder</text></svg>",
+            "shopping": "<svg><text y='15'>Shopping Placeholder</text></svg>",
+            "paa": "<svg><text y='15'>PAA Placeholder</text></svg>",
+            "featured": "<svg><text y='15'>Featured Placeholder</text></svg>",
+            "video": "<svg><text y='15'>Video Placeholder</text></svg>",
+            "image": "<svg><text y='15'>Image Placeholder</text></svg>",
+            "defaut": "<svg><text y='15'>Default Placeholder</text></svg>"
+        };
+
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
+
+        var promptStr = "Tu es un expert SEO. En utilisant les données extraites d'une page de résultats Google (SERP) et de son Top 10, fournis une analyse SEO approfondie et structurée pour ce mot-clé.\n\n" +
+                        "CONTRAINTES DE FORMAT STRICTES :\n" +
+                        "Tu dois fournir ta réponse UNIQUEMENT sous forme d'objet JSON, sans aucun texte additionnel ni balise Markdown (pas de ```json ... ```).\n" +
+                        "La structure doit être EXACTEMENT la suivante :\n" +
+                        "{\n" +
+                        "  \"serp_elements\": [\n" +
+                        "    {\"titre\": \"Titre très court\", \"description\": \"Description de l'élément SERP\", \"type_feature\": \"clé_du_svg\"},\n" +
+                        "    // ... (Il faut EXACTEMENT 4 objets ici)\n" +
+                        "  ],\n" +
+                        "  \"intention\": {\n" +
+                        "    \"titre\": \"Titre de l'intention (ex: Transactionnelle)\",\n" +
+                        "    \"description\": \"Description concise de ce que cherche l'utilisateur.\"\n" +
+                        "  },\n" +
+                        "  \"standards\": [\n" +
+                        "    \"Standard observé 1\", \"Standard observé 2\", \"Standard observé 3\"\n" +
+                        "  ],\n" +
+                        "  \"semantique\": [\n" +
+                        "    \"Axe sémantique 1\", \"Axe sémantique 2\", \"Axe sémantique 3\"\n" +
+                        "  ]\n" +
+                        "}\n\n" +
+                        "DÉTAILS ATTENDUS :\n" +
+                        "- `type_feature` DOIT être l'une des clés exactes suivantes : ads, maps, shopping, paa, featured, video, image, defaut.\n" +
+                        "- `standards` : 3 standards techniques, ergonomiques ou éditoriaux incontournables observés chez les concurrents.\n" +
+                        "- `semantique` : 3 axes lexicaux/sémantiques essentiels à traiter sur la page.\n" +
+                        "- Rédige dans un style d'expert SEO très concis et impactant.\n\n" +
+                        "RÈGLES TYPOGRAPHIQUES (FRANÇAIS) À RESPECTER À LA LETTRE :\n" +
+                        "- Majuscule uniquement au premier mot des phrases/titres/puces (sauf noms propres).\n" +
+                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
+                        "- Un espace obligatoire avant les deux-points (:).\n" +
+                        "- Pas de majuscule après les deux-points (:) car ce n'est pas une phrase complète.\n\n" +
+                        "CONTEXTE CLIENT :\n" +
+                        contexteClient + "\n\n" +
+                        "DONNÉES EXTRAITES :\n" +
+                        JSON.stringify(extractionData);
+
+        var payload = {
+            "contents": [{"parts": [{"text": promptStr}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": {
+                "x-goog-api-key": geminiApiKey
+            },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        Logger.log("Envoi de la requête à Gemini...");
+        var response = UrlFetchApp.fetch(apiUrl, options);
+        var jsonResponse = JSON.parse(response.getContentText());
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (!jsonResponse.candidates || jsonResponse.candidates.length === 0 || !jsonResponse.candidates[0].content) {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+        var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
         
-        // ATTENTION : Pour ce test, on renvoie une simulation de succès au frontend.
-        // La prochaine étape sera de passer 'extractionData' à notre prompt structuré Gemini.
+        Logger.log("Parsing de la réponse de Gemini...");
+        var jsonGemini;
+        try {
+            jsonGemini = JSON.parse(responseText);
+        } catch (e) {
+            Logger.log("Erreur de parsing JSON Gemini : " + responseText);
+            throw new Error("Le format JSON renvoyé par Gemini est invalide.");
+        }
+
+        // Enrichissement des éléments SERP avec les SVGs
+        if (jsonGemini.serp_elements && Array.isArray(jsonGemini.serp_elements)) {
+            for (var i = 0; i < jsonGemini.serp_elements.length; i++) {
+                var el = jsonGemini.serp_elements[i];
+                var featureKey = el.type_feature || "defaut";
+                if (!svgMap[featureKey]) {
+                    featureKey = "defaut";
+                }
+                el.svg_icon = svgMap[featureKey];
+            }
+        }
+
+        Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
+        
         return { 
             success: true, 
             data: {
-                elements_serp: serpData.features,
-                analyse_concurrents: ["Scraping réussi ! (" + scrapedPages.length + " pages lues). En attente d'implémentation de Gemini."],
-                analyse_recommandations: ["Les données extraites sont prêtes à être envoyées au Schéma JSON."]
+                elements_serp: jsonGemini.serp_elements || [],
+                intention: jsonGemini.intention || {},
+                standards: jsonGemini.standards || [],
+                semantique: jsonGemini.semantique || []
             }
         };
 
