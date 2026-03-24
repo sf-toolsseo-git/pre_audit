@@ -268,23 +268,34 @@ function syncPropertiesToConfigSheet() {
                 "CLIENT_STRENGTH", "CLIENT_BRAND"
             ],
             "📊 CONCURRENTS": [
-                "COMP_NAME_1", 
-                "COMPETITOR_1", "COMP_STRENGTH_1", "COMP_BRAND_1",
+                "COMP_NAME_1", "COMPETITOR_1", "COMP_STRENGTH_1", "COMP_BRAND_1",
                 "COMP_NAME_2", "COMPETITOR_2", "COMP_STRENGTH_2", "COMP_BRAND_2",
                 "COMP_NAME_3", "COMPETITOR_3", "COMP_STRENGTH_3", "COMP_BRAND_3",
                 "COMP_NAME_4", "COMPETITOR_4", "COMP_STRENGTH_4", "COMP_BRAND_4",
                 "COMP_NAME_5", "COMPETITOR_5", "COMP_STRENGTH_5", "COMP_BRAND_5",
                 "IS_MULTI_THEME"
             ],
-            "🧠 IA & CLUSTERING": [
-                "GEMINI_API_KEY", "URLS_CONTEXTE", "CONTEXTE_CLIENT"
+            "🔑 API KEY": [
+                "GEMINI_API_KEY"
             ],
-            "📈 PRÉ-AUDIT": [
+            "📈 PRÉ-AUDIT (contexte et brief)": [
                 "SLIDE_PRE_AUDIT_ID", "URL_REPONSES", "BRIEF_PRE_AUDIT", 
-                "PREAUDIT_BESOIN_HTML", "PREAUDIT_BESOIN_TEXTE", "PREAUDIT_SOLUTION_HTML", "PREAUDIT_SOLUTION_TEXTE", 
-                "ANALYSE_SEMRUSH_TITRE", "ANALYSE_SEMRUSH_KW_HTML", "ANALYSE_SEMRUSH_KW", "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC",
+                "URLS_CONTEXTE", "CONTEXTE_CLIENT", "CONTEXTE_PREAUDIT"
+            ],
+            "📈 PRÉ-AUDIT (besoin et solution)": [
+                "PREAUDIT_BESOIN_HTML", "PREAUDIT_BESOIN_TEXTE", 
+                "PREAUDIT_SOLUTION_HTML", "PREAUDIT_SOLUTION_TEXTE"
+            ],
+            "📈 PRÉ-AUDIT (semrush)": [
+                "ANALYSE_SEMRUSH_TITRE", "ANALYSE_SEMRUSH_KW_HTML", "ANALYSE_SEMRUSH_KW", 
+                "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"
+            ],
+            "📈 PRÉ-AUDIT (diagnostic et segments)": [
                 "ANALYSE_THEME_TOP_TITRE", "ANALYSE_THEME_TOP", "ANALYSE_THEME_FLOP_TITRE", "ANALYSE_THEME_FLOP",
                 "ANALYSE_SEGMENT_TOP_TITRE", "ANALYSE_SEGMENT_TOP", "ANALYSE_SEGMENT_FLOP_TITRE", "ANALYSE_SEGMENT_FLOP"
+            ],
+            "🔍 FOCUS MOT-CLÉ": [
+                "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_URL_COMP", "FOCUS_NO_PAGE"
             ],
             "🎯 CTR": [
                 "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",

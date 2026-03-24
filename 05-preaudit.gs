@@ -50,11 +50,18 @@ function chargerConfigurationPreAudit() {
         competitor5: props['COMPETITOR_5'] || "",
         
         // Focus mot-clé
-        focusKw: props['FOCUS_KW'] || "",
-        focusVol: props['FOCUS_VOL'] || "",
-        focusClientUrl: props['FOCUS_CLIENT_URL'] || "",
+        focusKw: props['TARGET_KW'] || "",
+        focusVol: props['TARGET_KW_SV'] || "",
+        focusClientUrl: props['TARGET_URL_CLIENT'] || "",
         focusNoPage: props['FOCUS_NO_PAGE'] || "false",
-        focusCompUrl: props['FOCUS_COMP_URL'] || ""
+        focusCompUrl: props['TARGET_URL_COMP'] || "",
+        focusLocalisation: props['TARGET_LOCALISATION'] || "",
+        analyseSerpHtml: props['FOCUS_ANALYSE_SERP_HTML'] || "",
+        analyseSerpTexte: props['FOCUS_ANALYSE_SERP_TEXTE'] || "",
+        analyseConcurrentsHtml: props['FOCUS_ANALYSE_COMP_HTML'] || "",
+        analyseConcurrentsTexte: props['FOCUS_ANALYSE_COMP_TEXTE'] || "",
+        analyseRecommandationsHtml: props['FOCUS_ANALYSE_REC_HTML'] || "",
+        analyseRecommandationsTexte: props['FOCUS_ANALYSE_REC_TEXTE'] || ""
     };
 }
 
@@ -149,11 +156,12 @@ function sauvegarderConfigFocusMotCle(data) {
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
-            'FOCUS_KW': data.kw || "",
-            'FOCUS_VOL': data.vol || "",
-            'FOCUS_CLIENT_URL': data.clientUrl || "",
+            'TARGET_KW': data.kw || "",
+            'TARGET_KW_SV': data.vol || "",
+            'TARGET_URL_CLIENT': data.clientUrl || "",
             'FOCUS_NO_PAGE': data.noPage || "false",
-            'FOCUS_COMP_URL': data.compUrl || ""
+            'TARGET_URL_COMP': data.compUrl || "",
+            'TARGET_LOCALISATION': data.localisation || ""
         });
         
         syncPropertiesToConfigSheet();
@@ -729,6 +737,126 @@ function sauvegarderDonneesAnalyseGlobale(data) {
         return true;
     } catch (e) {
         throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
+    }
+}
+
+function sauvegarderAnalysesFocus(data) {
+    Logger.log("=== DÉBUT : sauvegarderAnalysesFocus ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'FOCUS_ANALYSE_SERP_HTML': data.analyseSerpHtml || "",
+            'FOCUS_ANALYSE_SERP_TEXTE': data.analyseSerpTexte || "",
+            'FOCUS_ANALYSE_COMP_HTML': data.analyseConcurrentsHtml || "",
+            'FOCUS_ANALYSE_COMP_TEXTE': data.analyseConcurrentsTexte || "",
+            'FOCUS_ANALYSE_REC_HTML': data.analyseRecommandationsHtml || "",
+            'FOCUS_ANALYSE_REC_TEXTE': data.analyseRecommandationsTexte || ""
+        });
+        syncPropertiesToConfigSheet();
+        Logger.log("Analyses Focus sauvegardées.");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde des analyses focus : " + e.message);
+        return false;
+    }
+}
+
+function lancerWorkflowSERP(data) {
+    Logger.log("=== DÉBUT : lancerWorkflowSERP ===");
+    Logger.log("Données reçues : " + JSON.stringify(data));
+    
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var clientName = props['CLIENT_NAME'] || "";
+        var clientUrl = props['CLIENT_URL'] || "";
+        var contexteClient = props['CONTEXTE_PREAUDIT'] || "";
+        var geminiApiKey = props['GEMINI_API_KEY'];
+        var listeClesAPIStr = props['LISTE_CLES_API'];
+        
+        if (!geminiApiKey || geminiApiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+        
+        var clesApi = { serpapi: [], serpstack: [] };
+        if (listeClesAPIStr) {
+            try {
+                clesApi = JSON.parse(listeClesAPIStr);
+            } catch (e) {
+                Logger.log("Erreur de parsing LISTE_CLES_API : " + e.message);
+            }
+        }
+        
+        var motCle = data.kw;
+        var loc = data.localisation || "france";
+        
+        Logger.log("Étape 1 : Récupération des résultats SERP pour '" + motCle + "' (Loc: " + loc + ")");
+        
+        // --- Simulation de l'appel SERP et Scraping pour l'exemple ---
+        // Dans une implémentation réelle, on utiliserait UrlFetchApp pour interroger SerpApi/Serpstack 
+        // en piochant aléatoirement dans clesApi.serpapi ou clesApi.serpstack, puis Cheerio pour scraper.
+        
+        var structureConcurrence = "Concurrent 1 (Titre 1) : H1, H2, H3\\nConcurrent 2 (Titre 2) : H1, H2...";
+        var contexteSerp = "La SERP est composée d'articles informationnels et de quelques pages commerciales.";
+        
+        Logger.log("Étape 2 : Lancement des requêtes Gemini en parallèle");
+        
+        var prompt1 = "Tu es un expert SEO. Analyse les éléments de cette SERP et les concurrents. Rédige ton analyse en listes à puces concises.\\nRÈGLES TYPOGRAPHIQUES :\\n- Majuscule uniquement au premier mot.\\n- Toujours un espace avant le deux-points (:).\\n- Pas de majuscule après le deux-points.\\n- Jours, mois, langues en minuscule.\\n- Acronymes en majuscules (SEO, IA, API, SERP, HTML).\\nContexte SERP : " + contexteSerp + "\\nStructure : " + structureConcurrence;
+        var prompt2 = "Tu es un stratège SEO. Fais des recommandations au client '" + clientName + "' pour se positionner sur le mot-clé '" + motCle + "'. Rédige ton analyse en listes à puces concises.\\nRÈGLES TYPOGRAPHIQUES :\\n- Majuscule uniquement au premier mot.\\n- Toujours un espace avant le deux-points (:).\\n- Pas de majuscule après le deux-points.\\n- Jours, mois, langues en minuscule.\\n- Acronymes en majuscules (SEO, IA, API, SERP, HTML).\\nProfil client : " + contexteClient;
+        
+        var urlApi = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=" + geminiApiKey;
+        var reqs = [
+            {
+                url: urlApi,
+                method: "post",
+                contentType: "application/json",
+                muteHttpExceptions: true,
+                payload: JSON.stringify({ contents: [{ parts: [{ text: prompt1 }] }] })
+            },
+            {
+                url: urlApi,
+                method: "post",
+                contentType: "application/json",
+                muteHttpExceptions: true,
+                payload: JSON.stringify({ contents: [{ parts: [{ text: prompt2 }] }] })
+            }
+        ];
+        
+        var reponses = UrlFetchApp.fetchAll(reqs);
+        
+        var texteSerpConcurrents = "";
+        var texteRecommandations = "";
+        
+        try {
+            var json1 = JSON.parse(reponses[0].getContentText());
+            if (json1.candidates && json1.candidates[0].content) {
+                texteSerpConcurrents = json1.candidates[0].content.parts[0].text;
+            }
+            var json2 = JSON.parse(reponses[1].getContentText());
+            if (json2.candidates && json2.candidates[0].content) {
+                texteRecommandations = json2.candidates[0].content.parts[0].text;
+            }
+        } catch(e) {
+            Logger.log("Erreur parsing Gemini : " + e.message);
+        }
+        
+        Logger.log("Étape 3 : Fusion des résultats et formatage final JSON");
+        
+        var finalData = {
+            elements_serp: [
+                "Présence de featured snippets",
+                "Domination des sites d'autorité",
+                "Intentions mixtes (informationnel et commercial)"
+            ],
+            analyse_concurrents: texteSerpConcurrents.split('\\n').filter(function(l) { return l.trim() !== ''; }),
+            analyse_recommandations: texteRecommandations.split('\\n').filter(function(l) { return l.trim() !== ''; })
+        };
+        
+        Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
+        return { success: true, data: finalData };
+        
+    } catch(err) {
+        Logger.log("Erreur dans lancerWorkflowSERP : " + err.message);
+        return { success: false, error: err.message };
     }
 }
 

@@ -125,6 +125,18 @@
           .comp-val { font-weight:700; color:#08133b; }
           .badge-leader { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#188038; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
           .badge-client { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#1a73e8; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
+          .stepper-container { display: flex; justify-content: space-between; margin: 20px 0; position: relative; }
+          .stepper-container::before { content: ""; position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: #dadce0; z-index: 1; }
+          .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 25%; }
+          .step-circle { width: 32px; height: 32px; border-radius: 50%; background: #dadce0; color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; transition: background 0.3s; }
+          .step.active .step-circle { background: #1a73e8; }
+          .step.completed .step-circle { background: #188038; }
+          .step.error .step-circle { background: #d93025; }
+          .step-label { font-size: 12px; color: #5f6368; margin-top: 8px; font-weight: 500; text-align: center; }
+          .step.active .step-label { color: #1a73e8; font-weight: bold; }
+          .step.completed .step-label { color: #188038; }
+          .step.error .step-label { color: #d93025; }
+          .analysis-results { display: none; margin-top: 20px; }
         </style>
     </head>
     <body>
@@ -362,6 +374,44 @@
                                 <input type="checkbox" id="focus-no-page" onchange="toggleFocusClientUrl()"> (pas de page positionnée)
                             </label>
                         </div>
+                        <div class="col">
+                            <label class="input-label" for="focus-localisation">Localisation</label>
+                            <input type="text" id="focus-localisation" placeholder="Ex: france (vide = france entière)">
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button type="button" class="btn" id="btn-lancer-analyse" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="lancerAnalyseApprofondie()">🚀 Lancer l'analyse approfondie</button>
+                    </div>
+
+                    <div class="stepper-container" id="analyse-stepper" style="display: none;">
+                        <div class="step" id="step-serp">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">SERP</div>
+                        </div>
+                        <div class="step" id="step-scraping">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Scraping</div>
+                        </div>
+                        <div class="step" id="step-structure">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Structure</div>
+                        </div>
+                        <div class="step" id="step-ia">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Stratégie IA</div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-results" id="analysis-results">
+                        <label class="input-label">Éléments de SERP</label>
+                        <div id="ce-analyse-serp" contenteditable="true" class="ce-field" data-placeholder="Résultats des éléments de la SERP..." onblur="autoSaveAnalyseFocus()"></div>
+                        
+                        <label class="input-label" style="margin-top: 15px;">Analyse de la SERP (concurrents)</label>
+                        <div id="ce-analyse-concurrents" contenteditable="true" class="ce-field" data-placeholder="Analyse des concurrents..." onblur="autoSaveAnalyseFocus()"></div>
+                        
+                        <label class="input-label" style="margin-top: 15px;">Analyse client et recommandations</label>
+                        <div id="ce-analyse-recommandations" contenteditable="true" class="ce-field" data-placeholder="Recommandations stratégiques..." onblur="autoSaveAnalyseFocus()"></div>
                     </div>
                 </div>
 
@@ -442,10 +492,17 @@
                             if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
                             if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
                             if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
+                            if (config.focusLocalisation) document.getElementById('focus-localisation').value = config.focusLocalisation;
                             if (config.focusNoPage === "true") {
                                 var cb = document.getElementById('focus-no-page');
                                 cb.checked = true;
                                 toggleFocusClientUrl();
+                            }
+                            if (config.analyseSerpHtml || config.analyseConcurrentsHtml || config.analyseRecommandationsHtml) {
+                                if (config.analyseSerpHtml) setCeContent('ce-analyse-serp', config.analyseSerpTexte);
+                                if (config.analyseConcurrentsHtml) setCeContent('ce-analyse-concurrents', config.analyseConcurrentsTexte);
+                                if (config.analyseRecommandationsHtml) setCeContent('ce-analyse-recommandations', config.analyseRecommandationsTexte);
+                                document.getElementById('analysis-results').style.display = 'block';
                             }
                         }
 
@@ -1766,6 +1823,114 @@
                     .recupererDetailsMotCle(motCle);
             }
 
+            function autoSaveAnalyseFocus() {
+                var data = {
+                    analyseSerpHtml: document.getElementById('ce-analyse-serp').innerHTML,
+                    analyseSerpTexte: document.getElementById('ce-analyse-serp').dataset.raw || document.getElementById('ce-analyse-serp').innerText,
+                    analyseConcurrentsHtml: document.getElementById('ce-analyse-concurrents').innerHTML,
+                    analyseConcurrentsTexte: document.getElementById('ce-analyse-concurrents').dataset.raw || document.getElementById('ce-analyse-concurrents').innerText,
+                    analyseRecommandationsHtml: document.getElementById('ce-analyse-recommandations').innerHTML,
+                    analyseRecommandationsTexte: document.getElementById('ce-analyse-recommandations').dataset.raw || document.getElementById('ce-analyse-recommandations').innerText
+                };
+                google.script.run.sauvegarderAnalysesFocus(data);
+                
+                if (window.globalConfig) {
+                    window.globalConfig.analyseSerpHtml = data.analyseSerpHtml;
+                    window.globalConfig.analyseSerpTexte = data.analyseSerpTexte;
+                    window.globalConfig.analyseConcurrentsHtml = data.analyseConcurrentsHtml;
+                    window.globalConfig.analyseConcurrentsTexte = data.analyseConcurrentsTexte;
+                    window.globalConfig.analyseRecommandationsHtml = data.analyseRecommandationsHtml;
+                    window.globalConfig.analyseRecommandationsTexte = data.analyseRecommandationsTexte;
+                }
+            }
+
+            function setStepperState(stepId, state) {
+                var step = document.getElementById(stepId);
+                if (step) {
+                    step.classList.remove('active', 'completed', 'error');
+                    if (state) step.classList.add(state);
+                }
+            }
+
+            function lancerAnalyseApprofondie() {
+                var motCle = document.getElementById('focus-kw').value.trim();
+                if (motCle === "") {
+                    alert("Veuillez saisir un mot-clé pour lancer l'analyse.");
+                    return;
+                }
+                
+                var urlClient = document.getElementById('focus-client-url').value.trim();
+                var noPage = document.getElementById('focus-no-page').checked;
+                var localisation = document.getElementById('focus-localisation').value.trim();
+                
+                var btn = document.getElementById('btn-lancer-analyse');
+                var stepper = document.getElementById('analyse-stepper');
+                var results = document.getElementById('analysis-results');
+                
+                btn.disabled = true;
+                stepper.style.display = 'flex';
+                results.style.display = 'none';
+                
+                setStepperState('step-serp', 'active');
+                setStepperState('step-scraping', '');
+                setStepperState('step-structure', '');
+                setStepperState('step-ia', '');
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        btn.disabled = false;
+                        if (res.success) {
+                            setStepperState('step-ia', 'completed');
+                            var data = res.data;
+                            
+                            var texteSerp = Array.isArray(data.elements_serp) ? "• " + data.elements_serp.join("\n\n• ") : (data.elements_serp || '');
+                            var texteConcurrents = Array.isArray(data.analyse_concurrents) ? "• " + data.analyse_concurrents.join("\n\n• ") : (data.analyse_concurrents || '');
+                            var texteRecommandations = Array.isArray(data.analyse_recommandations) ? "• " + data.analyse_recommandations.join("\n\n• ") : (data.analyse_recommandations || '');
+                            
+                            setCeContent('ce-analyse-serp', texteSerp);
+                            setCeContent('ce-analyse-concurrents', texteConcurrents);
+                            setCeContent('ce-analyse-recommandations', texteRecommandations);
+                            
+                            results.style.display = 'block';
+                            autoSaveAnalyseFocus();
+                        } else {
+                            setStepperState('step-ia', 'error');
+                            alert("Erreur lors de l'analyse : " + res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        setStepperState('step-ia', 'error');
+                        alert("Erreur critique : " + err.message);
+                    })
+                    .lancerWorkflowSERP({
+                        kw: motCle,
+                        urlClient: urlClient,
+                        noPage: noPage,
+                        localisation: localisation
+                    });
+                    
+                // Simulation visuelle du stepper pendant le traitement
+                setTimeout(function() {
+                    if (document.getElementById('step-serp').classList.contains('active')) {
+                        setStepperState('step-serp', 'completed');
+                        setStepperState('step-scraping', 'active');
+                    }
+                }, 3000);
+                setTimeout(function() {
+                    if (document.getElementById('step-scraping').classList.contains('active')) {
+                        setStepperState('step-scraping', 'completed');
+                        setStepperState('step-structure', 'active');
+                    }
+                }, 7000);
+                setTimeout(function() {
+                    if (document.getElementById('step-structure').classList.contains('active')) {
+                        setStepperState('step-structure', 'completed');
+                        setStepperState('step-ia', 'active');
+                    }
+                }, 12000);
+            }
+
             function sauvegarderFocusMotCle() {
                 var btn = document.getElementById('btn-save-focus');
                 var msg = document.getElementById('focus-msg');
@@ -1775,7 +1940,8 @@
                     vol: document.getElementById('focus-vol').value,
                     clientUrl: document.getElementById('focus-client-url').value,
                     noPage: document.getElementById('focus-no-page').checked ? "true" : "false",
-                    compUrl: document.getElementById('focus-comp-url').value
+                    compUrl: document.getElementById('focus-comp-url').value,
+                    localisation: document.getElementById('focus-localisation').value
                 };
 
                 console.log("Sauvegarde du focus mot-clé avec les données :", data);

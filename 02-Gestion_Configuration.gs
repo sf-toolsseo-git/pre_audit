@@ -121,8 +121,17 @@ function chargerDonneesInitiales() {
 }
 
 function enregistrerConfiguration(formulaire) {
+    Logger.log("Début de l'enregistrement de la configuration");
     var props = PropertiesService.getScriptProperties();
+    
+    // Configuration silencieuse des clés API SERP
+    var listeClesAPI = {
+        serpapi: ["b6f773c4a0676ee0f671b57de0d47f32ce186cf56da118af6264c6f371adefb7", "30be5fb7fab8f6d4e8a53fb1bcfc7344ffc45fe6799e981617033d344b7d7494", "5f68d13d8cc15308a0fcd5410728068a11e76faf968b5841c6c82e2fccc2a1da", "2576b1808240a807454e65cb5f8c36bd874d9c31bff711bfe9b10b53fa1c64e6", "ec4c0e232e63cc29db8728317f929348eec3d538c230c81674cd2ccb89779a01"],
+        serpstack: ["3d87377fc0cf1663bf5ead3b917aea80", "82cb1d4f19dfedd7a0f4b893e05b6ad8", "abd06a2ab6bf28c2c0aa5a5b67d50416", "f765fa48d6f564b4141320993e7d2afa", "ffa21315aec4e4384702bc7556b05962"]
+    };
+    
     props.setProperties({
+        'LISTE_CLES_API': JSON.stringify(listeClesAPI),
         'GEMINI_API_KEY': formulaire.geminiApiKey || "",
         'URLS_CONTEXTE': formulaire.urlsContexte || "",
         'CONTEXTE_CLIENT': formulaire.contexteClient || "",
@@ -165,6 +174,7 @@ function enregistrerConfiguration(formulaire) {
     });
     syncPropertiesToConfigSheet();
     
+    Logger.log("Configuration enregistrée avec succès");
     return { success: true };
 }
 
