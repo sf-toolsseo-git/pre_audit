@@ -383,8 +383,8 @@ function syncPropertiesToConfigSheet() {
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top");
 
-                sheet.setColumnWidth(cBase, 180);
-                sheet.setColumnWidth(cBase + 1, 300);
+                sheet.setColumnWidth(cBase, 350);
+                sheet.setColumnWidth(cBase + 1, 350);
                 if (cBase + 2 <= numGroups * 3) {
                     sheet.setColumnWidth(cBase + 2, 30);
                 }

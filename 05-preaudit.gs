@@ -787,12 +787,8 @@ function sauvegarderAnalysesFocus(data) {
 function lancerWorkflowSERP(data) {
     Logger.log("=== DÉBUT : lancerWorkflowSERP ===");
     Logger.log("Données reçues : " + JSON.stringify(data));
-    
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
-        var clientName = props['CONF_CLIENT_NAME'] || "";
-        var clientUrl = props['CONF_CLIENT_URL'] || "";
-        var contexteClient = props['PA_PROFILAGE_COMMERCIAL'] || "";
         var geminiApiKey = props['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = props['LISTE_CLES_API'];
         
@@ -800,87 +796,273 @@ function lancerWorkflowSERP(data) {
             throw new Error("Clé API Gemini introuvable.");
         }
         
-        var clesApi = { serpapi: [], serpstack: [] };
+        var apiKeys = [];
         if (listeClesAPIStr) {
             try {
-                clesApi = JSON.parse(listeClesAPIStr);
+                var parsedKeys = JSON.parse(listeClesAPIStr);
+                // Aplatit l'objet pour itérer plus facilement
+                if (parsedKeys.serpapi) {
+                    parsedKeys.serpapi.forEach(function(k) { apiKeys.push({type: 'serpapi', cle: k}); });
+                }
+                if (parsedKeys.serpstack) {
+                    parsedKeys.serpstack.forEach(function(k) { apiKeys.push({type: 'serpstack', cle: k}); });
+                }
             } catch (e) {
                 Logger.log("Erreur de parsing LISTE_CLES_API : " + e.message);
             }
         }
-        
+
+        if (apiKeys.length === 0) throw new Error("Aucune clé API SERP configurée dans l'onglet Général.");
+
         var motCle = data.kw;
         var loc = data.localisation || "france";
+        var urlClient = data.urlClient;
+        var noPage = data.noPage;
+
+        // ==========================================
+        // ÉTAPE 1 : FETCH SERP (SERPAPI / SERPSTACK)
+        // ==========================================
+        Logger.log("Étape 1 : Récupération SERP pour '" + motCle + "'");
+        var serpJson = fetchSerpData(motCle, loc, apiKeys);
+        if (!serpJson) throw new Error("Impossible de récupérer la SERP (Quotas atteints ou erreur API).");
+
+        var serpData = extractSerpData(serpJson);
+        Logger.log("SERP Features détectées : " + serpData.features.join(", "));
+        Logger.log("Top 10 URLs récupérées : " + serpData.urls.length);
+
+        // ==========================================
+        // ÉTAPE 2 : SCRAPING EN PARALLÈLE
+        // ==========================================
+        Logger.log("Étape 2 : Scraping des URLs du Top 10 + URL Client");
         
-        Logger.log("Étape 1 : Récupération des résultats SERP pour '" + motCle + "' (Loc: " + loc + ")");
+        var urlsToScrape = serpData.urls.slice(); // Copie du tableau
         
-        // --- Simulation de l'appel SERP et Scraping pour l'exemple ---
-        // Dans une implémentation réelle, on utiliserait UrlFetchApp pour interroger SerpApi/Serpstack 
-        // en piochant aléatoirement dans clesApi.serpapi ou clesApi.serpstack, puis Cheerio pour scraper.
-        
-        var structureConcurrence = "Concurrent 1 (Titre 1) : H1, H2, H3\\nConcurrent 2 (Titre 2) : H1, H2...";
-        var contexteSerp = "La SERP est composée d'articles informationnels et de quelques pages commerciales.";
-        
-        Logger.log("Étape 2 : Lancement des requêtes Gemini en parallèle");
-        
-        var prompt1 = "Tu es un expert SEO. Analyse les éléments de cette SERP et les concurrents. Rédige ton analyse en listes à puces concises.\\nRÈGLES TYPOGRAPHIQUES :\\n- Majuscule uniquement au premier mot.\\n- Toujours un espace avant le deux-points (:).\\n- Pas de majuscule après le deux-points.\\n- Jours, mois, langues en minuscule.\\n- Acronymes en majuscules (SEO, IA, API, SERP, HTML).\\nContexte SERP : " + contexteSerp + "\\nStructure : " + structureConcurrence;
-        var prompt2 = "Tu es un stratège SEO. Fais des recommandations au client '" + clientName + "' pour se positionner sur le mot-clé '" + motCle + "'. Rédige ton analyse en listes à puces concises.\\nRÈGLES TYPOGRAPHIQUES :\\n- Majuscule uniquement au premier mot.\\n- Toujours un espace avant le deux-points (:).\\n- Pas de majuscule après le deux-points.\\n- Jours, mois, langues en minuscule.\\n- Acronymes en majuscules (SEO, IA, API, SERP, HTML).\\nProfil client : " + contexteClient;
-        
-        var urlApi = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=" + geminiApiKey;
-        var reqs = [
-            {
-                url: urlApi,
-                method: "post",
-                contentType: "application/json",
-                muteHttpExceptions: true,
-                payload: JSON.stringify({ contents: [{ parts: [{ text: prompt1 }] }] })
-            },
-            {
-                url: urlApi,
-                method: "post",
-                contentType: "application/json",
-                muteHttpExceptions: true,
-                payload: JSON.stringify({ contents: [{ parts: [{ text: prompt2 }] }] })
-            }
-        ];
-        
-        var reponses = UrlFetchApp.fetchAll(reqs);
-        
-        var texteSerpConcurrents = "";
-        var texteRecommandations = "";
-        
-        try {
-            var json1 = JSON.parse(reponses[0].getContentText());
-            if (json1.candidates && json1.candidates[0].content) {
-                texteSerpConcurrents = json1.candidates[0].content.parts[0].text;
-            }
-            var json2 = JSON.parse(reponses[1].getContentText());
-            if (json2.candidates && json2.candidates[0].content) {
-                texteRecommandations = json2.candidates[0].content.parts[0].text;
-            }
-        } catch(e) {
-            Logger.log("Erreur parsing Gemini : " + e.message);
+        // Si le client a une page cible qui n'est pas dans le top 10, on l'ajoute pour l'analyser
+        if (!noPage && urlClient && urlsToScrape.indexOf(urlClient) === -1) {
+            urlsToScrape.unshift(urlClient); 
         }
-        
-        Logger.log("Étape 3 : Fusion des résultats et formatage final JSON");
-        
-        var finalData = {
-            elements_serp: [
-                "Présence de featured snippets",
-                "Domination des sites d'autorité",
-                "Intentions mixtes (informationnel et commercial)"
-            ],
-            analyse_concurrents: texteSerpConcurrents.split('\\n').filter(function(l) { return l.trim() !== ''; }),
-            analyse_recommandations: texteRecommandations.split('\\n').filter(function(l) { return l.trim() !== ''; })
+
+        var scrapedPages = scrapeUrlsParallel(urlsToScrape);
+        Logger.log("Scraping terminé. " + scrapedPages.length + " pages analysées.");
+
+        // ==========================================
+        // PRÉPARATION DU PAYLOAD POUR GEMINI
+        // ==========================================
+        var extractionData = {
+            metadata: {
+                keyword: motCle,
+                location: loc,
+                client_url: noPage ? "Page à créer" : urlClient
+            },
+            serp_features: serpData.features,
+            pages: scrapedPages
         };
+
+        Logger.log("=== FIN : lancerWorkflowSERP (Extraction OK) ===");
         
-        Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
-        return { success: true, data: finalData };
-        
+        // ATTENTION : Pour ce test, on renvoie une simulation de succès au frontend.
+        // La prochaine étape sera de passer 'extractionData' à notre prompt structuré Gemini.
+        return { 
+            success: true, 
+            data: {
+                elements_serp: serpData.features,
+                analyse_concurrents: ["Scraping réussi ! (" + scrapedPages.length + " pages lues). En attente d'implémentation de Gemini."],
+                analyse_recommandations: ["Les données extraites sont prêtes à être envoyées au Schéma JSON."]
+            }
+        };
+
     } catch(err) {
         Logger.log("Erreur dans lancerWorkflowSERP : " + err.message);
         return { success: false, error: err.message };
     }
+}
+
+function fetchSerpData(keyword, location, apiKeys) {
+    // On priorise SerpApi (souvent plus complet sur les features)
+    apiKeys.sort(function(a, b) {
+        if (a.type === 'serpapi' && b.type !== 'serpapi') return -1;
+        if (a.type !== 'serpapi' && b.type === 'serpapi') return 1;
+        return 0;
+    });
+
+    for (var i = 0; i < apiKeys.length; i++) {
+        var keyInfo = apiKeys[i];
+        var url = "";
+        
+        if (keyInfo.type === 'serpapi') {
+            url = "https://serpapi.com/search.json?q=" + encodeURIComponent(keyword) + "&hl=fr&gl=fr&google_domain=google.fr&api_key=" + keyInfo.cle;
+            if (location) url += "&location=" + encodeURIComponent(location);
+        } else if (keyInfo.type === 'serpstack') {
+            url = "http://api.serpstack.com/search?access_key=" + keyInfo.cle + "&query=" + encodeURIComponent(keyword) + "&gl=fr&hl=fr&google_domain=google.fr";
+            if (location) url += "&location=" + encodeURIComponent(location) + "&auto_location=0";
+        }
+
+        try {
+            Logger.log("Tentative API avec : " + keyInfo.type);
+            var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+            var json = JSON.parse(response.getContentText());
+
+            if (json.error) {
+                var errMsg = JSON.stringify(json.error).toLowerCase();
+                if (errMsg.indexOf('quota') !== -1 || errMsg.indexOf('limit') !== -1) {
+                    Logger.log("Quota dépassé pour " + keyInfo.type + ", passage à la suivante.");
+                    continue;
+                }
+            }
+
+            if (json.organic_results && json.organic_results.length > 0) {
+                return json; // Succès
+            }
+        } catch (e) {
+            Logger.log("Erreur SERP avec " + keyInfo.type + " : " + e.message);
+        }
+    }
+    return null; // Toutes les clés ont échoué
+}
+
+function extractSerpData(json) {
+    var urls = [];
+    if (json.organic_results) {
+        urls = json.organic_results.slice(0, 10).map(function(res) {
+            return (res.link || res.url || "").replace(/\?srsltid.*/, '');
+        }).filter(function(u) { return u !== ""; });
+    }
+
+    var features = [];
+    if ((json.ads && json.ads.length > 0) || (json.advertisements && json.advertisements.length > 0)) features.push("Annonces (Google Ads)");
+    if (json.answer_box || json.answer_box_list) features.push("Position 0 (Featured Snippet)");
+    if (json.knowledge_graph) features.push("Knowledge Graph");
+    if ((json.local_results && json.local_results.length > 0) || (json.places && json.places.length > 0)) features.push("Pack local (Maps)");
+    if ((json.shopping_results && json.shopping_results.length > 0) || (json.inline_shopping && json.inline_shopping.length > 0) || (json.commercial_units && json.commercial_units.length > 0)) features.push("Bloc shopping");
+    if (json.recipes_results && json.recipes_results.length > 0) features.push("Recettes");
+    
+    var paaCount = 0;
+    if (json.related_questions) paaCount = json.related_questions.length;
+    else if (json.people_also_ask) paaCount = json.people_also_ask.length;
+    if (paaCount > 0) features.push("Autres questions posées (PAA)");
+    
+    if ((json.video_results && json.video_results.length > 0) || (json.inline_videos && json.inline_videos.length > 0)) features.push("Vidéos");
+    if ((json.images_results && json.images_results.length > 0) || (json.inline_images && json.inline_images.length > 0)) features.push("Images");
+
+    return { urls: urls, features: features };
+}
+
+function scrapeUrlsParallel(urls) {
+    var userAgents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ];
+
+    // Création du tableau de requêtes pour UrlFetchApp.fetchAll
+    var requests = urls.map(function(url) {
+        return {
+            url: url,
+            method: "get",
+            muteHttpExceptions: true,
+            validateHttpsCertificates: false,
+            followRedirects: true,
+            headers: {
+                'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)],
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'
+            }
+        };
+    });
+
+    var results = [];
+    try {
+        // Exécution massive en parallèle (extrêmement rapide)
+        var responses = UrlFetchApp.fetchAll(requests);
+        
+        responses.forEach(function(response, index) {
+            var url = urls[index];
+            if (response.getResponseCode() === 200) {
+                var html = response.getContentText();
+                var analysis = analyzePageContent(html);
+                
+                // Troncature pour ne pas exploser la fenêtre contextuelle (token limit) de Gemini
+                var cleanText = analysis.cleaned_html;
+                if (cleanText.length > 3000) cleanText = cleanText.substring(0, 3000) + "...";
+
+                results.push({
+                    url: url,
+                    title: analysis.title,
+                    structure_hn: analysis.structure_hn,
+                    content_sample: cleanText
+                });
+            } else {
+                results.push({ url: url, error: "HTTP " + response.getResponseCode() });
+            }
+        });
+    } catch (e) {
+        Logger.log("Erreur lors du fetchAll (Scraping) : " + e.message);
+    }
+    
+    return results;
+}
+
+function analyzePageContent(html) {
+    if (!html) return { title: "", structure_hn: [], cleaned_html: "" };
+    
+    // Sécurité : il faut s'assurer que la librairie Cheerio est bien activée dans le projet Apps Script
+    if (typeof Cheerio === 'undefined') {
+        return { title: "Erreur technique", structure_hn: [], cleaned_html: "La librairie Cheerio n'est pas chargée." };
+    }
+
+    var $ = Cheerio.load(html);
+    var title = $('title').text().trim();
+    
+    // Nettoyage agressif des éléments parasites
+    $('script, style, noscript, iframe, svg, link, meta, nav, footer, header, aside').remove();
+    $('.cookie, .popup, .modal, .ad, .advertisement, .social-share, .login, .cart, .search-bar, .hidden, .d-none').remove();
+    
+    var structureHn = [];
+    $('h1, h2, h3, h4').each(function() {
+        var el = $(this);
+        var txt = el.text().replace(/\s+/g, " ").trim();
+        if (txt && txt.length > 2) {
+            structureHn.push(el.prop("tagName").toLowerCase() + " : " + txt);
+        }
+    });
+
+    var markdownParts = [];
+    $('p, ul, ol, button, a').each(function() {
+        var el = $(this);
+        var tag = el.prop("tagName").toLowerCase();
+        var text = el.text().replace(/\s+/g, " ").trim();
+
+        if (text.length < 5) return;
+
+        // Récupération des Boutons et Call-to-action
+        if (tag === 'button' || (tag === 'a' && el.attr('class') && el.attr('class').toLowerCase().includes('btn'))) {
+            if (text.length < 50) markdownParts.push("[CTA : " + text + "]");
+        } 
+        // Récupération du texte pertinent
+        else if (tag === 'p' && text.length > 20) {
+            markdownParts.push(text);
+        } 
+        // Récupération des listes
+        else if (tag === 'ul' || tag === 'ol') {
+            var items = [];
+            el.find('li').each(function() {
+                var liText = $(this).text().replace(/\s+/g, " ").trim();
+                if (liText) items.push("- " + liText);
+            });
+            if (items.length > 0) markdownParts.push(items.join("\n"));
+        }
+    });
+
+    // Fonction utilitaire pour décoder les entités HTML (si besoin)
+    function decodeHtmlEntities(str) {
+        return str.replace(/&#(\d+);/g, function(match, dec) { return String.fromCharCode(dec); })
+                  .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    }
+
+    return {
+        title: decodeHtmlEntities(title),
+        structure_hn: structureHn,
+        cleaned_html: markdownParts.join("\n\n")
+    };
 }
 
 function testRecuperationFormulaire() {

@@ -135,9 +135,9 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
 
 function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData) {
     try {
-        Logger.log("=== DÉBUT EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
+        Logger.log("=== DÉBUT : exporterPerformanceGlobalSlides ===");
         var props = PropertiesService.getScriptProperties().getProperties();
-        var slideId = props['SLIDE_PRE_AUDIT_ID'];
+        var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -265,11 +265,51 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             replaceDict["{{tap_mc_conc_pos_" + i + "}}"] = terr ? safePos(terr.bestPos) : "-";
         }
 
+        // Helper pour découper l'analyse IA en 3 blocs distincts
+        function splitAnalysis(text) {
+            if (!text) return ["", "", ""];
+            var parts = text.split(/(?:^|\n)[•-]\s*/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+            if (parts.length === 1 && text.indexOf('\n\n') !== -1) {
+                parts = text.split('\n\n').map(function(s) { return s.trim().replace(/^[•-]\s*/, ''); });
+            }
+            return [parts[0] || "", parts[1] || "", parts[2] || ""];
+        }
+
+        var topThemParts = splitAnalysis(iaData ? iaData.analyseTopThematiques : "");
+        var flopThemParts = splitAnalysis(iaData ? iaData.analyseFlopThematiques : "");
+        var topSegParts = splitAnalysis(iaData ? iaData.analyseTopSegments : "");
+        var flopSegParts = splitAnalysis(iaData ? iaData.analyseFlopSegments : "");
+
+        // ==========================================
+        // SAUVEGARDE EN BASE DES VARIABLES DYNAMIQUES
+        // ==========================================
+        var propsToSave = {};
+        
+        for (var k in mapping) { propsToSave[k] = String(mapping[k]); }
+        for (var k in mappingComp) { propsToSave[k] = String(mappingComp[k]); }
+        
+        for (var k in replaceDict) {
+            var cleanKey = k.replace(/[{}]/g, '');
+            propsToSave[cleanKey] = String(replaceDict[k]);
+        }
+
+        for (var idx = 1; idx <= 3; idx++) {
+            propsToSave["ANALYSE_THEMATIQUETOP_CLIENT_" + idx] = topThemParts[idx-1];
+            propsToSave["ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx] = flopThemParts[idx-1];
+            propsToSave["ANALYSE_MCTOP_CLIENT_" + idx] = topSegParts[idx-1];
+            propsToSave["ANALYSE_MCFLOP_CLIENT_" + idx] = flopSegParts[idx-1];
+        }
+
+        PropertiesService.getScriptProperties().setProperties(propsToSave);
+        syncPropertiesToConfigSheet();
+        // ==========================================
+
         Logger.log("Remplacement massif des tags de tableaux en cours...");
         for (var key in replaceDict) {
             presentation.replaceAllText(key, String(replaceDict[key]));
         }
         Logger.log("Remplacement massif terminé.");
+        
         // Fonction utilitaire de formatage pour l'IA
         function formatRichText(shape, textWithStars) {
             if (!textWithStars) return;
@@ -277,7 +317,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             var cleanText = textWithStars.replace(/\*/g, "");
             
             textRange.setText(cleanText);
-            // On force 18px comme demandé
             textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(18).setForegroundColor("#000000").setBold(false);
             var match;
             var regex = /\*([^*]+)\*/g;
@@ -292,23 +331,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 offset += 2;
             }
         }
-
-        // Helper pour découper l'analyse IA en 3 blocs distincts (en retirant les puces)
-        function splitAnalysis(text) {
-            if (!text) return ["", "", ""];
-            // Split par puce ou tiret en début de ligne
-            var parts = text.split(/(?:^|\n)[•-]\s*/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
-            // Sécurité : si pas de puces trouvées, on tente le double saut de ligne
-            if (parts.length === 1 && text.indexOf('\n\n') !== -1) {
-                parts = text.split('\n\n').map(function(s) { return s.trim().replace(/^[•-]\s*/, ''); });
-            }
-            return [parts[0] || "", parts[1] || "", parts[2] || ""];
-        }
-
-        var topThemParts = splitAnalysis(iaData ? iaData.analyseTopThematiques : "");
-        var flopThemParts = splitAnalysis(iaData ? iaData.analyseFlopThematiques : "");
-        var topSegParts = splitAnalysis(iaData ? iaData.analyseTopSegments : "");
-        var flopSegParts = splitAnalysis(iaData ? iaData.analyseFlopSegments : "");
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
@@ -367,48 +389,48 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                             shape.remove();
                         }
                     } else {
-                        // Pas d'image fournie ou composant inexistant : on supprime le placeholder
                         shape.remove();
                     }
                 }
 
                 // 2. Titres IA
-                if (shapeText === "titre_slide_thematiquetop_client" || titleRaw === "titre_slide_thematiquetop_client" || descRaw === "titre_slide_thematiquetop_client") {
+                if (shapeText === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" || titleRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" || descRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT") {
                     if (iaData && iaData.titreTopThematiques) shape.getText().setText(iaData.titreTopThematiques);
                 }
-                if (shapeText === "titre_slide_thematiqueflop_client" || titleRaw === "titre_slide_thematiqueflop_client" || descRaw === "titre_slide_thematiqueflop_client") {
+                if (shapeText === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" || titleRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" || descRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT") {
                     if (iaData && iaData.titreFlopThematiques) shape.getText().setText(iaData.titreFlopThematiques);
                 }
-                if (shapeText === "titre_slide_MCtop_client" || titleRaw === "titre_slide_MCtop_client" || descRaw === "titre_slide_MCtop_client") {
+                if (shapeText === "TITRE_SLIDE_MCTOP_CLIENT" || titleRaw === "TITRE_SLIDE_MCTOP_CLIENT" || descRaw === "TITRE_SLIDE_MCTOP_CLIENT") {
                     if (iaData && iaData.titreTopSegments) shape.getText().setText(iaData.titreTopSegments);
                 }
-                if (shapeText === "titre_slide_MCflop_client" || titleRaw === "titre_slide_MCflop_client" || descRaw === "titre_slide_MCflop_client") {
+                if (shapeText === "TITRE_SLIDE_MCFLOP_CLIENT" || titleRaw === "TITRE_SLIDE_MCFLOP_CLIENT" || descRaw === "TITRE_SLIDE_MCFLOP_CLIENT") {
                     if (iaData && iaData.titreFlopSegments) shape.getText().setText(iaData.titreFlopSegments);
                 }
 
                 // 3. Analyses IA découpées en blocs (1, 2, 3)
                 for (var idx = 1; idx <= 3; idx++) {
-                    var tagTopThem = "analyse_thematiquetop_client_" + idx;
+                    var tagTopThem = "ANALYSE_THEMATIQUETOP_CLIENT_" + idx;
                     if (shapeText === tagTopThem || titleRaw === tagTopThem || descRaw === tagTopThem) {
                         formatRichText(shape, topThemParts[idx-1]);
                     }
 
-                    var tagFlopThem = "analyse_thematiqueflop_client_" + idx;
+                    var tagFlopThem = "ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx;
                     if (shapeText === tagFlopThem || titleRaw === tagFlopThem || descRaw === tagFlopThem) {
                         formatRichText(shape, flopThemParts[idx-1]);
                     }
 
-                    var tagTopSeg = "analyse_MCtop_client_" + idx;
+                    var tagTopSeg = "ANALYSE_MCTOP_CLIENT_" + idx;
                     if (shapeText === tagTopSeg || titleRaw === tagTopSeg || descRaw === tagTopSeg) {
                         formatRichText(shape, topSegParts[idx-1]);
                     }
 
-                    var tagFlopSeg = "analyse_MCflop_client_" + idx;
+                    var tagFlopSeg = "ANALYSE_MCFLOP_CLIENT_" + idx;
                     if (shapeText === tagFlopSeg || titleRaw === tagFlopSeg || descRaw === tagFlopSeg) {
                         formatRichText(shape, flopSegParts[idx-1]);
                     }
                 }
             });
+
             // Étape B : Traitement des jauges dynamiques (Conservation de l'arrondi)
             var shapesForGauges = slide.getShapes();
             shapesForGauges.forEach(function(shape) {
@@ -416,29 +438,26 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
                 
-                var isTransacGauge = (titleRaw === "jauge_transac_top10" || descRaw === "jauge_transac_top10" || shapeText === "jauge_transac_top10");
-                var isInfoGauge = (titleRaw === "jauge_info_top10" || descRaw === "jauge_info_top10" || shapeText === "jauge_info_top10");
+                var isTransacGauge = (titleRaw === "JAUGE_TRANSAC_TOP10" || descRaw === "JAUGE_TRANSAC_TOP10" || shapeText === "JAUGE_TRANSAC_TOP10");
+                var isInfoGauge = (titleRaw === "JAUGE_INFO_TOP10" || descRaw === "JAUGE_INFO_TOP10" || shapeText === "JAUGE_INFO_TOP10");
 
                 var targetGauge = isTransacGauge ? "transac" : (isInfoGauge ? "info" : null);
 
                 if (targetGauge) {
-                   
                     var pct = (targetGauge === "transac") ? transacPctDec : infoPctDec;
 
                     var left = shape.getLeft();
                     var top = shape.getTop();
                     var width = shape.getWidth();
 
-                    // 1. Dessiner la jauge verte en DUPLIQUANT la forme originale (conserve l'arrondi exact)
+                    // 1. Dessiner la jauge verte en DUPLIQUANT la forme originale
                     if (pct > 0) {
                         var fgShape = slide.insertShape(shape);
-                        // La largeur minimale doit être au moins égale à la hauteur de la forme pour que l'arrondi (en "pilule") ne se casse pas
                         var fillWidth = Math.max(shape.getHeight(), width * pct);
                         fgShape.setWidth(fillWidth);
                         fgShape.setLeft(left);
                         fgShape.setTop(top); // Réalignement strict
                         fgShape.getFill().setSolidFill("#00b050");
-                        // Forcer le vert pour toutes les jauges !
                         fgShape.getBorder().setTransparent();
                         fgShape.getText().clear();
                         fgShape.setTitle("");
@@ -447,7 +466,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
                     // 2. Transformer la forme originale en fond gris
                     shape.getFill().setSolidFill("#f1f3f4");
-                    // Gris clair
                     shape.getBorder().setTransparent();
                     shape.getText().clear();
                     shape.setTitle("");
@@ -455,7 +473,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 }
             });
         });
-        Logger.log("=== FIN EXPORT SLIDE GLOBAL, THÈMES & SEGMENTS ===");
+        Logger.log("=== FIN : exporterPerformanceGlobalSlides ===");
         return { success: true, url: presentation.getUrl() };
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT GLOBAL : " + e.message);
