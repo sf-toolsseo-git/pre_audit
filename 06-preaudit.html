@@ -342,31 +342,33 @@
         <div class="tab-content" id="content-focus-mot-cle">
             <div class="main-area">
                 <div class="config-card">
-                    <h2 class="section-title">Analyse spécifique d'un mot-clé</h2>
-                    <div class="section-description">Validez ou éditez le mot-clé stratégique, son volume et les URLs associées.</div>
+                    
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title">Analyse spécifique d'un mot-clé</h2>
+                            <div class="section-description">Validez ou éditez le mot-clé stratégique, son volume et les URLs associées.</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span id="focus-msg" style="font-size: 12px; font-weight: bold;"></span>
+                            <button class="btn btn-continuer" id="btn-save-focus" onclick="sauvegarderFocusMotCle()" style="padding: 8px 15px; font-size: 13px;">💾 Enregistrer le focus</button>
+                        </div>
+                    </div>
                     
                     <div class="row" style="margin-top: 15px; align-items: flex-end;">
-                        <div class="col" style="flex: 2;">
+                        <div class="col" style="flex: 0 0 250px;">
                             <label class="input-label" for="focus-kw">Mot-clé cible</label>
-                            <input type="text" id="focus-kw" placeholder="Ex: agence seo paris">
+                            <input type="text" id="focus-kw" placeholder="Ex : agence seo paris">
                         </div>
-                        <div class="col" style="flex: 1;">
-                            <button class="btn" id="btn-search-kw" onclick="lancerRechercheMotCle()" style="margin-bottom: 5px;">🔍 Rechercher les données</button>
+                        <div style="margin-bottom: 5px;">
+                            <button class="btn" id="btn-search-kw" onclick="lancerRechercheMotCle()" style="padding: 8px 12px;" title="Rechercher les données">🔍</button>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
+                        <div class="col" style="flex: 0 0 150px; margin-left: 15px;">
                             <label class="input-label" for="focus-vol">Volume de recherche</label>
-                            <input type="text" id="focus-vol" placeholder="Ex: 1500">
-                        </div>
-                        <div class="col">
-                            <label class="input-label" for="focus-comp-url">Meilleure page concurrente</label>
-                            <input type="text" id="focus-comp-url" placeholder="URL concurrente">
+                            <input type="text" id="focus-vol" placeholder="Ex : 1500">
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row" style="align-items: flex-start; margin-top: 10px;">
                         <div class="col">
                             <label class="input-label" for="focus-client-url">Page positionnée client</label>
                             <input type="text" id="focus-client-url" placeholder="URL client">
@@ -375,35 +377,51 @@
                             </label>
                         </div>
                         <div class="col">
+                            <label class="input-label" for="focus-comp-url">Meilleure page concurrente</label>
+                            <input type="text" id="focus-comp-url" placeholder="URL concurrente">
+                        </div>
+                    </div>
+
+                    <hr class="section-separator">
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="focus-contexte-rappel">Contexte client (rappel et édition)</label>
+                            <textarea id="focus-contexte-rappel" placeholder="Le contexte de l'entreprise apparaîtra ici..." style="min-height: 220px;" onchange="sauvegarderContexteDepuisFocus()"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col" style="flex: 0 0 300px;">
                             <label class="input-label" for="focus-localisation">Localisation</label>
-                            <input type="text" id="focus-localisation" placeholder="Ex: france (vide = france entière)">
+                            <input type="text" id="focus-localisation" placeholder="Ex : france (vide = france entière)">
                         </div>
                     </div>
                     
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button type="button" class="btn" id="btn-lancer-analyse" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="lancerAnalyseApprofondie()">🚀 Lancer l'analyse approfondie</button>
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button type="button" class="btn" id="btn-lancer-analyse" style="width: auto; padding: 12px 25px; font-size: 14px; background-color: #08133b;" onclick="lancerAnalyseApprofondie()">🚀 Lancer l'analyse approfondie</button>
                     </div>
 
-                    <div class="stepper-container" id="analyse-stepper" style="display: none;">
-                        <div class="step" id="step-serp">
-                            <div class="step-circle">1</div>
-                            <div class="step-label">SERP</div>
+                    <div class="stepper-container" id="analyse-stepper" style="display: none; margin-top: 25px; justify-content: space-between; border: 1px solid #dadce0; border-radius: 8px; background: #fafafa; padding: 15px;">
+                        <div class="step" id="step-serp" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="step-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dadce0; color: white; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">1</div>
+                            <div class="step-label" style="font-size: 13px; font-weight: 600; color: #5f6368;">SERP</div>
                         </div>
-                        <div class="step" id="step-scraping">
-                            <div class="step-circle">2</div>
-                            <div class="step-label">Scraping</div>
+                        <div class="step" id="step-scraping" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="step-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dadce0; color: white; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">2</div>
+                            <div class="step-label" style="font-size: 13px; font-weight: 600; color: #5f6368;">Scraping</div>
                         </div>
-                        <div class="step" id="step-structure">
-                            <div class="step-circle">3</div>
-                            <div class="step-label">Structure</div>
+                        <div class="step" id="step-structure" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="step-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dadce0; color: white; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">3</div>
+                            <div class="step-label" style="font-size: 13px; font-weight: 600; color: #5f6368;">Structure</div>
                         </div>
-                        <div class="step" id="step-ia">
-                            <div class="step-circle">4</div>
-                            <div class="step-label">Stratégie IA</div>
+                        <div class="step" id="step-ia" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="step-circle" style="width: 24px; height: 24px; border-radius: 50%; background: #dadce0; color: white; text-align: center; line-height: 24px; font-size: 12px; font-weight: bold;">4</div>
+                            <div class="step-label" style="font-size: 13px; font-weight: 600; color: #5f6368;">Stratégie IA</div>
                         </div>
                     </div>
 
-                    <div class="analysis-results" id="analysis-results">
+                    <div class="analysis-results" id="analysis-results" style="display: none; margin-top: 25px; border-top: 1px solid #dadce0; padding-top: 20px;">
                         <label class="input-label">Éléments de SERP</label>
                         <div id="ce-analyse-serp" contenteditable="true" class="ce-field" data-placeholder="Résultats des éléments de la SERP..." onblur="autoSaveAnalyseFocus()"></div>
                         
@@ -413,11 +431,7 @@
                         <label class="input-label" style="margin-top: 15px;">Analyse client et recommandations</label>
                         <div id="ce-analyse-recommandations" contenteditable="true" class="ce-field" data-placeholder="Recommandations stratégiques..." onblur="autoSaveAnalyseFocus()"></div>
                     </div>
-                </div>
-
-                <div class="continuer-bar">
-                    <span id="focus-msg" style="font-size: 12px; font-weight: bold;"></span>
-                    <button class="btn btn-continuer" id="btn-save-focus" onclick="sauvegarderFocusMotCle()">💾 Enregistrer le focus</button>
+                    
                 </div>
             </div>
         </div>
@@ -1740,15 +1754,68 @@
             // ========================== UTILITAIRES ==========================
 
             // ========================== ONGLET 5 : FOCUS MOT-CLÉ ==========================
+            function sauvegarderContexteDepuisFocus() {
+                console.log("=== DÉBUT : sauvegarderContexteDepuisFocus ===");
+                var newContext = document.getElementById('focus-contexte-rappel').value;
+                
+                // 1. Synchronisation avec le champ de l'onglet 1
+                var champOnglet1 = document.getElementById('conf-contexte-client');
+                if (champOnglet1) {
+                    champOnglet1.value = newContext;
+                }
+                
+                // 2. Mise à jour de la mémoire globale
+                if (window.globalConfig) {
+                    window.globalConfig.contexteClient = newContext;
+                }
+                
+                // 3. Préparation de l'objet complet pour ne rien écraser
+                var form = {
+                    clientName: document.getElementById('conf-client-name').value,
+                    clientUrl: document.getElementById('conf-client-url').value,
+                    urlsContexte: document.getElementById('conf-urls-contexte').value,
+                    contexteClient: newContext, // La nouvelle valeur
+                    slideId: document.getElementById('conf-slide-id').value,
+                    brief: document.getElementById('conf-brief').value,
+                    urlReponses: document.getElementById('conf-url-reponses').value,
+                    contextePreaudit: document.getElementById('conf-contexte-preaudit').value
+                };
 
+                var msg = document.getElementById('focus-msg');
+                msg.innerText = "⏳ Sauvegarde du contexte...";
+                msg.style.color = "#5f6368";
+
+                console.log("Envoi des données de contexte au serveur...");
+                
+                google.script.run
+                    .withSuccessHandler(function() {
+                        console.log("=== SUCCÈS : Contexte sauvegardé avec succès ===");
+                        msg.innerText = "✅ Contexte mis à jour";
+                        msg.style.color = "#188038";
+                        setTimeout(function() { msg.innerText = ""; }, 2500);
+                    })
+                    .withFailureHandler(function(err) {
+                        console.error("=== ERREUR : Échec de la sauvegarde ===", err);
+                        msg.innerText = "❌ Erreur de sauvegarde : " + err.message;
+                        msg.style.color = "#d93025";
+                    })
+                    .sauvegarderConfigurationPreAudit(form);
+            }
+            
             function preparerOngletFocusMotCle() {
                 console.log("=== DÉBUT : preparerOngletFocusMotCle ===");
                 switchTab('focus-mot-cle');
+
+                // NOUVEAU : Remplissage automatique du contexte client (rappel)
+                if (window.globalConfig && window.globalConfig.contexteClient) {
+                    document.getElementById('focus-contexte-rappel').value = window.globalConfig.contexteClient;
+                }
 
                 var kwInput = document.getElementById('focus-kw');
                 if (kwInput.value.trim() === "" && window.lastDiagnosticData) {
                     var data = window.lastDiagnosticData;
                     var defaultKw = "";
+                    
                     if (data.gains && data.gains.length > 0) {
                         defaultKw = data.gains[0].kw;
                     } else if (data.pertes && data.pertes.length > 0) {
