@@ -432,6 +432,8 @@
 
                     <div class="analysis-results" id="analysis-results" style="display: none; margin-top: 25px; border-top: 1px solid #dadce0; padding-top: 20px;">
     
+                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 1 : Audit de la SERP & Standards</h2>
+
                         <h3 class="section-title">1. Résultat de recherche (SERP)</h3>
                         <div class="section-description" style="margin-bottom: 10px;">Éléments remarquables détectés dans les résultats de recherche.</div>
                         
@@ -480,6 +482,53 @@
                             <div class="col"><div id="semantique-1" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 1..." onblur="autoSaveAnalyseFocus()"></div></div>
                             <div class="col"><div id="semantique-2" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 2..." onblur="autoSaveAnalyseFocus()"></div></div>
                             <div class="col"><div id="semantique-3" contenteditable="true" class="ce-field" data-placeholder="Axe sémantique 3..." onblur="autoSaveAnalyseFocus()"></div></div>
+                        </div>
+
+                        <hr class="section-separator" style="margin: 30px 0;">
+                        
+                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 2 : Diagnostic & Plan d'action</h2>
+
+                        <h3 class="section-title">5. GAP Analysis (Freins à la performance)</h3>
+                        <div class="section-description" style="margin-bottom: 10px;">Écarts majeurs identifiés entre la page cible et les exigences de la SERP.</div>
+                        
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">Axe de diagnostic 1</label>
+                                <input type="text" id="gap-titre-1" placeholder="Titre (ex : Format inadapté)" onblur="autoSaveAnalyseFocus()">
+                                <div id="gap-desc-1" contenteditable="true" class="ce-field" data-placeholder="Explication du décalage..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Axe de diagnostic 2</label>
+                                <input type="text" id="gap-titre-2" placeholder="Titre (ex : Profondeur sémantique)" onblur="autoSaveAnalyseFocus()">
+                                <div id="gap-desc-2" contenteditable="true" class="ce-field" data-placeholder="Explication du décalage..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Axe de diagnostic 3</label>
+                                <input type="text" id="gap-titre-3" placeholder="Titre (ex : UX & Conversion)" onblur="autoSaveAnalyseFocus()">
+                                <div id="gap-desc-3" contenteditable="true" class="ce-field" data-placeholder="Explication du décalage..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top: 20px;">6. Recommandations stratégiques (Plan d'action)</h3>
+                        <div class="section-description" style="margin-bottom: 10px;">Les 4 actions prioritaires à mener sur la page.</div>
+
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">Action 1</label>
+                                <div id="reco-1" contenteditable="true" class="ce-field" data-placeholder="Recommandation 1..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Action 2</label>
+                                <div id="reco-2" contenteditable="true" class="ce-field" data-placeholder="Recommandation 2..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Action 3</label>
+                                <div id="reco-3" contenteditable="true" class="ce-field" data-placeholder="Recommandation 3..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Action 4</label>
+                                <div id="reco-4" contenteditable="true" class="ce-field" data-placeholder="Recommandation 4..." onblur="autoSaveAnalyseFocus()"></div>
+                            </div>
                         </div>
 
                     </div>
@@ -593,6 +642,20 @@
                                 if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
                                 if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
                                 if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
+
+                                // GAP Analysis
+                                document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
+                                if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
+                                document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
+                                if (config.gapDesc2Html) setCeContent('gap-desc-2', config.gapDesc2);
+                                document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
+                                if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
+
+                                // Recommandations
+                                if (config.reco1Html) setCeContent('reco-1', config.reco1);
+                                if (config.reco2Html) setCeContent('reco-2', config.reco2);
+                                if (config.reco3Html) setCeContent('reco-3', config.reco3);
+                                if (config.reco4Html) setCeContent('reco-4', config.reco4);
 
                                 document.getElementById('analysis-results').style.display = 'block';
                             }
@@ -2020,7 +2083,28 @@
                     semantique2: document.getElementById('semantique-2').dataset.raw || document.getElementById('semantique-2').innerText,
                     semantique2Html: document.getElementById('semantique-2').innerHTML,
                     semantique3: document.getElementById('semantique-3').dataset.raw || document.getElementById('semantique-3').innerText,
-                    semantique3Html: document.getElementById('semantique-3').innerHTML
+                    semantique3Html: document.getElementById('semantique-3').innerHTML,
+
+                    // Bloc 5 : GAP Analysis
+                    gapTitre1: document.getElementById('gap-titre-1').value,
+                    gapDesc1: document.getElementById('gap-desc-1').dataset.raw || document.getElementById('gap-desc-1').innerText,
+                    gapDesc1Html: document.getElementById('gap-desc-1').innerHTML,
+                    gapTitre2: document.getElementById('gap-titre-2').value,
+                    gapDesc2: document.getElementById('gap-desc-2').dataset.raw || document.getElementById('gap-desc-2').innerText,
+                    gapDesc2Html: document.getElementById('gap-desc-2').innerHTML,
+                    gapTitre3: document.getElementById('gap-titre-3').value,
+                    gapDesc3: document.getElementById('gap-desc-3').dataset.raw || document.getElementById('gap-desc-3').innerText,
+                    gapDesc3Html: document.getElementById('gap-desc-3').innerHTML,
+
+                    // Bloc 6 : Recommandations
+                    reco1: document.getElementById('reco-1').dataset.raw || document.getElementById('reco-1').innerText,
+                    reco1Html: document.getElementById('reco-1').innerHTML,
+                    reco2: document.getElementById('reco-2').dataset.raw || document.getElementById('reco-2').innerText,
+                    reco2Html: document.getElementById('reco-2').innerHTML,
+                    reco3: document.getElementById('reco-3').dataset.raw || document.getElementById('reco-3').innerText,
+                    reco3Html: document.getElementById('reco-3').innerHTML,
+                    reco4: document.getElementById('reco-4').dataset.raw || document.getElementById('reco-4').innerText,
+                    reco4Html: document.getElementById('reco-4').innerHTML
                 };
                 
                 google.script.run.sauvegarderAnalysesFocus(data);
@@ -2029,7 +2113,6 @@
                     Object.assign(window.globalConfig, data);
                 }
             }
-
             function setStepperState(stepId, state) {
                 var step = document.getElementById(stepId);
                 if (step) {

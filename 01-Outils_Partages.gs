@@ -299,7 +299,9 @@ function syncPropertiesToConfigSheet() {
                     "---BORDER---",
                     "TITRE_SLIDE_CONCURRENCE", "NOM_CLIENT", "VALEUR_TOP10_CLIENT", "VALEUR_PAGES_CLIENT", "PLACEHOLDER_LOGO_CLIENT", "NOM_LEADER", "VALEUR_TOP10_LEADER", "VALEUR_PAGES_LEADER", "PLACEHOLDER_LOGO_LEADER", "NOM_COMP1", "VALEUR_TOP10_COMP1", "VALEUR_PAGES_COMP1", "PLACEHOLDER_LOGO_COMP1", "NOM_COMP2", "VALEUR_TOP10_COMP2", "VALEUR_PAGES_COMP2", "PLACEHOLDER_LOGO_COMP2", "NOM_COMP3", "VALEUR_TOP10_COMP3", "VALEUR_PAGES_COMP3", "PLACEHOLDER_LOGO_COMP3", "NOM_COMP4", "VALEUR_TOP10_COMP4", "VALEUR_PAGES_COMP4", "PLACEHOLDER_LOGO_COMP4",
                     "---BORDER---",
-                    "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_semantique_texte_1", "focus_standard_texte_2", "focus_semantique_texte_2", "focus_standard_texte_3", "focus_semantique_texte_3"
+                    "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_semantique_texte_1", "focus_standard_texte_2", "focus_semantique_texte_2", "focus_standard_texte_3", "focus_semantique_texte_3",
+                    "---BORDER---",
+                    "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"
                 ]
             },
             {
@@ -426,9 +428,6 @@ function syncPropertiesToConfigSheet() {
                         muteHttpExceptions: true
                     }
                 );
-                if (response.getResponseCode() !== 200) {
-                    Logger.log("Sheets API v4 — erreur hauteurs : " + response.getContentText());
-                }
             } catch (eV4) {
                 Logger.log("Sheets API v4 — exception : " + eV4.message);
             }

@@ -886,7 +886,19 @@ function sauvegarderAnalysesFocus(data) {
             
             'focus_semantique_texte_1': data.semantique1 || "",
             'focus_semantique_texte_2': data.semantique2 || "",
-            'focus_semantique_texte_3': data.semantique3 || ""
+            'focus_semantique_texte_3': data.semantique3 || "",
+
+            'FOCUS_GAP_TITRE_1': data.gapTitre1 || "",
+            'FOCUS_GAP_DESC_1': data.gapDesc1 || "",
+            'FOCUS_GAP_TITRE_2': data.gapTitre2 || "",
+            'FOCUS_GAP_DESC_2': data.gapDesc2 || "",
+            'FOCUS_GAP_TITRE_3': data.gapTitre3 || "",
+            'FOCUS_GAP_DESC_3': data.gapDesc3 || "",
+
+            'FOCUS_RECO_1': data.reco1 || "",
+            'FOCUS_RECO_2': data.reco2 || "",
+            'FOCUS_RECO_3': data.reco3 || "",
+            'FOCUS_RECO_4': data.reco4 || ""
         });
         
         syncPropertiesToConfigSheet();
@@ -902,10 +914,26 @@ function sauvegarderAnalysesFocus(data) {
 function lancerWorkflowSERP(data) {
     Logger.log("=== DÉBUT : lancerWorkflowSERP ===");
     Logger.log("Données reçues : " + JSON.stringify(data));
+    
+    // Dictionnaire de SVG (EXACTEMENT comme demandé)
+    var dicoSVG = {
+        "organique": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
+        "paa": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2" ry="2"></rect><path d="M8 4V2h8v2"></path><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+        "video": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>',
+        "recherche": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+        "shopping": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="2"></circle><circle cx="19" cy="20" r="2"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>',
+        "ads": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M15.5 7.5a6 6 0 1 0 0 9"></path><line x1="6" y1="10" x2="14" y2="10"></line><line x1="6" y1="14" x2="14" y2="14"></line></svg>',
+        "local": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>',
+        "image": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+        "featured": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+        "defaut": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+    };
+
     try {
         var props = PropertiesService.getScriptProperties().getProperties();
         var geminiApiKey = props['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = props['LISTE_CLES_API'];
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || ""; // Préparation des données: Récupération du contexte client
         
         if (!geminiApiKey || geminiApiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -928,7 +956,6 @@ function lancerWorkflowSERP(data) {
         }
 
         if (apiKeys.length === 0) throw new Error("Aucune clé API SERP configurée dans l'onglet Général.");
-
         var motCle = data.kw;
         var loc = data.localisation || "france";
         var urlClient = data.urlClient;
@@ -940,7 +967,6 @@ function lancerWorkflowSERP(data) {
         Logger.log("Étape 1 : Récupération SERP pour '" + motCle + "'");
         var serpJson = fetchSerpData(motCle, loc, apiKeys);
         if (!serpJson) throw new Error("Impossible de récupérer la SERP (Quotas atteints ou erreur API).");
-
         var serpData = extractSerpData(serpJson);
         Logger.log("SERP Features détectées : " + serpData.features.join(", "));
         Logger.log("Top 10 URLs récupérées : " + serpData.urls.length);
@@ -949,12 +975,11 @@ function lancerWorkflowSERP(data) {
         // ÉTAPE 2 : SCRAPING EN PARALLÈLE
         // ==========================================
         Logger.log("Étape 2 : Scraping des URLs du Top 10 + URL Client");
-        
         var urlsToScrape = serpData.urls.slice(); // Copie du tableau
         
         // Si le client a une page cible qui n'est pas dans le top 10, on l'ajoute pour l'analyser
         if (!noPage && urlClient && urlsToScrape.indexOf(urlClient) === -1) {
-            urlsToScrape.unshift(urlClient); 
+            urlsToScrape.unshift(urlClient);
         }
 
         var scrapedPages = scrapeUrlsParallel(urlsToScrape);
@@ -974,50 +999,45 @@ function lancerWorkflowSERP(data) {
         };
 
         Logger.log("Étape 3 : Création du prompt et appel API Gemini 2.5 Pro");
-
-        var svgMap = {
-            "ads": "<svg><text y='15'>Ads Placeholder</text></svg>",
-            "maps": "<svg><text y='15'>Maps Placeholder</text></svg>",
-            "shopping": "<svg><text y='15'>Shopping Placeholder</text></svg>",
-            "paa": "<svg><text y='15'>PAA Placeholder</text></svg>",
-            "featured": "<svg><text y='15'>Featured Placeholder</text></svg>",
-            "video": "<svg><text y='15'>Video Placeholder</text></svg>",
-            "image": "<svg><text y='15'>Image Placeholder</text></svg>",
-            "defaut": "<svg><text y='15'>Default Placeholder</text></svg>"
-        };
-
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
-
-        var promptStr = "Tu es un expert SEO. En utilisant les données extraites d'une page de résultats Google (SERP) et de son Top 10, fournis une analyse SEO approfondie et structurée pour ce mot-clé.\n\n" +
+        
+        var promptStr = "Tu es un expert SEO. En utilisant les données extraites d'une page de résultats Google (SERP) et de son Top 10, fournis une analyse SEO hyper granulaire et un plan d'action stratégique sur-mesure pour ce mot-clé.\n\n" +
+                        "PROTOCOLE D'ANALYSE SEO (RIGUEUR FISCALE) :\n" +
+                        "- Charte typographique : Majuscule uniquement au premier mot (sauf noms propres), pas de majuscule dans les parenthèses, toujours un espace avant les deux-points (:), pas de majuscule après les deux-points.\n" +
+                        "- Hiérarchie décisionnelle : Pour l'intention et le format cible, la SERP fait loi (SERP > Client). Ce que Google affiche dicte la reco.\n" +
+                        "- Intelligence commerciale (Synergie) : Utilise le \"Contexte Client\" fourni pour faire des ponts intelligents (maillage interne, cross-sell) dans tes recommandations, afin de répondre aux douleurs/objectifs du client.\n" +
+                        "- Lecture de l'environnement : Utilise les serp_features_detected comme signaux d'intention stricts (ex: Ads = Transactionnel, PAA = Info/FAQ, etc.).\n" +
+                        "- Formatage visuel : Utilise des astérisques simples *mot* pour mettre en gras les termes clés dans les champs descriptions/recommandations.\n\n" +
                         "CONTRAINTES DE FORMAT STRICTES :\n" +
                         "Tu dois fournir ta réponse UNIQUEMENT sous forme d'objet JSON, sans aucun texte additionnel ni balise Markdown (pas de ```json ... ```).\n" +
                         "La structure doit être EXACTEMENT la suivante :\n" +
                         "{\n" +
                         "  \"serp_elements\": [\n" +
-                        "    {\"titre\": \"Titre très court\", \"description\": \"Description de l'élément SERP\", \"type_feature\": \"clé_du_svg\"},\n" +
-                        "    // ... (Il faut EXACTEMENT 4 objets ici)\n" +
+                        "    {\"titre\": \"Titre très court\", \"description\": \"Description concise\", \"type_feature\": \"clé_autorisée_du_dico_svg\"}\n" +
+                        "    // EXACTEMENT 4 objets ici\n" +
                         "  ],\n" +
                         "  \"intention\": {\n" +
-                        "    \"titre\": \"Titre de l'intention (ex: Transactionnelle)\",\n" +
-                        "    \"description\": \"Description concise de ce que cherche l'utilisateur.\"\n" +
+                        "    \"titre\": \"Ex: Transactionnelle\",\n" +
+                        "    \"description\": \"...\"\n" +
                         "  },\n" +
                         "  \"standards\": [\n" +
-                        "    \"Standard observé 1\", \"Standard observé 2\", \"Standard observé 3\"\n" +
+                        "    \"Standard 1\", \"Standard 2\", \"Standard 3\"\n" +
                         "  ],\n" +
                         "  \"semantique\": [\n" +
-                        "    \"Axe sémantique 1\", \"Axe sémantique 2\", \"Axe sémantique 3\"\n" +
+                        "    \"Axe 1\", \"Axe 2\", \"Axe 3\"\n" +
+                        "  ],\n" +
+                        "  \"gap_analysis\": [\n" +
+                        "    {\"titre\": \"Axe 1 (ex: Format)\", \"description\": \"L'écart justifié...\"},\n" +
+                        "    {\"titre\": \"Axe 2 (ex: Profondeur)\", \"description\": \"...\"},\n" +
+                        "    {\"titre\": \"Axe 3 (ex: Business)\", \"description\": \"...\"}\n" +
+                        "    // EXACTEMENT 3 objets ici\n" +
+                        "  ],\n" +
+                        "  \"recommandations\": [\n" +
+                        "    \"Action prioritaire 1\", \"Action prioritaire 2\", \"Action 3\", \"Action 4\"\n" +
+                        "    // EXACTEMENT 4 chaînes de caractères ici\n" +
                         "  ]\n" +
                         "}\n\n" +
                         "DÉTAILS ATTENDUS :\n" +
-                        "- `type_feature` DOIT être l'une des clés exactes suivantes : ads, maps, shopping, paa, featured, video, image, defaut.\n" +
-                        "- `standards` : 3 standards techniques, ergonomiques ou éditoriaux incontournables observés chez les concurrents.\n" +
-                        "- `semantique` : 3 axes lexicaux/sémantiques essentiels à traiter sur la page.\n" +
-                        "- Rédige dans un style d'expert SEO très concis et impactant.\n\n" +
-                        "RÈGLES TYPOGRAPHIQUES (FRANÇAIS) À RESPECTER À LA LETTRE :\n" +
-                        "- Majuscule uniquement au premier mot des phrases/titres/puces (sauf noms propres).\n" +
-                        "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse (sauf nom propre).\n" +
-                        "- Un espace obligatoire avant les deux-points (:).\n" +
-                        "- Pas de majuscule après les deux-points (:) car ce n'est pas une phrase complète.\n\n" +
+                        "- `type_feature` DOIT être l'une des clés exactes suivantes : organique, paa, video, recherche, shopping, ads, local, image, featured, defaut.\n" +
                         "CONTEXTE CLIENT :\n" +
                         contexteClient + "\n\n" +
                         "DONNÉES EXTRAITES :\n" +
@@ -1055,7 +1075,7 @@ function lancerWorkflowSERP(data) {
 
         var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
         responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-        
+
         Logger.log("Parsing de la réponse de Gemini...");
         var jsonGemini;
         try {
@@ -1065,27 +1085,30 @@ function lancerWorkflowSERP(data) {
             throw new Error("Le format JSON renvoyé par Gemini est invalide.");
         }
 
-        // Enrichissement des éléments SERP avec les SVGs
+        // Mapping SVG : Boucle sur jsonGemini.serp_elements
         if (jsonGemini.serp_elements && Array.isArray(jsonGemini.serp_elements)) {
             for (var i = 0; i < jsonGemini.serp_elements.length; i++) {
                 var el = jsonGemini.serp_elements[i];
                 var featureKey = el.type_feature || "defaut";
-                if (!svgMap[featureKey]) {
+                if (!dicoSVG[featureKey]) {
                     featureKey = "defaut";
                 }
-                el.svg_icon = svgMap[featureKey];
+                el.svg_icon = dicoSVG[featureKey];
             }
         }
 
         Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
         
-        return { 
-            success: true, 
+        // Retour Front-End
+        return {
+            success: true,
             data: {
                 elements_serp: jsonGemini.serp_elements || [],
                 intention: jsonGemini.intention || {},
                 standards: jsonGemini.standards || [],
-                semantique: jsonGemini.semantique || []
+                semantique: jsonGemini.semantique || [],
+                gap_analysis: jsonGemini.gap_analysis || [],
+                recommandations: jsonGemini.recommandations || []
             }
         };
 
