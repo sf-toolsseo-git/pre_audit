@@ -1000,51 +1000,80 @@ function lancerWorkflowSERP(data) {
 
         Logger.log("Étape 3 : Création du prompt et appel API Gemini 2.5 Pro");
         
-        var promptStr = "Tu es un expert SEO. En utilisant les données extraites d'une page de résultats Google (SERP) et de son Top 10, fournis une analyse SEO hyper granulaire et un plan d'action stratégique sur-mesure pour ce mot-clé.\n\n" +
-                        "PROTOCOLE D'ANALYSE SEO (RIGUEUR FISCALE) :\n" +
-                        "- Charte typographique : Majuscule uniquement au premier mot (sauf noms propres), pas de majuscule dans les parenthèses, toujours un espace avant les deux-points (:), pas de majuscule après les deux-points.\n" +
-                        "- Hiérarchie décisionnelle : Pour l'intention et le format cible, la SERP fait loi (SERP > Client). Ce que Google affiche dicte la reco.\n" +
-                        "- Intelligence commerciale (Synergie) : Utilise le \"Contexte Client\" fourni pour faire des ponts intelligents (maillage interne, cross-sell) dans tes recommandations, afin de répondre aux douleurs/objectifs du client.\n" +
-                        "- Lecture de l'environnement : Utilise les serp_features_detected comme signaux d'intention stricts (ex: Ads = Transactionnel, PAA = Info/FAQ, etc.).\n" +
-                        "- Formatage visuel : Utilise des astérisques simples *mot* pour mettre en gras les termes clés dans les champs descriptions/recommandations.\n\n" +
-                        "CONTRAINTES DE FORMAT STRICTES :\n" +
-                        "Tu dois fournir ta réponse UNIQUEMENT sous forme d'objet JSON, sans aucun texte additionnel ni balise Markdown (pas de ```json ... ```).\n" +
-                        "La structure doit être EXACTEMENT la suivante :\n" +
-                        "{\n" +
-                        "  \"serp_elements\": [\n" +
-                        "    {\"titre\": \"Titre très court\", \"description\": \"Description concise\", \"type_feature\": \"clé_autorisée_du_dico_svg\"}\n" +
-                        "    // EXACTEMENT 4 objets ici\n" +
-                        "  ],\n" +
-                        "  \"intention\": {\n" +
-                        "    \"titre\": \"Ex: Transactionnelle\",\n" +
-                        "    \"description\": \"...\"\n" +
-                        "  },\n" +
-                        "  \"standards\": [\n" +
-                        "    \"Standard 1\", \"Standard 2\", \"Standard 3\"\n" +
-                        "  ],\n" +
-                        "  \"semantique\": [\n" +
-                        "    \"Axe 1\", \"Axe 2\", \"Axe 3\"\n" +
-                        "  ],\n" +
-                        "  \"gap_analysis\": [\n" +
-                        "    {\"titre\": \"Axe 1 (ex: Format)\", \"description\": \"L'écart justifié...\"},\n" +
-                        "    {\"titre\": \"Axe 2 (ex: Profondeur)\", \"description\": \"...\"},\n" +
-                        "    {\"titre\": \"Axe 3 (ex: Business)\", \"description\": \"...\"}\n" +
-                        "    // EXACTEMENT 3 objets ici\n" +
-                        "  ],\n" +
-                        "  \"recommandations\": [\n" +
-                        "    \"Action prioritaire 1\", \"Action prioritaire 2\", \"Action 3\", \"Action 4\"\n" +
-                        "    // EXACTEMENT 4 chaînes de caractères ici\n" +
-                        "  ]\n" +
-                        "}\n\n" +
-                        "DÉTAILS ATTENDUS :\n" +
-                        "- `type_feature` DOIT être l'une des clés exactes suivantes : organique, paa, video, recherche, shopping, ads, local, image, featured, defaut.\n" +
-                        "CONTEXTE CLIENT :\n" +
-                        contexteClient + "\n\n" +
-                        "DONNÉES EXTRAITES :\n" +
-                        JSON.stringify(extractionData);
+        var systemPrompt = `Tu es un expert stratège SEO. Ta mission est d'analyser des données brutes issues du scraping d'une SERP Google (top 10 concurrents + page cible du client) pour fournir un diagnostic clinique et un plan d'action stratégique sur-mesure.
+
+            /// Protocole d'analyse (rigueur fiscale) ///
+
+            1. Charte typographique (rigueur française absolue)
+            - Titres, puces et labels : majuscule uniquement au premier mot (sauf noms propres).
+            - Parenthèses : pas de majuscule au premier mot à l'intérieur.
+            - Deux-points (:) : toujours un espace avant le deux-points, et aucune majuscule après (sauf nom propre).
+            - Formatage visuel : utilise des astérisques simples *mot* pour mettre en gras les concepts clés de tes analyses pour faciliter la lecture en diagonale.
+
+            2. Hiérarchie décisionnelle et objectifs (règle d'or : SERP > client)
+            Ce que Google positionne dicte ce que tu dois recommander.
+            - Mode création (si l'URL client est 'Page à créer') : ne critique pas la page client puisqu'elle n'existe pas. Projette la future page idéale basée sur les standards de la SERP.
+            - Mode optimisation (si l'URL client existe) : audite la page cible existante du client par rapport aux exigences de la SERP.
+
+            3. Intelligence commerciale et synergie (crucial)
+            Ne traite pas le mot-clé cible en vase clos. Repère les expertises du client via le contexte client. Dans tes recommandations (et le gap business), propose des ponts intelligents (maillage interne, encarts de réassurance) entre le sujet analysé et l'offre globale du client.
+
+            4. Lecture de l'environnement (SERP features)
+            Examine les 'serp_features' détectées. Ce sont des signaux d'intention stricts :
+            - Annonces (ads) : intention transactionnelle -> CTA visibles exigés.
+            - PAA (questions) : intention informationnelle -> module FAQ exigé.
+            - Pack local (maps) : proximité -> balisage local exigé.
+            - Shopping : intention d'achat direct -> affichage prix/produits exigé.
+
+            /// Format de sortie obligatoire ///
+            Tu dois fournir ta réponse uniquement sous forme d'objet JSON valide, sans balise markdown autour.
+            Structure stricte exigée :
+            {
+            "serp_elements": [
+                {"titre": "Titre du bloc (ex : annonces Google Ads)", "description": "Ce que cela indique sur l'attente des utilisateurs.", "type_feature": "ads"}
+                // exactement 4 objets. Clés autorisées pour type_feature : organique, paa, video, recherche, shopping, ads, local, image, featured, defaut.
+            ],
+            "intention": {
+                "titre": "Typologie (ex : transactionnelle et commerciale)",
+                "description": "Analyse concise de l'intention de l'utilisateur."
+            },
+            "standards": [
+                "Standard structurel 1 (ex : présence de filtres à facettes ou tableau comparatif)",
+                "Standard éditorial 2 (ex : ton académique ou vulgarisé)",
+                "Standard UX 3 (ex : calculateur en ligne ou sommaire ancré)"
+            ],
+            "semantique": [
+                "Axe lexical 1 à couvrir obligatoirement",
+                "Axe lexical 2",
+                "Axe lexical 3"
+            ],
+            "gap_analysis": [
+                {"titre": "Format et UX", "description": "L'écart justifié entre le client et la SERP."},
+                {"titre": "Profondeur éditoriale", "description": "Le manque à combler sur le contenu."},
+                {"titre": "Business et synergie", "description": "L'opportunité manquée de vente ou maillage."}
+                // exactement 3 objets. Si mode création, parle des "pièges à éviter".
+            ],
+            "recommandations": [
+                "1. Action sur la structure de la page (Hn/UX).",
+                "2. Action sur la profondeur du contenu.",
+                "3. Action sur la conversion et réassurance.",
+                "4. Action sur le maillage interne ou cross-sell (lien avec le contexte client)."
+            ]
+            }`;
+
+                    var userPrompt = `[Contexte client] :
+            ${contexteClient}
+
+            [Données extraites de la SERP et du scraping] :
+            ${JSON.stringify(extractionData)}`;
 
         var payload = {
-            "contents": [{"parts": [{"text": promptStr}]}],
+            "system_instruction": {
+                "parts": [{"text": systemPrompt}]
+            },
+            "contents": [
+                {"parts": [{"text": userPrompt}]}
+            ],
             "generationConfig": {
                 "responseMimeType": "application/json"
             }
