@@ -914,8 +914,7 @@ function sauvegarderAnalysesFocus(data) {
 function lancerWorkflowSERP(data) {
     Logger.log("=== DÉBUT : lancerWorkflowSERP ===");
     Logger.log("Données reçues : " + JSON.stringify(data));
-    
-    // Dictionnaire de SVG (EXACTEMENT comme demandé)
+
     var dicoSVG = {
         "organique": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
         "paa": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="18" rx="2" ry="2"></rect><path d="M8 4V2h8v2"></path><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
@@ -933,7 +932,7 @@ function lancerWorkflowSERP(data) {
         var props = PropertiesService.getScriptProperties().getProperties();
         var geminiApiKey = props['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = props['LISTE_CLES_API'];
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || ""; // Préparation des données: Récupération du contexte client
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || ""; 
         
         if (!geminiApiKey || geminiApiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -943,7 +942,6 @@ function lancerWorkflowSERP(data) {
         if (listeClesAPIStr) {
             try {
                 var parsedKeys = JSON.parse(listeClesAPIStr);
-                // Aplatit l'objet pour itérer plus facilement
                 if (parsedKeys.serpapi) {
                     parsedKeys.serpapi.forEach(function(k) { apiKeys.push({type: 'serpapi', cle: k}); });
                 }
@@ -968,16 +966,17 @@ function lancerWorkflowSERP(data) {
         var serpJson = fetchSerpData(motCle, loc, apiKeys);
         if (!serpJson) throw new Error("Impossible de récupérer la SERP (Quotas atteints ou erreur API).");
         var serpData = extractSerpData(serpJson);
-        Logger.log("SERP Features détectées : " + serpData.features.join(", "));
+        
+        var featuresLog = serpData.elements_serp.map(function(e) { return e.type_feature; }).join(", ");
+        Logger.log("SERP Features détectées : " + serpData.elements_serp.length + " (" + featuresLog + ")");
         Logger.log("Top 10 URLs récupérées : " + serpData.urls.length);
 
         // ==========================================
         // ÉTAPE 2 : SCRAPING EN PARALLÈLE
         // ==========================================
         Logger.log("Étape 2 : Scraping des URLs du Top 10 + URL Client");
-        var urlsToScrape = serpData.urls.slice(); // Copie du tableau
+        var urlsToScrape = serpData.urls.slice(); 
         
-        // Si le client a une page cible qui n'est pas dans le top 10, on l'ajoute pour l'analyser
         if (!noPage && urlClient && urlsToScrape.indexOf(urlClient) === -1) {
             urlsToScrape.unshift(urlClient);
         }
@@ -994,7 +993,7 @@ function lancerWorkflowSERP(data) {
                 location: loc,
                 client_url: noPage ? "Page à créer" : urlClient
             },
-            serp_features: serpData.features,
+            serp_features: serpData.elements_serp.map(function(e) { return e.type_feature; }),
             pages: scrapedPages
         };
 
@@ -1008,7 +1007,7 @@ function lancerWorkflowSERP(data) {
             - Titres, puces et labels : majuscule uniquement au premier mot (sauf noms propres).
             - Parenthèses : pas de majuscule au premier mot à l'intérieur.
             - Deux-points (:) : toujours un espace avant le deux-points, et aucune majuscule après (sauf nom propre).
-            - Formatage visuel : utilise des astérisques simples *mot* pour mettre en gras les concepts clés de tes analyses pour faciliter la lecture en diagonale.
+            - Formatage visuel : utilise le gras standard Markdown (**mot**) pour mettre en valeur les concepts clés. Ne pas utiliser d'astérisque simple.
 
             2. Hiérarchie décisionnelle et objectifs (règle d'or : SERP > client)
             Ce que Google positionne dicte ce que tu dois recommander.
@@ -1019,49 +1018,43 @@ function lancerWorkflowSERP(data) {
             Ne traite pas le mot-clé cible en vase clos. Repère les expertises du client via le contexte client. Dans tes recommandations (et le gap business), propose des ponts intelligents (maillage interne, encarts de réassurance) entre le sujet analysé et l'offre globale du client.
 
             4. Lecture de l'environnement (SERP features)
-            Examine les 'serp_features' détectées. Ce sont des signaux d'intention stricts :
-            - Annonces (ads) : intention transactionnelle -> CTA visibles exigés.
-            - PAA (questions) : intention informationnelle -> module FAQ exigé.
-            - Pack local (maps) : proximité -> balisage local exigé.
-            - Shopping : intention d'achat direct -> affichage prix/produits exigé.
+            Examine les 'serp_features' détectées. Ce sont des signaux d'intention stricts à intégrer dans tes recommandations.
+
+            5. Concision extrême et limites de longueur
+            Tu as des limites de mots et de caractères STRICTES pour chaque champ définies dans le modèle JSON ci-dessous. Va droit au but, supprime les mots de liaison inutiles. Tu seras pénalisé si tu dépasses ces limites.
 
             /// Format de sortie obligatoire ///
             Tu dois fournir ta réponse uniquement sous forme d'objet JSON valide, sans balise markdown autour.
             Structure stricte exigée :
             {
-            "serp_elements": [
-                {"titre": "Titre du bloc (ex : annonces Google Ads)", "description": "Ce que cela indique sur l'attente des utilisateurs.", "type_feature": "ads"}
-                // exactement 4 objets. Clés autorisées pour type_feature : organique, paa, video, recherche, shopping, ads, local, image, featured, defaut.
-            ],
             "intention": {
-                "titre": "Typologie (ex : transactionnelle et commerciale)",
-                "description": "Analyse concise de l'intention de l'utilisateur."
+                "titre": "Typologie (ex: Transactionnelle) (MAX 2 mots, 65 caractères)",
+                "description": "Analyse concise de l'intention. (MAX 15 mots, 70 caractères)"
             },
             "standards": [
-                "Standard structurel 1 (ex : présence de filtres à facettes ou tableau comparatif)",
-                "Standard éditorial 2 (ex : ton académique ou vulgarisé)",
-                "Standard UX 3 (ex : calculateur en ligne ou sommaire ancré)"
+                "Standard structurel 1. (MAX 8 mots, 65 caractères)",
+                "Standard éditorial 2. (MAX 8 mots, 65 caractères)",
+                "Standard UX 3. (MAX 8 mots, 65 caractères)"
             ],
             "semantique": [
-                "Axe lexical 1 à couvrir obligatoirement",
-                "Axe lexical 2",
-                "Axe lexical 3"
+                "Axe lexical 1. (MAX 8 mots, 65 caractères)",
+                "Axe lexical 2. (MAX 8 mots, 65 caractères)",
+                "Axe lexical 3. (MAX 8 mots, 65 caractères)"
             ],
             "gap_analysis": [
-                {"titre": "Format et UX", "description": "L'écart justifié entre le client et la SERP."},
-                {"titre": "Profondeur éditoriale", "description": "Le manque à combler sur le contenu."},
-                {"titre": "Business et synergie", "description": "L'opportunité manquée de vente ou maillage."}
-                // exactement 3 objets. Si mode création, parle des "pièges à éviter".
+                {"titre": "Format et UX (MAX 2 mots, 25 caractères)", "description": "L'écart justifié... (MAX 25 mots, 150 caractères)"},
+                {"titre": "Profondeur (MAX 2 mots, 25 caractères)", "description": "Le manque à combler... (MAX 25 mots, 150 caractères)"},
+                {"titre": "Business (MAX 2 mots, 25 caractères)", "description": "L'opportunité manquée... (MAX 25 mots, 150 caractères)"}
             ],
             "recommandations": [
-                "1. Action sur la structure de la page (Hn/UX).",
-                "2. Action sur la profondeur du contenu.",
-                "3. Action sur la conversion et réassurance.",
-                "4. Action sur le maillage interne ou cross-sell (lien avec le contexte client)."
+                "Action structure Hn/UX. (MAX 20 mots, 100 caractères)",
+                "Action profondeur. (MAX 20 mots, 100 caractères)",
+                "Action conversion. (MAX 20 mots, 100 caractères)",
+                "Action maillage/cross-sell. (MAX 20 mots, 100 caractères)"
             ]
             }`;
 
-                    var userPrompt = `[Contexte client] :
+        var userPrompt = `[Contexte client] :
             ${contexteClient}
 
             [Données extraites de la SERP et du scraping] :
@@ -1114,17 +1107,15 @@ function lancerWorkflowSERP(data) {
             throw new Error("Le format JSON renvoyé par Gemini est invalide.");
         }
 
-        // Mapping SVG : Boucle sur jsonGemini.serp_elements
-        if (jsonGemini.serp_elements && Array.isArray(jsonGemini.serp_elements)) {
-            for (var i = 0; i < jsonGemini.serp_elements.length; i++) {
-                var el = jsonGemini.serp_elements[i];
-                var featureKey = el.type_feature || "defaut";
-                if (!dicoSVG[featureKey]) {
-                    featureKey = "defaut";
-                }
-                el.svg_icon = dicoSVG[featureKey];
+        // Ajout du Mapping SVG pour le Front-end
+        var finalElementsSerp = (serpData.elements_serp || []).map(function(el) {
+            var featureKey = el.type_feature || "defaut";
+            if (!dicoSVG[featureKey]) {
+                featureKey = "defaut";
             }
-        }
+            el.svg_icon = dicoSVG[featureKey];
+            return el;
+        });
 
         Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
         
@@ -1132,7 +1123,7 @@ function lancerWorkflowSERP(data) {
         return {
             success: true,
             data: {
-                elements_serp: jsonGemini.serp_elements || [],
+                elements_serp: finalElementsSerp,
                 intention: jsonGemini.intention || {},
                 standards: jsonGemini.standards || [],
                 semantique: jsonGemini.semantique || [],
@@ -1198,23 +1189,92 @@ function extractSerpData(json) {
         }).filter(function(u) { return u !== ""; });
     }
 
-    var features = [];
-    if ((json.ads && json.ads.length > 0) || (json.advertisements && json.advertisements.length > 0)) features.push("Annonces (Google Ads)");
-    if (json.answer_box || json.answer_box_list) features.push("Position 0 (Featured Snippet)");
-    if (json.knowledge_graph) features.push("Knowledge Graph");
-    if ((json.local_results && json.local_results.length > 0) || (json.places && json.places.length > 0)) features.push("Pack local (Maps)");
-    if ((json.shopping_results && json.shopping_results.length > 0) || (json.inline_shopping && json.inline_shopping.length > 0) || (json.commercial_units && json.commercial_units.length > 0)) features.push("Bloc shopping");
-    if (json.recipes_results && json.recipes_results.length > 0) features.push("Recettes");
-    
-    var paaCount = 0;
-    if (json.related_questions) paaCount = json.related_questions.length;
-    else if (json.people_also_ask) paaCount = json.people_also_ask.length;
-    if (paaCount > 0) features.push("Autres questions posées (PAA)");
-    
-    if ((json.video_results && json.video_results.length > 0) || (json.inline_videos && json.inline_videos.length > 0)) features.push("Vidéos");
-    if ((json.images_results && json.images_results.length > 0) || (json.inline_images && json.inline_images.length > 0)) features.push("Images");
+    var elementsSerpGeneres = [];
 
-    return { urls: urls, features: features };
+    // 8. Résultats organiques (placé en priorité haute)
+    var organicCount = 0;
+    if (json.organic_results && json.organic_results.length > 0) {
+        organicCount = json.organic_results.length;
+        elementsSerpGeneres.push({
+            titre: organicCount + " résultats organiques",
+            description: "Concurrence naturelle (1ère page).",
+            type_feature: "organique"
+        });
+    }
+
+    // 1. Annonces (Google Ads)
+    var adsCount = 0;
+    if (json.ads && json.ads.length > 0) adsCount = json.ads.length;
+    else if (json.advertisements && json.advertisements.length > 0) adsCount = json.advertisements.length;
+    if (adsCount > 0) {
+        elementsSerpGeneres.push({
+            titre: adsCount + " annonces sponsorisées",
+            description: "Forte intention commerciale (enchères payantes).",
+            type_feature: "ads"
+        });
+    }
+
+    // 2. Position 0 (Featured Snippet)
+    if (json.answer_box || json.answer_box_list) {
+        elementsSerpGeneres.push({
+            titre: "Position 0 (featured snippet)",
+            description: "Réponse directe mise en avant par Google.",
+            type_feature: "featured"
+        });
+    }
+
+    // 3. Pack local (Maps)
+    if ((json.local_results && (json.local_results.length > 0 || json.local_results.places)) || (json.places && json.places.length > 0)) {
+        elementsSerpGeneres.push({
+            titre: "Pack local (Google Maps)",
+            description: "Résultats géolocalisés (zone de chalandise).",
+            type_feature: "local"
+        });
+    }
+
+    // 4. Bloc shopping
+    if ((json.shopping_results && json.shopping_results.length > 0) || (json.inline_shopping && json.inline_shopping.length > 0) || (json.immersive_products && json.immersive_products.length > 0) || (json.commercial_units && json.commercial_units.length > 0)) {
+        elementsSerpGeneres.push({
+            titre: "Bloc Google Shopping",
+            description: "Produits transactionnels avec prix/visuels.",
+            type_feature: "shopping"
+        });
+    }
+
+    // 5. Autres questions posées (PAA)
+    var paaCount = 0;
+    if (json.related_questions && json.related_questions.length > 0) paaCount = json.related_questions.length;
+    else if (json.people_also_ask && json.people_also_ask.length > 0) paaCount = json.people_also_ask.length;
+    if (paaCount > 0) {
+        elementsSerpGeneres.push({
+            titre: paaCount + " autres questions posées",
+            description: "Questions fréquentes des internautes.",
+            type_feature: "paa"
+        });
+    }
+
+    // 6. Vidéos / Shorts
+    if ((json.video_results && json.video_results.length > 0) || (json.inline_videos && json.inline_videos.length > 0) || (json.primetime_results && json.primetime_results.length > 0) || (json.short_videos && json.short_videos.length > 0) || (json.visual_stories && json.visual_stories.length > 0)) {
+        elementsSerpGeneres.push({
+            titre: "Résultats vidéos",
+            description: "Intégration de formats vidéos/shorts.",
+            type_feature: "video"
+        });
+    }
+
+    // 7. Images
+    if ((json.images_results && json.images_results.length > 0) || (json.inline_images && json.inline_images.length > 0) || (json.media_results && json.media_results.length > 0)) {
+        elementsSerpGeneres.push({
+            titre: "Bloc d'images",
+            description: "Carrousel d'images pertinent.",
+            type_feature: "image"
+        });
+    }
+
+    // Limiter aux 4 premiers éléments détectés
+    var finalElements = elementsSerpGeneres.slice(0, 4);
+
+    return { urls: urls, elements_serp: finalElements };
 }
 
 function scrapeUrlsParallel(urls) {
@@ -1682,6 +1742,126 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
 
     } catch (e) {
         Logger.log("ERREUR CRITIQUE (Segments) : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function exporterFocusMotCleSlides() {
+    try {
+        Logger.log("=== DÉBUT : exporterFocusMotCleSlides ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        // 1. Mapping des clés simples (titres et données de base du focus)
+        var simpleMapping = {
+            'SERP_ELEMENT_TITRE_1': props['SERP_ELEMENT_TITRE_1'] || "",
+            'SERP_ELEMENT_TITRE_2': props['SERP_ELEMENT_TITRE_2'] || "",
+            'SERP_ELEMENT_TITRE_3': props['SERP_ELEMENT_TITRE_3'] || "",
+            'SERP_ELEMENT_TITRE_4': props['SERP_ELEMENT_TITRE_4'] || "",
+            'FOCUS_INTENTION_TITRE': props['FOCUS_INTENTION_TITRE'] || "",
+            'FOCUS_GAP_TITRE_1': props['FOCUS_GAP_TITRE_1'] || "",
+            'FOCUS_GAP_TITRE_2': props['FOCUS_GAP_TITRE_2'] || "",
+            'FOCUS_GAP_TITRE_3': props['FOCUS_GAP_TITRE_3'] || "",
+            // Nouvelles données du focus mot-clé
+            'TARGET_KW': props['TARGET_KW'] || "",
+            'TARGET_KW_SV': props['TARGET_KW_SV'] || "",
+            'TARGET_URL_CLIENT': props['TARGET_URL_CLIENT'] || "",
+            'TARGET_KW_CLIENT_POS': props['TARGET_KW_CLIENT_POS'] || "",
+            'TARGET_URL_CONCURRENT': props['TARGET_URL_CONCURRENT'] || "",
+            'TARGET_KW_CONCURRENT_POS': props['TARGET_KW_CONCURRENT_POS'] || ""
+        };
+
+        // 2. Mapping des clés avec formatage enrichi (gras Markdown)
+        var richTextMapping = {
+            'SERP_ELEMENT_DESC_1': props['SERP_ELEMENT_DESC_1'] || "",
+            'SERP_ELEMENT_DESC_2': props['SERP_ELEMENT_DESC_2'] || "",
+            'SERP_ELEMENT_DESC_3': props['SERP_ELEMENT_DESC_3'] || "",
+            'SERP_ELEMENT_DESC_4': props['SERP_ELEMENT_DESC_4'] || "",
+            'FOCUS_INTENTION_DESC': props['FOCUS_INTENTION_DESC'] || "",
+            'focus_standard_texte_1': props['focus_standard_texte_1'] || "",
+            'focus_standard_texte_2': props['focus_standard_texte_2'] || "",
+            'focus_standard_texte_3': props['focus_standard_texte_3'] || "",
+            'focus_semantique_texte_1': props['focus_semantique_texte_1'] || "",
+            'focus_semantique_texte_2': props['focus_semantique_texte_2'] || "",
+            'focus_semantique_texte_3': props['focus_semantique_texte_3'] || "",
+            'FOCUS_GAP_DESC_1': props['FOCUS_GAP_DESC_1'] || "",
+            'FOCUS_GAP_DESC_2': props['FOCUS_GAP_DESC_2'] || "",
+            'FOCUS_GAP_DESC_3': props['FOCUS_GAP_DESC_3'] || "",
+            'FOCUS_RECO_1': props['FOCUS_RECO_1'] || "",
+            'FOCUS_RECO_2': props['FOCUS_RECO_2'] || "",
+            'FOCUS_RECO_3': props['FOCUS_RECO_3'] || "",
+            'FOCUS_RECO_4': props['FOCUS_RECO_4'] || ""
+        };
+
+        Logger.log("Remplacement massif des tags simples...");
+        for (var key in simpleMapping) {
+            // Remplace les tags bruts trouvés dans le texte des slides
+            presentation.replaceAllText(key, String(simpleMapping[key]));
+        }
+
+        Logger.log("Parcours des slides pour le remplacement des tags complexes...");
+        
+        // Fonction utilitaire pour le gras Markdown standard (**)
+        function formatRichText(shape, textWithMarkdown) {
+            if (!textWithMarkdown) {
+                shape.getText().setText("");
+                return;
+            }
+            var textRange = shape.getText();
+            var cleanText = textWithMarkdown.replace(/\*\*/g, ""); 
+            
+            textRange.setText(cleanText);
+            // On laisse le style (police/couleur) par défaut de la shape.
+            
+            var match;
+            var regex = /\*\*([^*]+)\*\*/g;
+            var offset = 0;
+            
+            while ((match = regex.exec(textWithMarkdown)) !== null) {
+                var wordLength = match[1].length;
+                var startIndex = match.index - offset;
+                var endIndex = startIndex + wordLength;
+                
+                var targetRange = textRange.getRange(startIndex, endIndex);
+                targetRange.getTextStyle().setBold(true);
+                offset += 4; // On compense les 4 caractères supprimés (** et **)
+            }
+        }
+
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+            
+            shapes.forEach(function(shape) {
+                var shapeText = shape.getText().asString().trim();
+                var titleRaw = shape.getTitle() || "";
+                var descRaw = shape.getDescription() || "";
+
+                var targetKey = null;
+                // Vérifie si le texte, le titre de la shape ou la description correspond à un de nos tags complexes
+                if (richTextMapping[shapeText] !== undefined) {
+                    targetKey = shapeText;
+                } else if (richTextMapping[titleRaw] !== undefined) {
+                    targetKey = titleRaw;
+                } else if (richTextMapping[descRaw] !== undefined) {
+                    targetKey = descRaw;
+                }
+
+                if (targetKey) {
+                    formatRichText(shape, richTextMapping[targetKey]);
+                }
+            });
+        });
+
+        Logger.log("=== FIN : exporterFocusMotCleSlides ===");
+        return { success: true, url: presentation.getUrl() };
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT FOCUS MOT-CLÉ : " + e.message);
         return { success: false, error: e.message };
     }
 }

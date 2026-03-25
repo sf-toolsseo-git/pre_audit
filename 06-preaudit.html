@@ -137,6 +137,10 @@
           .step.completed .step-label { color: #188038; }
           .step.error .step-label { color: #d93025; }
           .analysis-results { display: none; margin-top: 20px; }
+          .serp-element-row{display:flex;align-items:center;gap:15px;margin-bottom:10px;background:#f8f9fa;padding:10px;border-radius:8px;border:1px solid #dadce0}
+          .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
+          .serp-icon-box svg{width:100%;height:100%}
+          .serp-inputs{flex:1;display:flex;gap:10px}
         </style>
     </head>
     <body>
@@ -153,6 +157,7 @@
             <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic">3. Diagnostic sémantique</div>
             <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux">4. État des lieux du référencement</div>
             <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
+            <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
         </div>
         <!-- ===================== ONGLET 1 : CONFIGURATION ===================== -->
         <div class="tab-content active" id="content-config">
@@ -432,30 +437,44 @@
 
                     <div class="analysis-results" id="analysis-results" style="display: none; margin-top: 25px; border-top: 1px solid #dadce0; padding-top: 20px;">
     
-                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 1 : Audit de la SERP & Standards</h2>
+                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 1 : audit de la SERP</h2>
 
                         <h3 class="section-title">1. Résultat de recherche (SERP)</h3>
                         <div class="section-description" style="margin-bottom: 10px;">Éléments remarquables détectés dans les résultats de recherche.</div>
                         
-                        <div class="row">
-                            <div class="col"><input type="text" id="serp-titre-1" placeholder="Titre élément 1" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><input type="text" id="serp-desc-1" placeholder="Description élément 1" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><textarea id="serp-svg-1" placeholder="Code SVG 1..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
-                        </div>
-                        <div class="row">
-                            <div class="col"><input type="text" id="serp-titre-2" placeholder="Titre élément 2" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><input type="text" id="serp-desc-2" placeholder="Description élément 2" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><textarea id="serp-svg-2" placeholder="Code SVG 2..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
-                        </div>
-                        <div class="row">
-                            <div class="col"><input type="text" id="serp-titre-3" placeholder="Titre élément 3" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><input type="text" id="serp-desc-3" placeholder="Description élément 3" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><textarea id="serp-svg-3" placeholder="Code SVG 3..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
-                        </div>
-                        <div class="row">
-                            <div class="col"><input type="text" id="serp-titre-4" placeholder="Titre élément 4" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><input type="text" id="serp-desc-4" placeholder="Description élément 4" onblur="autoSaveAnalyseFocus()"></div>
-                            <div class="col"><textarea id="serp-svg-4" placeholder="Code SVG 4..." rows="1" onblur="autoSaveAnalyseFocus()"></textarea></div>
+                        <div id="serp-elements-container">
+                            <div class="serp-element-row">
+                                <div class="serp-icon-box" id="serp-icon-render-1"></div>
+                                <div class="serp-inputs">
+                                    <input type="text" id="serp-titre-1" placeholder="Titre élément 1" onblur="autoSaveAnalyseFocus()" style="flex: 1;">
+                                    <input type="text" id="serp-desc-1" placeholder="Description élément 1" onblur="autoSaveAnalyseFocus()" style="flex: 2;">
+                                </div>
+                                <textarea id="serp-svg-1" style="display:none;" onblur="autoSaveAnalyseFocus()"></textarea>
+                            </div>
+                            <div class="serp-element-row">
+                                <div class="serp-icon-box" id="serp-icon-render-2"></div>
+                                <div class="serp-inputs">
+                                    <input type="text" id="serp-titre-2" placeholder="Titre élément 2" onblur="autoSaveAnalyseFocus()" style="flex: 1;">
+                                    <input type="text" id="serp-desc-2" placeholder="Description élément 2" onblur="autoSaveAnalyseFocus()" style="flex: 2;">
+                                </div>
+                                <textarea id="serp-svg-2" style="display:none;" onblur="autoSaveAnalyseFocus()"></textarea>
+                            </div>
+                            <div class="serp-element-row">
+                                <div class="serp-icon-box" id="serp-icon-render-3"></div>
+                                <div class="serp-inputs">
+                                    <input type="text" id="serp-titre-3" placeholder="Titre élément 3" onblur="autoSaveAnalyseFocus()" style="flex: 1;">
+                                    <input type="text" id="serp-desc-3" placeholder="Description élément 3" onblur="autoSaveAnalyseFocus()" style="flex: 2;">
+                                </div>
+                                <textarea id="serp-svg-3" style="display:none;" onblur="autoSaveAnalyseFocus()"></textarea>
+                            </div>
+                            <div class="serp-element-row">
+                                <div class="serp-icon-box" id="serp-icon-render-4"></div>
+                                <div class="serp-inputs">
+                                    <input type="text" id="serp-titre-4" placeholder="Titre élément 4" onblur="autoSaveAnalyseFocus()" style="flex: 1;">
+                                    <input type="text" id="serp-desc-4" placeholder="Description élément 4" onblur="autoSaveAnalyseFocus()" style="flex: 2;">
+                                </div>
+                                <textarea id="serp-svg-4" style="display:none;" onblur="autoSaveAnalyseFocus()"></textarea>
+                            </div>
                         </div>
 
                         <h3 class="section-title" style="margin-top: 20px;">2. Intention</h3>
@@ -486,9 +505,9 @@
 
                         <hr class="section-separator" style="margin: 30px 0;">
                         
-                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 2 : Diagnostic & Plan d'action</h2>
+                        <h2 class="section-title" style="color: #1a73e8; font-size: 18px; margin-bottom: 15px;">Slide 2 : Diagnostic & plan d'action</h2>
 
-                        <h3 class="section-title">5. GAP Analysis (Freins à la performance)</h3>
+                        <h3 class="section-title">5. GAP analysis (freins à la performance)</h3>
                         <div class="section-description" style="margin-bottom: 10px;">Écarts majeurs identifiés entre la page cible et les exigences de la SERP.</div>
                         
                         <div class="row">
@@ -509,7 +528,7 @@
                             </div>
                         </div>
 
-                        <h3 class="section-title" style="margin-top: 20px;">6. Recommandations stratégiques (Plan d'action)</h3>
+                        <h3 class="section-title" style="margin-top: 20px;">6. Recommandations stratégiques (plan d'action)</h3>
                         <div class="section-description" style="margin-bottom: 10px;">Les 4 actions prioritaires à mener sur la page.</div>
 
                         <div class="row">
@@ -532,7 +551,20 @@
                         </div>
 
                     </div>
-                                        
+                    <div class="continuer-bar" style="margin-top: 25px;">
+                        <span id="exportMsgFocus" style="font-size: 12px; font-weight: bold;"></span>
+                        <button class="btn btn-continuer" id="btnExportSlidesFocus" onclick="lancerExportSlidesFocus()">📥 Importer dans Slides & continuer</button>
+                    </div>                   
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== ONGLET 6 : ÉTAT DES LIEUX TECHNIQUES ===================== -->
+        <div class="tab-content" id="content-etat-lieux-technique">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">État des lieux technique</h2>
+                    <div class="section-description">Analyse technique du site (en construction).</div>
                 </div>
             </div>
         </div>
@@ -554,7 +586,7 @@
 
                 google.script.run
                     .withSuccessHandler(function(config) {
-                        window.globalConfig = config || {}; // <-- AJOUTER CETTE LIGNE ICI
+                        window.globalConfig = config || {}; 
                         if (config) {
                             // Onglet 1
                             document.getElementById('conf-client-name').value = config.clientName;
@@ -619,15 +651,26 @@
                                 document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
                                 document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
                                 document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
+                                var icon1 = document.getElementById('serp-icon-render-1');
+                                if (icon1) icon1.innerHTML = config.serpSvg1 || "";
+                                
                                 document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
                                 document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
                                 document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
+                                var icon2 = document.getElementById('serp-icon-render-2');
+                                if (icon2) icon2.innerHTML = config.serpSvg2 || "";
+                                
                                 document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
                                 document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
                                 document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
+                                var icon3 = document.getElementById('serp-icon-render-3');
+                                if (icon3) icon3.innerHTML = config.serpSvg3 || "";
+                                
                                 document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
                                 document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
                                 document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
+                                var icon4 = document.getElementById('serp-icon-render-4');
+                                if (icon4) icon4.innerHTML = config.serpSvg4 || "";
 
                                 // Intention
                                 document.getElementById('intention-titre').value = config.intentionTitre || "";
@@ -667,13 +710,10 @@
                                 google.script.run
                                     .withSuccessHandler(function(savedSelection) {
                                         applySavedSelection(savedSelection);
-                                        // Recharger le diagnostic silencieusement en fond si une sélection existe
                                         if (savedSelection && savedSelection.length > 0) {
-                                            // On indique visuellement que ça charge
                                             document.getElementById('dashboardArea').innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Restauration du diagnostic en cours...</div>';
                                             google.script.run
                                                 .withSuccessHandler(function(data) {
-                                                    // C'est l'appel à renderDashboard qui manquait pour afficher les données
                                                     renderDashboard(data);
                                                 })
                                                 .withFailureHandler(function(err) {
@@ -1101,6 +1141,7 @@
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
+                    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*\n]+)\*/g, '<strong style="color:#f67604">$1</strong>');
             }
 
@@ -1909,6 +1950,39 @@
                 console.log("=== FIN : appel google.script.run lancé ===");
             }
 
+            function lancerExportSlidesFocus() {
+                var btn = document.getElementById('btnExportSlidesFocus');
+                var msg = document.getElementById('exportMsgFocus');
+                
+                btn.disabled = true;
+                btn.innerText = "⏳ Import en cours...";
+                msg.innerText = "";
+                
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if (res.success) {
+                            btn.innerText = "✅ Importé";
+                            msg.innerHTML = '<span style="color:#188038">Données injectées avec succès !</span>';
+                            setTimeout(function() {
+                                btn.disabled = false;
+                                btn.innerText = "📥 Importer dans Slides & continuer";
+                                msg.innerHTML = "";
+                                switchTab('etat-lieux-technique');
+                            }, 2000);
+                        } else {
+                            btn.disabled = false;
+                            btn.innerText = "📥 Importer dans Slides & continuer";
+                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "📥 Importer dans Slides & continuer";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                    })
+                    .exporterFocusMotCleSlides();
+            }
+
             // ========================== UTILITAIRES ==========================
 
             // ========================== ONGLET 5 : FOCUS MOT-CLÉ ==========================
@@ -2152,13 +2226,62 @@
                             setStepperState('step-ia', 'completed');
                             var data = res.data;
                             
-                            var texteSerp = Array.isArray(data.elements_serp) ? "• " + data.elements_serp.join("\n\n• ") : (data.elements_serp || '');
-                            var texteConcurrents = Array.isArray(data.analyse_concurrents) ? "• " + data.analyse_concurrents.join("\n\n• ") : (data.analyse_concurrents || '');
-                            var texteRecommandations = Array.isArray(data.analyse_recommandations) ? "• " + data.analyse_recommandations.join("\n\n• ") : (data.analyse_recommandations || '');
+                            // 1. Éléments SERP (Titre, Desc, SVG)
+                            if (data.elements_serp && Array.isArray(data.elements_serp)) {
+                                for (var i = 0; i < 4; i++) {
+                                    var el = data.elements_serp[i] || { titre: "", description: "", svg_icon: "" };
+                                    var idx = i + 1;
+                                    var inputTitre = document.getElementById('serp-titre-' + idx);
+                                    var inputDesc = document.getElementById('serp-desc-' + idx);
+                                    var inputSvg = document.getElementById('serp-svg-' + idx);
+                                    var renderIcon = document.getElementById('serp-icon-render-' + idx);
+                                    
+                                    if (inputTitre) inputTitre.value = el.titre || "";
+                                    if (inputDesc) inputDesc.value = el.description || "";
+                                    if (inputSvg) inputSvg.value = el.svg_icon || "";
+                                    if (renderIcon) renderIcon.innerHTML = el.svg_icon || "";
+                                }
+                            }
                             
-                            setCeContent('ce-analyse-serp', texteSerp);
-                            setCeContent('ce-analyse-concurrents', texteConcurrents);
-                            setCeContent('ce-analyse-recommandations', texteRecommandations);
+                            // 2. Intention
+                            if (data.intention) {
+                                var intTitre = document.getElementById('intention-titre');
+                                if (intTitre) intTitre.value = data.intention.titre || "";
+                                if (data.intention.description) setCeContent('intention-desc', data.intention.description);
+                            }
+                            
+                            // 3. Standards
+                            if (data.standards && Array.isArray(data.standards)) {
+                                if (data.standards[0]) setCeContent('standard-1', data.standards[0]);
+                                if (data.standards[1]) setCeContent('standard-2', data.standards[1]);
+                                if (data.standards[2]) setCeContent('standard-3', data.standards[2]);
+                            }
+                            
+                            // 4. Sémantique
+                            if (data.semantique && Array.isArray(data.semantique)) {
+                                if (data.semantique[0]) setCeContent('semantique-1', data.semantique[0]);
+                                if (data.semantique[1]) setCeContent('semantique-2', data.semantique[1]);
+                                if (data.semantique[2]) setCeContent('semantique-3', data.semantique[2]);
+                            }
+                            
+                            // 5. GAP Analysis
+                            if (data.gap_analysis && Array.isArray(data.gap_analysis)) {
+                                for (var j = 0; j < 3; j++) {
+                                    var gap = data.gap_analysis[j] || { titre: "", description: "" };
+                                    var jdx = j + 1;
+                                    var inputGapTitre = document.getElementById('gap-titre-' + jdx);
+                                    if (inputGapTitre) inputGapTitre.value = gap.titre || "";
+                                    if (gap.description) setCeContent('gap-desc-' + jdx, gap.description);
+                                }
+                            }
+                            
+                            // 6. Recommandations
+                            if (data.recommandations && Array.isArray(data.recommandations)) {
+                                if (data.recommandations[0]) setCeContent('reco-1', data.recommandations[0]);
+                                if (data.recommandations[1]) setCeContent('reco-2', data.recommandations[1]);
+                                if (data.recommandations[2]) setCeContent('reco-3', data.recommandations[2]);
+                                if (data.recommandations[3]) setCeContent('reco-4', data.recommandations[3]);
+                            }
                             
                             results.style.display = 'block';
                             autoSaveAnalyseFocus();
