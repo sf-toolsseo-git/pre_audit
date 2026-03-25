@@ -501,3 +501,210 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         return { success: false, error: e.message };
     }
 }
+
+function exporterFocusMotCleSlides() {
+    try {
+        Logger.log("Début de la fonction exporterFocusMotCleSlides");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        var rawClientUrl = props['TARGET_URL_CLIENT'] || "";
+        var cleanClientUrl = rawClientUrl;
+        if (rawClientUrl !== "" && rawClientUrl !== "-") {
+            var matchPath = rawClientUrl.match(/^https?:\/\/[^\/]+(.*)$/i);
+            cleanClientUrl = matchPath ? (matchPath[1] || "/") : rawClientUrl;
+        }
+
+        var rawCompUrl = props['TARGET_URL_CONCURRENT'] || "";
+        var cleanCompUrl = rawCompUrl;
+        if (rawCompUrl !== "" && rawCompUrl !== "-") {
+            cleanCompUrl = rawCompUrl.replace(/^https?:\/\//i, "");
+        }
+        
+        var rawClientPos = props['TARGET_KW_CLIENT_POS'] || "";
+        var formatedClientPos = (rawClientPos && rawClientPos !== "-") ? "Position " + rawClientPos : rawClientPos;
+        
+        var rawCompPos = props['TARGET_KW_CONCURRENT_POS'] || "";
+        var formatedCompPos = (rawCompPos && rawCompPos !== "-") ? "Position " + rawCompPos : rawCompPos;
+
+        var simpleMapping = {
+            'SERP_ELEMENT_TITRE_1': props['SERP_ELEMENT_TITRE_1'] || "",
+            'SERP_ELEMENT_TITRE_2': props['SERP_ELEMENT_TITRE_2'] || "",
+            'SERP_ELEMENT_TITRE_3': props['SERP_ELEMENT_TITRE_3'] || "",
+            'SERP_ELEMENT_TITRE_4': props['SERP_ELEMENT_TITRE_4'] || "",
+            'FOCUS_INTENTION_TITRE': props['FOCUS_INTENTION_TITRE'] || "",
+            'FOCUS_GAP_TITRE_1': props['FOCUS_GAP_TITRE_1'] || "",
+            'FOCUS_GAP_TITRE_2': props['FOCUS_GAP_TITRE_2'] || "",
+            'FOCUS_GAP_TITRE_3': props['FOCUS_GAP_TITRE_3'] || "",
+            'TARGET_KW': props['TARGET_KW'] || "",
+            'TARGET_KW_SV': props['TARGET_KW_SV'] || "",
+            'TARGET_URL_CLIENT': cleanClientUrl,
+            'TARGET_KW_CLIENT_POS': formatedClientPos,
+            'TARGET_URL_CONCURRENT': cleanCompUrl,
+            'TARGET_KW_CONCURRENT_POS': formatedCompPos,
+            '{{focus_standard_texte_1}}': props['focus_standard_texte_1'] || "",
+            '{{focus_standard_texte_2}}': props['focus_standard_texte_2'] || "",
+            '{{focus_standard_texte_3}}': props['focus_standard_texte_3'] || "",
+            '{{focus_semantique_texte_1}}': props['focus_semantique_texte_1'] || "",
+            '{{focus_semantique_texte_2}}': props['focus_semantique_texte_2'] || "",
+            '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
+        };
+
+        var richTextMapping = {
+            'SERP_ELEMENT_DESC_1': props['SERP_ELEMENT_DESC_1'] || "",
+            'SERP_ELEMENT_DESC_2': props['SERP_ELEMENT_DESC_2'] || "",
+            'SERP_ELEMENT_DESC_3': props['SERP_ELEMENT_DESC_3'] || "",
+            'SERP_ELEMENT_DESC_4': props['SERP_ELEMENT_DESC_4'] || "",
+            'FOCUS_INTENTION_DESC': props['FOCUS_INTENTION_DESC'] || "",
+            'focus_standard_texte_1': props['focus_standard_texte_1'] || "",
+            'focus_standard_texte_2': props['focus_standard_texte_2'] || "",
+            'focus_standard_texte_3': props['focus_standard_texte_3'] || "",
+            'focus_semantique_texte_1': props['focus_semantique_texte_1'] || "",
+            'focus_semantique_texte_2': props['focus_semantique_texte_2'] || "",
+            'focus_semantique_texte_3': props['focus_semantique_texte_3'] || "",
+            'FOCUS_GAP_DESC_1': props['FOCUS_GAP_DESC_1'] || "",
+            'FOCUS_GAP_DESC_2': props['FOCUS_GAP_DESC_2'] || "",
+            'FOCUS_GAP_DESC_3': props['FOCUS_GAP_DESC_3'] || "",
+            'FOCUS_RECO_1': props['FOCUS_RECO_1'] || "",
+            'FOCUS_RECO_2': props['FOCUS_RECO_2'] || "",
+            'FOCUS_RECO_3': props['FOCUS_RECO_3'] || "",
+            'FOCUS_RECO_4': props['FOCUS_RECO_4'] || ""
+        };
+
+        Logger.log("Tri des variables pour le remplacement textuel");
+        var keysToReplace = Object.keys(simpleMapping);
+        keysToReplace.sort(function(a, b) {
+            return b.length - a.length;
+        });
+
+        Logger.log("Remplacement massif des tags simples avec les variables triées");
+        for (var i = 0; i < keysToReplace.length; i++) {
+            var key = keysToReplace[i];
+            presentation.replaceAllText(key, String(simpleMapping[key]));
+        }
+
+        Logger.log("Avant le traitement des images SVG et des tags complexes");
+        
+        function formatRichText(shape, textWithMarkdown) {
+            if (!textWithMarkdown) {
+                shape.getText().setText("");
+                return;
+            }
+            var textRange = shape.getText();
+            var cleanText = textWithMarkdown.replace(/\*\*/g, ""); 
+            
+            textRange.setText(cleanText);
+            
+            var match;
+            var regex = /\*\*([^*]+)\*\*/g;
+            var offset = 0;
+            
+            while ((match = regex.exec(textWithMarkdown)) !== null) {
+                var wordLength = match[1].length;
+                var startIndex = match.index - offset;
+                var endIndex = startIndex + wordLength;
+                
+                var targetRange = textRange.getRange(startIndex, endIndex);
+                targetRange.getTextStyle().setBold(true);
+                offset += 4;
+            }
+        }
+
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+            
+            shapes.forEach(function(shape) {
+                var shapeText = "";
+                try {
+                    shapeText = shape.getText().asString().trim();
+                } catch(e) {}
+                
+                var titleRaw = shape.getTitle() || "";
+                var descRaw = shape.getDescription() || "";
+
+                if (titleRaw.indexOf('FOCUS_INTENTION_DESC') !== -1 || descRaw.indexOf('FOCUS_INTENTION_DESC') !== -1) {
+                    var varDesc = props['FOCUS_INTENTION_DESC'] || "";
+                    if (shape.getText) {
+                        shape.getText().setText(varDesc);
+                    }
+                }
+
+                var targetKey = null;
+                if (shapeText && richTextMapping[shapeText] !== undefined) {
+                    targetKey = shapeText;
+                } else if (richTextMapping[titleRaw] !== undefined) {
+                    targetKey = titleRaw;
+                } else if (richTextMapping[descRaw] !== undefined) {
+                    targetKey = descRaw;
+                }
+
+                if (targetKey && targetKey !== 'FOCUS_INTENTION_DESC') {
+                    formatRichText(shape, richTextMapping[targetKey]);
+                }
+
+                var matchSvgProp = null;
+                for (var propKey in props) {
+                    var val = props[propKey] || "";
+                    if (val.indexOf("<svg") !== -1 && (shapeText === propKey || titleRaw === propKey || descRaw === propKey)) {
+                        matchSvgProp = val;
+                        break;
+                    }
+                }
+
+                if (matchSvgProp) {
+                    try {
+                        Logger.log("Traitement d'une image SVG détectée");
+                        var svgBlob = Utilities.newBlob(matchSvgProp, MimeType.SVG, "image.svg");
+                        var response = UrlFetchApp.fetch("https://v2.convertapi.com/convert/svg/to/png?Secret=dummy", {
+                            method: "post",
+                            payload: { File: svgBlob },
+                            muteHttpExceptions: true
+                        });
+                        
+                        if (response.getResponseCode() === 200) {
+                            var json = JSON.parse(response.getContentText());
+                            if (json.Files && json.Files[0]) {
+                                var pngUrl = json.Files[0].Url;
+                                var pngBlob = UrlFetchApp.fetch(pngUrl).getBlob();
+                                var newImg = slide.insertImage(pngBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                                newImg.setTitle(titleRaw);
+                                newImg.setDescription(descRaw);
+                                shape.remove();
+                            }
+                        } else {
+                            Logger.log("Échec de la conversion API (code " + response.getResponseCode() + "), tentative d'insertion en fallback");
+                            try {
+                                slide.insertImage(svgBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                                shape.remove();
+                            } catch (errFallback) {
+                                Logger.log("Erreur lors de l'insertion SVG en fallback (silencieuse) : " + errFallback.message);
+                            }
+                        }
+                    } catch (errSvg) {
+                        Logger.log("Erreur lors du traitement de l'image SVG (silencieuse) : " + errSvg.message);
+                    }
+                }
+            });
+            
+            var images = slide.getImages();
+            images.forEach(function(img) {
+                var titleImg = img.getTitle() || "";
+                var descImg = img.getDescription() || "";
+                // Logique pour image : l'API Slides ne permet pas setText() sur Image
+            });
+        });
+
+        Logger.log("Après le traitement des images SVG et des tags complexes");
+        Logger.log("Fin de la fonction exporterFocusMotCleSlides");
+        return { success: true, url: presentation.getUrl() };
+
+    } catch (e) {
+        Logger.log("Erreur critique lors de l'export focus mot-clé : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
