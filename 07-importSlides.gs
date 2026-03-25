@@ -532,6 +532,10 @@ function exporterFocusMotCleSlides() {
         var rawCompPos = props['TARGET_KW_CONCURRENT_POS'] || "";
         var formatedCompPos = (rawCompPos && rawCompPos !== "-") ? "Position " + rawCompPos : rawCompPos;
 
+        // Ajout de " rech./mois" pour le volume de recherche
+        var rawSv = props['TARGET_KW_SV'] || "";
+        var formatedSv = rawSv ? rawSv + " rech./mois" : "";
+
         var simpleMapping = {
             'SERP_ELEMENT_TITRE_1': props['SERP_ELEMENT_TITRE_1'] || "",
             'SERP_ELEMENT_TITRE_2': props['SERP_ELEMENT_TITRE_2'] || "",
@@ -542,31 +546,19 @@ function exporterFocusMotCleSlides() {
             'FOCUS_GAP_TITRE_2': props['FOCUS_GAP_TITRE_2'] || "",
             'FOCUS_GAP_TITRE_3': props['FOCUS_GAP_TITRE_3'] || "",
             'TARGET_KW': props['TARGET_KW'] || "",
-            'TARGET_KW_SV': props['TARGET_KW_SV'] || "",
+            'TARGET_KW_SV': formatedSv,
             'TARGET_URL_CLIENT': cleanClientUrl,
             'TARGET_KW_CLIENT_POS': formatedClientPos,
             'TARGET_URL_CONCURRENT': cleanCompUrl,
-            'TARGET_KW_CONCURRENT_POS': formatedCompPos,
-            '{{focus_standard_texte_1}}': props['focus_standard_texte_1'] || "",
-            '{{focus_standard_texte_2}}': props['focus_standard_texte_2'] || "",
-            '{{focus_standard_texte_3}}': props['focus_standard_texte_3'] || "",
-            '{{focus_semantique_texte_1}}': props['focus_semantique_texte_1'] || "",
-            '{{focus_semantique_texte_2}}': props['focus_semantique_texte_2'] || "",
-            '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
+            'TARGET_KW_CONCURRENT_POS': formatedCompPos
         };
 
-        var richTextMapping = {
+        var altTextMapping = {
             'SERP_ELEMENT_DESC_1': props['SERP_ELEMENT_DESC_1'] || "",
             'SERP_ELEMENT_DESC_2': props['SERP_ELEMENT_DESC_2'] || "",
             'SERP_ELEMENT_DESC_3': props['SERP_ELEMENT_DESC_3'] || "",
             'SERP_ELEMENT_DESC_4': props['SERP_ELEMENT_DESC_4'] || "",
             'FOCUS_INTENTION_DESC': props['FOCUS_INTENTION_DESC'] || "",
-            'focus_standard_texte_1': props['focus_standard_texte_1'] || "",
-            'focus_standard_texte_2': props['focus_standard_texte_2'] || "",
-            'focus_standard_texte_3': props['focus_standard_texte_3'] || "",
-            'focus_semantique_texte_1': props['focus_semantique_texte_1'] || "",
-            'focus_semantique_texte_2': props['focus_semantique_texte_2'] || "",
-            'focus_semantique_texte_3': props['focus_semantique_texte_3'] || "",
             'FOCUS_GAP_DESC_1': props['FOCUS_GAP_DESC_1'] || "",
             'FOCUS_GAP_DESC_2': props['FOCUS_GAP_DESC_2'] || "",
             'FOCUS_GAP_DESC_3': props['FOCUS_GAP_DESC_3'] || "",
@@ -576,7 +568,16 @@ function exporterFocusMotCleSlides() {
             'FOCUS_RECO_4': props['FOCUS_RECO_4'] || ""
         };
 
-        Logger.log("Tri des variables pour le remplacement textuel");
+        var placeholderMapping = {
+            '{{focus_standard_texte_1}}': props['focus_standard_texte_1'] || "",
+            '{{focus_standard_texte_2}}': props['focus_standard_texte_2'] || "",
+            '{{focus_standard_texte_3}}': props['focus_standard_texte_3'] || "",
+            '{{focus_semantique_texte_1}}': props['focus_semantique_texte_1'] || "",
+            '{{focus_semantique_texte_2}}': props['focus_semantique_texte_2'] || "",
+            '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
+        };
+
+        Logger.log("Tri des variables pour le remplacement textuel simple");
         var keysToReplace = Object.keys(simpleMapping);
         keysToReplace.sort(function(a, b) {
             return b.length - a.length;
@@ -588,30 +589,37 @@ function exporterFocusMotCleSlides() {
             presentation.replaceAllText(key, String(simpleMapping[key]));
         }
 
-        Logger.log("Avant le traitement des images SVG et des tags complexes");
+        Logger.log("Avant le traitement des images SVG, des champs alternatifs et des placeholders");
         
         function formatRichText(shape, textWithMarkdown) {
             if (!textWithMarkdown) {
                 shape.getText().setText("");
                 return;
             }
+            
             var textRange = shape.getText();
-            var cleanText = textWithMarkdown.replace(/\*\*/g, ""); 
+            textRange.setText(textWithMarkdown);
             
-            textRange.setText(cleanText);
-            
-            var match;
+            var textStr = textRange.asString();
             var regex = /\*\*([^*]+)\*\*/g;
-            var offset = 0;
+            var matches = [];
+            var match;
             
-            while ((match = regex.exec(textWithMarkdown)) !== null) {
-                var wordLength = match[1].length;
-                var startIndex = match.index - offset;
-                var endIndex = startIndex + wordLength;
+            while ((match = regex.exec(textStr)) !== null) {
+                matches.push({
+                    start: match.index,
+                    text: match[1],
+                    length: match[0].length
+                });
+            }
+            
+            for (var j = matches.length - 1; j >= 0; j--) {
+                var m = matches[j];
+                var rangeToReplace = textRange.getRange(m.start, m.start + m.length);
+                rangeToReplace.setText(m.text);
                 
-                var targetRange = textRange.getRange(startIndex, endIndex);
-                targetRange.getTextStyle().setBold(true);
-                offset += 4;
+                var newRange = textRange.getRange(m.start, m.start + m.text.length);
+                newRange.getTextStyle().setBold(true);
             }
         }
 
@@ -627,24 +635,31 @@ function exporterFocusMotCleSlides() {
                 var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
 
-                if (titleRaw.indexOf('FOCUS_INTENTION_DESC') !== -1 || descRaw.indexOf('FOCUS_INTENTION_DESC') !== -1) {
-                    var varDesc = props['FOCUS_INTENTION_DESC'] || "";
-                    if (shape.getText) {
-                        shape.getText().setText(varDesc);
+                var isAltTextMatched = false;
+                for (var altKey in altTextMapping) {
+                    if (titleRaw.indexOf(altKey) !== -1 || descRaw.indexOf(altKey) !== -1) {
+                        Logger.log("Détection d'un champ alternatif : " + altKey);
+                        formatRichText(shape, altTextMapping[altKey]);
+                        isAltTextMatched = true;
+                        break;
                     }
                 }
 
-                var targetKey = null;
-                if (shapeText && richTextMapping[shapeText] !== undefined) {
-                    targetKey = shapeText;
-                } else if (richTextMapping[titleRaw] !== undefined) {
-                    targetKey = titleRaw;
-                } else if (richTextMapping[descRaw] !== undefined) {
-                    targetKey = descRaw;
-                }
-
-                if (targetKey && targetKey !== 'FOCUS_INTENTION_DESC') {
-                    formatRichText(shape, richTextMapping[targetKey]);
+                if (!isAltTextMatched && shapeText) {
+                    var hasPlaceholder = false;
+                    var newShapeText = shapeText;
+                    
+                    for (var phKey in placeholderMapping) {
+                        if (newShapeText.indexOf(phKey) !== -1) {
+                            hasPlaceholder = true;
+                            newShapeText = newShapeText.split(phKey).join(placeholderMapping[phKey]);
+                            Logger.log("Détection du placeholder : " + phKey);
+                        }
+                    }
+                    
+                    if (hasPlaceholder) {
+                        formatRichText(shape, newShapeText);
+                    }
                 }
 
                 var matchSvgProp = null;
@@ -658,29 +673,28 @@ function exporterFocusMotCleSlides() {
 
                 if (matchSvgProp) {
                     try {
-                        Logger.log("Traitement d'une image SVG détectée");
-                        var svgBlob = Utilities.newBlob(matchSvgProp, MimeType.SVG, "image.svg");
-                        var response = UrlFetchApp.fetch("https://v2.convertapi.com/convert/svg/to/png?Secret=dummy", {
+                        Logger.log("Traitement d'une image SVG détectée : conversion via API");
+                        var response = UrlFetchApp.fetch("https://quickchart.io/svg-to-png", {
                             method: "post",
-                            payload: { File: svgBlob },
+                            contentType: "application/json",
+                            payload: JSON.stringify({ svg: matchSvgProp }),
                             muteHttpExceptions: true
                         });
                         
                         if (response.getResponseCode() === 200) {
-                            var json = JSON.parse(response.getContentText());
-                            if (json.Files && json.Files[0]) {
-                                var pngUrl = json.Files[0].Url;
-                                var pngBlob = UrlFetchApp.fetch(pngUrl).getBlob();
-                                var newImg = slide.insertImage(pngBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                                newImg.setTitle(titleRaw);
-                                newImg.setDescription(descRaw);
-                                shape.remove();
-                            }
+                            var pngBlob = response.getBlob();
+                            var newImg = slide.insertImage(pngBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                            newImg.setTitle(titleRaw);
+                            newImg.setDescription(descRaw);
+                            shape.remove();
+                            Logger.log("Succès de la conversion SVG en PNG");
                         } else {
                             Logger.log("Échec de la conversion API (code " + response.getResponseCode() + "), tentative d'insertion en fallback");
                             try {
+                                var svgBlob = Utilities.newBlob(matchSvgProp, MimeType.SVG, "image.svg");
                                 slide.insertImage(svgBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
                                 shape.remove();
+                                Logger.log("Succès de l'insertion SVG en fallback");
                             } catch (errFallback) {
                                 Logger.log("Erreur lors de l'insertion SVG en fallback (silencieuse) : " + errFallback.message);
                             }
