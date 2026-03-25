@@ -87,7 +87,27 @@ function chargerConfigurationPreAudit() {
         semantique2: props['focus_semantique_texte_2'] || "",
         semantique2Html: props['focus_semantique_texte_2'] || "",
         semantique3: props['focus_semantique_texte_3'] || "",
-        semantique3Html: props['focus_semantique_texte_3'] || ""
+        semantique3Html: props['focus_semantique_texte_3'] || "",
+
+        // BLOC MANQUANT SLIDE 2 AJOUTÉ ICI :
+        gapTitre1: props['FOCUS_GAP_TITRE_1'] || "",
+        gapDesc1: props['FOCUS_GAP_DESC_1'] || "",
+        gapDesc1Html: props['FOCUS_GAP_DESC_1'] || "",
+        gapTitre2: props['FOCUS_GAP_TITRE_2'] || "",
+        gapDesc2: props['FOCUS_GAP_DESC_2'] || "",
+        gapDesc2Html: props['FOCUS_GAP_DESC_2'] || "",
+        gapTitre3: props['FOCUS_GAP_TITRE_3'] || "",
+        gapDesc3: props['FOCUS_GAP_DESC_3'] || "",
+        gapDesc3Html: props['FOCUS_GAP_DESC_3'] || "",
+
+        reco1: props['FOCUS_RECO_1'] || "",
+        reco1Html: props['FOCUS_RECO_1'] || "",
+        reco2: props['FOCUS_RECO_2'] || "",
+        reco2Html: props['FOCUS_RECO_2'] || "",
+        reco3: props['FOCUS_RECO_3'] || "",
+        reco3Html: props['FOCUS_RECO_3'] || "",
+        reco4: props['FOCUS_RECO_4'] || "",
+        reco4Html: props['FOCUS_RECO_4'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -1764,6 +1784,25 @@ function exporterFocusMotCleSlides() {
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
+        // --- DÉBUT DU NETTOYAGE DES URLS ---
+        
+        // 1. Nettoyage URL Client : on ne garde que le chemin (ex: /definition-de-la-naturopathie/)
+        var rawClientUrl = props['TARGET_URL_CLIENT'] || "";
+        var cleanClientUrl = rawClientUrl;
+        if (rawClientUrl !== "" && rawClientUrl !== "-") {
+            var matchPath = rawClientUrl.match(/^https?:\/\/[^\/]+(.*)$/i);
+            cleanClientUrl = matchPath ? (matchPath[1] || "/") : rawClientUrl;
+        }
+
+        // 2. Nettoyage URL Concurrent : on enlève juste le protocole (ex: isupnat-naturopathie.fr/la-naturopathie/)
+        var rawCompUrl = props['TARGET_URL_CONCURRENT'] || "";
+        var cleanCompUrl = rawCompUrl;
+        if (rawCompUrl !== "" && rawCompUrl !== "-") {
+            cleanCompUrl = rawCompUrl.replace(/^https?:\/\//i, "");
+        }
+        
+        // --- FIN DU NETTOYAGE DES URLS ---
+
         // 1. Mapping des clés simples (titres et données de base du focus)
         var simpleMapping = {
             'SERP_ELEMENT_TITRE_1': props['SERP_ELEMENT_TITRE_1'] || "",
@@ -1774,12 +1813,12 @@ function exporterFocusMotCleSlides() {
             'FOCUS_GAP_TITRE_1': props['FOCUS_GAP_TITRE_1'] || "",
             'FOCUS_GAP_TITRE_2': props['FOCUS_GAP_TITRE_2'] || "",
             'FOCUS_GAP_TITRE_3': props['FOCUS_GAP_TITRE_3'] || "",
-            // Nouvelles données du focus mot-clé
+            // Nouvelles données du focus mot-clé avec les URLs nettoyées
             'TARGET_KW': props['TARGET_KW'] || "",
             'TARGET_KW_SV': props['TARGET_KW_SV'] || "",
-            'TARGET_URL_CLIENT': props['TARGET_URL_CLIENT'] || "",
+            'TARGET_URL_CLIENT': cleanClientUrl,
             'TARGET_KW_CLIENT_POS': props['TARGET_KW_CLIENT_POS'] || "",
-            'TARGET_URL_CONCURRENT': props['TARGET_URL_CONCURRENT'] || "",
+            'TARGET_URL_CONCURRENT': cleanCompUrl,
             'TARGET_KW_CONCURRENT_POS': props['TARGET_KW_CONCURRENT_POS'] || ""
         };
 

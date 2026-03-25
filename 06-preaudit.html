@@ -367,20 +367,6 @@
                             <button class="btn btn-continuer" id="btn-save-focus" onclick="sauvegarderFocusMotCle()" style="padding: 8px 15px; font-size: 13px;">💾 Enregistrer le focus</button>
                         </div>
                     </div>
-                    
-                    <div class="row" style="margin-top: 15px; align-items: flex-end;">
-                        <div class="col" style="flex: 0 0 250px;">
-                            <label class="input-label" for="focus-kw">Mot-clé cible</label>
-                            <input type="text" id="focus-kw" placeholder="Ex : agence seo paris">
-                        </div>
-                        <div style="margin-bottom: 5px;">
-                            <button class="btn" id="btn-search-kw" onclick="lancerRechercheMotCle()" style="padding: 8px 12px;" title="Rechercher les données">🔍</button>
-                        </div>
-                        <div class="col" style="flex: 0 0 150px; margin-left: 15px;">
-                            <label class="input-label" for="focus-vol">Volume de recherche</label>
-                            <input type="text" id="focus-vol" placeholder="Ex : 1500">
-                        </div>
-                    </div>
 
                     <div class="row" style="margin-top: 15px; align-items: flex-end;">
                         <div class="col" style="flex: 0 0 250px;">
@@ -392,7 +378,7 @@
                         </div>
                         <div class="col" style="flex: 0 0 150px; margin-left: 15px;">
                             <label class="input-label" for="focus-vol">Volume de recherche</label>
-                            <input type="text" id="focus-vol" placeholder="Ex : 1500" readonly style="background-color: #f1f3f4; cursor: not-allowed;">
+                            <input type="text" id="focus-vol" readonly style="background-color: #f1f3f4; cursor: not-allowed;">
                         </div>
                     </div>
 
@@ -661,7 +647,10 @@
                             if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
                             if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
                             if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
-                            if (config.focusLocalisation) document.getElementById('focus-localisation').value = config.focusLocalisation;
+                            if (config.focusLocalisation) {
+                                var locVal = config.focusLocalisation;
+                                document.getElementById('focus-localisation').value = (locVal.toLowerCase() === "france") ? "" : locVal;
+                            }
                             if (config.focusClientPos) {
                                 var elPosCli = document.getElementById('focus-client-pos');
                                 if (elPosCli) elPosCli.value = config.focusClientPos;
@@ -1045,18 +1034,18 @@
                 var ceTrafic   = document.getElementById('ce-trafic');
 
                 var besoinHtml       = ceBesoin.innerHTML;
-                var besoinTexte      = ceBesoin.dataset.raw || ceBesoin.innerText;
+                var besoinTexte      = getRawMarkdownFromCE('ce-besoin');
                 var solutionHtml     = ceSolution.innerHTML;
-                var solutionTexte    = ceSolution.dataset.raw || ceSolution.innerText;
+                var solutionTexte    = getRawMarkdownFromCE('ce-solution');
                 var titreSemrush     = document.getElementById('ia-titre').value;
                 var analyseKwHtml    = ceKw.innerHTML;
-                var analyseKwTexte   = ceKw.dataset.raw || ceKw.innerText;
+                var analyseKwTexte   = getRawMarkdownFromCE('ce-kw');
                 var analyseTraficHtml  = ceTrafic.innerHTML;
-                var analyseTraficTexte = ceTrafic.dataset.raw || ceTrafic.innerText;
+                var analyseTraficTexte = getRawMarkdownFromCE('ce-trafic');
 
                 var hasBesoin  = besoinTexte.trim() !== '' || solutionTexte.trim() !== '';
                 var hasSemrush = document.getElementById('ia-result-card').style.display !== 'none' && titreSemrush.trim() !== '';
-
+                
                 btn.disabled = true;
                 msg.style.color = '#5f6368';
                 msg.innerText = "";
@@ -1142,13 +1131,13 @@
             function autoSaveEtatLieux() {
                 var data = {
                     titreTopThematiques: document.getElementById('ia-titre-top') ? document.getElementById('ia-titre-top').value : "",
-                    analyseTopThematiques: document.getElementById('ce-analyse-top') ? (document.getElementById('ce-analyse-top').dataset.raw || document.getElementById('ce-analyse-top').innerText) : "",
+                    analyseTopThematiques: document.getElementById('ce-analyse-top') ? getRawMarkdownFromCE('ce-analyse-top') : "",
                     titreFlopThematiques: document.getElementById('ia-titre-flop') ? document.getElementById('ia-titre-flop').value : "",
-                    analyseFlopThematiques: document.getElementById('ce-analyse-flop') ? (document.getElementById('ce-analyse-flop').dataset.raw || document.getElementById('ce-analyse-flop').innerText) : "",
+                    analyseFlopThematiques: document.getElementById('ce-analyse-flop') ? getRawMarkdownFromCE('ce-analyse-flop') : "",
                     titreTopSegments: document.getElementById('ia-titre-segments-top') ? document.getElementById('ia-titre-segments-top').value : "",
-                    analyseTopSegments: document.getElementById('ce-analyse-segments-top') ? (document.getElementById('ce-analyse-segments-top').dataset.raw || document.getElementById('ce-analyse-segments-top').innerText) : "",
+                    analyseTopSegments: document.getElementById('ce-analyse-segments-top') ? getRawMarkdownFromCE('ce-analyse-segments-top') : "",
                     titreFlopSegments: document.getElementById('ia-titre-segments-flop') ? document.getElementById('ia-titre-segments-flop').value : "",
-                    analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? (document.getElementById('ce-analyse-segments-flop').dataset.raw || document.getElementById('ce-analyse-segments-flop').innerText) : ""
+                    analyseFlopSegments: document.getElementById('ce-analyse-segments-flop') ? getRawMarkdownFromCE('ce-analyse-segments-flop') : ""
                 };
                 google.script.run.sauvegarderAnalysesEtatLieux(data);
                 
@@ -1179,6 +1168,22 @@
                 var el = document.getElementById(elementId);
                 el.innerHTML = renderMarkupToHtml(rawText);
                 el.dataset.raw = rawText;
+            }
+
+            // NOUVELLE FONCTION POUR CAPTER LES ÉDITIONS MANUELLES ET LE GRAS
+            function getRawMarkdownFromCE(elementId) {
+                var el = document.getElementById(elementId);
+                if (!el) return "";
+                var clone = el.cloneNode(true);
+                
+                // Reconvertir le gras (HTML) en markdown (**)
+                var strongs = clone.querySelectorAll('strong, b');
+                strongs.forEach(function(node) {
+                    node.replaceWith("**" + node.textContent + "**");
+                });
+                
+                var text = clone.innerText || clone.textContent || "";
+                return text.trim();
             }
 
             // ========================== ONGLET 3 : DIAGNOSTIC ==========================
@@ -2172,44 +2177,44 @@
                     
                     // Bloc 2 : Intention
                     intentionTitre: document.getElementById('intention-titre').value,
-                    intentionDesc: document.getElementById('intention-desc').dataset.raw || document.getElementById('intention-desc').innerText,
+                    intentionDesc: getRawMarkdownFromCE('intention-desc'),
                     intentionDescHtml: document.getElementById('intention-desc').innerHTML,
                     
                     // Bloc 3 : Standard
-                    standard1: document.getElementById('standard-1').dataset.raw || document.getElementById('standard-1').innerText,
+                    standard1: getRawMarkdownFromCE('standard-1'),
                     standard1Html: document.getElementById('standard-1').innerHTML,
-                    standard2: document.getElementById('standard-2').dataset.raw || document.getElementById('standard-2').innerText,
+                    standard2: getRawMarkdownFromCE('standard-2'),
                     standard2Html: document.getElementById('standard-2').innerHTML,
-                    standard3: document.getElementById('standard-3').dataset.raw || document.getElementById('standard-3').innerText,
+                    standard3: getRawMarkdownFromCE('standard-3'),
                     standard3Html: document.getElementById('standard-3').innerHTML,
                     
                     // Bloc 4 : Sémantique
-                    semantique1: document.getElementById('semantique-1').dataset.raw || document.getElementById('semantique-1').innerText,
+                    semantique1: getRawMarkdownFromCE('semantique-1'),
                     semantique1Html: document.getElementById('semantique-1').innerHTML,
-                    semantique2: document.getElementById('semantique-2').dataset.raw || document.getElementById('semantique-2').innerText,
+                    semantique2: getRawMarkdownFromCE('semantique-2'),
                     semantique2Html: document.getElementById('semantique-2').innerHTML,
-                    semantique3: document.getElementById('semantique-3').dataset.raw || document.getElementById('semantique-3').innerText,
+                    semantique3: getRawMarkdownFromCE('semantique-3'),
                     semantique3Html: document.getElementById('semantique-3').innerHTML,
 
                     // Bloc 5 : GAP Analysis
                     gapTitre1: document.getElementById('gap-titre-1').value,
-                    gapDesc1: document.getElementById('gap-desc-1').dataset.raw || document.getElementById('gap-desc-1').innerText,
+                    gapDesc1: getRawMarkdownFromCE('gap-desc-1'),
                     gapDesc1Html: document.getElementById('gap-desc-1').innerHTML,
                     gapTitre2: document.getElementById('gap-titre-2').value,
-                    gapDesc2: document.getElementById('gap-desc-2').dataset.raw || document.getElementById('gap-desc-2').innerText,
+                    gapDesc2: getRawMarkdownFromCE('gap-desc-2'),
                     gapDesc2Html: document.getElementById('gap-desc-2').innerHTML,
                     gapTitre3: document.getElementById('gap-titre-3').value,
-                    gapDesc3: document.getElementById('gap-desc-3').dataset.raw || document.getElementById('gap-desc-3').innerText,
+                    gapDesc3: getRawMarkdownFromCE('gap-desc-3'),
                     gapDesc3Html: document.getElementById('gap-desc-3').innerHTML,
 
                     // Bloc 6 : Recommandations
-                    reco1: document.getElementById('reco-1').dataset.raw || document.getElementById('reco-1').innerText,
+                    reco1: getRawMarkdownFromCE('reco-1'),
                     reco1Html: document.getElementById('reco-1').innerHTML,
-                    reco2: document.getElementById('reco-2').dataset.raw || document.getElementById('reco-2').innerText,
+                    reco2: getRawMarkdownFromCE('reco-2'),
                     reco2Html: document.getElementById('reco-2').innerHTML,
-                    reco3: document.getElementById('reco-3').dataset.raw || document.getElementById('reco-3').innerText,
+                    reco3: getRawMarkdownFromCE('reco-3'),
                     reco3Html: document.getElementById('reco-3').innerHTML,
-                    reco4: document.getElementById('reco-4').dataset.raw || document.getElementById('reco-4').innerText,
+                    reco4: getRawMarkdownFromCE('reco-4'),
                     reco4Html: document.getElementById('reco-4').innerHTML
                 };
                 
@@ -2219,6 +2224,7 @@
                     Object.assign(window.globalConfig, data);
                 }
             }
+            
             function setStepperState(stepId, state) {
                 var step = document.getElementById(stepId);
                 if (step) {
