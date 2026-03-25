@@ -382,17 +382,39 @@
                         </div>
                     </div>
 
+                    <div class="row" style="margin-top: 15px; align-items: flex-end;">
+                        <div class="col" style="flex: 0 0 250px;">
+                            <label class="input-label" for="focus-kw">Mot-clé cible</label>
+                            <input type="text" id="focus-kw" placeholder="Ex : agence seo paris">
+                        </div>
+                        <div style="margin-bottom: 5px;">
+                            <button class="btn" id="btn-search-kw" onclick="lancerRechercheMotCle()" style="padding: 8px 12px;" title="Rechercher les données">🔍</button>
+                        </div>
+                        <div class="col" style="flex: 0 0 150px; margin-left: 15px;">
+                            <label class="input-label" for="focus-vol">Volume de recherche</label>
+                            <input type="text" id="focus-vol" placeholder="Ex : 1500" readonly style="background-color: #f1f3f4; cursor: not-allowed;">
+                        </div>
+                    </div>
+
                     <div class="row" style="align-items: flex-start; margin-top: 10px;">
-                        <div class="col">
-                            <label class="input-label" for="focus-client-url">Page positionnée client ou page cible</label>
+                        <div class="col" style="flex: 2;">
+                            <label class="input-label" for="focus-client-url">Page cible du client</label>
                             <input type="text" id="focus-client-url" placeholder="URL client">
                             <label style="font-size: 13px; color: #5f6368; display: flex; align-items: center; margin-top: 5px; cursor: pointer;">
-                                <input type="checkbox" id="focus-no-page" onchange="toggleFocusClientUrl()"> Pas de page positionnée ou cible
+                                <input type="checkbox" id="focus-no-page" onchange="toggleFocusClientUrl()">Pas de page cible
                             </label>
                         </div>
-                        <div class="col">
-                            <label class="input-label" for="focus-comp-url">Meilleure page concurrente</label>
+                        <div class="col" style="flex: 0 0 100px;">
+                            <label class="input-label" for="focus-client-pos" style="text-align: center;">Pos. client</label>
+                            <input type="text" id="focus-client-pos" placeholder="-" readonly style="background-color: #f1f3f4; cursor: not-allowed; text-align: center; font-weight: bold; color: #1a73e8;">
+                        </div>
+                        <div class="col" style="flex: 2;">
+                            <label class="input-label" for="focus-comp-url">Page cible concurrent</label>
                             <input type="text" id="focus-comp-url" placeholder="URL concurrente">
+                        </div>
+                        <div class="col" style="flex: 0 0 100px;">
+                            <label class="input-label" for="focus-comp-pos" style="text-align: center;">Pos. concurrent</label>
+                            <input type="text" id="focus-comp-pos" placeholder="-" readonly style="background-color: #f1f3f4; cursor: not-allowed; text-align: center; font-weight: bold; color: #d93025;">
                         </div>
                     </div>
 
@@ -624,7 +646,7 @@
                             // Restauration de l'onglet actif
                             if (config.activeTab && config.activeTab !== 'config') {
                                 console.log("Restauration de l'onglet actif : " + config.activeTab);
-                                switchTab(config.activeTab, true); // true = sans re-sauvegarder
+                                switchTab(config.activeTab, true); 
                                 if (config.activeTab === 'etat-lieux') {
                                     console.log("Étape clé : préparation de l'état des lieux au chargement");
                                     preparerOngletEtatLieux();
@@ -640,11 +662,20 @@
                             if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
                             if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
                             if (config.focusLocalisation) document.getElementById('focus-localisation').value = config.focusLocalisation;
+                            if (config.focusClientPos) {
+                                var elPosCli = document.getElementById('focus-client-pos');
+                                if (elPosCli) elPosCli.value = config.focusClientPos;
+                            }
+                            if (config.focusCompPos) {
+                                var elPosComp = document.getElementById('focus-comp-pos');
+                                if (elPosComp) elPosComp.value = config.focusCompPos;
+                            }
                             if (config.focusNoPage === "true") {
                                 var cb = document.getElementById('focus-no-page');
-                                cb.checked = true;
+                                if (cb) cb.checked = true;
                                 toggleFocusClientUrl();
                             }
+                            
                             // Restauration de l'onglet 5 (Analyses détaillées)
                             if (config.intentionTitre || config.standard1 || config.serpTitre1) {
                                 // SERP
@@ -731,7 +762,6 @@
                     .withFailureHandler(handleError)
                     .chargerConfigurationPreAudit();
             };
-
             // ========================== NAVIGATION ==========================
 
             function switchTab(tab, silently) {
@@ -2095,7 +2125,9 @@
                         
                         if (res.success) {
                             document.getElementById('focus-vol').value = res.volume || "";
+                            document.getElementById('focus-client-pos').value = res.clientPos || "-";
                             document.getElementById('focus-comp-url').value = res.compUrl || "";
+                            document.getElementById('focus-comp-pos').value = res.compPos || "-";
                             
                             var clientUrl = res.clientUrl || "";
                             var cbNoPage = document.getElementById('focus-no-page');

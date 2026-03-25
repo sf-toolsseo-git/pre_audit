@@ -30,7 +30,7 @@ function chargerConfigurationPreAudit() {
         analyseTraficTexte: props['ANALYSE_SEMRUSH_TRAFIC'] || "",
         activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config",
         analyseThemeTopTitre: props['TITRE_SLIDE_THEMATIQUETOP_CLIENT'] || "",
-        analyseThemeTop: props['ANALYSE_THEMATIQUETOP_CLIENT_1'] || "", // Using _1 as placeholder for full analysis
+        analyseThemeTop: props['ANALYSE_THEMATIQUETOP_CLIENT_1'] || "",
         analyseThemeFlopTitre: props['TITRE_SLIDE_THEMATIQUEFLOP_CLIENT'] || "",
         analyseThemeFlop: props['ANALYSE_THEMATIQUEFLOP_CLIENT_1'] || "",
         analyseSegmentTopTitre: props['TITRE_SLIDE_MCTOP_CLIENT'] || "",
@@ -38,7 +38,6 @@ function chargerConfigurationPreAudit() {
         analyseSegmentFlopTitre: props['TITRE_SLIDE_MCFLOP_CLIENT'] || "",
         analyseSegmentFlop: props['ANALYSE_MCFLOP_CLIENT_1'] || "",
         
-        // Ajout des concurrents pour que le HTML puisse faire la liaison avec les favicons
         competitorName1: props['CONF_COMP_NAME_1'] || "",
         competitor1: props['CONF_COMP_URL_1'] || "",
         competitorName2: props['CONF_COMP_NAME_2'] || "",
@@ -50,15 +49,15 @@ function chargerConfigurationPreAudit() {
         competitorName5: props['CONF_COMP_NAME_5'] || "",
         competitor5: props['CONF_COMP_URL_5'] || "",
         
-        // Focus mot-clé
         focusKw: props['TARGET_KW'] || "",
         focusVol: props['TARGET_KW_SV'] || "",
         focusClientUrl: props['TARGET_URL_CLIENT'] || "",
+        focusClientPos: props['TARGET_KW_CLIENT_POS'] || "-",
         focusNoPage: props['TARGET_KW_CLIENT_POS'] === "-" ? "true" : "false",
         focusCompUrl: props['TARGET_URL_CONCURRENT'] || "",
+        focusCompPos: props['TARGET_KW_CONCURRENT_POS'] || "-",
         focusLocalisation: props['TARGET_LOCALISATION'] || "",
         
-        // Nouveaux champs granulaires
         serpTitre1: props['SERP_ELEMENT_TITRE_1'] || "",
         serpDesc1: props['SERP_ELEMENT_DESC_1'] || "",
         serpSvg1: props['PLACEHOLDER_SERPELEMENT_1'] || "",
@@ -74,7 +73,7 @@ function chargerConfigurationPreAudit() {
         
         intentionTitre: props['FOCUS_INTENTION_TITRE'] || "",
         intentionDesc: props['FOCUS_INTENTION_DESC'] || "",
-        intentionDescHtml: props['FOCUS_INTENTION_DESC'] || "", // On triche avec le texte brut pour le chargement s'il n'y a pas de HTML distinct stocké
+        intentionDescHtml: props['FOCUS_INTENTION_DESC'] || "",
         
         standard1: props['focus_standard_texte_1'] || "",
         standard1Html: props['focus_standard_texte_1'] || "",
@@ -112,24 +111,28 @@ function recupererDetailsMotCle(motCle) {
     }
     
     var headers = data[0];
-    
-    // Identifier les colonnes "URL "
     var urlClientIdx = -1;
+    var posClientIdx = -1;
     var urlCompIndices = [];
     var posCompIndices = [];
     
     var props = PropertiesService.getScriptProperties().getProperties();
     var clientName = props['CONF_CLIENT_NAME'] || "Client";
-    
+
     for (var j = 0; j < headers.length; j++) {
         var h = String(headers[j]);
         if (h.indexOf("URL ") === 0) {
             var entName = h.substring(4).trim();
             if (entName === clientName || (urlClientIdx === -1 && entName === "Client")) {
                 urlClientIdx = j;
+                for (var c = 0; c < headers.length; c++) {
+                    if (String(headers[c]) === "Pos " + entName) {
+                        posClientIdx = c;
+                        break;
+                    }
+                }
             } else {
                 urlCompIndices.push(j);
-                // Trouver la position correspondante
                 for (var c = 0; c < headers.length; c++) {
                     if (String(headers[c]) === "Pos " + entName) {
                         posCompIndices.push({ posIdx: c, urlIdx: j });
@@ -140,16 +143,18 @@ function recupererDetailsMotCle(motCle) {
         }
     }
     
-    Logger.log("Index URL Client : " + urlClientIdx);
-    Logger.log("Index Positions Concurrents : " + JSON.stringify(posCompIndices));
+    Logger.log("Index URL Client : " + urlClientIdx + " | Pos Client : " + posClientIdx);
     
     var kwLower = motCle.toLowerCase();
     for (var i = 1; i < data.length; i++) {
         var row = data[i];
         if (String(row[0]).trim().toLowerCase() === kwLower) {
             Logger.log("Match trouvé à la ligne : " + (i + 1));
+            
             var volume = row[1];
             var clientUrl = urlClientIdx > -1 ? String(row[urlClientIdx]).trim() : "";
+            var clientPos = posClientIdx > -1 ? parseInt(row[posClientIdx]) : 999;
+            if (isNaN(clientPos) || clientPos <= 0) clientPos = "-";
             
             var bestCompUrl = "";
             var bestCompPos = 9999;
@@ -163,14 +168,16 @@ function recupererDetailsMotCle(motCle) {
             }
             
             if (bestCompUrl === "-" || bestCompUrl === "") bestCompUrl = "";
-            
+            if (bestCompPos === 9999) bestCompPos = "-";
+
             var result = {
                 success: true,
                 volume: volume,
                 clientUrl: clientUrl,
-                compUrl: bestCompUrl
+                clientPos: clientPos,
+                compUrl: bestCompUrl,
+                compPos: bestCompPos
             };
-            
             Logger.log("Résultat : " + JSON.stringify(result));
             return result;
         }
