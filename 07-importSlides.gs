@@ -14,27 +14,28 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
         var slideTexteBesoin = texteBesoin.replace(/\n/g, '\n\n');
         var slideTexteSolution = texteSolution.replace(/\n/g, '\n\n');
         
-        Logger.log("Recherche des tags TAG_SLIDE_BESOIN et TAG_SLIDE_SOLUTION");
+        Logger.log("Recherche des tags TAG_SLIDE_BESOIN et TAG_SLIDE_SOLUTION via description");
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
             
             shapes.forEach(function(shape) {
-                var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
-
                 var targetKey = null;
-                // Détection via le texte alternatif en majuscule
-                if (titleRaw === "TAG_SLIDE_BESOIN" || descRaw === "TAG_SLIDE_BESOIN") {
+
+                // Détection via le texte alternatif en majuscule UNIQUEMENT (Cas 1)
+                if (descRaw === "TAG_SLIDE_BESOIN") {
                     targetKey = "besoin";
-                } else if (titleRaw === "TAG_SLIDE_SOLUTION" || descRaw === "TAG_SLIDE_SOLUTION") {
+                } else if (descRaw === "TAG_SLIDE_SOLUTION") {
                     targetKey = "solution";
                 }
 
                 if (targetKey === "besoin") {
+                    Logger.log("Forme cible 'besoin' trouvée, écrasement du texte");
                     shape.getText().setText(slideTexteBesoin);
                     tagsTrouves++;
                 } else if (targetKey === "solution") {
+                    Logger.log("Forme cible 'solution' trouvée, écrasement du texte");
                     shape.getText().setText(slideTexteSolution);
                     tagsTrouves++;
                 }
@@ -65,25 +66,34 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        // Helper pour appliquer le style "Open Sans", taille 18, et traiter les termes en gras orange
-        function formatRichText(shape, textWithStars) {
+        // Fonction utilitaire non destructive pour *mot* (gras orange)
+        function formatRichTextSemrush(shape) {
             var textRange = shape.getText();
-            var cleanText = textWithStars.replace(/\*/g, ""); 
-            
-            textRange.setText(cleanText);
-            textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(16).setForegroundColor("#000000").setBold(false);
-
-            var match;
+            var textStr = textRange.asString();
             var regex = /\*([^*]+)\*/g;
-            var offset = 0;
-            while ((match = regex.exec(textWithStars)) !== null) {
-                var wordLength = match[1].length;
-                var startIndex = match.index - offset;
-                var endIndex = startIndex + wordLength;
+            var matches = [];
+            var match;
+            
+            while ((match = regex.exec(textStr)) !== null) {
+                matches.push({
+                    start: match.index,
+                    text: match[1],
+                    length: match[0].length
+                });
+            }
+            
+            for (var i = matches.length - 1; i >= 0; i--) {
+                var m = matches[i];
+                var endAsteriskIndex = m.start + m.text.length + 1;
                 
-                var targetRange = textRange.getRange(startIndex, endIndex);
-                targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                offset += 2; 
+                // Effacer l'astérisque final
+                textRange.getRange(endAsteriskIndex, endAsteriskIndex + 1).clear();
+                // Effacer l'astérisque initial
+                textRange.getRange(m.start, m.start + 1).clear();
+                
+                // Appliquer le style sur le texte restant
+                var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
             }
         }
 
@@ -93,42 +103,39 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
             var shapes = slide.getShapes();
             
             shapes.forEach(function(shape) {
-                
-                var shapeText = shape.getText().asString().trim();
-                var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
 
-                // Remplacement du titre brut
-                if (shapeText === "TITRE_SLIDE_SEMRUSH" || titleRaw === "TITRE_SLIDE_SEMRUSH" || descRaw === "TITRE_SLIDE_SEMRUSH") {
+                // Cas 1 : Description correspondante -> Écrasement total
+                if (descRaw === "TITRE_SLIDE_SEMRUSH") {
+                    Logger.log("Remplacement du titre TITRE_SLIDE_SEMRUSH");
                     shape.getText().setText(titre);
                 }
                 
-                // Remplacement des analyses avec formatage enrichi
-                if (shapeText === "ANALYSE_SEMRUSH_MOT_CLE" || titleRaw === "ANALYSE_SEMRUSH_MOT_CLE" || descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
-                    formatRichText(shape, texteKw);
+                if (descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
+                    Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_MOT_CLE");
+                    shape.getText().setText(texteKw);
+                    formatRichTextSemrush(shape);
                 }
                 
-                if (shapeText === "ANALYSE_SEMRUSH_TRAFIC" || titleRaw === "ANALYSE_SEMRUSH_TRAFIC" || descRaw === "ANALYSE_SEMRUSH_TRAFIC") {
-                    formatRichText(shape, texteTrafic);
+                if (descRaw === "ANALYSE_SEMRUSH_TRAFIC") {
+                    Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_TRAFIC");
+                    shape.getText().setText(texteTrafic);
+                    formatRichTextSemrush(shape);
                 }
 
-                // Remplacement des images avec les nouveaux placeholders
-                if (titleRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE" || descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE" || shapeText === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE") {
+                // Cas 1 sur Image (Placeholders)
+                if (descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE") {
                     Logger.log("Remplacement image mots-clés");
                     var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
                     var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                    
-                    newImageKw.setTitle(titleRaw);
                     newImageKw.setDescription(descRaw);
                     shape.remove();
                 }
                 
-                if (titleRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC" || descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC" || shapeText === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC") {
+                if (descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC") {
                     Logger.log("Remplacement image trafic");
                     var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
                     var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                    
-                    newImageTrafic.setTitle(titleRaw);
                     newImageTrafic.setDescription(descRaw);
                     shape.remove();
                 }
@@ -152,18 +159,15 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        // 1. Extraction des données
         var clientKpi = diagnosticData.kpis.find(function(k) { return k.isClient; });
         if (!clientKpi) throw new Error("Données client introuvables dans le diagnostic.");
 
         var intentStats = diagnosticData.intentStats;
         var totalTop10 = clientKpi.top10;
-        // 2. Calcul des pourcentages (Parts de l'intention dans le top 10 global du client)
         var transacPctDec = totalTop10 > 0 ? (intentStats.transac.top10 / totalTop10) : 0;
         var infoPctDec = totalTop10 > 0 ? (intentStats.info.top10 / totalTop10) : 0;
         
-        // 3. Préparation des tableaux triés (Thèmes et Segments)
-        Logger.log("Préparation des tableaux triés pour l'injection...");
+        Logger.log("Préparation des données pour injection...");
         var topThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.TEC - a.TEC || b.top10 - a.top10 || b.top3 - a.top3; }).slice(0, 3) : [];
         var flopThemes = diagnosticData.themeStats ? diagnosticData.themeStats.slice().sort(function(a, b) { return b.DDT - a.DDT; }).slice(0, 3) : [];
         var acquis = diagnosticData.acquis ? diagnosticData.acquis.slice(0, 5) : [];
@@ -171,7 +175,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         var pertes = diagnosticData.pertes ? diagnosticData.pertes.slice(0, 5) : [];
         var territoires = diagnosticData.territoires ? diagnosticData.territoires.slice(0, 5) : [];
         
-        // Fonctions utilitaires pour éviter les erreurs "undefined"
         function safeNum(val) {
             return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
         }
@@ -179,38 +182,25 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             return (val !== null && val !== undefined && !isNaN(val)) ? Number(val).toLocaleString('fr-FR') : "-";
         }
 
-        // 4. Mapping textuel & dictionnaire de remplacement
-        // Mapping paysage concurrentiel
         var mappingComp = {};
         if (concurrenceData) {
             mappingComp['TITRE_SLIDE_CONCURRENCE'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
-            // Client
             if (concurrenceData.client) {
                 mappingComp['NOM_CLIENT'] = concurrenceData.client.name;
                 mappingComp['VALEUR_TOP10_CLIENT'] = safeNum(concurrenceData.client.top10);
                 mappingComp['VALEUR_PAGES_CLIENT'] = safeNum(concurrenceData.client.pages);
             }
-            // Leader
             if (concurrenceData.leader) {
                 mappingComp['NOM_LEADER'] = concurrenceData.leader.name;
                 mappingComp['VALEUR_TOP10_LEADER'] = safeNum(concurrenceData.leader.top10);
                 mappingComp['VALEUR_PAGES_LEADER'] = safeNum(concurrenceData.leader.pages);
-            } else {
-                mappingComp['NOM_LEADER'] = "";
-                mappingComp['VALEUR_TOP10_LEADER'] = "";
-                mappingComp['VALEUR_PAGES_LEADER'] = "";
             }
-            // Concurrents
             for (var c = 1; c <= 4; c++) {
                 var comp = concurrenceData.comps && concurrenceData.comps[c-1] ? concurrenceData.comps[c-1] : null;
                 if (comp) {
                     mappingComp['NOM_COMP' + c] = comp.name;
                     mappingComp['VALEUR_TOP10_COMP' + c] = safeNum(comp.top10);
                     mappingComp['VALEUR_PAGES_COMP' + c] = safeNum(comp.pages);
-                } else {
-                    mappingComp['NOM_COMP' + c] = "";
-                    mappingComp['VALEUR_TOP10_COMP' + c] = "";
-                    mappingComp['VALEUR_PAGES_COMP' + c] = "";
                 }
             }
         }
@@ -229,7 +219,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         };
         
         var replaceDict = {};
-        // Thèmes Top (1 à 3)
         for (var i = 1; i <= 3; i++) {
             var thm = topThemes[i - 1];
             replaceDict["{{top_thm_client_" + i + "}}"] = thm ? thm.name : "-";
@@ -239,7 +228,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             replaceDict["{{top_thm_client_ddt_" + i + "}}"] = thm ? safeNum(thm.DDT) : "-";
         }
 
-        // Thèmes Flop (1 à 3)
         for (var i = 1; i <= 3; i++) {
             var thm = flopThemes[i - 1];
             replaceDict["{{flop_thm_client_" + i + "}}"] = thm ? thm.name : "-";
@@ -249,7 +237,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             replaceDict["{{flop_thm_client_ddt_" + i + "}}"] = thm ? safeNum(thm.DDT) : "-";
         }
 
-        // Segments (1 à 5)
         for (var i = 1; i <= 5; i++) {
             var acq = acquis[i - 1];
             replaceDict["{{top_mc_client_" + i + "}}"] = acq ? acq.kw : "-";
@@ -276,7 +263,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             replaceDict["{{tap_mc_conc_pos_" + i + "}}"] = terr ? safePos(terr.bestPos) : "-";
         }
 
-        // Helper pour découper l'analyse IA en 3 blocs distincts
         function splitAnalysis(text) {
             if (!text) return ["", "", ""];
             var parts = text.split(/(?:^|\n)[•-]\s*/).map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
@@ -291,18 +277,13 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         var topSegParts = splitAnalysis(iaData ? iaData.analyseTopSegments : "");
         var flopSegParts = splitAnalysis(iaData ? iaData.analyseFlopSegments : "");
 
-        // ==========================================
-        // SAUVEGARDE EN BASE DES VARIABLES DYNAMIQUES
-        // ==========================================
         var propsToSave = {};
         for (var k in mapping) { propsToSave[k] = String(mapping[k]); }
         for (var k in mappingComp) { propsToSave[k] = String(mappingComp[k]); }
-        
         for (var k in replaceDict) {
             var cleanKey = k.replace(/[{}]/g, '');
             propsToSave[cleanKey] = String(replaceDict[k]);
         }
-
         for (var idx = 1; idx <= 3; idx++) {
             propsToSave["ANALYSE_THEMATIQUETOP_CLIENT_" + idx] = topThemParts[idx-1];
             propsToSave["ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx] = flopThemParts[idx-1];
@@ -310,7 +291,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             propsToSave["ANALYSE_MCFLOP_CLIENT_" + idx] = flopSegParts[idx-1];
         }
 
-        // Forçage de la valeur "IMAGE" pour tous les placeholders de logos afin qu'ils apparaissent correctement dans CONFIG
         propsToSave["PLACEHOLDER_LOGO_CLIENT"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_LEADER"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_COMP1"] = "IMAGE";
@@ -320,87 +300,113 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
         PropertiesService.getScriptProperties().setProperties(propsToSave);
         syncPropertiesToConfigSheet();
-        // ==========================================
 
-        Logger.log("Remplacement massif des tags de tableaux en cours...");
-        for (var key in replaceDict) {
-            presentation.replaceAllText(key, String(replaceDict[key]));
-        }
-        Logger.log("Remplacement massif terminé.");
-        
-        // Fonction utilitaire de formatage pour l'IA
-        function formatRichText(shape, textWithStars) {
-            if (!textWithStars) return;
+        // Fonction utilitaire non destructive pour *mot* (gras orange)
+        function formatRichTextGlobal(shape) {
             var textRange = shape.getText();
-            var cleanText = textWithStars.replace(/\*/g, "");
-            
-            textRange.setText(cleanText);
-            textRange.getTextStyle().setFontFamily("Open Sans").setFontSize(18).setForegroundColor("#000000").setBold(false);
-            var match;
+            var textStr = textRange.asString();
             var regex = /\*([^*]+)\*/g;
-            var offset = 0;
-            while ((match = regex.exec(textWithStars)) !== null) {
-                var wordLength = match[1].length;
-                var startIndex = match.index - offset;
-                var endIndex = startIndex + wordLength;
+            var matches = [];
+            var match;
+            
+            while ((match = regex.exec(textStr)) !== null) {
+                matches.push({
+                    start: match.index,
+                    text: match[1],
+                    length: match[0].length
+                });
+            }
+            
+            for (var i = matches.length - 1; i >= 0; i--) {
+                var m = matches[i];
+                var endAsteriskIndex = m.start + m.text.length + 1;
                 
-                var targetRange = textRange.getRange(startIndex, endIndex);
-                targetRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                offset += 2;
+                textRange.getRange(endAsteriskIndex, endAsteriskIndex + 1).clear();
+                textRange.getRange(m.start, m.start + 1).clear();
+                
+                var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
             }
         }
+
+        Logger.log("Parcours minutieux des slides pour Performance Globale");
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
 
-            // Étape A : Remplacement des textes classiques et IA
             shapes.forEach(function(shape) {
-                var shapeText = shape.getText().asString().trim();
-                var titleRaw = shape.getTitle() || "";
+                var shapeText = "";
+                try {
+                    shapeText = shape.getText().asString();
+                } catch(e) {}
                 var descRaw = shape.getDescription() || "";
 
-                // 1. Textes basiques (KPI client & intent)
-                var targetKey = mapping[shapeText] ? shapeText : (mapping[titleRaw] ? titleRaw : (mapping[descRaw] ? descRaw : null));
-
-                if (targetKey) {
-                    shape.getText().setText(mapping[targetKey].toString());
+                // --- Cas 1 : Remplacement direct via description exacte ---
+                if (mapping[descRaw] !== undefined) {
+                    shape.getText().setText(mapping[descRaw].toString());
+                }
+                if (mappingComp[descRaw] !== undefined) {
+                    shape.getText().setText(mappingComp[descRaw].toString());
                 }
 
-                var targetCompKey = mappingComp && mappingComp[shapeText] !== undefined ? shapeText : (mappingComp && mappingComp[titleRaw] !== undefined ? titleRaw : (mappingComp && mappingComp[descRaw] !== undefined ? descRaw : null));
-                if (targetCompKey) {
-                    shape.getText().setText(mappingComp[targetCompKey].toString());
+                // Titres IA
+                if (descRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" && iaData && iaData.titreTopThematiques) {
+                    shape.getText().setText(iaData.titreTopThematiques);
+                }
+                if (descRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" && iaData && iaData.titreFlopThematiques) {
+                    shape.getText().setText(iaData.titreFlopThematiques);
+                }
+                if (descRaw === "TITRE_SLIDE_MCTOP_CLIENT" && iaData && iaData.titreTopSegments) {
+                    shape.getText().setText(iaData.titreTopSegments);
+                }
+                if (descRaw === "TITRE_SLIDE_MCFLOP_CLIENT" && iaData && iaData.titreFlopSegments) {
+                    shape.getText().setText(iaData.titreFlopSegments);
                 }
 
-                // Traitement des favicons du paysage concurrentiel
-                if (concurrenceData && (titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 || shapeText.indexOf("PLACEHOLDER_LOGO_") === 0)) {
-                    var tagParts = titleRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? titleRaw : (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 ? descRaw : shapeText);
+                // Analyses IA découpées
+                for (var idx = 1; idx <= 3; idx++) {
+                    if (descRaw === "ANALYSE_THEMATIQUETOP_CLIENT_" + idx) {
+                        shape.getText().setText(topThemParts[idx-1]);
+                        formatRichTextGlobal(shape);
+                    }
+                    if (descRaw === "ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx) {
+                        shape.getText().setText(flopThemParts[idx-1]);
+                        formatRichTextGlobal(shape);
+                    }
+                    if (descRaw === "ANALYSE_MCTOP_CLIENT_" + idx) {
+                        shape.getText().setText(topSegParts[idx-1]);
+                        formatRichTextGlobal(shape);
+                    }
+                    if (descRaw === "ANALYSE_MCFLOP_CLIENT_" + idx) {
+                        shape.getText().setText(flopSegParts[idx-1]);
+                        formatRichTextGlobal(shape);
+                    }
+                }
+
+                // Placeholders d'images concurrentes
+                if (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0) {
                     var imgUrl = null;
-                    
-                    if (tagParts === "PLACEHOLDER_LOGO_CLIENT" && concurrenceData.client && concurrenceData.client.logoUrl) {
+                    if (descRaw === "PLACEHOLDER_LOGO_CLIENT" && concurrenceData.client && concurrenceData.client.logoUrl) {
                         imgUrl = concurrenceData.client.logoUrl;
-                    } else if (tagParts === "PLACEHOLDER_LOGO_LEADER" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
+                    } else if (descRaw === "PLACEHOLDER_LOGO_LEADER" && concurrenceData.leader && concurrenceData.leader.logoUrl) {
                         imgUrl = concurrenceData.leader.logoUrl;
                     } else {
-                        var m = tagParts.match(/PLACEHOLDER_LOGO_COMP(\d+)/);
+                        var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)/);
                         if (m && m[1]) {
-                            var idx = parseInt(m[1]) - 1;
-                            if (concurrenceData.comps && concurrenceData.comps[idx] && concurrenceData.comps[idx].logoUrl) {
-                                imgUrl = concurrenceData.comps[idx].logoUrl;
+                            var idxComp = parseInt(m[1]) - 1;
+                            if (concurrenceData.comps && concurrenceData.comps[idxComp] && concurrenceData.comps[idxComp].logoUrl) {
+                                imgUrl = concurrenceData.comps[idxComp].logoUrl;
                             }
                         }
                     }
 
                     if (imgUrl) {
                         try {
-                            Logger.log("Téléchargement de l'image : " + imgUrl);
                             var response = UrlFetchApp.fetch(imgUrl, { muteHttpExceptions: true });
                             if (response.getResponseCode() === 200) {
                                 var blob = response.getBlob();
                                 var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                                newImg.setTitle(titleRaw);
                                 newImg.setDescription(descRaw);
-                            } else {
-                                Logger.log("Image ignorée (code " + response.getResponseCode() + ") : " + imgUrl);
                             }
                             shape.remove();
                         } catch (errImg) {
@@ -412,88 +418,52 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                     }
                 }
 
-                // 2. Titres IA
-                if (shapeText === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" || titleRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" || descRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT") {
-                    if (iaData && iaData.titreTopThematiques) shape.getText().setText(iaData.titreTopThematiques);
-                }
-                if (shapeText === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" || titleRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" || descRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT") {
-                    if (iaData && iaData.titreFlopThematiques) shape.getText().setText(iaData.titreFlopThematiques);
-                }
-                if (shapeText === "TITRE_SLIDE_MCTOP_CLIENT" || titleRaw === "TITRE_SLIDE_MCTOP_CLIENT" || descRaw === "TITRE_SLIDE_MCTOP_CLIENT") {
-                    if (iaData && iaData.titreTopSegments) shape.getText().setText(iaData.titreTopSegments);
-                }
-                if (shapeText === "TITRE_SLIDE_MCFLOP_CLIENT" || titleRaw === "TITRE_SLIDE_MCFLOP_CLIENT" || descRaw === "TITRE_SLIDE_MCFLOP_CLIENT") {
-                    if (iaData && iaData.titreFlopSegments) shape.getText().setText(iaData.titreFlopSegments);
+                // --- Cas 2 : Remplacement local de placeholders dans le texte ({{...}}) ---
+                if (shapeText && shapeText.indexOf("{{") !== -1) {
+                    for (var key in replaceDict) {
+                        if (shapeText.indexOf(key) !== -1) {
+                            shape.getText().replaceText(key, String(replaceDict[key]));
+                        }
+                    }
+                    formatRichTextGlobal(shape); // S'il y a du markdown résiduel
                 }
 
-                // 3. Analyses IA découpées en blocs (1, 2, 3)
-                for (var idx = 1; idx <= 3; idx++) {
-                    var tagTopThem = "ANALYSE_THEMATIQUETOP_CLIENT_" + idx;
-                    if (shapeText === tagTopThem || titleRaw === tagTopThem || descRaw === tagTopThem) {
-                        formatRichText(shape, topThemParts[idx-1]);
-                    }
-
-                    var tagFlopThem = "ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx;
-                    if (shapeText === tagFlopThem || titleRaw === tagFlopThem || descRaw === tagFlopThem) {
-                        formatRichText(shape, flopThemParts[idx-1]);
-                    }
-
-                    var tagTopSeg = "ANALYSE_MCTOP_CLIENT_" + idx;
-                    if (shapeText === tagTopSeg || titleRaw === tagTopSeg || descRaw === tagTopSeg) {
-                        formatRichText(shape, topSegParts[idx-1]);
-                    }
-
-                    var tagFlopSeg = "ANALYSE_MCFLOP_CLIENT_" + idx;
-                    if (shapeText === tagFlopSeg || titleRaw === tagFlopSeg || descRaw === tagFlopSeg) {
-                        formatRichText(shape, flopSegParts[idx-1]);
-                    }
-                }
             });
             
-            // Étape B : Traitement des jauges dynamiques (Conservation de l'arrondi)
+            // Jauges (Cas 1 par description)
             var shapesForGauges = slide.getShapes();
             shapesForGauges.forEach(function(shape) {
-                var shapeText = shape.getText().asString().trim();
-                var titleRaw = shape.getTitle() || "";
                 var descRaw = shape.getDescription() || "";
-                
-                var isTransacGauge = (titleRaw === "JAUGE_TRANSAC_TOP10" || descRaw === "JAUGE_TRANSAC_TOP10" || shapeText === "JAUGE_TRANSAC_TOP10");
-                var isInfoGauge = (titleRaw === "JAUGE_INFO_TOP10" || descRaw === "JAUGE_INFO_TOP10" || shapeText === "JAUGE_INFO_TOP10");
+                var isTransacGauge = (descRaw === "JAUGE_TRANSAC_TOP10");
+                var isInfoGauge = (descRaw === "JAUGE_INFO_TOP10");
 
                 var targetGauge = isTransacGauge ? "transac" : (isInfoGauge ? "info" : null);
 
                 if (targetGauge) {
                     var pct = (targetGauge === "transac") ? transacPctDec : infoPctDec;
-
                     var left = shape.getLeft();
                     var top = shape.getTop();
                     var width = shape.getWidth();
 
-                    // 1. Dessiner la jauge verte en DUPLIQUANT la forme originale
                     if (pct > 0) {
                         var fgShape = slide.insertShape(shape);
                         var fillWidth = Math.max(shape.getHeight(), width * pct);
                         fgShape.setWidth(fillWidth);
                         fgShape.setLeft(left);
                         fgShape.setTop(top);
-                        
-                        // Réalignement strict
                         fgShape.getFill().setSolidFill("#00b050");
                         fgShape.getBorder().setTransparent();
                         fgShape.getText().clear();
-                        fgShape.setTitle("");
                         fgShape.setDescription("");
                     }
-
-                    // 2. Transformer la forme originale en fond gris
                     shape.getFill().setSolidFill("#f1f3f4");
                     shape.getBorder().setTransparent();
                     shape.getText().clear();
-                    shape.setTitle("");
                     shape.setDescription("");
                 }
             });
         });
+
         Logger.log("=== FIN : exporterPerformanceGlobalSlides ===");
         return { success: true, url: presentation.getUrl() };
     } catch (e) {
@@ -504,7 +474,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
 function exporterFocusMotCleSlides() {
     try {
-        Logger.log("Début de la fonction exporterFocusMotCleSlides");
+        Logger.log("=== DÉBUT : exporterFocusMotCleSlides ===");
         var props = PropertiesService.getScriptProperties().getProperties();
         var slideId = props['PA_SLIDE_ID'];
 
@@ -532,7 +502,6 @@ function exporterFocusMotCleSlides() {
         var rawCompPos = props['TARGET_KW_CONCURRENT_POS'] || "";
         var formatedCompPos = (rawCompPos && rawCompPos !== "-") ? "Position " + rawCompPos : rawCompPos;
 
-        // Ajout de " rech./mois" pour le volume de recherche
         var rawSv = props['TARGET_KW_SV'] || "";
         var formatedSv = rawSv ? rawSv + " rech./mois" : "";
 
@@ -577,148 +546,137 @@ function exporterFocusMotCleSlides() {
             '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
         };
 
-        Logger.log("Tri des variables pour le remplacement textuel simple");
-        var keysToReplace = Object.keys(simpleMapping);
-        keysToReplace.sort(function(a, b) {
-            return b.length - a.length;
-        });
-
-        Logger.log("Remplacement massif des tags simples avec les variables triées");
-        for (var i = 0; i < keysToReplace.length; i++) {
-            var key = keysToReplace[i];
-            presentation.replaceAllText(key, String(simpleMapping[key]));
-        }
-
-        Logger.log("Avant le traitement des images SVG, des champs alternatifs et des placeholders");
-        
-        function formatRichText(shape, textWithMarkdown) {
-            if (!textWithMarkdown) {
-                shape.getText().setText("");
-                return;
-            }
-            
-            var textRange = shape.getText();
-            textRange.setText(textWithMarkdown);
-            
-            var textStr = textRange.asString();
-            var regex = /\*\*([^*]+)\*\*/g;
-            var matches = [];
-            var match;
-            
-            while ((match = regex.exec(textStr)) !== null) {
-                matches.push({
-                    start: match.index,
-                    text: match[1],
-                    length: match[0].length
-                });
-            }
-            
-            for (var j = matches.length - 1; j >= 0; j--) {
-                var m = matches[j];
-                var rangeToReplace = textRange.getRange(m.start, m.start + m.length);
-                rangeToReplace.setText(m.text);
+        // Fonction utilitaire non destructive pour **mot** (gras uniquement)
+        function formatRichTextFocus(element) {
+            try {
+                var textRange = element.getText();
+                var textStr = textRange.asString();
+                var regex = /\*\*([^*]+)\*\*/g;
+                var matches = [];
+                var match;
                 
-                var newRange = textRange.getRange(m.start, m.start + m.text.length);
-                newRange.getTextStyle().setBold(true);
-            }
+                while ((match = regex.exec(textStr)) !== null) {
+                    matches.push({
+                        start: match.index,
+                        text: match[1],
+                        length: match[0].length
+                    });
+                }
+                
+                for (var i = matches.length - 1; i >= 0; i--) {
+                    var m = matches[i];
+                    var endDoubleAst = m.start + m.text.length + 2;
+                    
+                    textRange.getRange(endDoubleAst, endDoubleAst + 2).clear();
+                    textRange.getRange(m.start, m.start + 2).clear();
+                    
+                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                    styledRange.getTextStyle().setBold(true);
+                }
+            } catch(e) {}
         }
+
+        Logger.log("Parcours récursif des slides pour le Focus Mot-Clé (Groupes et Tableaux inclus)");
 
         slides.forEach(function(slide) {
-            var shapes = slide.getShapes();
             
-            shapes.forEach(function(shape) {
-                var shapeText = "";
-                try {
-                    shapeText = shape.getText().asString().trim();
-                } catch(e) {}
+            function processElement(element) {
+                var type = element.getPageElementType();
                 
-                var titleRaw = shape.getTitle() || "";
-                var descRaw = shape.getDescription() || "";
-
-                var isAltTextMatched = false;
-                for (var altKey in altTextMapping) {
-                    if (titleRaw.indexOf(altKey) !== -1 || descRaw.indexOf(altKey) !== -1) {
-                        Logger.log("Détection d'un champ alternatif : " + altKey);
-                        formatRichText(shape, altTextMapping[altKey]);
-                        isAltTextMatched = true;
-                        break;
-                    }
-                }
-
-                if (!isAltTextMatched && shapeText) {
-                    var hasPlaceholder = false;
-                    var newShapeText = shapeText;
-                    
-                    for (var phKey in placeholderMapping) {
-                        if (newShapeText.indexOf(phKey) !== -1) {
-                            hasPlaceholder = true;
-                            newShapeText = newShapeText.split(phKey).join(placeholderMapping[phKey]);
-                            Logger.log("Détection du placeholder : " + phKey);
+                if (type === SlidesApp.PageElementType.GROUP) {
+                    // Parcours du groupe
+                    element.asGroup().getChildren().forEach(processElement);
+                } else if (type === SlidesApp.PageElementType.TABLE) {
+                    // Parcours du tableau
+                    var table = element.asTable();
+                    for (var r = 0; r < table.getNumRows(); r++) {
+                        for (var c = 0; c < table.getNumColumns(); c++) {
+                            processTextContainer(table.getCell(r, c), slide);
                         }
                     }
+                } else if (type === SlidesApp.PageElementType.SHAPE) {
+                    // Parcours d'une forme classique
+                    processTextContainer(element.asShape(), slide);
+                }
+            }
+
+            function processTextContainer(element, currentSlide) {
+                // Différenciation : les Cellules n'ont pas de description
+                var isShape = (typeof element.getDescription === 'function');
+                var descRaw = isShape ? (element.getDescription() || "") : "";
+                var shapeText = "";
+                
+                try {
+                    shapeText = element.getText().asString();
+                } catch(e) {
+                    return; // Si l'élément ne contient pas de texte, on ignore
+                }
+
+                // --- Étape A : Cas 1 (Réservé aux Shapes) via description exacte ---
+                if (isShape && descRaw !== "") {
+                    if (simpleMapping[descRaw] !== undefined) {
+                        Logger.log("Remplacement exact Cas 1 (simple) pour : " + descRaw);
+                        element.getText().setText(String(simpleMapping[descRaw]));
+                        return; // On stoppe le traitement de cet élément
+                    }
                     
-                    if (hasPlaceholder) {
-                        formatRichText(shape, newShapeText);
+                    if (altTextMapping[descRaw] !== undefined) {
+                        Logger.log("Remplacement exact Cas 1 (alt) pour : " + descRaw);
+                        element.getText().setText(String(altTextMapping[descRaw]));
+                        formatRichTextFocus(element);
+                        return; // On stoppe le traitement de cet élément
                     }
-                }
 
-                var matchSvgProp = null;
-                for (var propKey in props) {
-                    var val = props[propKey] || "";
-                    if (val.indexOf("<svg") !== -1 && (shapeText === propKey || titleRaw === propKey || descRaw === propKey)) {
-                        matchSvgProp = val;
-                        break;
-                    }
-                }
+                    // Images Base64 (Cas 1) pour les placeholders d'icones SERP
+                    var isBase64Icon = (descRaw === "PLACEHOLDER_SERPELEMENT_1" || 
+                                        descRaw === "PLACEHOLDER_SERPELEMENT_2" || 
+                                        descRaw === "PLACEHOLDER_SERPELEMENT_3" || 
+                                        descRaw === "PLACEHOLDER_SERPELEMENT_4");
 
-                if (matchSvgProp) {
-                    try {
-                        Logger.log("Traitement d'une image SVG détectée : conversion via API");
-                        var response = UrlFetchApp.fetch("https://quickchart.io/svg-to-png", {
-                            method: "post",
-                            contentType: "application/json",
-                            payload: JSON.stringify({ svg: matchSvgProp }),
-                            muteHttpExceptions: true
-                        });
-                        
-                        if (response.getResponseCode() === 200) {
-                            var pngBlob = response.getBlob();
-                            var newImg = slide.insertImage(pngBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                            newImg.setTitle(titleRaw);
+                    if (isBase64Icon && props[descRaw] && props[descRaw].length > 20 && currentSlide) {
+                        var matchBase64Prop = props[descRaw];
+                        try {
+                            Logger.log("Traitement d'une image Base64 détectée par sa description : " + descRaw);
+                            var decodedBase64 = Utilities.base64Decode(matchBase64Prop);
+                            var pngBlob = Utilities.newBlob(decodedBase64, MimeType.PNG, "icon.png");
+                            
+                            var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
                             newImg.setDescription(descRaw);
-                            shape.remove();
-                            Logger.log("Succès de la conversion SVG en PNG");
-                        } else {
-                            Logger.log("Échec de la conversion API (code " + response.getResponseCode() + "), tentative d'insertion en fallback");
-                            try {
-                                var svgBlob = Utilities.newBlob(matchSvgProp, MimeType.SVG, "image.svg");
-                                slide.insertImage(svgBlob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                                shape.remove();
-                                Logger.log("Succès de l'insertion SVG en fallback");
-                            } catch (errFallback) {
-                                Logger.log("Erreur lors de l'insertion SVG en fallback (silencieuse) : " + errFallback.message);
-                            }
+                            element.remove();
+                            
+                            return; // On stoppe le traitement de cet élément
+                        } catch (errB64) {
+                            Logger.log("Erreur Base64 : " + errB64.message);
                         }
-                    } catch (errSvg) {
-                        Logger.log("Erreur lors du traitement de l'image SVG (silencieuse) : " + errSvg.message);
                     }
                 }
-            });
-            
-            var images = slide.getImages();
-            images.forEach(function(img) {
-                var titleImg = img.getTitle() || "";
-                var descImg = img.getDescription() || "";
-                // Logique pour image : l'API Slides ne permet pas setText() sur Image
-            });
+
+                // --- Étape B : Cas 2 (Shapes non traitées en A + Cellules) ---
+                if (shapeText) {
+                    var hasReplaced = false;
+                    for (var phKey in placeholderMapping) {
+                        if (shapeText.indexOf(phKey) !== -1) {
+                            Logger.log("Remplacement local Cas 2 pour : " + phKey);
+                            // Correction API : replaceAllText sur le TextRange
+                            element.getText().replaceAllText(phKey, placeholderMapping[phKey]);
+                            hasReplaced = true;
+                        }
+                    }
+                    if (hasReplaced) {
+                        formatRichTextFocus(element);
+                    }
+                }
+            }
+
+            // Lancement du scan récursif depuis la racine de la slide
+            slide.getPageElements().forEach(processElement);
         });
 
-        Logger.log("Après le traitement des images SVG et des tags complexes");
-        Logger.log("Fin de la fonction exporterFocusMotCleSlides");
+        Logger.log("=== FIN : exporterFocusMotCleSlides ===");
         return { success: true, url: presentation.getUrl() };
 
     } catch (e) {
-        Logger.log("Erreur critique lors de l'export focus mot-clé : " + e.message);
+        Logger.log("ERREUR CRITIQUE EXPORT FOCUS : " + e.message);
         return { success: false, error: e.message };
     }
 }
