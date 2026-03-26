@@ -629,20 +629,20 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row" style="align-items: flex-start;">
                         <div class="col" style="flex: 0 0 200px;">
-                            <label class="input-label" for="tech-is-multilingue">Site Multilingue ?</label>
-                            <select id="tech-is-multilingue" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px;" onchange="document.getElementById('tech-langue-col').style.display = this.value === 'oui' ? 'flex' : 'none'; document.getElementById('tech-pays-col').style.display = this.value === 'oui' ? 'flex' : 'none';">
+                            <label class="input-label" for="tech-is-multilingue">Site multilingue ?</label>
+                            <select id="tech-is-multilingue" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px;" onchange="toggleMultilingueFields()">
                                 <option value="non">Non</option>
                                 <option value="oui">Oui</option>
                             </select>
                         </div>
-                        <div class="col" id="tech-langue-col" style="display: none; flex-direction: column;">
+                        <div class="col" id="tech-langue-col" style="display: none;">
                             <label class="input-label" for="tech-langue-cible">Langue cible</label>
-                            <input type="text" id="tech-langue-cible" placeholder="Ex : Anglais">
+                            <input type="text" id="tech-langue-cible" placeholder="Ex : anglais">
                         </div>
-                        <div class="col" id="tech-pays-col" style="display: none; flex-direction: column;">
-                            <label class="input-label" for="tech-pays-cible">Pays cible (Optionnel)</label>
+                        <div class="col" id="tech-pays-col" style="display: none;">
+                            <label class="input-label" for="tech-pays-cible">Pays cible (optionnel)</label>
                             <input type="text" id="tech-pays-cible" placeholder="Ex : Angleterre">
                         </div>
                     </div>
@@ -893,9 +893,7 @@
                             if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
                             if (config.techIsMultilingue) {
                                 document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
-                                var displayState = config.techIsMultilingue === 'oui' ? 'flex' : 'none';
-                                document.getElementById('tech-langue-col').style.display = displayState;
-                                document.getElementById('tech-pays-col').style.display = displayState;
+                                toggleMultilingueFields();
                             }
                             if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
                             if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
@@ -2623,6 +2621,16 @@
 
             // ========================== ONGLET 6 : TECHNIQUE ==========================
 
+            function toggleMultilingueFields() {
+                console.log("Début : toggleMultilingueFields");
+                var isMulti = document.getElementById('tech-is-multilingue').value === 'oui';
+                var displayStyle = isMulti ? 'flex' : 'none';
+                
+                document.getElementById('tech-langue-col').style.display = displayStyle;
+                document.getElementById('tech-pays-col').style.display = displayStyle;
+                console.log("Fin : toggleMultilingueFields (Multilingue activé : " + isMulti + ")");
+            }
+            
             function ouvrirRobotsTxt() {
                 var url = document.getElementById('tech-robots-url').value;
                 if (url) {
@@ -2771,13 +2779,16 @@
 
             // 3. Appel au backend pour le Crawl
             var robotsUrl = document.getElementById('tech-robots-url').value;
+            console.log("Appel backend lancerAnalyseTechnique avec URL cible : " + dataTech.techUrlCible);
             
             google.script.run
                 .withSuccessHandler(function(res) {
+                    console.log("Succès du retour backend analyserCrawlBackend");
                     btn.disabled = false;
                     btn.innerText = "💾 Sauvegarder & lancer l'analyse";
                     
                     if (res.success) {
+                        console.log("Construction du HTML des résultats du crawl");
                         // A. Affichage HTML
                         var html = '';
                         
@@ -2818,19 +2829,61 @@
                         html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
                         html += '</div></div>';
 
+                        // --- NOUVEAU : Bloc Multilingue ---
+                        var isMulti = document.getElementById('tech-is-multilingue').value === 'oui';
+                        if (isMulti) {
+                            console.log("Traitement de l'affichage multilingue");
+                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            html += '<div style="margin-bottom:4px; color:#5f6368;">Multilingue (hreflang) :</div>';
+                            if (res.hreflangs && res.hreflangs.trim() !== "") {
+                                var langs = res.hreflangs.split(" | ");
+                                var langsHtml = langs.map(function(l) { return '<div><span style="color:#188038">✓</span> ' + l + '</div>'; }).join('');
+                                html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">' + langsHtml + '</div>';
+                            } else {
+                                html += '<div style="background:#fce8e6; color:#c5221f; padding:6px 8px; border-radius:4px; font-size:12px;">❌ Aucune balise hreflang détectée dans le &lt;head&gt;.</div>';
+                            }
+                            html += '</div>';
+                        }
+
+                        // --- NOUVEAU : Bloc Pagination ---
+                        var urlMere = document.getElementById('tech-url-page-mere').value;
+                        var urlP2 = document.getElementById('tech-url-paginees').value;
+                        if (urlMere && urlP2) {
+                            console.log("Traitement de l'affichage pagination");
+                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            html += '<div style="margin-bottom:4px; color:#5f6368;">Pagination (vérification croisée) :</div>';
+                            html += '<div style="background:#f8f9fa; border:1px solid #dadce0; border-radius:4px; padding:8px; font-size:12px;">';
+                            
+                            html += '<div style="margin-bottom:6px;"><strong>Page mère :</strong><br>';
+                            html += 'Lien vers page 2 (body) : ' + (res.pagiMereBody ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
+                            html += 'Balise rel="next" (head) : ' + (res.pagiMereHead ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
+                            
+                            html += '<div style="margin-bottom:6px;"><strong>Page 2 :</strong><br>';
+                            html += 'Lien vers page mère (body) : ' + (res.pagiP2Body ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
+                            html += 'Balise rel="prev" (head) : ' + (res.pagiP2Head ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
+
+                            if (res.pagiErreurLien && res.pagiErreurLien !== "") {
+                                html += '<div style="margin-top:6px; background:#fef7e0; color:#b06000; padding:4px 6px; border-radius:4px; border:1px solid #fbbc04;">';
+                                html += '⚠️ <strong>Alerte :</strong> lien parasite pointant vers la page 1 détecté (' + res.pagiErreurLien + '). Risque de contenu dupliqué.';
+                                html += '</div>';
+                            }
+                            html += '</div></div>';
+                        }
+
                         if (res.hasUrlFiltre) {
                             html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
                             html += '<div style="font-size: 13px;">';
                             html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
                             html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
                             html += '<input type="checkbox" style="margin-top:2px;">';
-                            html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de duplicate content.</span>';
+                            html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de contenu dupliqué.</span>';
                             html += '</label></div>';
                         }
 
                         crawlContent.innerHTML = html;
 
                         // B. Envoi silencieux des données extraites au backend pour sauvegarde
+                        console.log("Envoi silencieux pour sauvegarde des résultats du crawl");
                         var crawlDataToSave = {
                             statusCode: res.statusCode, ttfb: res.ttfb, scoreTtfb: res.scoreTtfb, isBlocked: res.isBlocked,
                             robotsTxt: res.robotsTxt, firstLinkHref: res.firstLink.href, firstLinkAnchor: res.firstLink.anchor,
@@ -2852,6 +2905,8 @@
                     console.error("Erreur serveur : ", err);
                 })
                 .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre, dataTech.techUrlPageMere, dataTech.techUrlPaginees);
+                
+            console.log("=== FIN : lancerAnalyseTechnique ===");
         }
         </script>
     </body>
