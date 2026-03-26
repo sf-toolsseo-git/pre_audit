@@ -640,20 +640,28 @@ function exporterFocusMotCleSlides() {
                         var featureName = props[descRaw].trim();
                         if (featureName !== "") {
                             try {
-                                Logger.log("Traitement d'une icône SERP détectée par sa description : " + descRaw + " (Type: " + featureName + ")");
-                                var folder = DriveApp.getFolderById("14mRtyrXax5v3YWwQtpa8dNS4_9YIYZh3");
-                                var files = folder.getFilesByName(featureName + ".png");
+                                var DRIVE_ICONS_MAPPING = {
+                                    "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
+                                    "ads": "1pwUCDRXZ02ua0xuifRQaqnISmFnlAZsC",
+                                    "featured": "1nh1r7ouYI6WktXkbIyBLRJbGADoxIaUO",
+                                    "local": "1Wl2ZIe1REvW8_nWEAMbPFjYo2xE38VDA",
+                                    "shopping": "13gt_1YTNJ_bJMTmPybOBc0x9N4_dy63p",
+                                    "paa": "1frkC4wlrPqKwr6jxkcjEhE7HtWYf-6W-",
+                                    "video": "1elbpXgnFxD4iSpSoHWFBswbUlYYnCkvL",
+                                    "image": "1acgKroCoqPOy9rV2KnRwjdxk_fP_UIPh",
+                                    "defaut": "18ILbiONR6N1gfikkFh-lMF1oTye45hje"
+                                };
                                 
-                                if (files.hasNext()) {
-                                    var file = files.next();
-                                    var pngBlob = file.getBlob();
-                                    var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
-                                    newImg.setDescription(descRaw);
-                                    element.remove();
-                                    Logger.log("Icône insérée avec succès : " + featureName + ".png");
-                                } else {
-                                    Logger.log("Avertissement : Fichier introuvable sur le Drive pour : " + featureName + ".png");
-                                }
+                                var finalFeature = DRIVE_ICONS_MAPPING[featureName] ? featureName : "defaut";
+                                var fileId = DRIVE_ICONS_MAPPING[finalFeature];
+                                
+                                Logger.log("Traitement d'une icône SERP détectée par sa description : " + descRaw + " (ID Drive récupéré pour " + finalFeature + ")");
+                                
+                                var pngBlob = DriveApp.getFileById(fileId).getBlob();
+                                var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                                newImg.setDescription(descRaw);
+                                element.remove();
+                                Logger.log("Icône insérée avec succès depuis Google Drive.");
                                 return; // On stoppe le traitement de cet élément
                             } catch (errDrive) {
                                 Logger.log("Erreur lors de la récupération ou insertion de l'icône SERP : " + errDrive.message);

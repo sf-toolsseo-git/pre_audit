@@ -1134,8 +1134,29 @@ function lancerWorkflowSERP(data) {
             throw new Error("Le format JSON renvoyé par Gemini est invalide.");
         }
 
+        // Dictionnaire de mapping Drive pour les icônes SERP
+        var DRIVE_ICONS_MAPPING = {
+            "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
+            "ads": "1pwUCDRXZ02ua0xuifRQaqnISmFnlAZsC",
+            "featured": "1nh1r7ouYI6WktXkbIyBLRJbGADoxIaUO",
+            "local": "1Wl2ZIe1REvW8_nWEAMbPFjYo2xE38VDA",
+            "shopping": "13gt_1YTNJ_bJMTmPybOBc0x9N4_dy63p",
+            "paa": "1frkC4wlrPqKwr6jxkcjEhE7HtWYf-6W-",
+            "video": "1elbpXgnFxD4iSpSoHWFBswbUlYYnCkvL",
+            "image": "1acgKroCoqPOy9rV2KnRwjdxk_fP_UIPh",
+            "defaut": "18ILbiONR6N1gfikkFh-lMF1oTye45hje"
+        };
+
         // Ajout du Mapping : nous renvoyons simplement les éléments SERP natifs (contenant type_feature)
         var finalElementsSerp = serpData.elements_serp || [];
+        
+        finalElementsSerp.forEach(function(el) {
+            var feature = el.type_feature || "defaut";
+            if (!DRIVE_ICONS_MAPPING[feature]) {
+                feature = "defaut";
+            }
+            el.png_icon = feature;
+        });
 
         Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
         
