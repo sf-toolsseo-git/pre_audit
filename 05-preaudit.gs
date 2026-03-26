@@ -1134,15 +1134,8 @@ function lancerWorkflowSERP(data) {
             throw new Error("Le format JSON renvoyé par Gemini est invalide.");
         }
 
-        // Ajout du Mapping SVG (Base64) pour le Front-end
-        var finalElementsSerp = (serpData.elements_serp || []).map(function(el) {
-            var featureKey = el.type_feature || "defaut";
-            if (!dicoBase64[featureKey]) {
-                featureKey = "defaut";
-            }
-            el.svg_icon = dicoBase64[featureKey];
-            return el;
-        });
+        // Ajout du Mapping : nous renvoyons simplement les éléments SERP natifs (contenant type_feature)
+        var finalElementsSerp = serpData.elements_serp || [];
 
         Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
         

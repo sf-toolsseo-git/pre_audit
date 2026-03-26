@@ -597,6 +597,9 @@ function exporterFocusMotCleSlides() {
                 } else if (type === SlidesApp.PageElementType.SHAPE) {
                     // Parcours d'une forme classique
                     processTextContainer(element.asShape(), slide);
+                } else if (type === SlidesApp.PageElementType.IMAGE) {
+                    // Parcours d'une image (les placeholders d'image)
+                    processTextContainer(element.asImage(), slide);
                 }
             }
 
@@ -627,26 +630,34 @@ function exporterFocusMotCleSlides() {
                         return; // On stoppe le traitement de cet élément
                     }
 
-                    // Images Base64 (Cas 1) pour les placeholders d'icones SERP
-                    var isBase64Icon = (descRaw === "PLACEHOLDER_SERPELEMENT_1" || 
-                                        descRaw === "PLACEHOLDER_SERPELEMENT_2" || 
-                                        descRaw === "PLACEHOLDER_SERPELEMENT_3" || 
-                                        descRaw === "PLACEHOLDER_SERPELEMENT_4");
+                    // Images PNG via Google Drive (Cas 1) pour les placeholders d'icones SERP
+                    var isSerpIcon = (descRaw === "PLACEHOLDER_SERPELEMENT_1" || 
+                                      descRaw === "PLACEHOLDER_SERPELEMENT_2" || 
+                                      descRaw === "PLACEHOLDER_SERPELEMENT_3" || 
+                                      descRaw === "PLACEHOLDER_SERPELEMENT_4");
 
-                    if (isBase64Icon && props[descRaw] && props[descRaw].length > 20 && currentSlide) {
-                        var matchBase64Prop = props[descRaw];
-                        try {
-                            Logger.log("Traitement d'une image Base64 détectée par sa description : " + descRaw);
-                            var decodedBase64 = Utilities.base64Decode(matchBase64Prop);
-                            var pngBlob = Utilities.newBlob(decodedBase64, MimeType.PNG, "icon.png");
-                            
-                            var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
-                            newImg.setDescription(descRaw);
-                            element.remove();
-                            
-                            return; // On stoppe le traitement de cet élément
-                        } catch (errB64) {
-                            Logger.log("Erreur Base64 : " + errB64.message);
+                    if (isSerpIcon && props[descRaw] && currentSlide) {
+                        var featureName = props[descRaw].trim();
+                        if (featureName !== "") {
+                            try {
+                                Logger.log("Traitement d'une icône SERP détectée par sa description : " + descRaw + " (Type: " + featureName + ")");
+                                var folder = DriveApp.getFolderById("14mRtyrXax5v3YWwQtpa8dNS4_9YIYZh3");
+                                var files = folder.getFilesByName(featureName + ".png");
+                                
+                                if (files.hasNext()) {
+                                    var file = files.next();
+                                    var pngBlob = file.getBlob();
+                                    var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                                    newImg.setDescription(descRaw);
+                                    element.remove();
+                                    Logger.log("Icône insérée avec succès : " + featureName + ".png");
+                                } else {
+                                    Logger.log("Avertissement : Fichier introuvable sur le Drive pour : " + featureName + ".png");
+                                }
+                                return; // On stoppe le traitement de cet élément
+                            } catch (errDrive) {
+                                Logger.log("Erreur lors de la récupération ou insertion de l'icône SERP : " + errDrive.message);
+                            }
                         }
                     }
                 }

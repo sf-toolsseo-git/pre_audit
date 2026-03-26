@@ -672,25 +672,25 @@
                                 document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
                                 document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
                                 var icon1 = document.getElementById('serp-icon-render-1');
-                                if (icon1) icon1.innerHTML = config.serpSvg1 ? '<img src="data:image/png;base64,' + config.serpSvg1 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (icon1) icon1.innerHTML = config.serpSvg1 ? '<span style="font-size:10px; font-weight:bold; color:#1a73e8; background:#e8f0fe; padding:2px 4px; border-radius:3px;">' + config.serpSvg1 + '</span>' : '';
                                 
                                 document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
                                 document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
                                 document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
                                 var icon2 = document.getElementById('serp-icon-render-2');
-                                if (icon2) icon2.innerHTML = config.serpSvg2 ? '<img src="data:image/png;base64,' + config.serpSvg2 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (icon2) icon2.innerHTML = config.serpSvg2 ? '<span style="font-size:10px; font-weight:bold; color:#1a73e8; background:#e8f0fe; padding:2px 4px; border-radius:3px;">' + config.serpSvg2 + '</span>' : '';
                                 
                                 document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
                                 document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
                                 document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
                                 var icon3 = document.getElementById('serp-icon-render-3');
-                                if (icon3) icon3.innerHTML = config.serpSvg3 ? '<img src="data:image/png;base64,' + config.serpSvg3 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (icon3) icon3.innerHTML = config.serpSvg3 ? '<span style="font-size:10px; font-weight:bold; color:#1a73e8; background:#e8f0fe; padding:2px 4px; border-radius:3px;">' + config.serpSvg3 + '</span>' : '';
                                 
                                 document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
                                 document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
                                 document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
                                 var icon4 = document.getElementById('serp-icon-render-4');
-                                if (icon4) icon4.innerHTML = config.serpSvg4 ? '<img src="data:image/png;base64,' + config.serpSvg4 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (icon4) icon4.innerHTML = config.serpSvg4 ? '<span style="font-size:10px; font-weight:bold; color:#1a73e8; background:#e8f0fe; padding:2px 4px; border-radius:3px;">' + config.serpSvg4 + '</span>' : '';
 
                                 // Intention
                                 document.getElementById('intention-titre').value = config.intentionTitre || "";
@@ -2264,10 +2264,10 @@
                             setStepperState('step-ia', 'completed');
                             var data = res.data;
                             
-                            // 1. Éléments SERP (Titre, Desc, SVG)
+                            // 1. Éléments SERP (Titre, Desc, Type)
                             if (data.elements_serp && Array.isArray(data.elements_serp)) {
                                 for (var i = 0; i < 4; i++) {
-                                    var el = data.elements_serp[i] || { titre: "", description: "", svg_icon: "" };
+                                    var el = data.elements_serp[i] || { titre: "", description: "", type_feature: "" };
                                     var idx = i + 1;
                                     var inputTitre = document.getElementById('serp-titre-' + idx);
                                     var inputDesc = document.getElementById('serp-desc-' + idx);
@@ -2276,8 +2276,14 @@
                                     
                                     if (inputTitre) inputTitre.value = el.titre || "";
                                     if (inputDesc) inputDesc.value = el.description || "";
-                                    if (inputSvg) inputSvg.value = el.svg_icon || "";
-                                    if (renderIcon) renderIcon.innerHTML = el.svg_icon ? '<img src="data:image/png;base64,' + el.svg_icon + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                    if (inputSvg) inputSvg.value = el.type_feature || "";
+                                    if (renderIcon) {
+                                        if (el.type_feature) {
+                                            renderIcon.innerHTML = '<span style="font-size:10px; font-weight:bold; color:#1a73e8; background:#e8f0fe; padding:2px 4px; border-radius:3px;">' + el.type_feature + '</span>';
+                                        } else {
+                                            renderIcon.innerHTML = '';
+                                        }
+                                    }
                                 }
                             }
                             

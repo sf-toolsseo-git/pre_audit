@@ -249,7 +249,7 @@ function extraireDomaineNettoye(str) {
 }
 
 function syncPropertiesToConfigSheet() {
-    Logger.log("=== DÉBUT : syncPropertiesToConfigSheet ===");
+    Logger.log("Synchronisation des propriétés vers l'onglet CONFIG...");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var sheetName = "CONFIG";
