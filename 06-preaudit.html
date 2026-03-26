@@ -623,24 +623,25 @@
                     </div>
 
                     <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="tech-url-filtre">Gestion des URL de filtre</label>
+                            <input type="text" id="tech-url-filtre" placeholder="Ex : ?color=red, /filtre/rouge...">
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col" style="flex: 0 0 200px;">
                             <label class="input-label" for="tech-is-multilingue">Site Multilingue ?</label>
-                            <select id="tech-is-multilingue" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px;" onchange="document.getElementById('bloc-multilingue').style.display = this.value === 'oui' ? 'flex' : 'none';">
+                            <select id="tech-is-multilingue" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px;" onchange="document.getElementById('tech-langue-col').style.display = this.value === 'oui' ? 'flex' : 'none'; document.getElementById('tech-pays-col').style.display = this.value === 'oui' ? 'flex' : 'none';">
                                 <option value="non">Non</option>
                                 <option value="oui">Oui</option>
                             </select>
                         </div>
-                        <div class="col">
-                            <label class="input-label" for="tech-url-filtre">Gestion des URL de filtre (Facettes)</label>
-                            <input type="text" id="tech-url-filtre" placeholder="Ex : ?color=red, /filtre/rouge...">
-                        </div>
-                    </div>
-                    <div class="row" id="bloc-multilingue" style="display: none; margin-top: 5px;">
-                        <div class="col">
+                        <div class="col" id="tech-langue-col" style="display: none; flex-direction: column;">
                             <label class="input-label" for="tech-langue-cible">Langue cible</label>
                             <input type="text" id="tech-langue-cible" placeholder="Ex : Anglais">
                         </div>
-                        <div class="col">
+                        <div class="col" id="tech-pays-col" style="display: none; flex-direction: column;">
                             <label class="input-label" for="tech-pays-cible">Pays cible (Optionnel)</label>
                             <input type="text" id="tech-pays-cible" placeholder="Ex : Angleterre">
                         </div>
@@ -892,7 +893,9 @@
                             if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
                             if (config.techIsMultilingue) {
                                 document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
-                                document.getElementById('bloc-multilingue').style.display = config.techIsMultilingue === 'oui' ? 'flex' : 'none';
+                                var displayState = config.techIsMultilingue === 'oui' ? 'flex' : 'none';
+                                document.getElementById('tech-langue-col').style.display = displayState;
+                                document.getElementById('tech-pays-col').style.display = displayState;
                             }
                             if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
                             if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
