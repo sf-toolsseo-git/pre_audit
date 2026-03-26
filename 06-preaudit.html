@@ -663,14 +663,16 @@
                             </div>
                         </div>
 
-                        <div style="background: #f8f9fa; border: 1px dashed #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; opacity: 0.7;">
-                            <h3 style="margin-top: 0; color: #5f6368; border-bottom: 1px solid #e8eaed; padding-bottom: 8px;">🗂️ 2. Indexation</h3>
-                            <div style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
+                        <div style="background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">🗂️ 2. Indexation</h3>
+                            <div id="indexation-results-content">
+                                <div style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(En attente du lancement)</div>
+                            </div>
                         </div>
 
-                        <div style="background: #f8f9fa; border: 1px dashed #dadce0; border-radius: 8px; padding: 15px; opacity: 0.7;">
-                            <h3 style="margin-top: 0; color: #5f6368; border-bottom: 1px solid #e8eaed; padding-bottom: 8px;">🏆 3. Positionnement</h3>
-                            <div style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
+                        <div id="positionnement-results-container" style="background: #f8f9fa; border: 1px dashed #dadce0; border-radius: 8px; padding: 15px; opacity: 0.7;">
+                            <h3 id="positionnement-results-title" style="margin-top: 0; color: #5f6368; border-bottom: 1px solid #e8eaed; padding-bottom: 8px;">🏆 3. Positionnement</h3>
+                            <div id="positionnement-results-content" style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
                         </div>
 
                     </div>
@@ -2755,6 +2757,7 @@
             var msg = document.getElementById('tech-msg');
             var resultsContainer = document.getElementById('tech-results-container');
             var crawlContent = document.getElementById('crawl-results-content');
+            var indexationContent = document.getElementById('indexation-results-content');
             
             // 1. Sauvegarde silencieuse de la configuration
             var dataTech = {
@@ -2776,18 +2779,79 @@
             msg.innerText = "";
             resultsContainer.style.display = 'block';
             crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
+            indexationContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Vérification de l\'indexation et du Sitemap...</div></div>';
 
-            // 3. Appel au backend pour le Crawl
             var robotsUrl = document.getElementById('tech-robots-url').value;
-            console.log("Appel backend lancerAnalyseTechnique avec URL cible : " + dataTech.techUrlCible);
+            var sitemapUrl = dataTech.techSitemap;
             
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    console.log("Succès du retour backend analyserCrawlBackend");
+            var crawlDone = false;
+            var sitemapDone = false;
+            var indexDataToSave = {};
+            var resCrawlGlob = null;
+
+            function checkAllDone() {
+                if (crawlDone && sitemapDone) {
                     btn.disabled = false;
                     btn.innerText = "💾 Sauvegarder & lancer l'analyse";
                     
+                    // Rendu de l'indexation (fusion des données crawl et sitemap)
+                    var htmlIdx = '';
+                    
+                    // Partie Sitemap
+                    // CORRECTION ICI : on vérifie si la chaîne commence par/contient "Oui" au lieu d'une égalité stricte
+                    var sitemapColor = indexDataToSave.sitemapPresent && indexDataToSave.sitemapPresent.indexOf("Oui") !== -1 ? '#188038' : '#d93025';
+                    htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Sitemap déclaré :</span> <strong style="color:' + sitemapColor + '">' + indexDataToSave.sitemapPresent + '</strong></div>';
+                    
+                    var inSitemapColor = indexDataToSave.urlInSitemap === "✅ Présente" ? '#188038' : '#d93025';
+                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>URL présente dans le sitemap :</span> <strong style="color:' + inSitemapColor + '">' + indexDataToSave.urlInSitemap + '</strong></div>';
+                    htmlIdx += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                    
+                    // Partie Meta Robots / Canonical de la cible
+                    var metaRobotsColor = (resCrawlGlob && resCrawlGlob.metaRobots && resCrawlGlob.metaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
+                    var canonText = (resCrawlGlob && resCrawlGlob.canonical) ? resCrawlGlob.canonical : "Aucune";
+                    var isSelfCanon = (resCrawlGlob && canonText === dataTech.techUrlCible) ? " (Auto-canonisée)" : (canonText !== "Aucune" ? " (Pointe ailleurs)" : "");
+                    
+                    htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                    htmlIdx += '<div style="margin-bottom:4px;"><strong>Page cible :</strong></div>';
+                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + metaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.metaRobots ? resCrawlGlob.metaRobots : 'index, follow') + '</strong></div>';
+                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + canonText + '<span style="font-weight:normal; font-size:11px; color:#5f6368">' + isSelfCanon + '</span></strong></div>';
+                    htmlIdx += '</div>';
+
+                    // Partie Pagination (si renseignée)
+                    if (dataTech.techUrlPaginees) {
+                        htmlIdx += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                        htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlIdx += '<div style="margin-bottom:4px;"><strong>Page 2 (Pagination) :</strong></div>';
+                        var pagiMetaRobotsColor = (resCrawlGlob && resCrawlGlob.pagiMetaRobots && resCrawlGlob.pagiMetaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
+                        var pagiCanonText = (resCrawlGlob && resCrawlGlob.pagiCanonical) ? resCrawlGlob.pagiCanonical : "Aucune";
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + pagiMetaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.pagiMetaRobots ? resCrawlGlob.pagiMetaRobots : 'index, follow') + '</strong></div>';
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + pagiCanonText + '</strong></div>';
+                        htmlIdx += '</div>';
+                    }
+
+                    indexationContent.innerHTML = htmlIdx;
+
+                    // Sauvegarde Indexation silencieuse
+                    console.log("Sauvegarde des données d'indexation : ", indexDataToSave);
+                    google.script.run.sauvegarderResultatsIndexation(indexDataToSave);
+                }
+            }
+
+            // 3. Appel au backend pour le Crawl
+            console.log("Appel backend lancerAnalyseTechnique (Crawl) avec URL cible : " + dataTech.techUrlCible);
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    console.log("Succès du retour backend analyserCrawlBackend");
+                    resCrawlGlob = res;
+                    crawlDone = true;
+                    
                     if (res.success) {
+                        indexDataToSave.metaRobots = res.metaRobots || "index, follow";
+                        indexDataToSave.canonical = res.canonical || "Aucune";
+                        indexDataToSave.pagiMetaRobots = res.pagiMetaRobots || "index, follow";
+                        indexDataToSave.pagiCanonical = res.pagiCanonical || "Aucune";
+
                         console.log("Construction du HTML des résultats du crawl");
                         // A. Affichage HTML
                         var html = '';
@@ -2894,18 +2958,128 @@
                         };
                         google.script.run.sauvegarderResultatsCrawl(crawlDataToSave);
 
+                        // C. Positionnement
+                        var posContainer = document.getElementById('positionnement-results-container');
+                        var posTitle = document.getElementById('positionnement-results-title');
+                        var posContent = document.getElementById('positionnement-results-content');
+                        
+                        posContainer.style.background = '#fff';
+                        posContainer.style.border = '1px solid #dadce0';
+                        posContainer.style.opacity = '1';
+                        posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                        posTitle.style.color = '#08133B';
+                        posTitle.style.borderBottom = '1px solid #f1f3f4';
+                        
+                        var htmlPos = '';
+                        var kwText = res.targetKw ? res.targetKw : "Non défini";
+                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlPos += '<strong>Mot-clé cible :</strong> ' + kwText + '</div>';
+                        
+                        var titleStatus = res.titleHasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
+                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlPos += '<div style="margin-bottom:4px;"><strong>Balise Title :</strong> ' + titleStatus + '</div>';
+                        htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.title || "<em>Vide</em>") + '</div>';
+                        htmlPos += '</div>';
+
+                        var h1Status = res.h1HasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
+                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlPos += '<div style="margin-bottom:4px;"><strong>Balise H1 :</strong> ' + h1Status + '</div>';
+                        htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.h1 || "<em>Vide</em>") + '</div>';
+                        htmlPos += '</div>';
+
+                        // Structure Hn
+                        var hnList = res.structureHn || [];
+                        var hnCount = hnList.length;
+                        htmlPos += '<details style="margin-bottom: 12px; font-size: 13px; background: #fff; border: 1px solid #dadce0; border-radius: 4px;">';
+                        htmlPos += '<summary style="padding: 8px 10px; cursor: pointer; font-weight: 600; background: #f8f9fa;">Voir la structure Hn (' + hnCount + ' balises)</summary>';
+                        htmlPos += '<div style="padding: 10px; max-height: 200px; overflow-y: auto;">';
+                        if (hnCount > 0) {
+                            hnList.forEach(function(hn) {
+                                var level = parseInt(hn.substring(1, 2));
+                                var margin = (level - 1) * 15;
+                                htmlPos += '<div style="margin-left: ' + margin + 'px; margin-bottom: 4px; font-size: 12px;">';
+                                htmlPos += '<span style="font-weight:bold; color:#1a73e8;">' + hn.substring(0, 2) + '</span> ' + hn.substring(4);
+                                htmlPos += '</div>';
+                            });
+                        } else {
+                            htmlPos += '<div style="color:#5f6368; font-style:italic;">Aucune balise Hn trouvée.</div>';
+                        }
+                        htmlPos += '</div></details>';
+
+                        // Données structurées
+                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlPos += '<div style="margin-bottom:4px;"><strong>Données structurées (JSON-LD) :</strong></div>';
+                        htmlPos += '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
+                        var schemas = res.structuredDataTypes || [];
+                        if (schemas.length > 0) {
+                            schemas.forEach(function(type) {
+                                htmlPos += '<span style="background: #e8f0fe; color: #1a73e8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">' + type + '</span>';
+                            });
+                        } else {
+                            htmlPos += '<span style="color: #5f6368; font-style: italic;">Aucune donnée JSON-LD détectée.</span>';
+                        }
+                        htmlPos += '</div></div>';
+
+                        posContent.innerHTML = htmlPos;
+                        posContent.style.textAlign = 'left';
+
+                        // Envoi silencieux pour sauvegarde des résultats Positionnement
+                        var posDataToSave = {
+                            targetKw: res.targetKw,
+                            title: res.title,
+                            titleHasKw: res.titleHasKw,
+                            h1: res.h1,
+                            h1HasKw: res.h1HasKw,
+                            structureHn: res.structureHn,
+                            structuredDataTypes: res.structuredDataTypes
+                        };
+                        google.script.run.sauvegarderResultatsPositionnement(posDataToSave);
+
                     } else {
                         crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
                     }
+                    checkAllDone();
                 })
                 .withFailureHandler(function(err) {
+                    crawlDone = true;
                     btn.disabled = false;
                     btn.innerText = "💾 Sauvegarder & lancer l'analyse";
                     crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
                     console.error("Erreur serveur : ", err);
+                    checkAllDone();
                 })
                 .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre, dataTech.techUrlPageMere, dataTech.techUrlPaginees);
-                
+            
+            // 4. Appel au backend pour le Sitemap en parallèle
+            if (sitemapUrl && sitemapUrl.trim() !== "") {
+                console.log("Appel backend analyserSitemapBackend");
+                google.script.run
+                    .withSuccessHandler(function(resSitemap) {
+                        sitemapDone = true;
+                        if (resSitemap.success) {
+                            indexDataToSave.sitemapPresent = resSitemap.hasSitemap ? "Oui (" + resSitemap.sitemapCount + " URLs)" : "Non";
+                            indexDataToSave.urlInSitemap = resSitemap.isInSitemap ? "✅ Présente" : "❌ Absente";
+                        } else {
+                            indexDataToSave.sitemapPresent = "Erreur (" + resSitemap.error + ")";
+                            indexDataToSave.urlInSitemap = "Inconnue";
+                        }
+                        checkAllDone();
+                    })
+                    .withFailureHandler(function(errSitemap) {
+                        sitemapDone = true;
+                        indexDataToSave.sitemapPresent = "Erreur";
+                        indexDataToSave.urlInSitemap = "Inconnue";
+                        console.error("Erreur serveur Sitemap : ", errSitemap);
+                        checkAllDone();
+                    })
+                    .analyserSitemapBackend(sitemapUrl, dataTech.techUrlCible);
+            } else {
+                sitemapDone = true;
+                indexDataToSave.sitemapPresent = "Non";
+                indexDataToSave.urlInSitemap = "❌ Absente";
+                checkAllDone();
+            }
+
             console.log("=== FIN : lancerAnalyseTechnique ===");
         }
         </script>
