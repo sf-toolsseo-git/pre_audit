@@ -159,11 +159,9 @@
             <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
             <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
         </div>
-        <!-- ===================== ONGLET 1 : CONFIGURATION ===================== -->
         <div class="tab-content active" id="content-config">
             <div class="main-area">
                 <div class="config-card">
-                    <!-- Bloc 1 : Projet -->
                     <h2 class="section-title">Projet</h2>
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col">
@@ -182,7 +180,6 @@
                     
                     <hr class="section-separator">
 
-                    <!-- Bloc 2 : Brief -->
                     <h2 class="section-title">Brief</h2>
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col">
@@ -197,7 +194,6 @@
                     
                     <hr class="section-separator">
 
-                    <!-- Bloc 3 : Contexte -->
                     <h2 class="section-title">Contexte</h2>
                     <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
                         <div>
@@ -234,7 +230,6 @@
             </div>
         </div>
 
-        <!-- ===================== ONGLET 2 : ANALYSE GLOBALE ===================== -->
         <div class="tab-content" id="content-semrush">
             <div class="main-area">
 
@@ -313,7 +308,6 @@
             </div>
         </div>
 
-        <!-- ===================== ONGLET 3 : DIAGNOSTIC ===================== -->
         <div class="tab-content" id="content-diagnostic">
             <div class="sidebar">
                 <div class="sidebar-header">Sélection du périmètre</div>
@@ -333,7 +327,6 @@
             </div>
         </div>
         
-        <!-- ===================== ONGLET 4 : ÉTAT DES LIEUX ===================== -->
         <div class="tab-content" id="content-etat-lieux">
             <div class="main-area">
                 <div class="config-card">
@@ -352,7 +345,6 @@
             </div>
         </div>
 
-        <!-- ===================== ONGLET 5 : FOCUS MOT-CLÉ ===================== -->
         <div class="tab-content" id="content-focus-mot-cle">
             <div class="main-area">
                 <div class="config-card">
@@ -567,7 +559,6 @@
             </div>
         </div>
 
-        <!-- ===================== ONGLET 6 : ÉTAT DES LIEUX TECHNIQUES ===================== -->
         <div class="tab-content" id="content-etat-lieux-technique">
             <div class="main-area">
                 <div class="config-card">
@@ -577,7 +568,10 @@
                     <div class="row" style="margin-top: 15px;">
                         <div class="col">
                             <label class="input-label" for="tech-url-cible">Page cible analysée</label>
-                            <input type="text" id="tech-url-cible" readonly style="background-color: #f1f3f4; cursor: not-allowed;" placeholder="Chargement en cours...">
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="tech-url-cible" readonly style="background-color: #f1f3f4; cursor: not-allowed; flex: 1;" placeholder="Chargement en cours...">
+                                <button class="btn" id="btn-open-cible" onclick="ouvrirPageCible()" style="width: auto;">Ouvrir ↗</button>
+                            </div>
                         </div>
                     </div>
 
@@ -633,7 +627,31 @@
 
                     <div class="continuer-bar" style="margin-top: 25px;">
                         <span id="tech-msg" style="font-size: 12px; font-weight: bold;"></span>
-                        <button class="btn btn-continuer" id="btn-save-tech" onclick="sauvegarderEtatLieuxTechnique()">💾 Sauvegarder l'audit technique</button>
+                        <button class="btn btn-continuer" id="btn-lancer-analyse-tech" onclick="lancerAnalyseTechnique()">💾 Sauvegarder & lancer l'analyse</button>
+                    </div>
+
+                    <div id="tech-results-container" style="display: none; margin-top: 25px; border-top: 1px solid #dadce0; padding-top: 20px;">
+                        
+                        <div style="background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">🕷️ 1. Crawl</h3>
+                            <div id="crawl-results-content">
+                                <div style="text-align: center; padding: 20px;">
+                                    <div class="spinner" style="margin: 0 auto 10px;"></div>
+                                    <div style="font-size: 12px; color: #5f6368;">Analyse de la page et des liens en cours...</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8f9fa; border: 1px dashed #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; opacity: 0.7;">
+                            <h3 style="margin-top: 0; color: #5f6368; border-bottom: 1px solid #e8eaed; padding-bottom: 8px;">🗂️ 2. Indexation</h3>
+                            <div style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
+                        </div>
+
+                        <div style="background: #f8f9fa; border: 1px dashed #dadce0; border-radius: 8px; padding: 15px; opacity: 0.7;">
+                            <h3 style="margin-top: 0; color: #5f6368; border-bottom: 1px solid #e8eaed; padding-bottom: 8px;">🏆 3. Positionnement</h3>
+                            <div style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -2584,6 +2602,18 @@
                 }
             }
 
+            function ouvrirPageCible() {
+                var url = document.getElementById('tech-url-cible').value;
+                console.log("Tentative d'ouverture de la page cible : " + url);
+                
+                if (url && url !== "-") {
+                    window.open(url, '_blank');
+                } else {
+                    console.warn("Échec : l'URL de la page cible est vide ou invalide.");
+                    alert("Aucune page cible valide à ouvrir.");
+                }
+            }
+
             function lancerExtractionSitemap() {
                 var robotsUrl = document.getElementById('tech-robots-url').value;
                 if (!robotsUrl) {
@@ -2675,6 +2705,110 @@
                         console.error("Erreur serveur lors de la sauvegarde :", err.message);
                     })
                     .sauvegarderEtatLieuxTechnique(data);
+            }
+        
+        function lancerAnalyseTechnique() {
+                console.log("=== DÉBUT : lancerAnalyseTechnique ===");
+                
+                var btn = document.getElementById('btn-lancer-analyse-tech');
+                var msg = document.getElementById('tech-msg');
+                var resultsContainer = document.getElementById('tech-results-container');
+                var crawlContent = document.getElementById('crawl-results-content');
+                
+                // 1. Sauvegarde silencieuse de la configuration (réutilisation de la logique existante)
+                var dataTech = {
+                    techUrlCible: document.getElementById('tech-url-cible').value,
+                    techSitemap: document.getElementById('tech-sitemap').value,
+                    techTypePage: document.getElementById('tech-type-page').value,
+                    techUrlPaginees: document.getElementById('tech-url-paginees').value,
+                    techUrlFiltre: document.getElementById('tech-url-filtre').value
+                };
+                google.script.run.sauvegarderEtatLieuxTechnique(dataTech);
+
+                // 2. Affichage de l'interface d'analyse
+                btn.disabled = true;
+                btn.innerText = "⏳ Analyse en cours...";
+                msg.innerText = "";
+                resultsContainer.style.display = 'block';
+                crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
+
+                // 3. Appel au backend pour le Crawl
+                var robotsUrl = document.getElementById('tech-robots-url').value;
+                
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        btn.disabled = false;
+                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
+                        console.log("Résultats Crawl reçus : ", res);
+                        
+                        if (res.success) {
+                            var html = '';
+                            
+                            // Statut & Temps de réponse
+                            var codeColor = res.statusCode === 200 ? '#188038' : '#d93025';
+                            var ttfbColor = res.scoreTtfb === 'Critique' ? '#d93025' : (res.scoreTtfb === 'Moyen' ? '#fbbc04' : '#188038');
+                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Statut HTTP cible :</span> <strong style="color:' + codeColor + '">' + res.statusCode + '</strong></div>';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Temps de réponse :</span> <strong style="color:' + ttfbColor + '">' + res.ttfb + ' ms (' + res.scoreTtfb + ')</strong></div>';
+                            
+                            // Robots.txt
+                            var botColor = res.isBlocked ? '#d93025' : '#188038';
+                            var botText = res.isBlocked ? 'Bloqué (Disallow)' : 'Autorisé';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Robots.txt :</span> <strong style="color:' + botColor + '">' + botText + '</strong></div>';
+                            html += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                            
+                            // Ratio des liens
+                            if (res.linksTotal > 0) {
+                                var pctInt = Math.round((res.internalLinks / res.linksTotal) * 100);
+                                var pctExt = 100 - pctInt;
+                                html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px;"><strong>Maillage (' + res.linksTotal + ' liens uniques) :</strong></div>';
+                                html += '<div style="display:flex; height:6px; border-radius:3px; overflow:hidden; margin-bottom:4px;">';
+                                html += '<div style="width:' + pctInt + '%; background:#1a73e8;" title="Interne"></div>';
+                                html += '<div style="width:' + pctExt + '%; background:#fbbc04;" title="Externe"></div>';
+                                html += '</div>';
+                                html += '<div style="display:flex; justify-content:space-between; font-size:11px; color:#5f6368;"><span>' + pctInt + '% Interne</span><span>' + pctExt + '% Externe</span></div>';
+                                
+                                // Codes des liens
+                                html += '<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; background:#f8f9fa; padding:4px 8px; border-radius:4px;">';
+                                html += '<span><span style="color:#188038">●</span> 200: <b>' + res.statusCounts["200"] + '</b></span>';
+                                html += '<span><span style="color:#fbbc04">●</span> 3xx: <b>' + res.statusCounts["3xx"] + '</b></span>';
+                                html += '<span><span style="color:#d93025">●</span> 4xx: <b>' + res.statusCounts["4xx"] + '</b></span>';
+                                html += '<span><span style="color:#000000">●</span> 5xx: <b>' + res.statusCounts["5xx"] + '</b></span>';
+                                html += '</div></div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                            }
+
+                            // 1er lien In-Content
+                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            html += '<div style="margin-bottom:4px; color:#5f6368;">1er lien in-content :</div>';
+                            html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">';
+                            html += '<strong>Ancre :</strong> ' + res.firstLink.anchor + '<br>';
+                            html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
+                            html += '</div></div>';
+
+                            // Check manuel conditionnel (si URL filtre est renseigné)
+                            if (res.hasUrlFiltre) {
+                                html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                                html += '<div style="font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
+                                html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
+                                html += '<input type="checkbox" style="margin-top:2px;">';
+                                html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de duplicate content.</span>';
+                                html += '</label></div>';
+                            }
+
+                            crawlContent.innerHTML = html;
+                        } else {
+                            crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
+                        crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
+                        console.error("Erreur serveur : ", err);
+                    })
+                    .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre);
             }
         </script>
     </body>
