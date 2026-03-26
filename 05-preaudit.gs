@@ -89,7 +89,6 @@ function chargerConfigurationPreAudit() {
         semantique3: props['focus_semantique_texte_3'] || "",
         semantique3Html: props['focus_semantique_texte_3'] || "",
 
-        // BLOC MANQUANT SLIDE 2 AJOUTÉ ICI :
         gapTitre1: props['FOCUS_GAP_TITRE_1'] || "",
         gapDesc1: props['FOCUS_GAP_DESC_1'] || "",
         gapDesc1Html: props['FOCUS_GAP_DESC_1'] || "",
@@ -107,7 +106,17 @@ function chargerConfigurationPreAudit() {
         reco3: props['FOCUS_RECO_3'] || "",
         reco3Html: props['FOCUS_RECO_3'] || "",
         reco4: props['FOCUS_RECO_4'] || "",
-        reco4Html: props['FOCUS_RECO_4'] || ""
+        reco4Html: props['FOCUS_RECO_4'] || "",
+
+        techUrlCible: props['TECH_URL_CIBLE'] || "",
+        techSitemap: props['TECH_SITEMAP'] || "",
+        techTypePage: props['TECH_TYPE_PAGE'] || "",
+        techUrlPageMere: props['TECH_URL_PAGE_MERE'] || "",
+        techUrlPaginees: props['TECH_URL_PAGINEES'] || "",
+        techUrlFiltre: props['TECH_URL_FILTRE'] || "",
+        techIsMultilingue: props['TECH_IS_MULTILINGUE'] || "non",
+        techLangueCible: props['TECH_LANGUE_CIBLE'] || "",
+        techPaysCible: props['TECH_PAYS_CIBLE'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -1805,7 +1814,69 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
     }
 }
 
-function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre) {
+function sauvegarderEtatLieuxTechnique(data) {
+    Logger.log("=== DÉBUT : sauvegarderEtatLieuxTechnique ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'TECH_URL_CIBLE': data.techUrlCible || "",
+            'TECH_SITEMAP': data.techSitemap || "",
+            'TECH_TYPE_PAGE': data.techTypePage || "",
+            'TECH_URL_PAGE_MERE': data.techUrlPageMere || "",
+            'TECH_URL_PAGINEES': data.techUrlPaginees || "",
+            'TECH_URL_FILTRE': data.techUrlFiltre || "",
+            'TECH_IS_MULTILINGUE': data.techIsMultilingue || "non",
+            'TECH_LANGUE_CIBLE': data.techLangueCible || "",
+            'TECH_PAYS_CIBLE': data.techPaysCible || ""
+        });
+        syncPropertiesToConfigSheet();
+        Logger.log("Données techniques sauvegardées avec succès.");
+        Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde technique : " + e.message);
+        Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
+        return { success: false, error: e.message };
+    }
+}
+
+function recupererSitemapDepuisRobots(robotsUrl) {
+    Logger.log("=== DÉBUT : recupererSitemapDepuisRobots ===");
+    try {
+        if (!robotsUrl) throw new Error("URL du robots.txt vide.");
+
+        Logger.log("Appel URL : " + robotsUrl);
+        var response = UrlFetchApp.fetch(robotsUrl, { muteHttpExceptions: true });
+
+        if (response.getResponseCode() === 200) {
+            var content = response.getContentText();
+            var lines = content.split(/\r?\n/);
+            var regex = /^sitemap:\s*(.+)$/i;
+
+            for (var i = 0; i < lines.length; i++) {
+                var match = lines[i].trim().match(regex);
+                if (match && match[1]) {
+                    Logger.log("Sitemap trouvé : " + match[1]);
+                    Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+                    return { success: true, sitemapUrl: match[1].trim() };
+                }
+            }
+            Logger.log("Aucune directive Sitemap trouvée.");
+            Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+            return { success: false, error: "Aucun Sitemap trouvé dans le robots.txt." };
+        } else {
+            Logger.log("Erreur HTTP : " + response.getResponseCode());
+            Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+            return { success: false, error: "Fichier robots.txt introuvable ou erreur HTTP." };
+        }
+    } catch (e) {
+        Logger.log("Erreur : " + e.message);
+        Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+        return { success: false, error: e.message };
+    }
+}
+
+function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre, urlPageMere, urlPaginees) {
     Logger.log("=== DÉBUT : analyserCrawlBackend ===");
     try {
         if (!urlCible || urlCible === "-" || urlCible === "") {
@@ -1816,7 +1887,6 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre) {
         var domain = domainMatch ? domainMatch[0] : "";
         var path = urlCible.replace(domain, "") || "/";
 
-        // 1. Statut HTTP direct et TTFB
         Logger.log("Test HTTP direct et TTFB sur : " + urlCible);
         var startTime = Date.now();
         var responseDirect = UrlFetchApp.fetch(urlCible, { muteHttpExceptions: true, followRedirects: false });
@@ -1824,7 +1894,6 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre) {
         var statusCode = responseDirect.getResponseCode();
         var scoreTtfb = ttfb < 500 ? "Excellent" : (ttfb < 1000 ? "Bon" : (ttfb < 2000 ? "Moyen" : "Critique"));
 
-        // 2. Analyse basique du Robots.txt
         Logger.log("Analyse du Robots.txt...");
         var isBlocked = false;
         var robotsTxtContent = "";
@@ -1832,66 +1901,67 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre) {
             var resRobots = UrlFetchApp.fetch(robotsUrl, { muteHttpExceptions: true });
             if (resRobots.getResponseCode() === 200) {
                 robotsTxtContent = resRobots.getContentText();
-                // Vérification basique (pourrait être affinée par l'IA plus tard)
                 if (robotsTxtContent.indexOf("Disallow: / \n") !== -1 || robotsTxtContent.indexOf("Disallow: " + path) !== -1) {
                     isBlocked = true;
                 }
             }
         }
 
-        // 3. Scraping de la page et extraction des liens
-        Logger.log("Récupération du HTML complet pour extraction des liens...");
+        Logger.log("Récupération du HTML complet pour extraction...");
         var responseFull = UrlFetchApp.fetch(urlCible, { muteHttpExceptions: true, followRedirects: true });
         var html = responseFull.getContentText();
 
         if (typeof Cheerio === 'undefined') throw new Error("La librairie Cheerio est introuvable.");
         var $ = Cheerio.load(html);
 
-        // A. Premier lien "In-Content" (exclusion du header, footer, nav, aside)
-        var firstLinkNode = $('body').find('p a[href], li a[href]').not('nav a, footer a, header a, aside a').first();
-        var firstLinkHref = firstLinkNode.attr('href') || "Aucun lien trouvé";
-        var firstLinkAnchor = firstLinkNode.text().trim() || "Aucune ancre";
+        // --- 1. EXTRACTION HREFLANG ---
+        var hreflangs = [];
+        $('link[rel="alternate"][hreflang]').each(function() {
+            var hl = $(this).attr('hreflang');
+            var hhref = $(this).attr('href');
+            if (hl && hhref) hreflangs.push(hl + ' (' + hhref + ')');
+        });
+        var hreflangsStr = hreflangs.join(" | ");
 
-        // B. Extraction de tous les liens pour analyse
+        // --- 2. PREMIER LIEN IN-CONTENT ---
+        var exclusions = 'nav a, footer a, header a, aside a, .breadcrumb a, #breadcrumb a, .breadcrumbs a, .yoast-breadcrumb a, .rank-math-breadcrumb a, .post-meta a';
+        var firstLinkNode = null;
+        $('p a[href]').not(exclusions).each(function() {
+            var parentText = $(this).closest('p').text().trim();
+            var wordCount = parentText.split(/\s+/).length;
+            if (wordCount >= 20 && !firstLinkNode) firstLinkNode = $(this);
+        });
+        if (!firstLinkNode) firstLinkNode = $('body').find('p a[href], li a[href]').not(exclusions).first();
+
+        var firstLinkHref = (firstLinkNode && firstLinkNode.length > 0) ? firstLinkNode.attr('href') : "Aucun lien trouvé";
+        var firstLinkAnchor = (firstLinkNode && firstLinkNode.length > 0) ? firstLinkNode.text().trim() : "Aucune ancre";
+
+        // --- 3. EXTRACTION LIENS POUR VERIFICATION HTTP ---
         var allLinks = [];
         $('a[href]').each(function() {
             var href = $(this).attr('href');
-            // Ignorer les ancres, emails, tel, javascript
             if (href && !href.match(/^(mailto|tel|javascript|#)/i)) {
-                // Reconstruire les URLs relatives
                 if (href.indexOf('/') === 0) href = domain + href;
                 if (href.indexOf('http') === 0) allLinks.push(href);
             }
         });
 
-        // Déduplication des liens
         var uniqueLinks = [...new Set(allLinks)];
-        var internalLinks = 0;
-        var externalLinks = 0;
+        var internalLinks = 0, externalLinks = 0;
         var fetchRequests = [];
 
         uniqueLinks.forEach(function(link) {
-            if (link.indexOf(domain) === 0) internalLinks++;
-            else externalLinks++;
-
-            // Préparation des requêtes parallèles (requête GET rapide sans suivre les redirections)
-            fetchRequests.push({
-                url: link,
-                method: "get",
-                muteHttpExceptions: true,
-                followRedirects: false,
-                validateHttpsCertificates: false // Évite de faire crasher le fetchAll sur un lien externe avec SSL expiré
-            });
+            if (link.indexOf(domain) === 0) {
+                internalLinks++;
+                fetchRequests.push({ url: link, method: "get", muteHttpExceptions: true, followRedirects: false, validateHttpsCertificates: false });
+            } else {
+                externalLinks++;
+            }
         });
 
-        Logger.log("Lancement de UrlFetchApp.fetchAll sur " + fetchRequests.length + " liens uniques...");
-        
         var statusCounts = { "200": 0, "3xx": 0, "4xx": 0, "5xx": 0 };
-        
         if (fetchRequests.length > 0) {
-            // Exécution massive en parallèle
             var fetchResponses = UrlFetchApp.fetchAll(fetchRequests);
-            
             fetchResponses.forEach(function(res) {
                 var code = res.getResponseCode();
                 if (code >= 200 && code < 300) statusCounts["200"]++;
@@ -1901,25 +1971,95 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre) {
             });
         }
 
+        // --- 4. ANALYSE DE LA PAGINATION ---
+        var pagiMereBody = false, pagiMereHead = false;
+        var pagiP2Body = false, pagiP2Head = false;
+        var pagiErreurLien = "";
+
+        if (urlPageMere && urlPaginees && urlPageMere !== "" && urlPaginees !== "") {
+            Logger.log("Vérification croisée de la pagination...");
+            var reqsPagi = [
+                { url: urlPageMere, muteHttpExceptions: true, validateHttpsCertificates: false },
+                { url: urlPaginees, muteHttpExceptions: true, validateHttpsCertificates: false }
+            ];
+            var resPagi = UrlFetchApp.fetchAll(reqsPagi);
+            
+            // Page Mère
+            if (resPagi[0].getResponseCode() === 200) {
+                var $mere = Cheerio.load(resPagi[0].getContentText());
+                var nextHref = $mere('link[rel="next"]').attr('href');
+                if (nextHref && (nextHref === urlPaginees || nextHref === urlPaginees.replace(domain, ''))) pagiMereHead = true;
+                
+                $mere('body a[href]').each(function() {
+                    var h = $(this).attr('href');
+                    if (h === urlPaginees || h === urlPaginees.replace(domain, '')) pagiMereBody = true;
+                });
+            }
+            
+            // Page 2
+            if (resPagi[1].getResponseCode() === 200) {
+                var $p2 = Cheerio.load(resPagi[1].getContentText());
+                var prevHref = $p2('link[rel="prev"]').attr('href');
+                if (prevHref && (prevHref === urlPageMere || prevHref === urlPageMere.replace(domain, ''))) pagiP2Head = true;
+                
+                $p2('body a[href]').each(function() {
+                    var h = $(this).attr('href');
+                    if (h === urlPageMere || h === urlPageMere.replace(domain, '')) {
+                        pagiP2Body = true;
+                    } else if (h && (h.indexOf('/page/1') > -1 || h.indexOf('?page=1') > -1)) {
+                        pagiErreurLien = h;
+                    }
+                });
+            }
+        }
+
         Logger.log("=== FIN : analyserCrawlBackend ===");
         
         return {
-            success: true,
-            ttfb: ttfb,
-            scoreTtfb: scoreTtfb,
-            statusCode: statusCode,
-            isBlocked: isBlocked,
-            robotsTxtExtrait: robotsTxtContent.substring(0, 1000), // On garde un extrait pour la future IA
-            firstLink: { href: firstLinkHref, anchor: firstLinkAnchor },
-            linksTotal: uniqueLinks.length,
-            internalLinks: internalLinks,
-            externalLinks: externalLinks,
-            statusCounts: statusCounts,
-            hasUrlFiltre: (urlFiltre && urlFiltre.trim() !== "")
+            success: true, ttfb: ttfb, scoreTtfb: scoreTtfb, statusCode: statusCode,
+            isBlocked: isBlocked, robotsTxt: robotsTxtContent, firstLink: { href: firstLinkHref, anchor: firstLinkAnchor },
+            linksTotal: uniqueLinks.length, internalLinks: internalLinks, externalLinks: externalLinks, statusCounts: statusCounts,
+            hasUrlFiltre: (urlFiltre && urlFiltre.trim() !== ""),
+            pagiMereBody: pagiMereBody, pagiMereHead: pagiMereHead, pagiP2Body: pagiP2Body, pagiP2Head: pagiP2Head, pagiErreurLien: pagiErreurLien,
+            hreflangs: hreflangsStr
         };
 
     } catch(e) {
         Logger.log("ERREUR analyserCrawlBackend : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function sauvegarderResultatsCrawl(data) {
+    Logger.log("=== DÉBUT : sauvegarderResultatsCrawl ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'TECH_CRAWL_STATUS_CODE': String(data.statusCode || ""),
+            'TECH_CRAWL_TTFB_MS': String(data.ttfb || ""),
+            'TECH_CRAWL_TTFB_SCORE': String(data.scoreTtfb || ""),
+            'TECH_CRAWL_ROBOTS_BLOCKED': String(data.isBlocked),
+            'TECH_CRAWL_ROBOTS': String(data.robotsTxt || ""),
+            'TECH_CRAWL_FIRST_LINK_URL': String(data.firstLinkHref || ""),
+            'TECH_CRAWL_FIRST_LINK_ANCHOR': String(data.firstLinkAnchor || ""),
+            'TECH_CRAWL_LINKS_TOTAL': String(data.linksTotal || "0"),
+            'TECH_CRAWL_LINKS_INTERNAL': String(data.internalLinks || "0"),
+            'TECH_CRAWL_LINKS_EXTERNAL': String(data.externalLinks || "0"),
+            'TECH_CRAWL_LINKS_200': String(data.status200 || "0"),
+            'TECH_CRAWL_LINKS_3XX': String(data.status3xx || "0"),
+            'TECH_CRAWL_LINKS_4XX': String(data.status4xx || "0"),
+            'TECH_CRAWL_LINKS_5XX': String(data.status5xx || "0"),
+            'TECH_CRAWL_PAGI_MERE_BODY': String(data.pagiMereBody),
+            'TECH_CRAWL_PAGI_MERE_HEAD': String(data.pagiMereHead),
+            'TECH_CRAWL_PAGI_P2_BODY': String(data.pagiP2Body),
+            'TECH_CRAWL_PAGI_P2_HEAD': String(data.pagiP2Head),
+            'TECH_CRAWL_PAGI_ERREUR_LIEN': String(data.pagiErreurLien || ""),
+            'TECH_CRAWL_HREFLANGS': String(data.hreflangs || "")
+        });
+        syncPropertiesToConfigSheet();
+        Logger.log("Résultats Crawl sauvegardés.");
+        return { success: true };
+    } catch (e) {
         return { success: false, error: e.message };
     }
 }

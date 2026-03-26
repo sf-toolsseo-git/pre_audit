@@ -613,18 +613,38 @@
 
                     <div class="row">
                         <div class="col">
-                            <label class="input-label" for="tech-url-paginees">Gestion des URL paginées</label>
-                            <input type="text" id="tech-url-paginees" placeholder="Ex : ?page=2, /page/2/...">
+                            <label class="input-label" for="tech-url-page-mere">URL Page mère (Pagination)</label>
+                            <input type="text" id="tech-url-page-mere" placeholder="Ex : https://.../blog/">
+                        </div>
+                        <div class="col">
+                            <label class="input-label" for="tech-url-paginees">URL Page 2 (Pagination)</label>
+                            <input type="text" id="tech-url-paginees" placeholder="Ex : https://.../blog/page/2/">
                         </div>
                     </div>
 
                     <div class="row">
+                        <div class="col" style="flex: 0 0 200px;">
+                            <label class="input-label" for="tech-is-multilingue">Site Multilingue ?</label>
+                            <select id="tech-is-multilingue" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px;" onchange="document.getElementById('bloc-multilingue').style.display = this.value === 'oui' ? 'flex' : 'none';">
+                                <option value="non">Non</option>
+                                <option value="oui">Oui</option>
+                            </select>
+                        </div>
                         <div class="col">
-                            <label class="input-label" for="tech-url-filtre">Gestion des URL de filtre</label>
+                            <label class="input-label" for="tech-url-filtre">Gestion des URL de filtre (Facettes)</label>
                             <input type="text" id="tech-url-filtre" placeholder="Ex : ?color=red, /filtre/rouge...">
                         </div>
                     </div>
-
+                    <div class="row" id="bloc-multilingue" style="display: none; margin-top: 5px;">
+                        <div class="col">
+                            <label class="input-label" for="tech-langue-cible">Langue cible</label>
+                            <input type="text" id="tech-langue-cible" placeholder="Ex : Anglais">
+                        </div>
+                        <div class="col">
+                            <label class="input-label" for="tech-pays-cible">Pays cible (Optionnel)</label>
+                            <input type="text" id="tech-pays-cible" placeholder="Ex : Angleterre">
+                        </div>
+                    </div>
                     <div class="continuer-bar" style="margin-top: 25px;">
                         <span id="tech-msg" style="font-size: 12px; font-weight: bold;"></span>
                         <button class="btn btn-continuer" id="btn-lancer-analyse-tech" onclick="lancerAnalyseTechnique()">💾 Sauvegarder & lancer l'analyse</button>
@@ -869,6 +889,13 @@
                             if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
                             if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
                             if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
+                            if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
+                            if (config.techIsMultilingue) {
+                                document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
+                                document.getElementById('bloc-multilingue').style.display = config.techIsMultilingue === 'oui' ? 'flex' : 'none';
+                            }
+                            if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
+                            if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
                             if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                         }
 
@@ -2621,13 +2648,12 @@
                     return;
                 }
 
-                var urlDomaine = robotsUrl.replace('/robots.txt', '');
-                
                 var btn = document.getElementById('btn-fetch-sitemap');
                 btn.disabled = true;
                 btn.innerText = "⏳ Extraction...";
 
-                console.log("Appel de recupererSitemapDepuisRobots pour : " + urlDomaine);
+                console.log("Appel de recupererSitemapDepuisRobots pour : " + robotsUrl);
+                
                 google.script.run
                     .withSuccessHandler(function(res) {
                         btn.disabled = false;
@@ -2647,7 +2673,7 @@
                         alert("Erreur serveur : " + err.message);
                         console.error("Erreur backend Sitemap : " + err.message);
                     })
-                    .recupererSitemapDepuisRobots(urlDomaine);
+                    .recupererSitemapDepuisRobots(robotsUrl); // Envoi de l'URL directe
             }
 
             function sauvegarderEtatLieuxTechnique() {
@@ -2658,8 +2684,12 @@
                     techUrlCible: document.getElementById('tech-url-cible').value,
                     techSitemap: document.getElementById('tech-sitemap').value,
                     techTypePage: document.getElementById('tech-type-page').value,
+                    techUrlPageMere: document.getElementById('tech-url-page-mere').value,
                     techUrlPaginees: document.getElementById('tech-url-paginees').value,
-                    techUrlFiltre: document.getElementById('tech-url-filtre').value
+                    techUrlFiltre: document.getElementById('tech-url-filtre').value,
+                    techIsMultilingue: document.getElementById('tech-is-multilingue').value,
+                    techLangueCible: document.getElementById('tech-langue-cible').value,
+                    techPaysCible: document.getElementById('tech-pays-cible').value
                 };
 
                 btn.disabled = true;
@@ -2708,108 +2738,118 @@
             }
         
         function lancerAnalyseTechnique() {
-                console.log("=== DÉBUT : lancerAnalyseTechnique ===");
-                
-                var btn = document.getElementById('btn-lancer-analyse-tech');
-                var msg = document.getElementById('tech-msg');
-                var resultsContainer = document.getElementById('tech-results-container');
-                var crawlContent = document.getElementById('crawl-results-content');
-                
-                // 1. Sauvegarde silencieuse de la configuration (réutilisation de la logique existante)
-                var dataTech = {
-                    techUrlCible: document.getElementById('tech-url-cible').value,
-                    techSitemap: document.getElementById('tech-sitemap').value,
-                    techTypePage: document.getElementById('tech-type-page').value,
-                    techUrlPaginees: document.getElementById('tech-url-paginees').value,
-                    techUrlFiltre: document.getElementById('tech-url-filtre').value
-                };
-                google.script.run.sauvegarderEtatLieuxTechnique(dataTech);
+            console.log("=== DÉBUT : lancerAnalyseTechnique ===");
+            
+            var btn = document.getElementById('btn-lancer-analyse-tech');
+            var msg = document.getElementById('tech-msg');
+            var resultsContainer = document.getElementById('tech-results-container');
+            var crawlContent = document.getElementById('crawl-results-content');
+            
+            // 1. Sauvegarde silencieuse de la configuration
+            var dataTech = {
+                techUrlCible: document.getElementById('tech-url-cible').value,
+                techSitemap: document.getElementById('tech-sitemap').value,
+                techTypePage: document.getElementById('tech-type-page').value,
+                techUrlPageMere: document.getElementById('tech-url-page-mere').value,
+                techUrlPaginees: document.getElementById('tech-url-paginees').value,
+                techUrlFiltre: document.getElementById('tech-url-filtre').value,
+                techIsMultilingue: document.getElementById('tech-is-multilingue').value,
+                techLangueCible: document.getElementById('tech-langue-cible').value,
+                techPaysCible: document.getElementById('tech-pays-cible').value
+            };
+            google.script.run.sauvegarderEtatLieuxTechnique(dataTech);
 
-                // 2. Affichage de l'interface d'analyse
-                btn.disabled = true;
-                btn.innerText = "⏳ Analyse en cours...";
-                msg.innerText = "";
-                resultsContainer.style.display = 'block';
-                crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
+            // 2. Affichage de l'interface d'analyse
+            btn.disabled = true;
+            btn.innerText = "⏳ Analyse en cours...";
+            msg.innerText = "";
+            resultsContainer.style.display = 'block';
+            crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
 
-                // 3. Appel au backend pour le Crawl
-                var robotsUrl = document.getElementById('tech-robots-url').value;
-                
-                google.script.run
-                    .withSuccessHandler(function(res) {
-                        btn.disabled = false;
-                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
-                        console.log("Résultats Crawl reçus : ", res);
+            // 3. Appel au backend pour le Crawl
+            var robotsUrl = document.getElementById('tech-robots-url').value;
+            
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    btn.disabled = false;
+                    btn.innerText = "💾 Sauvegarder & lancer l'analyse";
+                    
+                    if (res.success) {
+                        // A. Affichage HTML
+                        var html = '';
                         
-                        if (res.success) {
-                            var html = '';
-                            
-                            // Statut & Temps de réponse
-                            var codeColor = res.statusCode === 200 ? '#188038' : '#d93025';
-                            var ttfbColor = res.scoreTtfb === 'Critique' ? '#d93025' : (res.scoreTtfb === 'Moyen' ? '#fbbc04' : '#188038');
+                        var codeColor = res.statusCode === 200 ? '#188038' : '#d93025';
+                        var ttfbColor = res.scoreTtfb === 'Critique' ? '#d93025' : (res.scoreTtfb === 'Moyen' ? '#fbbc04' : '#188038');
+                        html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Statut HTTP cible :</span> <strong style="color:' + codeColor + '">' + res.statusCode + '</strong></div>';
+                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Temps de réponse :</span> <strong style="color:' + ttfbColor + '">' + res.ttfb + ' ms (' + res.scoreTtfb + ')</strong></div>';
+                        
+                        var botColor = res.isBlocked ? '#d93025' : '#188038';
+                        var botText = res.isBlocked ? 'Bloqué (Disallow)' : 'Autorisé';
+                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Robots.txt :</span> <strong style="color:' + botColor + '">' + botText + '</strong></div>';
+                        html += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                        
+                        if (res.linksTotal > 0) {
+                            var pctInt = Math.round((res.internalLinks / res.linksTotal) * 100);
+                            var pctExt = 100 - pctInt;
                             html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Statut HTTP cible :</span> <strong style="color:' + codeColor + '">' + res.statusCode + '</strong></div>';
-                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Temps de réponse :</span> <strong style="color:' + ttfbColor + '">' + res.ttfb + ' ms (' + res.scoreTtfb + ')</strong></div>';
+                            html += '<div style="margin-bottom:4px;"><strong>Maillage (' + res.linksTotal + ' liens uniques) :</strong></div>';
+                            html += '<div style="display:flex; height:6px; border-radius:3px; overflow:hidden; margin-bottom:4px;">';
+                            html += '<div style="width:' + pctInt + '%; background:#1a73e8;" title="Interne"></div>';
+                            html += '<div style="width:' + pctExt + '%; background:#fbbc04;" title="Externe"></div>';
+                            html += '</div>';
+                            html += '<div style="display:flex; justify-content:space-between; font-size:11px; color:#5f6368;"><span>' + pctInt + '% Interne</span><span>' + pctExt + '% Externe</span></div>';
                             
-                            // Robots.txt
-                            var botColor = res.isBlocked ? '#d93025' : '#188038';
-                            var botText = res.isBlocked ? 'Bloqué (Disallow)' : 'Autorisé';
-                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Robots.txt :</span> <strong style="color:' + botColor + '">' + botText + '</strong></div>';
-                            html += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                            
-                            // Ratio des liens
-                            if (res.linksTotal > 0) {
-                                var pctInt = Math.round((res.internalLinks / res.linksTotal) * 100);
-                                var pctExt = 100 - pctInt;
-                                html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                                html += '<div style="margin-bottom:4px;"><strong>Maillage (' + res.linksTotal + ' liens uniques) :</strong></div>';
-                                html += '<div style="display:flex; height:6px; border-radius:3px; overflow:hidden; margin-bottom:4px;">';
-                                html += '<div style="width:' + pctInt + '%; background:#1a73e8;" title="Interne"></div>';
-                                html += '<div style="width:' + pctExt + '%; background:#fbbc04;" title="Externe"></div>';
-                                html += '</div>';
-                                html += '<div style="display:flex; justify-content:space-between; font-size:11px; color:#5f6368;"><span>' + pctInt + '% Interne</span><span>' + pctExt + '% Externe</span></div>';
-                                
-                                // Codes des liens
-                                html += '<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; background:#f8f9fa; padding:4px 8px; border-radius:4px;">';
-                                html += '<span><span style="color:#188038">●</span> 200: <b>' + res.statusCounts["200"] + '</b></span>';
-                                html += '<span><span style="color:#fbbc04">●</span> 3xx: <b>' + res.statusCounts["3xx"] + '</b></span>';
-                                html += '<span><span style="color:#d93025">●</span> 4xx: <b>' + res.statusCounts["4xx"] + '</b></span>';
-                                html += '<span><span style="color:#000000">●</span> 5xx: <b>' + res.statusCounts["5xx"] + '</b></span>';
-                                html += '</div></div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                            }
-
-                            // 1er lien In-Content
-                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                            html += '<div style="margin-bottom:4px; color:#5f6368;">1er lien in-content :</div>';
-                            html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">';
-                            html += '<strong>Ancre :</strong> ' + res.firstLink.anchor + '<br>';
-                            html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
-                            html += '</div></div>';
-
-                            // Check manuel conditionnel (si URL filtre est renseigné)
-                            if (res.hasUrlFiltre) {
-                                html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                                html += '<div style="font-size: 13px;">';
-                                html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
-                                html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
-                                html += '<input type="checkbox" style="margin-top:2px;">';
-                                html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de duplicate content.</span>';
-                                html += '</label></div>';
-                            }
-
-                            crawlContent.innerHTML = html;
-                        } else {
-                            crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
+                            html += '<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; background:#f8f9fa; padding:4px 8px; border-radius:4px;">';
+                            html += '<span><span style="color:#188038">●</span> 200: <b>' + res.statusCounts["200"] + '</b></span>';
+                            html += '<span><span style="color:#fbbc04">●</span> 3xx: <b>' + res.statusCounts["3xx"] + '</b></span>';
+                            html += '<span><span style="color:#d93025">●</span> 4xx: <b>' + res.statusCounts["4xx"] + '</b></span>';
+                            html += '<span><span style="color:#000000">●</span> 5xx: <b>' + res.statusCounts["5xx"] + '</b></span>';
+                            html += '</div></div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
                         }
-                    })
-                    .withFailureHandler(function(err) {
-                        btn.disabled = false;
-                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
-                        crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
-                        console.error("Erreur serveur : ", err);
-                    })
-                    .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre);
-            }
+
+                        html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        html += '<div style="margin-bottom:4px; color:#5f6368;">1er lien in-content :</div>';
+                        html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">';
+                        html += '<strong>Ancre :</strong> ' + res.firstLink.anchor + '<br>';
+                        html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
+                        html += '</div></div>';
+
+                        if (res.hasUrlFiltre) {
+                            html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                            html += '<div style="font-size: 13px;">';
+                            html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
+                            html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
+                            html += '<input type="checkbox" style="margin-top:2px;">';
+                            html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de duplicate content.</span>';
+                            html += '</label></div>';
+                        }
+
+                        crawlContent.innerHTML = html;
+
+                        // B. Envoi silencieux des données extraites au backend pour sauvegarde
+                        var crawlDataToSave = {
+                            statusCode: res.statusCode, ttfb: res.ttfb, scoreTtfb: res.scoreTtfb, isBlocked: res.isBlocked,
+                            robotsTxt: res.robotsTxt, firstLinkHref: res.firstLink.href, firstLinkAnchor: res.firstLink.anchor,
+                            linksTotal: res.linksTotal, internalLinks: res.internalLinks, externalLinks: res.externalLinks,
+                            status200: res.statusCounts["200"], status3xx: res.statusCounts["3xx"], status4xx: res.statusCounts["4xx"], status5xx: res.statusCounts["5xx"],
+                            pagiMereBody: res.pagiMereBody, pagiMereHead: res.pagiMereHead, pagiP2Body: res.pagiP2Body, pagiP2Head: res.pagiP2Head, pagiErreurLien: res.pagiErreurLien,
+                            hreflangs: res.hreflangs
+                        };
+                        google.script.run.sauvegarderResultatsCrawl(crawlDataToSave);
+
+                    } else {
+                        crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.disabled = false;
+                    btn.innerText = "💾 Sauvegarder & lancer l'analyse";
+                    crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
+                    console.error("Erreur serveur : ", err);
+                })
+                .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre, dataTech.techUrlPageMere, dataTech.techUrlPaginees);
+        }
         </script>
     </body>
 </html>
