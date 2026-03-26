@@ -572,7 +572,69 @@
             <div class="main-area">
                 <div class="config-card">
                     <h2 class="section-title">État des lieux technique</h2>
-                    <div class="section-description">Analyse technique du site (en construction).</div>
+                    <div class="section-description">Analyse technique du site et des fondations SEO.</div>
+
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col">
+                            <label class="input-label" for="tech-url-cible">Page cible analysée</label>
+                            <input type="text" id="tech-url-cible" readonly style="background-color: #f1f3f4; cursor: not-allowed;" placeholder="Chargement en cours...">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Fichier robots.txt</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="tech-robots-url" readonly style="background-color: #f1f3f4; cursor: not-allowed; flex: 1;" placeholder="Chargement en cours...">
+                                <button class="btn" id="btn-open-robots" onclick="ouvrirRobotsTxt()" style="width: auto;">Ouvrir ↗</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px;">
+                                <label class="input-label" for="tech-sitemap" style="margin-bottom: 0;">Sitemap XML</label>
+                                <button class="btn" id="btn-fetch-sitemap" onclick="lancerExtractionSitemap()" style="padding: 4px 8px; font-size: 11px;">🔄 Extraire depuis le robots.txt</button>
+                            </div>
+                            <input type="text" id="tech-sitemap" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="tech-type-page">Type de page</label>
+                            <select id="tech-type-page" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px;">
+                                <option value="">Sélectionnez un type de page...</option>
+                                <option value="homepage">Homepage</option>
+                                <option value="listing">Page de listing produit / catégorie</option>
+                                <option value="produit">Page produit</option>
+                                <option value="service">Page d'offre ou de service</option>
+                                <option value="categorie_blog">Catégorie de blog</option>
+                                <option value="article">Article de blog</option>
+                                <option value="contenu">Page de contenu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="tech-url-paginees">Gestion des URL paginées</label>
+                            <input type="text" id="tech-url-paginees" placeholder="Ex : ?page=2, /page/2/...">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label" for="tech-url-filtre">Gestion des URL de filtre</label>
+                            <input type="text" id="tech-url-filtre" placeholder="Ex : ?color=red, /filtre/rouge...">
+                        </div>
+                    </div>
+
+                    <div class="continuer-bar" style="margin-top: 25px;">
+                        <span id="tech-msg" style="font-size: 12px; font-weight: bold;"></span>
+                        <button class="btn btn-continuer" id="btn-save-tech" onclick="sauvegarderEtatLieuxTechnique()">💾 Sauvegarder l'audit technique</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -758,6 +820,28 @@
 
                                 document.getElementById('analysis-results').style.display = 'block';
                             }
+                            
+                            // Restauration de l'onglet 6
+                            var cibleVal = config.techUrlCible;
+                            if (!cibleVal || cibleVal === "-") cibleVal = config.clientUrl || "";
+                            document.getElementById('tech-url-cible').value = cibleVal;
+                            
+                            var robotsUrl = "";
+                            if (cibleVal) {
+                                try {
+                                    var urlObj = new URL(cibleVal);
+                                    robotsUrl = urlObj.origin + "/robots.txt";
+                                } catch(e) {
+                                    if (cibleVal.indexOf("http") === -1) {
+                                        robotsUrl = "https://" + cibleVal.split('/')[0] + "/robots.txt";
+                                    }
+                                }
+                            }
+                            document.getElementById('tech-robots-url').value = robotsUrl;
+                            if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
+                            if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
+                            if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
+                            if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                         }
 
                         google.script.run
@@ -2477,6 +2561,110 @@
                 var btn = document.getElementById('btnAnalyze');
                 if (btn) btn.disabled = false;
                 alert("Erreur : " + err.message);
+            }
+
+            // ========================== ONGLET 6 : TECHNIQUE ==========================
+
+            function ouvrirRobotsTxt() {
+                var url = document.getElementById('tech-robots-url').value;
+                if (url) {
+                    window.open(url, '_blank');
+                } else {
+                    alert("Aucune URL de robots.txt valide.");
+                }
+            }
+
+            function lancerExtractionSitemap() {
+                var robotsUrl = document.getElementById('tech-robots-url').value;
+                if (!robotsUrl) {
+                    alert("L'URL du robots.txt n'est pas définie.");
+                    return;
+                }
+
+                var urlDomaine = robotsUrl.replace('/robots.txt', '');
+                
+                var btn = document.getElementById('btn-fetch-sitemap');
+                btn.disabled = true;
+                btn.innerText = "⏳ Extraction...";
+
+                console.log("Appel de recupererSitemapDepuisRobots pour : " + urlDomaine);
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        btn.disabled = false;
+                        btn.innerText = "🔄 Extraire depuis le robots.txt";
+                        
+                        if (res.success && res.sitemapUrl) {
+                            document.getElementById('tech-sitemap').value = res.sitemapUrl;
+                            console.log("Sitemap trouvé : " + res.sitemapUrl);
+                        } else {
+                            alert("Information : " + (res.error || "Aucun Sitemap trouvé."));
+                            console.log("Erreur/Info Sitemap : " + res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "🔄 Extraire depuis le robots.txt";
+                        alert("Erreur serveur : " + err.message);
+                        console.error("Erreur backend Sitemap : " + err.message);
+                    })
+                    .recupererSitemapDepuisRobots(urlDomaine);
+            }
+
+            function sauvegarderEtatLieuxTechnique() {
+                var btn = document.getElementById('btn-save-tech');
+                var msg = document.getElementById('tech-msg');
+                
+                var data = {
+                    techUrlCible: document.getElementById('tech-url-cible').value,
+                    techSitemap: document.getElementById('tech-sitemap').value,
+                    techTypePage: document.getElementById('tech-type-page').value,
+                    techUrlPaginees: document.getElementById('tech-url-paginees').value,
+                    techUrlFiltre: document.getElementById('tech-url-filtre').value
+                };
+
+                btn.disabled = true;
+                msg.style.color = '#5f6368';
+                msg.innerText = "⏳ Sauvegarde...";
+                console.log("Sauvegarde des données techniques :", data);
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if (res.success) {
+                            btn.innerText = "✅ Sauvegardé";
+                            msg.style.color = '#188038';
+                            msg.innerText = "Données techniques enregistrées.";
+                            console.log("Sauvegarde technique réussie.");
+                            
+                            // MAJ de la conf globale locale
+                            if (window.globalConfig) {
+                                window.globalConfig.techUrlCible = data.techUrlCible;
+                                window.globalConfig.techSitemap = data.techSitemap;
+                                window.globalConfig.techTypePage = data.techTypePage;
+                                window.globalConfig.techUrlPaginees = data.techUrlPaginees;
+                                window.globalConfig.techUrlFiltre = data.techUrlFiltre;
+                            }
+
+                            setTimeout(function() {
+                                btn.disabled = false;
+                                btn.innerText = "💾 Sauvegarder l'audit technique";
+                                msg.innerText = "";
+                            }, 2500);
+                        } else {
+                            btn.disabled = false;
+                            btn.innerText = "💾 Sauvegarder l'audit technique";
+                            msg.style.color = '#d93025';
+                            msg.innerText = "❌ Erreur : " + res.error;
+                            console.error("Erreur logique lors de la sauvegarde :", res.error);
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "💾 Sauvegarder l'audit technique";
+                        msg.style.color = '#d93025';
+                        msg.innerText = "❌ Erreur : " + err.message;
+                        console.error("Erreur serveur lors de la sauvegarde :", err.message);
+                    })
+                    .sauvegarderEtatLieuxTechnique(data);
             }
         </script>
     </body>

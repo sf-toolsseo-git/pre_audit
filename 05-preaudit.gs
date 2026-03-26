@@ -107,10 +107,81 @@ function chargerConfigurationPreAudit() {
         reco3: props['FOCUS_RECO_3'] || "",
         reco3Html: props['FOCUS_RECO_3'] || "",
         reco4: props['FOCUS_RECO_4'] || "",
-        reco4Html: props['FOCUS_RECO_4'] || ""
+        reco4Html: props['FOCUS_RECO_4'] || "",
+
+        techUrlCible: props['TECH_URL_CIBLE'] || "",
+        techSitemap: props['TECH_SITEMAP'] || "",
+        techTypePage: props['TECH_TYPE_PAGE'] || "",
+        techUrlPaginees: props['TECH_URL_PAGINEES'] || "",
+        techUrlFiltre: props['TECH_URL_FILTRE'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
+}
+
+function recupererSitemapDepuisRobots(urlDomaine) {
+    Logger.log("=== DÉBUT : recupererSitemapDepuisRobots ===");
+    try {
+        if (!urlDomaine) throw new Error("URL du domaine vide.");
+        
+        var robotsUrl = urlDomaine;
+        if (robotsUrl.charAt(robotsUrl.length - 1) !== '/') {
+            robotsUrl += '/';
+        }
+        robotsUrl += 'robots.txt';
+        
+        Logger.log("Appel URL : " + robotsUrl);
+        var response = UrlFetchApp.fetch(robotsUrl, { muteHttpExceptions: true });
+        
+        if (response.getResponseCode() === 200) {
+            var content = response.getContentText();
+            var lines = content.split(/\r?\n/);
+            var regex = /^sitemap:\s*(.+)$/i;
+            
+            for (var i = 0; i < lines.length; i++) {
+                var match = lines[i].trim().match(regex);
+                if (match && match[1]) {
+                    Logger.log("Sitemap trouvé : " + match[1]);
+                    Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+                    return { success: true, sitemapUrl: match[1].trim() };
+                }
+            }
+            Logger.log("Aucune directive Sitemap trouvée.");
+            Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+            return { success: false, error: "Aucun Sitemap trouvé dans le robots.txt." };
+        } else {
+            Logger.log("Erreur HTTP : " + response.getResponseCode());
+            Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+            return { success: false, error: "Fichier robots.txt introuvable ou erreur HTTP." };
+        }
+    } catch (e) {
+        Logger.log("Erreur : " + e.message);
+        Logger.log("=== FIN : recupererSitemapDepuisRobots ===");
+        return { success: false, error: e.message };
+    }
+}
+
+function sauvegarderEtatLieuxTechnique(data) {
+    Logger.log("=== DÉBUT : sauvegarderEtatLieuxTechnique ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'TECH_URL_CIBLE': data.techUrlCible || "",
+            'TECH_SITEMAP': data.techSitemap || "",
+            'TECH_TYPE_PAGE': data.techTypePage || "",
+            'TECH_URL_PAGINEES': data.techUrlPaginees || "",
+            'TECH_URL_FILTRE': data.techUrlFiltre || ""
+        });
+        
+        syncPropertiesToConfigSheet();
+        Logger.log("Données techniques sauvegardées avec succès.");
+        Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde technique : " + e.message);
+        Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
+        return { success: false, error: e.message };
+    }
 }
 
 function recupererDetailsMotCle(motCle) {

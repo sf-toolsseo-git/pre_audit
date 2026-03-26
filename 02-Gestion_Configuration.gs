@@ -37,7 +37,8 @@ function chargerDonneesInitiales() {
             var propsToRestore = {};
             var hasData = false;
             
-            var keyRegex = /^[A-Z0-9_]{3,}$/;
+            // Correction : la clé doit commencer par une lettre ou un underscore pour éviter les chiffres purs
+            var keyRegex = /^[A-Z_][A-Z0-9_]{2,}$/;
             for (var r = 1; r < data.length; r++) {
                 var row = data[r];
                 for (var c = 0; c < row.length; c++) {
@@ -93,13 +94,10 @@ function chargerDonneesInitiales() {
         competitorStrength5: props['CONF_COMP_STRENGTH_5'] || "moyenne",
         competitorBrand5: props['CONF_COMP_BRAND_5'] || ""
     };
-    
     function parseAndMigrateCTR(val, defaultVal) {
         if (val === undefined || val === null || String(val).trim() === "") return defaultVal;
         var num = parseFloat(String(val).replace(',', '.'));
         if (isNaN(num)) return defaultVal;
-        // Si la valeur est en décimale (ex: 0.28), on la convertit en pourcentage (28)
-        // Les pourcentages habituels de CTR pour le top 10 sont généralement supérieurs à 1%
         if (num > 0 && num < 1) {
             return (num * 100).toString();
         }

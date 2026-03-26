@@ -305,11 +305,16 @@ function syncPropertiesToConfigSheet() {
                 ]
             },
             {
+                name: "🛠️ TECHNIQUE",
+                keys: [
+                    "TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE"
+                ]
+            },
+            {
                 name: "📦 AUTRES",
                 keys: []
             }
         ];
-        
         var knownKeys = [];
         for (var i = 0; i < groups.length; i++) {
             for (var j = 0; j < groups[i].keys.length; j++) {
@@ -321,6 +326,10 @@ function syncPropertiesToConfigSheet() {
         
         for (var key in props) {
             if (key.indexOf('DATA_') === 0 || key.indexOf('_CACHE') === 0 || (props[key] && props[key].length > 40000)) {
+                continue;
+            }
+            // Correction : exclusion stricte des clés purement numériques
+            if (!isNaN(key)) {
                 continue;
             }
             if (knownKeys.indexOf(key) === -1) {
@@ -375,18 +384,15 @@ function syncPropertiesToConfigSheet() {
                     .setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold")
                     .setHorizontalAlignment("center").setFontSize(10)
                     .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-                
                 // Alignement à gauche pour les clés
                 sheet.getRange(2, cBase, maxRows - 1, 1)
                     .setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368")
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
                     .setHorizontalAlignment("left");
-                
                 // Alignement à gauche pour les valeurs
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top")
                     .setHorizontalAlignment("left");
-                
                 sheet.setColumnWidth(cBase, 350);
                 sheet.setColumnWidth(cBase + 1, 350);
                 if (cBase + 2 <= numGroups * 3) {
@@ -436,6 +442,48 @@ function syncPropertiesToConfigSheet() {
         Logger.log("Erreur lors de la synchronisation vers l'onglet CONFIG : " + e.toString());
     }
     Logger.log("=== FIN : syncPropertiesToConfigSheet ===");
+}
+
+function restaurerProprietesDepuisConfig() {
+    var ui = SpreadsheetApp.getUi();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var configSheet = ss.getSheetByName("CONFIG");
+
+    if (!configSheet) {
+        ui.alert("Erreur : L'onglet CONFIG est introuvable. Restauration impossible.");
+        return;
+    }
+
+    try {
+        var data = configSheet.getDataRange().getValues();
+        var propsToRestore = {};
+        var count = 0;
+        // Correction : la clé doit commencer par une lettre ou un underscore pour éviter de prendre les chiffres purs
+        var keyRegex = /^[A-Z_][A-Z0-9_]{2,}$/;
+        for (var r = 1; r < data.length; r++) {
+            var row = data[r];
+            for (var c = 0; c < row.length; c++) {
+                var cellValue = String(row[c]).trim();
+                if (keyRegex.test(cellValue) && (c + 1) < row.length) {
+                    var val = row[c + 1] !== null ? String(row[c + 1]) : "";
+                    propsToRestore[cellValue] = val;
+                    count++;
+                    c++;
+                }
+            }
+        }
+
+        if (count > 0) {
+            PropertiesService.getScriptProperties().setProperties(propsToRestore);
+            ui.alert("Succès : " + count + " propriétés restaurées avec succès depuis l'onglet CONFIG.");
+        } else {
+            ui.alert("Information : Aucune propriété valide n'a été trouvée dans l'onglet CONFIG.");
+        }
+
+    } catch (e) {
+        Logger.log("Erreur lors de la restauration depuis CONFIG : " + e.toString());
+        ui.alert("Erreur lors de la restauration : " + e.toString());
+    }
 }
 
 function sauvegarderPreAudit() {
@@ -492,47 +540,5 @@ function sauvegarderPreAudit() {
     } catch (e) {
         Logger.log("Erreur critique lors de la sauvegarde pré-audit : " + e.toString());
         ui.alert("Une erreur est survenue : " + e.toString());
-    }
-}
-
-function restaurerProprietesDepuisConfig() {
-    var ui = SpreadsheetApp.getUi();
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var configSheet = ss.getSheetByName("CONFIG");
-
-    if (!configSheet) {
-        ui.alert("Erreur : L'onglet CONFIG est introuvable. Restauration impossible.");
-        return;
-    }
-
-    try {
-        var data = configSheet.getDataRange().getValues();
-        var propsToRestore = {};
-        var count = 0;
-        var keyRegex = /^[A-Z0-9_]{3,}$/;
-
-        for (var r = 1; r < data.length; r++) {
-            var row = data[r];
-            for (var c = 0; c < row.length; c++) {
-                var cellValue = String(row[c]).trim();
-                if (keyRegex.test(cellValue) && (c + 1) < row.length) {
-                    var val = row[c + 1] !== null ? String(row[c + 1]) : "";
-                    propsToRestore[cellValue] = val;
-                    count++;
-                    c++; 
-                }
-            }
-        }
-
-        if (count > 0) {
-            PropertiesService.getScriptProperties().setProperties(propsToRestore);
-            ui.alert("Succès : " + count + " propriétés restaurées avec succès depuis l'onglet CONFIG.");
-        } else {
-            ui.alert("Information : Aucune propriété valide n'a été trouvée dans l'onglet CONFIG.");
-        }
-
-    } catch (e) {
-        Logger.log("Erreur lors de la restauration depuis CONFIG : " + e.toString());
-        ui.alert("Erreur lors de la restauration : " + e.toString());
     }
 }
