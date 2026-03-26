@@ -823,7 +823,17 @@
                             
                             // Restauration de l'onglet 6
                             var cibleVal = config.techUrlCible;
-                            if (!cibleVal || cibleVal === "-") cibleVal = config.clientUrl || "";
+                            
+                            // On vérifie d'abord la page cible renseignée dans l'onglet Focus (TARGET_URL_CLIENT)
+                            if (!cibleVal || cibleVal === "-") {
+                                cibleVal = config.focusClientUrl;
+                            }
+                            
+                            // Si toujours vide, on bascule sur la page d'accueil (CONF_CLIENT_URL)
+                            if (!cibleVal || cibleVal === "-") {
+                                cibleVal = config.clientUrl || "";
+                            }
+                            
                             document.getElementById('tech-url-cible').value = cibleVal;
                             
                             var robotsUrl = "";
