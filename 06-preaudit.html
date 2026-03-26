@@ -2758,6 +2758,9 @@
             var resultsContainer = document.getElementById('tech-results-container');
             var crawlContent = document.getElementById('crawl-results-content');
             var indexationContent = document.getElementById('indexation-results-content');
+            var posContainer = document.getElementById('positionnement-results-container');
+            var posTitle = document.getElementById('positionnement-results-title');
+            var posContent = document.getElementById('positionnement-results-content');
             
             // 1. Sauvegarde silencieuse de la configuration
             var dataTech = {
@@ -2780,6 +2783,14 @@
             resultsContainer.style.display = 'block';
             crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
             indexationContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Vérification de l\'indexation et du Sitemap...</div></div>';
+            posContainer.style.background = '#fff';
+            posContainer.style.border = '1px solid #dadce0';
+            posContainer.style.opacity = '1';
+            posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+            posTitle.style.color = '#08133B';
+            posTitle.style.borderBottom = '1px solid #f1f3f4';
+            posContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Extraction du positionnement sémantique...</div></div>';
+
 
             var robotsUrl = document.getElementById('tech-robots-url').value;
             var sitemapUrl = dataTech.techSitemap;
@@ -2958,18 +2969,7 @@
                         };
                         google.script.run.sauvegarderResultatsCrawl(crawlDataToSave);
 
-                        // C. Positionnement
-                        var posContainer = document.getElementById('positionnement-results-container');
-                        var posTitle = document.getElementById('positionnement-results-title');
-                        var posContent = document.getElementById('positionnement-results-content');
-                        
-                        posContainer.style.background = '#fff';
-                        posContainer.style.border = '1px solid #dadce0';
-                        posContainer.style.opacity = '1';
-                        posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                        posTitle.style.color = '#08133B';
-                        posTitle.style.borderBottom = '1px solid #f1f3f4';
-                        
+                        // C. Positionnement                        
                         var htmlPos = '';
                         var kwText = res.targetKw ? res.targetKw : "Non défini";
                         htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
