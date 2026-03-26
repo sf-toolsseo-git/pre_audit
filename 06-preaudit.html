@@ -683,41 +683,49 @@
                                 document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
                                 document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
                                 document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
-                                var icon1 = document.getElementById('serp-icon-render-1');
-                                if (icon1) {
-                                    var feat1 = config.serpSvg1 && DRIVE_ICONS_MAPPING[config.serpSvg1] ? config.serpSvg1 : "defaut";
-                                    var id1 = DRIVE_ICONS_MAPPING[feat1];
-                                    icon1.innerHTML = config.serpSvg1 ? '<img src="https://drive.google.com/uc?export=view&id=' + id1 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (config.serpSvg1) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-1');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg1);
                                 }
                                 
                                 document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
                                 document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
                                 document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
-                                var icon2 = document.getElementById('serp-icon-render-2');
-                                if (icon2) {
-                                    var feat2 = config.serpSvg2 && DRIVE_ICONS_MAPPING[config.serpSvg2] ? config.serpSvg2 : "defaut";
-                                    var id2 = DRIVE_ICONS_MAPPING[feat2];
-                                    icon2.innerHTML = config.serpSvg2 ? '<img src="https://drive.google.com/uc?export=view&id=' + id2 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (config.serpSvg2) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-2');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg2);
                                 }
                                 
                                 document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
                                 document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
                                 document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
-                                var icon3 = document.getElementById('serp-icon-render-3');
-                                if (icon3) {
-                                    var feat3 = config.serpSvg3 && DRIVE_ICONS_MAPPING[config.serpSvg3] ? config.serpSvg3 : "defaut";
-                                    var id3 = DRIVE_ICONS_MAPPING[feat3];
-                                    icon3.innerHTML = config.serpSvg3 ? '<img src="https://drive.google.com/uc?export=view&id=' + id3 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (config.serpSvg3) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-3');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg3);
                                 }
                                 
                                 document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
                                 document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
                                 document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
-                                var icon4 = document.getElementById('serp-icon-render-4');
-                                if (icon4) {
-                                    var feat4 = config.serpSvg4 && DRIVE_ICONS_MAPPING[config.serpSvg4] ? config.serpSvg4 : "defaut";
-                                    var id4 = DRIVE_ICONS_MAPPING[feat4];
-                                    icon4.innerHTML = config.serpSvg4 ? '<img src="https://drive.google.com/uc?export=view&id=' + id4 + '" style="width:100%;height:100%;object-fit:contain;">' : '';
+                                if (config.serpSvg4) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-4');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg4);
                                 }
 
                                 // Intention
@@ -2262,6 +2270,7 @@
             }
 
             function lancerAnalyseApprofondie() {
+                console.log("=== DÉBUT : lancerAnalyseApprofondie ===");
                 var motCle = document.getElementById('focus-kw').value.trim();
                 if (motCle === "") {
                     alert("Veuillez saisir un mot-clé pour lancer l'analyse.");
@@ -2285,34 +2294,38 @@
                 setStepperState('step-structure', '');
                 setStepperState('step-ia', '');
 
+                console.log("Appel au serveur lancerWorkflowSERP avec le mot-clé :", motCle);
+
                 google.script.run
                     .withSuccessHandler(function(res) {
+                        console.log("=== RÉPONSE DE lancerWorkflowSERP REÇUE ===");
+                        console.log("Statut de la réponse :", res.success);
+                        console.log("Données complètes :", res.data);
+                        
                         btn.disabled = false;
                         if (res.success) {
                             setStepperState('step-ia', 'completed');
                             var data = res.data;
                             
-                            // 1. Éléments SERP (Titre, Desc, Type)
+                            // 1. Éléments SERP
                             if (data.elements_serp && Array.isArray(data.elements_serp)) {
+                                console.log("Traitement des éléments SERP dans le HTML...");
                                 for (var i = 0; i < 4; i++) {
-                                    var el = data.elements_serp[i] || { titre: "", description: "", png_icon: "" };
+                                    var el = data.elements_serp[i] || { titre: "", description: "", png_icon: "", base64_data: null };
                                     var idx = i + 1;
                                     var inputTitre = document.getElementById('serp-titre-' + idx);
                                     var inputDesc = document.getElementById('serp-desc-' + idx);
                                     var inputSvg = document.getElementById('serp-svg-' + idx);
                                     var renderIcon = document.getElementById('serp-icon-render-' + idx);
                                     
+                                    console.log("Icône traitée pour index " + idx + " :", el.png_icon);
+
                                     if (inputTitre) inputTitre.value = el.titre || "";
                                     if (inputDesc) inputDesc.value = el.description || "";
                                     if (inputSvg) inputSvg.value = el.png_icon || "";
+                                    
                                     if (renderIcon) {
-                                        if (el.png_icon) {
-                                            var finalFeat = DRIVE_ICONS_MAPPING[el.png_icon] ? el.png_icon : "defaut";
-                                            var iconId = DRIVE_ICONS_MAPPING[finalFeat];
-                                            renderIcon.innerHTML = '<img src="https://drive.google.com/uc?export=view&id=' + iconId + '" style="width:100%;height:100%;object-fit:contain;">';
-                                        } else {
-                                            renderIcon.innerHTML = '';
-                                        }
+                                        renderIcon.innerHTML = el.base64_data ? '<img src="data:image/png;base64,' + el.base64_data + '" style="width:100%;height:100%;object-fit:contain;">' : '';
                                     }
                                 }
                             }
@@ -2359,14 +2372,17 @@
                             
                             results.style.display = 'block';
                             autoSaveAnalyseFocus();
+                            console.log("=== FIN : lancerAnalyseApprofondie (Succès) ===");
                         } else {
                             setStepperState('step-ia', 'error');
+                            console.error("Erreur renvoyée par le serveur :", res.error);
                             alert("Erreur lors de l'analyse : " + res.error);
                         }
                     })
                     .withFailureHandler(function(err) {
                         btn.disabled = false;
                         setStepperState('step-ia', 'error');
+                        console.error("Erreur réseau ou critique du serveur :", err.message);
                         alert("Erreur critique : " + err.message);
                     })
                     .lancerWorkflowSERP({
@@ -2376,7 +2392,6 @@
                         localisation: localisation
                     });
                     
-                // Simulation visuelle du stepper pendant le traitement
                 setTimeout(function() {
                     if (document.getElementById('step-serp').classList.contains('active')) {
                         setStepperState('step-serp', 'completed');

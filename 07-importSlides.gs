@@ -479,7 +479,6 @@ function exporterFocusMotCleSlides() {
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
-
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
@@ -498,7 +497,6 @@ function exporterFocusMotCleSlides() {
         
         var rawClientPos = props['TARGET_KW_CLIENT_POS'] || "";
         var formatedClientPos = (rawClientPos && rawClientPos !== "-") ? "Position " + rawClientPos : rawClientPos;
-        
         var rawCompPos = props['TARGET_KW_CONCURRENT_POS'] || "";
         var formatedCompPos = (rawCompPos && rawCompPos !== "-") ? "Position " + rawCompPos : rawCompPos;
 
@@ -546,7 +544,6 @@ function exporterFocusMotCleSlides() {
             '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
         };
 
-        // Fonction utilitaire non destructive pour **mot** (gras uniquement)
         function formatRichTextFocus(element) {
             try {
                 var textRange = element.getText();
@@ -554,7 +551,7 @@ function exporterFocusMotCleSlides() {
                 var regex = /\*\*([^*]+)\*\*/g;
                 var matches = [];
                 var match;
-                
+
                 while ((match = regex.exec(textStr)) !== null) {
                     matches.push({
                         start: match.index,
@@ -569,7 +566,7 @@ function exporterFocusMotCleSlides() {
                     
                     textRange.getRange(endDoubleAst, endDoubleAst + 2).clear();
                     textRange.getRange(m.start, m.start + 2).clear();
-                    
+
                     var styledRange = textRange.getRange(m.start, m.start + m.text.length);
                     styledRange.getTextStyle().setBold(true);
                 }
@@ -584,10 +581,8 @@ function exporterFocusMotCleSlides() {
                 var type = element.getPageElementType();
                 
                 if (type === SlidesApp.PageElementType.GROUP) {
-                    // Parcours du groupe
                     element.asGroup().getChildren().forEach(processElement);
                 } else if (type === SlidesApp.PageElementType.TABLE) {
-                    // Parcours du tableau
                     var table = element.asTable();
                     for (var r = 0; r < table.getNumRows(); r++) {
                         for (var c = 0; c < table.getNumColumns(); c++) {
@@ -595,49 +590,45 @@ function exporterFocusMotCleSlides() {
                         }
                     }
                 } else if (type === SlidesApp.PageElementType.SHAPE) {
-                    // Parcours d'une forme classique
                     processTextContainer(element.asShape(), slide);
                 } else if (type === SlidesApp.PageElementType.IMAGE) {
-                    // Parcours d'une image (les placeholders d'image)
                     processTextContainer(element.asImage(), slide);
                 }
             }
 
             function processTextContainer(element, currentSlide) {
-                // Différenciation : les Cellules n'ont pas de description
                 var isShape = (typeof element.getDescription === 'function');
                 var descRaw = isShape ? (element.getDescription() || "") : "";
                 var shapeText = "";
-                
+
                 try {
                     shapeText = element.getText().asString();
                 } catch(e) {
-                    return; // Si l'élément ne contient pas de texte, on ignore
+                    return; 
                 }
 
-                // --- Étape A : Cas 1 (Réservé aux Shapes) via description exacte ---
                 if (isShape && descRaw !== "") {
                     if (simpleMapping[descRaw] !== undefined) {
-                        Logger.log("Remplacement exact Cas 1 (simple) pour : " + descRaw);
                         element.getText().setText(String(simpleMapping[descRaw]));
-                        return; // On stoppe le traitement de cet élément
+                        return; 
                     }
                     
                     if (altTextMapping[descRaw] !== undefined) {
-                        Logger.log("Remplacement exact Cas 1 (alt) pour : " + descRaw);
                         element.getText().setText(String(altTextMapping[descRaw]));
                         formatRichTextFocus(element);
-                        return; // On stoppe le traitement de cet élément
+                        return; 
                     }
 
-                    // Images PNG via Google Drive (Cas 1) pour les placeholders d'icones SERP
                     var isSerpIcon = (descRaw === "PLACEHOLDER_SERPELEMENT_1" || 
                                       descRaw === "PLACEHOLDER_SERPELEMENT_2" || 
                                       descRaw === "PLACEHOLDER_SERPELEMENT_3" || 
                                       descRaw === "PLACEHOLDER_SERPELEMENT_4");
 
                     if (isSerpIcon && props[descRaw] && currentSlide) {
+                        Logger.log("Détection du placeholder d'image : " + descRaw);
                         var featureName = props[descRaw].trim();
+                        Logger.log("Valeur récupérée dans les propriétés : " + featureName);
+
                         if (featureName !== "") {
                             try {
                                 var DRIVE_ICONS_MAPPING = {
@@ -651,32 +642,33 @@ function exporterFocusMotCleSlides() {
                                     "image": "1acgKroCoqPOy9rV2KnRwjdxk_fP_UIPh",
                                     "defaut": "18ILbiONR6N1gfikkFh-lMF1oTye45hje"
                                 };
-                                
+
                                 var finalFeature = DRIVE_ICONS_MAPPING[featureName] ? featureName : "defaut";
+                                Logger.log("Feature finale utilisée : " + finalFeature);
+                                
                                 var fileId = DRIVE_ICONS_MAPPING[finalFeature];
+                                Logger.log("ID Drive utilisé : " + fileId);
                                 
-                                Logger.log("Traitement d'une icône SERP détectée par sa description : " + descRaw + " (ID Drive récupéré pour " + finalFeature + ")");
-                                
-                                var pngBlob = DriveApp.getFileById(fileId).getBlob();
+                                var file = DriveApp.getFileById(fileId);
+                                var pngBlob = file.getBlob();
+                                Logger.log("Blob récupéré via DriveApp.");
+
                                 var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
                                 newImg.setDescription(descRaw);
                                 element.remove();
-                                Logger.log("Icône insérée avec succès depuis Google Drive.");
-                                return; // On stoppe le traitement de cet élément
+                                Logger.log("Insertion réussie.");
+                                return; 
                             } catch (errDrive) {
-                                Logger.log("Erreur lors de la récupération ou insertion de l'icône SERP : " + errDrive.message);
+                                Logger.log("ERREUR CRITIQUE LORS DE L'INSERTION DE L'IMAGE DRIVE : " + errDrive.message);
                             }
                         }
                     }
                 }
 
-                // --- Étape B : Cas 2 (Shapes non traitées en A + Cellules) ---
                 if (shapeText) {
                     var hasReplaced = false;
                     for (var phKey in placeholderMapping) {
                         if (shapeText.indexOf(phKey) !== -1) {
-                            Logger.log("Remplacement local Cas 2 pour : " + phKey);
-                            // Correction API : replaceAllText sur le TextRange
                             element.getText().replaceAllText(phKey, placeholderMapping[phKey]);
                             hasReplaced = true;
                         }
@@ -687,7 +679,6 @@ function exporterFocusMotCleSlides() {
                 }
             }
 
-            // Lancement du scan récursif depuis la racine de la slide
             slide.getPageElements().forEach(processElement);
         });
 
