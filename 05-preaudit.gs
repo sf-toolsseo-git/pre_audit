@@ -2269,70 +2269,125 @@ function genererAnalyseTechniqueIA() {
         var props = PropertiesService.getScriptProperties().getProperties();
         var apiKey = props['CONF_API_KEY_GEMINI'];
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
+        var urlCible = props['TECH_URL_CIBLE'] || "";
+        var motCleCible = props['TARGET_KW'] || "Non défini";
 
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
         }
 
-        // Compilation des données techniques brutes
-        var techDataStr = "=== DONNÉES CRAWL ===\n" +
-            "Status Code: " + (props['TECH_CRAWL_STATUS_CODE'] || "") + "\n" +
-            "TTFB (ms): " + (props['TECH_CRAWL_TTFB_MS'] || "") + " (" + (props['TECH_CRAWL_TTFB_SCORE'] || "") + ")\n" +
-            "Robots Bloqué: " + (props['TECH_CRAWL_ROBOTS_BLOCKED'] || "") + "\n" +
-            "Liens Total: " + (props['TECH_CRAWL_LINKS_TOTAL'] || "") + " (Int: " + (props['TECH_CRAWL_LINKS_INTERNAL'] || "") + ", Ext: " + (props['TECH_CRAWL_LINKS_EXTERNAL'] || "") + ")\n" +
-            "Status Liens: 200=" + (props['TECH_CRAWL_LINKS_200'] || "") + ", 3xx=" + (props['TECH_CRAWL_LINKS_3XX'] || "") + ", 4xx=" + (props['TECH_CRAWL_LINKS_4XX'] || "") + ", 5xx=" + (props['TECH_CRAWL_LINKS_5XX'] || "") + "\n" +
-            "Hreflangs: " + (props['TECH_CRAWL_HREFLANGS'] || "") + "\n\n" +
-            "=== DONNÉES INDEXATION ===\n" +
-            "Sitemap Présent: " + (props['TECH_INDEX_SITEMAP_PRESENT'] || "") + "\n" +
-            "URL dans Sitemap: " + (props['TECH_INDEX_URL_IN_SITEMAP'] || "") + "\n" +
-            "Meta Robots: " + (props['TECH_INDEX_META_ROBOTS'] || "") + "\n" +
-            "Canonical: " + (props['TECH_INDEX_CANONICAL'] || "") + "\n" +
-            "Pagination Meta Robots: " + (props['TECH_INDEX_PAGI_META_ROBOTS'] || "") + "\n" +
-            "Pagination Canonical: " + (props['TECH_INDEX_PAGI_CANONICAL'] || "") + "\n\n" +
-            "=== DONNÉES POSITIONNEMENT ===\n" +
-            "Title: " + (props['TECH_POS_TITLE'] || "") + " (Has Kw: " + (props['TECH_POS_TITLE_HAS_KW'] || "") + ")\n" +
-            "H1: " + (props['TECH_POS_H1'] || "") + " (Has Kw: " + (props['TECH_POS_H1_HAS_KW'] || "") + ")\n" +
-            "Hn: " + (props['TECH_POS_HN'] || "") + "\n" +
-            "Schema.org: " + (props['TECH_POS_SCHEMA'] || "") + "\n";
+        Logger.log("Étape 1 : Évaluation algorithmique et préparation des données brutes");
 
-        var systemPrompt = "Tu es un expert SEO technique et un consultant avant-vente pointu. Ton objectif est d'analyser un jeu de données techniques brutes extraites d'une page web cible et de générer un audit de santé SEO ultra-synthétique, directement intégrable dans une diapositive de présentation.\n" +
-            "Ton analyse est scindée en 3 blocs : Crawl, Indexation, Positionnement.\n" +
-            "RÈGLES DE PRIORISATION ET RATIO (CRUCIAL) : Pour chaque bloc, tu dois générer EXACTEMENT 3 puces respectant ce ratio : 1 point fort (positif) pour rassurer, et 2 points de friction ou d'alerte (négatifs ou moyens) pour justifier un accompagnement. Si la donnée est manquante, adapte le texte.\n" +
-            "GESTION DES ICÔNES : Pour chaque puce, définis la clé 'icone' strictement parmi : BON, MOYEN, MAUVAIS, INCONNU.\n" +
-            "RÈGLES DE RÉDACTION : Maximum 2 lignes très courtes par puce. Encadre les mots-clés importants avec des astérisques simples (*mot*).\n" +
-            "Format de sortie JSON OBLIGATOIRE :\n" +
+        // --- CRAWL ---
+        var statusCode = parseInt(props['TECH_CRAWL_STATUS_CODE'], 10);
+        var evalStatus = (statusCode === 200) ? "[OK]" : (statusCode >= 300 && statusCode < 400 ? "[AVERTISSEMENT]" : "[KO]");
+        var ttfb = parseInt(props['TECH_CRAWL_TTFB_MS'], 10);
+        var evalTtfb = (ttfb < 500) ? "[OK]" : (ttfb <= 1500 ? "[AVERTISSEMENT]" : "[KO]");
+        var links4xx = parseInt(props['TECH_CRAWL_LINKS_4XX'] || "0", 10);
+        var links5xx = parseInt(props['TECH_CRAWL_LINKS_5XX'] || "0", 10);
+        var robotsTxt = props['TECH_CRAWL_ROBOTS'] || "Fichier vide ou introuvable";
+
+        // --- INDEXATION ---
+        var metaRobots = (props['TECH_INDEX_META_ROBOTS'] || "").toLowerCase();
+        var evalMetaRobots = "[OK]";
+        if (metaRobots.indexOf("noindex") !== -1) {
+            evalMetaRobots = "[KO]";
+        } else if (metaRobots.indexOf("nofollow") !== -1) {
+            evalMetaRobots = "[AVERTISSEMENT]";
+        }
+        var canonical = props['TECH_INDEX_CANONICAL'] || "";
+        var evalCanonical = (canonical === urlCible) ? "[OK]" : (canonical === "" ? "[AVERTISSEMENT]" : "[KO]");
+        var sitemapPresent = props['TECH_INDEX_SITEMAP_PRESENT'] || "";
+        var urlInSitemap = props['TECH_INDEX_URL_IN_SITEMAP'] || "";
+        var evalSitemap = "[KO]";
+        if (urlInSitemap.indexOf("Présente") !== -1) {
+            evalSitemap = "[OK]";
+        } else if (sitemapPresent.indexOf("Oui") !== -1) {
+            evalSitemap = "[AVERTISSEMENT]";
+        }
+        
+        // MULTILINGUE
+        var isMultilingue = (props['TECH_IS_MULTILINGUE'] || "non").toLowerCase();
+        var langueCible = props['TECH_LANGUE_CIBLE'] || "Non spécifiée";
+        var paysCible = props['TECH_PAYS_CIBLE'] || "Non spécifié";
+        var hreflangs = props['TECH_CRAWL_HREFLANGS'] || "Aucune balise détectée";
+
+        // --- POSITIONNEMENT ---
+        var titleText = props['TECH_POS_TITLE'] || "";
+        var titleHasKw = props['TECH_POS_TITLE_HAS_KW'] === "true";
+        var evalTitle = titleHasKw ? "[OK]" : "[KO]";
+        
+        var h1Text = props['TECH_POS_H1'] || "";
+        var h1HasKw = props['TECH_POS_H1_HAS_KW'] === "true";
+        var evalH1 = h1HasKw ? "[OK]" : "[KO]";
+
+        var typePage = props['TECH_TYPE_PAGE'] || "Non spécifié";
+        var schemas = props['TECH_POS_SCHEMA'] || "Aucun schéma détecté";
+
+        Logger.log("Étape 2 : Construction du dossier technique pour l'IA");
+
+        var techDataStr = "=== BLOC 1 : CRAWL ===\n" +
+            "- Code HTTP : " + statusCode + " -> Évaluation stricte : " + evalStatus + "\n" +
+            "- Temps de réponse (TTFB) : " + ttfb + " ms -> Évaluation stricte : " + evalTtfb + "\n" +
+            "- Liens sortants morts : " + links4xx + " erreurs 4xx (introuvable) et " + links5xx + " erreurs 5xx (serveur).\n" +
+            "- Fichier robots.txt brut (à auditer) :\n" + robotsTxt + "\n\n" +
+            
+            "=== BLOC 2 : INDEXATION ===\n" +
+            "- Meta Robots : " + metaRobots + " -> Évaluation stricte : " + evalMetaRobots + "\n" +
+            "- Balise Canonical : " + (canonical || "Absente") + " -> Évaluation stricte : " + evalCanonical + "\n" +
+            "- URL dans le Sitemap : " + urlInSitemap + " -> Évaluation stricte : " + evalSitemap + "\n" +
+            "- Site multilingue déclaré : " + isMultilingue + "\n" +
+            "- Cible déclarée (si multilingue) : Langue=" + langueCible + ", Pays=" + paysCible + "\n" +
+            "- Balises hreflang brutes trouvées : " + hreflangs + "\n\n" +
+            
+            "=== BLOC 3 : POSITIONNEMENT ON-PAGE ===\n" +
+            "- Mot-clé cible visé : \"" + motCleCible + "\"\n" +
+            "- Balise <title> exacte : \"" + titleText + "\" -> Présence stricte : " + evalTitle + "\n" +
+            "- Balise <h1> exacte : \"" + h1Text + "\" -> Présence stricte : " + evalH1 + "\n" +
+            "- Type de page déclaré : " + typePage + "\n" +
+            "- Données structurées (Schema.org) trouvées : " + schemas + "\n";
+
+        Logger.log("Étape 3 : Définition de la doctrine SEO stricte (Prompt)");
+
+        var systemPrompt = "Tu es un auditeur SEO technique expert. Ton rôle est de restituer un audit sous forme de puces pour le client. Tu dois utiliser ton intelligence pour nuancer certaines données algorithmiques, tout en respectant une doctrine stricte.\n\n" +
+            "RÈGLES TYPOGRAPHIQUES OBLIGATOIRES (français) :\n" +
+            "- Majuscule uniquement au premier mot des puces (sauf noms propres).\n" +
+            "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse.\n" +
+            "- Un espace obligatoire avant les deux-points ( :).\n" +
+            "- Pas de majuscule après les deux-points ( :).\n" +
+            "- Utilise obligatoirement la syntaxe HTML pour les balises : écris <title> et <h1> (jamais 'Title' ou 'H1').\n" +
+            "- Encadre l'expression clé de chaque puce avec des astérisques simples (*mot*).\n\n" +
+            "DOCTRINE D'ANALYSE PAR BLOC :\n" +
+            "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx (pages introuvables) des erreurs 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent (* et Googlebot). Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS).\n" +
+            "2. INDEXATION : Si le site est déclaré 'non' multilingue, IGNORE TOTALEMENT les hreflangs. S'il l'est, croise la cible déclarée avec les balises trouvées (vérifie la syntaxe ISO et l'auto-référencement). Pour la pagination, sache que les pages paginées DOIVENT être indexables : ne le signale jamais comme un problème.\n" +
+            "3. POSITIONNEMENT : Le script a fait une vérification stricte du mot-clé exact. SI l'évaluation est [KO], utilise ton intelligence sémantique : si tu détectes que la balise <title> ou <h1> contient des synonymes très proches ou le mot-clé dans un ordre différent, corrige l'évaluation en MOYEN et indique qu'une *optimisation sémantique* est nécessaire. Pour les 'Schema.org', fais un Gap Analysis : compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées (ex : manque de 'Review' sur un produit).\n\n" +
+            "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
+            "SÉLECTION ET FORMAT : Génère exactement 3 puces par catégorie en choisissant les points les plus pertinents. Attribue la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
+            "Format JSON attendu :\n" +
             "{\n" +
-            "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"...\" }, ... (3 items) ],\n" +
-            "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"...\" }, ... (3 items) ],\n" +
-            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"...\" }, ... (3 items) ]\n" +
+            "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
+            "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"L'URL est absente...\" }, ... ],\n" +
+            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise <h1> contient une...\" }, ... ]\n" +
             "}";
 
-        var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Données techniques brutes] :\n" + techDataStr;
+        var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Dossier technique à auditer] :\n" + techDataStr;
 
         var payload = {
-            "system_instruction": {
-                "parts": [{"text": systemPrompt}]
-            },
-            "contents": [
-                {"parts": [{"text": userPrompt}]}
-            ],
-            "generationConfig": {
-                "responseMimeType": "application/json"
-            }
+            "system_instruction": { "parts": [{"text": systemPrompt}] },
+            "contents": [ { "parts": [{"text": userPrompt}] } ],
+            "generationConfig": { "responseMimeType": "application/json" }
         };
 
         var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
         var options = {
             "method": "post",
             "contentType": "application/json",
-            "headers": {
-                "x-goog-api-key": apiKey
-            },
+            "headers": { "x-goog-api-key": apiKey },
             "payload": JSON.stringify(payload),
             "muteHttpExceptions": true
         };
 
-        Logger.log("Envoi de la requête à Gemini pour Analyse Technique...");
+        Logger.log("Étape 4 : Appel API Gemini (Analyse experte en cours)...");
         var response = UrlFetchApp.fetch(apiUrl, options);
         var jsonResponse = JSON.parse(response.getContentText());
 
@@ -2348,6 +2403,7 @@ function genererAnalyseTechniqueIA() {
         responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
         var jsonGemini = JSON.parse(responseText);
 
+        Logger.log("Étape 5 : Récupération des icônes Google Drive");
         var ICON_IDS = {
             "BON": "1lwxjX4LJWDoNYb19qco0VK93EH1V_aaQ",
             "MOYEN": "1l-eMhlZ4eXu2zxzH-_D_ZdRbIWB3X7VB",
@@ -2374,7 +2430,8 @@ function genererAnalyseTechniqueIA() {
         };
 
     } catch(err) {
-        Logger.log("Erreur dans genererAnalyseTechniqueIA : " + err.message);
+        Logger.log("=== FIN : genererAnalyseTechniqueIA (Erreur) ===");
+        Logger.log("Message d'erreur : " + err.message);
         return { success: false, error: err.message };
     }
 }

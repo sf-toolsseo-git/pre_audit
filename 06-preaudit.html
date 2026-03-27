@@ -681,58 +681,16 @@
                         
                         <div id="tech-ia-results-container" style="display: none; gap: 15px; margin-top: 20px;">
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL</h3>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="crawl-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="crawl-check-1" value="">
-                                    <div id="ce-crawl-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="crawl-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="crawl-check-2" value="">
-                                    <div id="ce-crawl-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="crawl-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="crawl-check-3" value="">
-                                    <div id="ce-crawl-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL <span id="count-crawl" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <div id="dynamic-list-crawl" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION</h3>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="index-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="index-check-1" value="">
-                                    <div id="ce-index-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="index-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="index-check-2" value="">
-                                    <div id="ce-index-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="index-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="index-check-3" value="">
-                                    <div id="ce-index-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION <span id="count-index" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <div id="dynamic-list-index" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT</h3>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="pos-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="pos-check-1" value="">
-                                    <div id="ce-pos-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="pos-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="pos-check-2" value="">
-                                    <div id="ce-pos-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
-                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-                                    <img id="pos-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
-                                    <input type="hidden" id="pos-check-3" value="">
-                                    <div id="ce-pos-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
-                                </div>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT <span id="count-pos" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <div id="dynamic-list-pos" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                         </div>
 
@@ -963,18 +921,26 @@
                             if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                             
                             // Restauration des données IA Technique
-                            if (config.CRAWL_CONTENT_1) {
+                            if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
                                 document.getElementById('tech-ia-results-container').style.display = 'flex';
                                 var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
-                                var drivesIconsData = null; // Will load on first click if needed, or we can assume it's lost and rely on text
+                                
                                 for (var pf in prefixMap) {
+                                    var restoredItems = [];
                                     for (var i = 1; i <= 3; i++) {
                                         var checkVal = config[pf + '_CHECK_' + i];
                                         var contentVal = config[pf + '_CONTENT_' + i];
                                         if (contentVal) {
-                                            document.getElementById(prefixMap[pf] + '-check-' + i).value = checkVal;
-                                            setCeContent('ce-' + prefixMap[pf] + '-' + i, contentVal);
+                                            restoredItems.push({
+                                                icone: checkVal || "INCONNU",
+                                                texte: contentVal,
+                                                restoredChecked: true
+                                            });
                                         }
+                                    }
+                                    // Si on a des items restaurés, on construit la liste dynamique
+                                    if (restoredItems.length > 0) {
+                                        buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
                                     }
                                 }
                             }
@@ -2829,336 +2795,465 @@
             }
         
         function lancerAnalyseTechnique() {
-            console.log("=== DÉBUT : lancerAnalyseTechnique ===");
-            
-            var btn = document.getElementById('btn-lancer-analyse-tech');
-            var msg = document.getElementById('tech-msg');
-            var resultsContainer = document.getElementById('tech-results-container');
-            var crawlContent = document.getElementById('crawl-results-content');
-            var indexationContent = document.getElementById('indexation-results-content');
-            var posContainer = document.getElementById('positionnement-results-container');
-            var posTitle = document.getElementById('positionnement-results-title');
-            var posContent = document.getElementById('positionnement-results-content');
-            
-            // 1. Sauvegarde silencieuse de la configuration
-            var dataTech = {
-                techUrlCible: document.getElementById('tech-url-cible').value,
-                techSitemap: document.getElementById('tech-sitemap').value,
-                techTypePage: document.getElementById('tech-type-page').value,
-                techUrlPageMere: document.getElementById('tech-url-page-mere').value,
-                techUrlPaginees: document.getElementById('tech-url-paginees').value,
-                techUrlFiltre: document.getElementById('tech-url-filtre').value,
-                techIsMultilingue: document.getElementById('tech-is-multilingue').value,
-                techLangueCible: document.getElementById('tech-langue-cible').value,
-                techPaysCible: document.getElementById('tech-pays-cible').value
-            };
-            google.script.run.sauvegarderEtatLieuxTechnique(dataTech);
-
-            // 2. Affichage de l'interface d'analyse
-            btn.disabled = true;
-            btn.innerText = "⏳ Analyse en cours...";
-            msg.innerText = "";
-            resultsContainer.style.display = 'block';
-            crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
-            indexationContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Vérification de l\'indexation et du Sitemap...</div></div>';
-            posContainer.style.background = '#fff';
-            posContainer.style.border = '1px solid #dadce0';
-            posContainer.style.opacity = '1';
-            posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-            posTitle.style.color = '#08133B';
-            posTitle.style.borderBottom = '1px solid #f1f3f4';
-            posContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Extraction du positionnement sémantique...</div></div>';
-
-
-            var robotsUrl = document.getElementById('tech-robots-url').value;
-            var sitemapUrl = dataTech.techSitemap;
-            
-            var crawlDone = false;
-            var sitemapDone = false;
-            var indexDataToSave = {};
-            var resCrawlGlob = null;
-
-            function checkAllDone() {
-                if (crawlDone && sitemapDone) {
-                    btn.disabled = false;
-                    btn.innerText = "💾 Sauvegarder & lancer l'analyse";
-                    
-                    // Rendu de l'indexation (fusion des données crawl et sitemap)
-                    var htmlIdx = '';
-                    
-                    // Partie Sitemap
-                    // CORRECTION ICI : on vérifie si la chaîne commence par/contient "Oui" au lieu d'une égalité stricte
-                    var sitemapColor = indexDataToSave.sitemapPresent && indexDataToSave.sitemapPresent.indexOf("Oui") !== -1 ? '#188038' : '#d93025';
-                    htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Sitemap déclaré :</span> <strong style="color:' + sitemapColor + '">' + indexDataToSave.sitemapPresent + '</strong></div>';
-                    
-                    var inSitemapColor = indexDataToSave.urlInSitemap === "✅ Présente" ? '#188038' : '#d93025';
-                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>URL présente dans le sitemap :</span> <strong style="color:' + inSitemapColor + '">' + indexDataToSave.urlInSitemap + '</strong></div>';
-                    htmlIdx += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                    
-                    // Partie Meta Robots / Canonical de la cible
-                    var metaRobotsColor = (resCrawlGlob && resCrawlGlob.metaRobots && resCrawlGlob.metaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
-                    var canonText = (resCrawlGlob && resCrawlGlob.canonical) ? resCrawlGlob.canonical : "Aucune";
-                    var isSelfCanon = (resCrawlGlob && canonText === dataTech.techUrlCible) ? " (Auto-canonisée)" : (canonText !== "Aucune" ? " (Pointe ailleurs)" : "");
-                    
-                    htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                    htmlIdx += '<div style="margin-bottom:4px;"><strong>Page cible :</strong></div>';
-                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + metaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.metaRobots ? resCrawlGlob.metaRobots : 'index, follow') + '</strong></div>';
-                    htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + canonText + '<span style="font-weight:normal; font-size:11px; color:#5f6368">' + isSelfCanon + '</span></strong></div>';
-                    htmlIdx += '</div>';
-
-                    // Partie Pagination (si renseignée)
-                    if (dataTech.techUrlPaginees) {
-                        htmlIdx += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                        htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        htmlIdx += '<div style="margin-bottom:4px;"><strong>Page 2 (Pagination) :</strong></div>';
-                        var pagiMetaRobotsColor = (resCrawlGlob && resCrawlGlob.pagiMetaRobots && resCrawlGlob.pagiMetaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
-                        var pagiCanonText = (resCrawlGlob && resCrawlGlob.pagiCanonical) ? resCrawlGlob.pagiCanonical : "Aucune";
-                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + pagiMetaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.pagiMetaRobots ? resCrawlGlob.pagiMetaRobots : 'index, follow') + '</strong></div>';
-                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + pagiCanonText + '</strong></div>';
-                        htmlIdx += '</div>';
-                    }
-
-                    indexationContent.innerHTML = htmlIdx;
-
-                    // Sauvegarde Indexation silencieuse
-                    console.log("Sauvegarde des données d'indexation : ", indexDataToSave);
-                    google.script.run.sauvegarderResultatsIndexation(indexDataToSave);
+                console.log("=== DÉBUT : lancerAnalyseTechnique ===");
+                console.log("Étape 1 : initialisation des variables et masquage du conteneur IA.");
+                
+                var btn = document.getElementById('btn-lancer-analyse-tech');
+                var msg = document.getElementById('tech-msg');
+                var resultsContainer = document.getElementById('tech-results-container');
+                var crawlContent = document.getElementById('crawl-results-content');
+                var indexationContent = document.getElementById('indexation-results-content');
+                var posContainer = document.getElementById('positionnement-results-container');
+                var posTitle = document.getElementById('positionnement-results-title');
+                var posContent = document.getElementById('positionnement-results-content');
+                
+                var iaResultsContainer = document.getElementById('tech-ia-results-container');
+                if (iaResultsContainer) {
+                    iaResultsContainer.style.display = 'none';
+                    console.log("Le conteneur de résultats IA a été masqué avec succès.");
                 }
-            }
+                
+                // 1. Sauvegarde silencieuse de la configuration
+                var dataTech = {
+                    techUrlCible: document.getElementById('tech-url-cible').value,
+                    techSitemap: document.getElementById('tech-sitemap').value,
+                    techTypePage: document.getElementById('tech-type-page').value,
+                    techUrlPageMere: document.getElementById('tech-url-page-mere').value,
+                    techUrlPaginees: document.getElementById('tech-url-paginees').value,
+                    techUrlFiltre: document.getElementById('tech-url-filtre').value,
+                    techIsMultilingue: document.getElementById('tech-is-multilingue').value,
+                    techLangueCible: document.getElementById('tech-langue-cible').value,
+                    techPaysCible: document.getElementById('tech-pays-cible').value
+                };
+                google.script.run.sauvegarderEtatLieuxTechnique(dataTech);
 
-            // 3. Appel au backend pour le Crawl
-            console.log("Appel backend lancerAnalyseTechnique (Crawl) avec URL cible : " + dataTech.techUrlCible);
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    console.log("Succès du retour backend analyserCrawlBackend");
-                    resCrawlGlob = res;
-                    crawlDone = true;
-                    
-                    if (res.success) {
-                        indexDataToSave.metaRobots = res.metaRobots || "index, follow";
-                        indexDataToSave.canonical = res.canonical || "Aucune";
-                        indexDataToSave.pagiMetaRobots = res.pagiMetaRobots || "index, follow";
-                        indexDataToSave.pagiCanonical = res.pagiCanonical || "Aucune";
+                // 2. Affichage de l'interface d'analyse
+                btn.disabled = true;
+                btn.innerText = "⏳ Analyse en cours...";
+                msg.innerText = "";
+                resultsContainer.style.display = 'block';
+                crawlContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Analyse de la page et de tous les liens...</div></div>';
+                indexationContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Vérification de l\'indexation et du sitemap...</div></div>';
+                posContainer.style.background = '#fff';
+                posContainer.style.border = '1px solid #dadce0';
+                posContainer.style.opacity = '1';
+                posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                posTitle.style.color = '#08133B';
+                posTitle.style.borderBottom = '1px solid #f1f3f4';
+                posContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner" style="margin: 0 auto 10px;"></div><div style="font-size: 12px; color: #1a73e8;">Extraction du positionnement sémantique...</div></div>';
 
-                        console.log("Construction du HTML des résultats du crawl");
-                        // A. Affichage HTML
-                        var html = '';
+
+                var robotsUrl = document.getElementById('tech-robots-url').value;
+                var sitemapUrl = dataTech.techSitemap;
+                
+                var crawlDone = false;
+                var sitemapDone = false;
+                var indexDataToSave = {};
+                var resCrawlGlob = null;
+
+                function checkAllDone() {
+                    if (crawlDone && sitemapDone) {
+                        console.log("Étape intermédiaire : tous les appels backend sont terminés (crawl et sitemap).");
+                        btn.disabled = false;
+                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
                         
-                        var codeColor = res.statusCode === 200 ? '#188038' : '#d93025';
-                        var ttfbColor = res.scoreTtfb === 'Critique' ? '#d93025' : (res.scoreTtfb === 'Moyen' ? '#fbbc04' : '#188038');
-                        html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Statut HTTP cible :</span> <strong style="color:' + codeColor + '">' + res.statusCode + '</strong></div>';
-                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Temps de réponse :</span> <strong style="color:' + ttfbColor + '">' + res.ttfb + ' ms (' + res.scoreTtfb + ')</strong></div>';
+                        // Rendu de l'indexation (fusion des données crawl et sitemap)
+                        var htmlIdx = '';
                         
-                        var botColor = res.isBlocked ? '#d93025' : '#188038';
-                        var botText = res.isBlocked ? 'Bloqué (Disallow)' : 'Autorisé';
-                        html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Robots.txt :</span> <strong style="color:' + botColor + '">' + botText + '</strong></div>';
-                        html += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                        // Partie Sitemap
+                        var sitemapColor = indexDataToSave.sitemapPresent && indexDataToSave.sitemapPresent.indexOf("Oui") !== -1 ? '#188038' : '#d93025';
+                        htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Sitemap déclaré :</span> <strong style="color:' + sitemapColor + '">' + indexDataToSave.sitemapPresent + '</strong></div>';
                         
-                        if (res.linksTotal > 0) {
-                            var pctInt = Math.round((res.internalLinks / res.linksTotal) * 100);
-                            var pctExt = 100 - pctInt;
-                            html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                            html += '<div style="margin-bottom:4px;"><strong>Maillage (' + res.linksTotal + ' liens uniques) :</strong></div>';
-                            html += '<div style="display:flex; height:6px; border-radius:3px; overflow:hidden; margin-bottom:4px;">';
-                            html += '<div style="width:' + pctInt + '%; background:#1a73e8;" title="Interne"></div>';
-                            html += '<div style="width:' + pctExt + '%; background:#fbbc04;" title="Externe"></div>';
-                            html += '</div>';
-                            html += '<div style="display:flex; justify-content:space-between; font-size:11px; color:#5f6368;"><span>' + pctInt + '% Interne</span><span>' + pctExt + '% Externe</span></div>';
-                            
-                            html += '<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; background:#f8f9fa; padding:4px 8px; border-radius:4px;">';
-                            html += '<span><span style="color:#188038">●</span> 200: <b>' + res.statusCounts["200"] + '</b></span>';
-                            html += '<span><span style="color:#fbbc04">●</span> 3xx: <b>' + res.statusCounts["3xx"] + '</b></span>';
-                            html += '<span><span style="color:#d93025">●</span> 4xx: <b>' + res.statusCounts["4xx"] + '</b></span>';
-                            html += '<span><span style="color:#000000">●</span> 5xx: <b>' + res.statusCounts["5xx"] + '</b></span>';
-                            html += '</div></div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                        var inSitemapColor = indexDataToSave.urlInSitemap === "✅ Présente" ? '#188038' : '#d93025';
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>URL présente dans le sitemap :</span> <strong style="color:' + inSitemapColor + '">' + indexDataToSave.urlInSitemap + '</strong></div>';
+                        htmlIdx += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                        
+                        // Partie Meta Robots / Canonical de la cible
+                        var metaRobotsColor = (resCrawlGlob && resCrawlGlob.metaRobots && resCrawlGlob.metaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
+                        var canonText = (resCrawlGlob && resCrawlGlob.canonical) ? resCrawlGlob.canonical : "Aucune";
+                        var isSelfCanon = (resCrawlGlob && canonText === dataTech.techUrlCible) ? " (Auto-canonisée)" : (canonText !== "Aucune" ? " (Pointe ailleurs)" : "");
+                        
+                        htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                        htmlIdx += '<div style="margin-bottom:4px;"><strong>Page cible :</strong></div>';
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + metaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.metaRobots ? resCrawlGlob.metaRobots : 'index, follow') + '</strong></div>';
+                        htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + canonText + '<span style="font-weight:normal; font-size:11px; color:#5f6368">' + isSelfCanon + '</span></strong></div>';
+                        htmlIdx += '</div>';
+
+                        // Partie Pagination (si renseignée)
+                        if (dataTech.techUrlPaginees) {
+                            htmlIdx += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                            htmlIdx += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            htmlIdx += '<div style="margin-bottom:4px;"><strong>Page 2 (Pagination) :</strong></div>';
+                            var pagiMetaRobotsColor = (resCrawlGlob && resCrawlGlob.pagiMetaRobots && resCrawlGlob.pagiMetaRobots.indexOf('noindex') !== -1) ? '#d93025' : '#188038';
+                            var pagiCanonText = (resCrawlGlob && resCrawlGlob.pagiCanonical) ? resCrawlGlob.pagiCanonical : "Aucune";
+                            htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Meta robots :</span> <strong style="color:' + pagiMetaRobotsColor + '">' + (resCrawlGlob && resCrawlGlob.pagiMetaRobots ? resCrawlGlob.pagiMetaRobots : 'index, follow') + '</strong></div>';
+                            htmlIdx += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Canonique :</span> <strong>' + pagiCanonText + '</strong></div>';
+                            htmlIdx += '</div>';
                         }
 
-                        html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        html += '<div style="margin-bottom:4px; color:#5f6368;">1er lien in-content :</div>';
-                        html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">';
-                        html += '<strong>Ancre :</strong> ' + res.firstLink.anchor + '<br>';
-                        html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
-                        html += '</div></div>';
+                        indexationContent.innerHTML = htmlIdx;
 
-                        // --- NOUVEAU : Bloc Multilingue ---
-                        var isMulti = document.getElementById('tech-is-multilingue').value === 'oui';
-                        if (isMulti) {
-                            console.log("Traitement de l'affichage multilingue");
+                        // Sauvegarde Indexation silencieuse
+                        console.log("Sauvegarde des données d'indexation : ", indexDataToSave);
+                        google.script.run.sauvegarderResultatsIndexation(indexDataToSave);
+                    }
+                }
+
+                // 3. Appel au backend pour le Crawl
+                console.log("Étape 2 : appel au backend analyserCrawlBackend avec l'URL cible : " + dataTech.techUrlCible);
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        console.log("Succès du retour backend analyserCrawlBackend.");
+                        resCrawlGlob = res;
+                        crawlDone = true;
+                        
+                        if (res.success) {
+                            indexDataToSave.metaRobots = res.metaRobots || "index, follow";
+                            indexDataToSave.canonical = res.canonical || "Aucune";
+                            indexDataToSave.pagiMetaRobots = res.pagiMetaRobots || "index, follow";
+                            indexDataToSave.pagiCanonical = res.pagiCanonical || "Aucune";
+
+                            console.log("Construction du HTML des résultats du crawl.");
+                            // A. Affichage HTML
+                            var html = '';
+                            
+                            var codeColor = res.statusCode === 200 ? '#188038' : '#d93025';
+                            var ttfbColor = res.scoreTtfb === 'Critique' ? '#d93025' : (res.scoreTtfb === 'Moyen' ? '#fbbc04' : '#188038');
                             html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                            html += '<div style="margin-bottom:4px; color:#5f6368;">Multilingue (hreflang) :</div>';
-                            if (res.hreflangs && res.hreflangs.trim() !== "") {
-                                var langs = res.hreflangs.split(" | ");
-                                var langsHtml = langs.map(function(l) { return '<div><span style="color:#188038">✓</span> ' + l + '</div>'; }).join('');
-                                html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">' + langsHtml + '</div>';
-                            } else {
-                                html += '<div style="background:#fce8e6; color:#c5221f; padding:6px 8px; border-radius:4px; font-size:12px;">❌ Aucune balise hreflang détectée dans le &lt;head&gt;.</div>';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Statut HTTP cible :</span> <strong style="color:' + codeColor + '">' + res.statusCode + '</strong></div>';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Temps de réponse :</span> <strong style="color:' + ttfbColor + '">' + res.ttfb + ' ms (' + res.scoreTtfb + ')</strong></div>';
+                            
+                            var botColor = res.isBlocked ? '#d93025' : '#188038';
+                            var botText = res.isBlocked ? 'Bloqué (disallow)' : 'Autorisé';
+                            html += '<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Robots.txt :</span> <strong style="color:' + botColor + '">' + botText + '</strong></div>';
+                            html += '</div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                            
+                            if (res.linksTotal > 0) {
+                                var pctInt = Math.round((res.internalLinks / res.linksTotal) * 100);
+                                var pctExt = 100 - pctInt;
+                                html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px;"><strong>Maillage (' + res.linksTotal + ' liens uniques) :</strong></div>';
+                                html += '<div style="display:flex; height:6px; border-radius:3px; overflow:hidden; margin-bottom:4px;">';
+                                html += '<div style="width:' + pctInt + '%; background:#1a73e8;" title="Interne"></div>';
+                                html += '<div style="width:' + pctExt + '%; background:#fbbc04;" title="Externe"></div>';
+                                html += '</div>';
+                                html += '<div style="display:flex; justify-content:space-between; font-size:11px; color:#5f6368;"><span>' + pctInt + '% Interne</span><span>' + pctExt + '% Externe</span></div>';
+                                
+                                html += '<div style="margin-top:8px; display:flex; justify-content:space-between; font-size:11px; background:#f8f9fa; padding:4px 8px; border-radius:4px;">';
+                                html += '<span><span style="color:#188038">●</span> 200 : <b>' + res.statusCounts["200"] + '</b></span>';
+                                html += '<span><span style="color:#fbbc04">●</span> 3xx : <b>' + res.statusCounts["3xx"] + '</b></span>';
+                                html += '<span><span style="color:#d93025">●</span> 4xx : <b>' + res.statusCounts["4xx"] + '</b></span>';
+                                html += '<span><span style="color:#000000">●</span> 5xx : <b>' + res.statusCounts["5xx"] + '</b></span>';
+                                html += '</div></div><hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
                             }
-                            html += '</div>';
-                        }
 
-                        // --- NOUVEAU : Bloc Pagination ---
-                        var urlMere = document.getElementById('tech-url-page-mere').value;
-                        var urlP2 = document.getElementById('tech-url-paginees').value;
-                        if (urlMere && urlP2) {
-                            console.log("Traitement de l'affichage pagination");
                             html += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                            html += '<div style="margin-bottom:4px; color:#5f6368;">Pagination (vérification croisée) :</div>';
-                            html += '<div style="background:#f8f9fa; border:1px solid #dadce0; border-radius:4px; padding:8px; font-size:12px;">';
-                            
-                            html += '<div style="margin-bottom:6px;"><strong>Page mère :</strong><br>';
-                            html += 'Lien vers page 2 (body) : ' + (res.pagiMereBody ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
-                            html += 'Balise rel="next" (head) : ' + (res.pagiMereHead ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
-                            
-                            html += '<div style="margin-bottom:6px;"><strong>Page 2 :</strong><br>';
-                            html += 'Lien vers page mère (body) : ' + (res.pagiP2Body ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
-                            html += 'Balise rel="prev" (head) : ' + (res.pagiP2Head ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
+                            html += '<div style="margin-bottom:4px; color:#5f6368;">Premier lien in-content :</div>';
+                            html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">';
+                            html += '<strong>Ancre :</strong> ' + res.firstLink.anchor + '<br>';
+                            html += '<span style="color:#1a73e8;">' + res.firstLink.href + '</span>';
+                            html += '</div></div>';
 
-                            if (res.pagiErreurLien && res.pagiErreurLien !== "") {
-                                html += '<div style="margin-top:6px; background:#fef7e0; color:#b06000; padding:4px 6px; border-radius:4px; border:1px solid #fbbc04;">';
-                                html += '⚠️ <strong>Alerte :</strong> lien parasite pointant vers la page 1 détecté (' + res.pagiErreurLien + '). Risque de contenu dupliqué.';
+                            // Bloc Multilingue
+                            var isMulti = document.getElementById('tech-is-multilingue').value === 'oui';
+                            if (isMulti) {
+                                console.log("Traitement de l'affichage multilingue.");
+                                html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px; color:#5f6368;">Multilingue (hreflang) :</div>';
+                                if (res.hreflangs && res.hreflangs.trim() !== "") {
+                                    var langs = res.hreflangs.split(" | ");
+                                    var langsHtml = langs.map(function(l) { return '<div><span style="color:#188038">✓</span> ' + l + '</div>'; }).join('');
+                                    html += '<div style="background:#e8f0fe; padding:6px 8px; border-radius:4px; font-size:12px; word-break:break-all;">' + langsHtml + '</div>';
+                                } else {
+                                    html += '<div style="background:#fce8e6; color:#c5221f; padding:6px 8px; border-radius:4px; font-size:12px;">❌ Aucune balise hreflang détectée dans le &lt;head&gt;.</div>';
+                                }
                                 html += '</div>';
                             }
-                            html += '</div></div>';
-                        }
 
-                        if (res.hasUrlFiltre) {
-                            html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
-                            html += '<div style="font-size: 13px;">';
-                            html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
-                            html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
-                            html += '<input type="checkbox" style="margin-top:2px;">';
-                            html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de contenu dupliqué.</span>';
-                            html += '</label></div>';
-                        }
+                            // Bloc Pagination
+                            var urlMere = document.getElementById('tech-url-page-mere').value;
+                            var urlP2 = document.getElementById('tech-url-paginees').value;
+                            if (urlMere && urlP2) {
+                                console.log("Traitement de l'affichage pagination.");
+                                html += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px; color:#5f6368;">Pagination (vérification croisée) :</div>';
+                                html += '<div style="background:#f8f9fa; border:1px solid #dadce0; border-radius:4px; padding:8px; font-size:12px;">';
+                                
+                                html += '<div style="margin-bottom:6px;"><strong>Page mère :</strong><br>';
+                                html += 'Lien vers page 2 (body) : ' + (res.pagiMereBody ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
+                                html += 'Balise rel="next" (head) : ' + (res.pagiMereHead ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
+                                
+                                html += '<div style="margin-bottom:6px;"><strong>Page 2 :</strong><br>';
+                                html += 'Lien vers page mère (body) : ' + (res.pagiP2Body ? '<span style="color:#188038">✅ Présent</span>' : '<span style="color:#c5221f">❌ Absent</span>') + '<br>';
+                                html += 'Balise rel="prev" (head) : ' + (res.pagiP2Head ? '<span style="color:#188038">✅ Présente</span>' : '<span style="color:#c5221f">❌ Absente</span>') + '</div>';
 
-                        crawlContent.innerHTML = html;
+                                if (res.pagiErreurLien && res.pagiErreurLien !== "") {
+                                    html += '<div style="margin-top:6px; background:#fef7e0; color:#b06000; padding:4px 6px; border-radius:4px; border:1px solid #fbbc04;">';
+                                    html += '⚠️ <strong>Alerte :</strong> lien parasite pointant vers la page 1 détecté (' + res.pagiErreurLien + '). Risque de contenu dupliqué.';
+                                    html += '</div>';
+                                }
+                                html += '</div></div>';
+                            }
 
-                        // B. Envoi silencieux des données extraites au backend pour sauvegarde
-                        console.log("Envoi silencieux pour sauvegarde des résultats du crawl");
-                        var crawlDataToSave = {
-                            statusCode: res.statusCode, ttfb: res.ttfb, scoreTtfb: res.scoreTtfb, isBlocked: res.isBlocked,
-                            robotsTxt: res.robotsTxt, firstLinkHref: res.firstLink.href, firstLinkAnchor: res.firstLink.anchor,
-                            linksTotal: res.linksTotal, internalLinks: res.internalLinks, externalLinks: res.externalLinks,
-                            status200: res.statusCounts["200"], status3xx: res.statusCounts["3xx"], status4xx: res.statusCounts["4xx"], status5xx: res.statusCounts["5xx"],
-                            pagiMereBody: res.pagiMereBody, pagiMereHead: res.pagiMereHead, pagiP2Body: res.pagiP2Body, pagiP2Head: res.pagiP2Head, pagiErreurLien: res.pagiErreurLien,
-                            hreflangs: res.hreflangs
-                        };
-                        google.script.run.sauvegarderResultatsCrawl(crawlDataToSave);
+                            if (res.hasUrlFiltre) {
+                                html += '<hr style="border:0; border-top:1px solid #f1f3f4; margin:10px 0;">';
+                                html += '<div style="font-size: 13px;">';
+                                html += '<div style="margin-bottom:4px; color:#5f6368;">Vérification manuelle requise :</div>';
+                                html += '<label style="display:flex; align-items:flex-start; gap:6px; cursor:pointer;">';
+                                html += '<input type="checkbox" style="margin-top:2px;">';
+                                html += '<span style="font-size:12px;">La gestion des facettes (URL filtre) bloque correctement la création de contenu dupliqué.</span>';
+                                html += '</label></div>';
+                            }
 
-                        // C. Positionnement                        
-                        var htmlPos = '';
-                        var kwText = res.targetKw ? res.targetKw : "Non défini";
-                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        htmlPos += '<strong>Mot-clé cible :</strong> ' + kwText + '</div>';
-                        
-                        var titleStatus = res.titleHasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
-                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        htmlPos += '<div style="margin-bottom:4px;"><strong>Balise Title :</strong> ' + titleStatus + '</div>';
-                        htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.title || "<em>Vide</em>") + '</div>';
-                        htmlPos += '</div>';
+                            crawlContent.innerHTML = html;
 
-                        var h1Status = res.h1HasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
-                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        htmlPos += '<div style="margin-bottom:4px;"><strong>Balise H1 :</strong> ' + h1Status + '</div>';
-                        htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.h1 || "<em>Vide</em>") + '</div>';
-                        htmlPos += '</div>';
+                            // B. Envoi silencieux des données extraites au backend pour sauvegarde
+                            console.log("Envoi silencieux pour sauvegarde des résultats du crawl.");
+                            var crawlDataToSave = {
+                                statusCode: res.statusCode, ttfb: res.ttfb, scoreTtfb: res.scoreTtfb, isBlocked: res.isBlocked,
+                                robotsTxt: res.robotsTxt, firstLinkHref: res.firstLink.href, firstLinkAnchor: res.firstLink.anchor,
+                                linksTotal: res.linksTotal, internalLinks: res.internalLinks, externalLinks: res.externalLinks,
+                                status200: res.statusCounts["200"], status3xx: res.statusCounts["3xx"], status4xx: res.statusCounts["4xx"], status5xx: res.statusCounts["5xx"],
+                                pagiMereBody: res.pagiMereBody, pagiMereHead: res.pagiMereHead, pagiP2Body: res.pagiP2Body, pagiP2Head: res.pagiP2Head, pagiErreurLien: res.pagiErreurLien,
+                                hreflangs: res.hreflangs
+                            };
+                            google.script.run.sauvegarderResultatsCrawl(crawlDataToSave);
 
-                        // Structure Hn
-                        var hnList = res.structureHn || [];
-                        var hnCount = hnList.length;
-                        htmlPos += '<details style="margin-bottom: 12px; font-size: 13px; background: #fff; border: 1px solid #dadce0; border-radius: 4px;">';
-                        htmlPos += '<summary style="padding: 8px 10px; cursor: pointer; font-weight: 600; background: #f8f9fa;">Voir la structure Hn (' + hnCount + ' balises)</summary>';
-                        htmlPos += '<div style="padding: 10px; max-height: 200px; overflow-y: auto;">';
-                        if (hnCount > 0) {
-                            hnList.forEach(function(hn) {
-                                var level = parseInt(hn.substring(1, 2));
-                                var margin = (level - 1) * 15;
-                                htmlPos += '<div style="margin-left: ' + margin + 'px; margin-bottom: 4px; font-size: 12px;">';
-                                htmlPos += '<span style="font-weight:bold; color:#1a73e8;">' + hn.substring(0, 2) + '</span> ' + hn.substring(4);
-                                htmlPos += '</div>';
-                            });
+                            // C. Positionnement                        
+                            var htmlPos = '';
+                            var kwText = res.targetKw ? res.targetKw : "Non défini";
+                            htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            htmlPos += '<strong>Mot-clé cible :</strong> ' + kwText + '</div>';
+                            
+                            var titleStatus = res.titleHasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
+                            htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            htmlPos += '<div style="margin-bottom:4px;"><strong>Balise &lt;title&gt :</strong> ' + titleStatus + '</div>';
+                            htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.title || "<em>Vide</em>") + '</div>';
+                            htmlPos += '</div>';
+
+                            var h1Status = res.h1HasKw ? '<span style="color:#188038">✅ Optimisé</span>' : '<span style="color:#d93025">❌ Mot-clé absent</span>';
+                            htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            htmlPos += '<div style="margin-bottom:4px;"><strong>Balise &lt;h1&gt; :</strong> ' + h1Status + '</div>';
+                            htmlPos += '<div style="background:#f8f9fa; padding:6px 8px; border-radius:4px; font-size:12px; border:1px solid #e8eaed;">' + (res.h1 || "<em>Vide</em>") + '</div>';
+                            htmlPos += '</div>';
+
+                            // Structure Hn
+                            var hnList = res.structureHn || [];
+                            var hnCount = hnList.length;
+                            htmlPos += '<details style="margin-bottom: 12px; font-size: 13px; background: #fff; border: 1px solid #dadce0; border-radius: 4px;">';
+                            htmlPos += '<summary style="padding: 8px 10px; cursor: pointer; font-weight: 600; background: #f8f9fa;">Voir la structure Hn (' + hnCount + ' balises)</summary>';
+                            htmlPos += '<div style="padding: 10px; max-height: 200px; overflow-y: auto;">';
+                            if (hnCount > 0) {
+                                hnList.forEach(function(hn) {
+                                    var level = parseInt(hn.substring(1, 2));
+                                    var margin = (level - 1) * 15;
+                                    htmlPos += '<div style="margin-left: ' + margin + 'px; margin-bottom: 4px; font-size: 12px;">';
+                                    htmlPos += '<span style="font-weight:bold; color:#1a73e8;">' + hn.substring(0, 2) + '</span> ' + hn.substring(4);
+                                    htmlPos += '</div>';
+                                });
+                            } else {
+                                htmlPos += '<div style="color:#5f6368; font-style:italic;">Aucune balise Hn trouvée.</div>';
+                            }
+                            htmlPos += '</div></details>';
+
+                            // Données structurées
+                            htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
+                            htmlPos += '<div style="margin-bottom:4px;"><strong>Données structurées (JSON-LD) :</strong></div>';
+                            htmlPos += '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
+                            var schemas = res.structuredDataTypes || [];
+                            if (schemas.length > 0) {
+                                schemas.forEach(function(type) {
+                                    htmlPos += '<span style="background: #e8f0fe; color: #1a73e8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">' + type + '</span>';
+                                });
+                            } else {
+                                htmlPos += '<span style="color: #5f6368; font-style: italic;">Aucune donnée JSON-LD détectée.</span>';
+                            }
+                            htmlPos += '</div></div>';
+
+                            posContent.innerHTML = htmlPos;
+                            posContent.style.textAlign = 'left';
+
+                            // Envoi silencieux pour sauvegarde des résultats Positionnement
+                            var posDataToSave = {
+                                targetKw: res.targetKw,
+                                title: res.title,
+                                titleHasKw: res.titleHasKw,
+                                h1: res.h1,
+                                h1HasKw: res.h1HasKw,
+                                structureHn: res.structureHn,
+                                structuredDataTypes: res.structuredDataTypes
+                            };
+                            google.script.run.sauvegarderResultatsPositionnement(posDataToSave);
+
                         } else {
-                            htmlPos += '<div style="color:#5f6368; font-style:italic;">Aucune balise Hn trouvée.</div>';
+                            crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
                         }
-                        htmlPos += '</div></details>';
-
-                        // Données structurées
-                        htmlPos += '<div style="margin-bottom: 12px; font-size: 13px;">';
-                        htmlPos += '<div style="margin-bottom:4px;"><strong>Données structurées (JSON-LD) :</strong></div>';
-                        htmlPos += '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
-                        var schemas = res.structuredDataTypes || [];
-                        if (schemas.length > 0) {
-                            schemas.forEach(function(type) {
-                                htmlPos += '<span style="background: #e8f0fe; color: #1a73e8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">' + type + '</span>';
-                            });
-                        } else {
-                            htmlPos += '<span style="color: #5f6368; font-style: italic;">Aucune donnée JSON-LD détectée.</span>';
-                        }
-                        htmlPos += '</div></div>';
-
-                        posContent.innerHTML = htmlPos;
-                        posContent.style.textAlign = 'left';
-
-                        // Envoi silencieux pour sauvegarde des résultats Positionnement
-                        var posDataToSave = {
-                            targetKw: res.targetKw,
-                            title: res.title,
-                            titleHasKw: res.titleHasKw,
-                            h1: res.h1,
-                            h1HasKw: res.h1HasKw,
-                            structureHn: res.structureHn,
-                            structuredDataTypes: res.structuredDataTypes
-                        };
-                        google.script.run.sauvegarderResultatsPositionnement(posDataToSave);
-
-                    } else {
-                        crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur : ' + res.error + '</div>';
-                    }
-                    checkAllDone();
-                })
-                .withFailureHandler(function(err) {
-                    crawlDone = true;
-                    btn.disabled = false;
-                    btn.innerText = "💾 Sauvegarder & lancer l'analyse";
-                    crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
-                    console.error("Erreur serveur : ", err);
-                    checkAllDone();
-                })
-                .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre, dataTech.techUrlPageMere, dataTech.techUrlPaginees);
-            
-            // 4. Appel au backend pour le Sitemap en parallèle
-            if (sitemapUrl && sitemapUrl.trim() !== "") {
-                console.log("Appel backend analyserSitemapBackend");
-                google.script.run
-                    .withSuccessHandler(function(resSitemap) {
-                        sitemapDone = true;
-                        if (resSitemap.success) {
-                            indexDataToSave.sitemapPresent = resSitemap.hasSitemap ? "Oui (" + resSitemap.sitemapCount + " URLs)" : "Non";
-                            indexDataToSave.urlInSitemap = resSitemap.isInSitemap ? "✅ Présente" : "❌ Absente";
-                        } else {
-                            indexDataToSave.sitemapPresent = "Erreur (" + resSitemap.error + ")";
+                        checkAllDone();
+                    })
+                    .withFailureHandler(function(err) {
+                        crawlDone = true;
+                        btn.disabled = false;
+                        btn.innerText = "💾 Sauvegarder & lancer l'analyse";
+                        crawlContent.innerHTML = '<div style="color: #d93025; font-size: 13px; padding: 10px;">❌ Erreur critique : ' + err.message + '</div>';
+                        console.error("Erreur serveur lors de l'appel à analyserCrawlBackend : ", err);
+                        checkAllDone();
+                    })
+                    .analyserCrawlBackend(dataTech.techUrlCible, robotsUrl, dataTech.techUrlFiltre, dataTech.techUrlPageMere, dataTech.techUrlPaginees);
+                
+                // 4. Appel au backend pour le Sitemap en parallèle
+                if (sitemapUrl && sitemapUrl.trim() !== "") {
+                    console.log("Étape 3 : appel backend analyserSitemapBackend.");
+                    google.script.run
+                        .withSuccessHandler(function(resSitemap) {
+                            sitemapDone = true;
+                            if (resSitemap.success) {
+                                indexDataToSave.sitemapPresent = resSitemap.hasSitemap ? "Oui (" + resSitemap.sitemapCount + " URLs)" : "Non";
+                                indexDataToSave.urlInSitemap = resSitemap.isInSitemap ? "✅ Présente" : "❌ Absente";
+                            } else {
+                                indexDataToSave.sitemapPresent = "Erreur (" + resSitemap.error + ")";
+                                indexDataToSave.urlInSitemap = "Inconnue";
+                            }
+                            checkAllDone();
+                        })
+                        .withFailureHandler(function(errSitemap) {
+                            sitemapDone = true;
+                            indexDataToSave.sitemapPresent = "Erreur";
                             indexDataToSave.urlInSitemap = "Inconnue";
-                        }
-                        checkAllDone();
-                    })
-                    .withFailureHandler(function(errSitemap) {
-                        sitemapDone = true;
-                        indexDataToSave.sitemapPresent = "Erreur";
-                        indexDataToSave.urlInSitemap = "Inconnue";
-                        console.error("Erreur serveur Sitemap : ", errSitemap);
-                        checkAllDone();
-                    })
-                    .analyserSitemapBackend(sitemapUrl, dataTech.techUrlCible);
-            } else {
-                sitemapDone = true;
-                indexDataToSave.sitemapPresent = "Non";
-                indexDataToSave.urlInSitemap = "❌ Absente";
-                checkAllDone();
+                            console.error("Erreur serveur sitemap : ", errSitemap);
+                            checkAllDone();
+                        })
+                        .analyserSitemapBackend(sitemapUrl, dataTech.techUrlCible);
+                } else {
+                    sitemapDone = true;
+                    indexDataToSave.sitemapPresent = "Non";
+                    indexDataToSave.urlInSitemap = "❌ Absente";
+                    checkAllDone();
+                }
+
+                console.log("=== FIN : lancerAnalyseTechnique (en attente des callbacks) ===");
             }
 
-            console.log("=== FIN : lancerAnalyseTechnique ===");
+        // Algorithme de pré-sélection (Sandwich BON, MOYEN, MAUVAIS)
+        function getPreselectionIndices(items) {
+            var selectedIndices = [];
+            var foundBon = false, foundMoyen = false, foundMauvais = false;
+            
+            // Étape 1 : on cherche 1 de chaque
+            for (var i = 0; i < items.length; i++) {
+                if (!items[i]) continue;
+                var icone = items[i].icone || "";
+                if (icone === "BON" && !foundBon) {
+                    selectedIndices.push(i);
+                    foundBon = true;
+                } else if (icone === "MOYEN" && !foundMoyen) {
+                    selectedIndices.push(i);
+                    foundMoyen = true;
+                } else if (icone === "MAUVAIS" && !foundMauvais) {
+                    selectedIndices.push(i);
+                    foundMauvais = true;
+                }
+            }
+            
+            // Étape 2 : on complète jusqu'à 3 si possible
+            for (var i = 0; i < items.length; i++) {
+                if (selectedIndices.length >= 3) break;
+                if (selectedIndices.indexOf(i) === -1) {
+                    selectedIndices.push(i);
+                }
+            }
+            return selectedIndices;
+        }
+
+        function buildDynamicTechList(prefix, items, iconsObj, isRestoring) {
+            var container = document.getElementById('dynamic-list-' + prefix);
+            if (!container) return;
+            container.innerHTML = '';
+            
+            var indicesToSelect = [];
+            if (!isRestoring) {
+                indicesToSelect = getPreselectionIndices(items);
+            }
+            
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                if (!item) continue;
+                
+                var isChecked = false;
+                if (isRestoring) {
+                    isChecked = item.restoredChecked === true;
+                } else {
+                    isChecked = indicesToSelect.indexOf(i) !== -1;
+                }
+                
+                var rowDiv = document.createElement('div');
+                rowDiv.style.display = 'flex';
+                rowDiv.style.alignItems = 'flex-start';
+                rowDiv.style.gap = '10px';
+                rowDiv.style.marginBottom = '10px';
+                rowDiv.style.transition = 'opacity 0.2s';
+                
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'cb-tech cb-' + prefix;
+                cb.checked = isChecked;
+                cb.onchange = function() { handleTechCheckboxChange(prefix); };
+                
+                var img = document.createElement('img');
+                img.style.width = '24px';
+                img.style.height = '24px';
+                img.style.objectFit = 'contain';
+                if (iconsObj && item.icone && iconsObj[item.icone]) {
+                    img.src = "data:image/png;base64," + iconsObj[item.icone];
+                }
+                
+                var hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.className = 'hidden-' + prefix;
+                hiddenInput.value = item.icone || "";
+                
+                var ceDiv = document.createElement('div');
+                ceDiv.contentEditable = "true";
+                ceDiv.className = 'ce-field ce-' + prefix;
+                ceDiv.style.flex = '1';
+                ceDiv.innerHTML = renderMarkupToHtml(item.texte || "");
+                ceDiv.dataset.raw = item.texte || "";
+                ceDiv.onblur = function() { autoSaveTechIA(); };
+                
+                rowDiv.appendChild(cb);
+                rowDiv.appendChild(img);
+                rowDiv.appendChild(hiddenInput);
+                rowDiv.appendChild(ceDiv);
+                container.appendChild(rowDiv);
+            }
+            
+            handleTechCheckboxChange(prefix);
+        }
+
+        function handleTechCheckboxChange(prefix) {
+            var checkboxes = document.querySelectorAll('.cb-' + prefix);
+            var count = 0;
+            checkboxes.forEach(function(cb) {
+                if (cb.checked) count++;
+            });
+            
+            var countSpan = document.getElementById('count-' + prefix);
+            if (countSpan) {
+                countSpan.innerText = '(' + count + '/3)';
+                countSpan.style.color = count === 3 ? '#188038' : '#5f6368';
+            }
+            
+            checkboxes.forEach(function(cb) {
+                if (!cb.checked) {
+                    cb.disabled = (count >= 3);
+                    cb.parentElement.style.opacity = (count >= 3) ? '0.5' : '1';
+                } else {
+                    cb.disabled = false;
+                    cb.parentElement.style.opacity = '1';
+                }
+            });
+            
+            autoSaveTechIA();
         }
 
         function lancerAnalyseTechniqueIA() {
@@ -3180,6 +3275,8 @@
                         console.log("Résultat IA reçu : ", res.data);
                         container.style.display = 'flex';
                         
+                        window.lastTechIaIcons = res.icons || {};
+                        
                         var sections = [
                             { key: 'analyse_crawl', prefix: 'crawl' },
                             { key: 'analyse_indexation', prefix: 'index' },
@@ -3188,23 +3285,10 @@
 
                         sections.forEach(function(sec) {
                             var items = res.data[sec.key] || [];
-                            for (var i = 0; i < 3; i++) {
-                                var item = items[i] || { icone: "INCONNU", texte: "" };
-                                var idx = i + 1;
-                                
-                                var imgEl = document.getElementById(sec.prefix + '-icon-' + idx);
-                                var checkEl = document.getElementById(sec.prefix + '-check-' + idx);
-                                var ceEl = document.getElementById('ce-' + sec.prefix + '-' + idx);
-                                
-                                checkEl.value = item.icone;
-                                if (res.icons && res.icons[item.icone]) {
-                                    imgEl.src = "data:image/png;base64," + res.icons[item.icone];
-                                }
-                                setCeContent('ce-' + sec.prefix + '-' + idx, item.texte);
-                            }
+                            buildDynamicTechList(sec.prefix, items, window.lastTechIaIcons, false);
                         });
                         
-                        autoSaveTechIA();
+                        // autoSaveTechIA is called internally by handleTechCheckboxChange at the end of buildDynamicTechList
                     } else {
                         alert("Erreur de l'IA : " + res.error);
                     }
@@ -3219,31 +3303,58 @@
         }
 
         function autoSaveTechIA() {
-            console.log("Sauvegarde auto des données IA Techniques");
-            var data = {
-                CRAWL_CHECK_1: document.getElementById('crawl-check-1').value,
-                CRAWL_CONTENT_1: getRawMarkdownFromCE('ce-crawl-1'),
-                CRAWL_CHECK_2: document.getElementById('crawl-check-2').value,
-                CRAWL_CONTENT_2: getRawMarkdownFromCE('ce-crawl-2'),
-                CRAWL_CHECK_3: document.getElementById('crawl-check-3').value,
-                CRAWL_CONTENT_3: getRawMarkdownFromCE('ce-crawl-3'),
+            var data = {};
+            var prefixes = [
+                { id: 'crawl', keyPrefix: 'CRAWL' },
+                { id: 'index', keyPrefix: 'INDEX' },
+                { id: 'pos', keyPrefix: 'POS' }
+            ];
+            
+            prefixes.forEach(function(p) {
+                var container = document.getElementById('dynamic-list-' + p.id);
+                if (!container) return;
                 
-                INDEX_CHECK_1: document.getElementById('index-check-1').value,
-                INDEX_CONTENT_1: getRawMarkdownFromCE('ce-index-1'),
-                INDEX_CHECK_2: document.getElementById('index-check-2').value,
-                INDEX_CONTENT_2: getRawMarkdownFromCE('ce-index-2'),
-                INDEX_CHECK_3: document.getElementById('index-check-3').value,
-                INDEX_CONTENT_3: getRawMarkdownFromCE('ce-index-3'),
+                var rows = container.children;
+                var checkedIndex = 1;
                 
-                POS_CHECK_1: document.getElementById('pos-check-1').value,
-                POS_CONTENT_1: getRawMarkdownFromCE('ce-pos-1'),
-                POS_CHECK_2: document.getElementById('pos-check-2').value,
-                POS_CONTENT_2: getRawMarkdownFromCE('ce-pos-2'),
-                POS_CHECK_3: document.getElementById('pos-check-3').value,
-                POS_CONTENT_3: getRawMarkdownFromCE('ce-pos-3')
-            };
+                for (var i = 0; i < rows.length; i++) {
+                    var cb = rows[i].querySelector('.cb-' + p.id);
+                    if (cb && cb.checked) {
+                        if (checkedIndex <= 3) {
+                            var hiddenInput = rows[i].querySelector('.hidden-' + p.id);
+                            var ceDiv = rows[i].querySelector('.ce-' + p.id);
+                            
+                            var iconeVal = hiddenInput ? hiddenInput.value : "";
+                            var contentVal = ceDiv ? getRawMarkdownFromCE_Element(ceDiv) : "";
+                            
+                            data[p.keyPrefix + '_CHECK_' + checkedIndex] = iconeVal;
+                            data[p.keyPrefix + '_CONTENT_' + checkedIndex] = contentVal;
+                            checkedIndex++;
+                        }
+                    }
+                }
+                
+                // Remplir avec chaînes vides si < 3 cases cochées
+                while (checkedIndex <= 3) {
+                    data[p.keyPrefix + '_CHECK_' + checkedIndex] = "";
+                    data[p.keyPrefix + '_CONTENT_' + checkedIndex] = "";
+                    checkedIndex++;
+                }
+            });
 
+            console.log("Sauvegarde auto des données IA Techniques : ", data);
             google.script.run.sauvegarderAnalysesTechniquesIA(data);
+        }
+        
+        function getRawMarkdownFromCE_Element(el) {
+            if (!el) return "";
+            var clone = el.cloneNode(true);
+            var strongs = clone.querySelectorAll('strong, b');
+            strongs.forEach(function(node) {
+                node.replaceWith("**" + node.textContent + "**");
+            });
+            var text = clone.innerText || clone.textContent || "";
+            return text.trim();
         }
 
         </script>
