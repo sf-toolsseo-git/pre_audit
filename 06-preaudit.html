@@ -697,6 +697,7 @@
 
                         <div class="continuer-bar" style="margin-top: 25px;">
                             <span id="exportMsgTech" style="font-size: 12px; font-weight: bold;"></span>
+                            <button type="button" class="btn" id="btn-save-tech-manual" style="margin-right: 10px; background-color: #fbbc04; color: #08133B;" onclick="sauvegarderModificationsTech()">💾 Enregistrer les modifications</button>
                             <button class="btn btn-continuer" id="btnExportSlidesTech" onclick="lancerExportSlidesTech()">📥 Importer dans Slides & continuer</button>
                         </div>
                     </div>
@@ -3277,7 +3278,6 @@
                 ceDiv.style.flex = '1';
                 ceDiv.innerHTML = renderMarkupToHtml(item.texte || "");
                 ceDiv.dataset.raw = item.texte || "";
-                ceDiv.onblur = function() { autoSaveTechIA(); };
                 
                 rowDiv.appendChild(cb);
                 rowDiv.appendChild(img);
@@ -3311,8 +3311,6 @@
                     cb.parentElement.style.opacity = '1';
                 }
             });
-            
-            autoSaveTechIA();
         }
 
         function lancerAnalyseTechniqueIA() {
@@ -3347,7 +3345,8 @@
                             buildDynamicTechList(sec.prefix, items, window.lastTechIaIcons, false);
                         });
                         
-                        // autoSaveTechIA is called internally by handleTechCheckboxChange at the end of buildDynamicTechList
+                        var dataToSave = getTechIAData();
+                        google.script.run.sauvegarderAnalysesTechniquesIA(dataToSave);
                     } else {
                         alert("Erreur de l'IA : " + res.error);
                     }
@@ -3414,10 +3413,32 @@
             return data;
         }
 
-        function autoSaveTechIA() {
+        function sauvegarderModificationsTech() {
+            var btn = document.getElementById('btn-save-tech-manual');
+            var originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "⏳ Enregistrement...";
+
             var data = getTechIAData();
-            console.log("Sauvegarde auto des données IA Techniques : ", data);
-            google.script.run.sauvegarderAnalysesTechniquesIA(data);
+            console.log("Sauvegarde manuelle des données IA Techniques : ", data);
+            
+            google.script.run
+                .withSuccessHandler(function() {
+                    btn.innerText = "✅ Enregistré";
+                    setTimeout(function() {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .withFailureHandler(function(err) {
+                    console.error("Erreur sauvegarde :", err);
+                    btn.innerText = "❌ Erreur";
+                    setTimeout(function() {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .sauvegarderAnalysesTechniquesIA(data);
         }
 
         function lancerExportSlidesTech() {
