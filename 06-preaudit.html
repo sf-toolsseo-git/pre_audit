@@ -682,15 +682,15 @@
                         
                         <div id="tech-ia-results-container" style="display: none; gap: 15px; margin-top: 20px;">
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL <span id="count-crawl" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL <span id="count-crawl" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
                                 <div id="dynamic-list-crawl" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION <span id="count-index" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION <span id="count-index" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
                                 <div id="dynamic-list-index" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT <span id="count-pos" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT <span id="count-pos" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
                                 <div id="dynamic-list-pos" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                         </div>
@@ -940,13 +940,14 @@
                                     var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
                                     document.getElementById('tech-ia-results-container').style.display = 'flex';
                                     
-                                    if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, null, true);
-                                    if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, null, true);
-                                    if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, null, true);
-                                    
-                                    console.log("Restauration du full state réussie.");
+                                    google.script.run.withSuccessHandler(function(icons) {
+                                        window.lastTechIaIcons = icons;
+                                        if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, icons, true);
+                                        if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, icons, true);
+                                        if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, icons, true);
+                                    }).recupererIconesTechBase64();
                                 } catch(e) {
-                                    console.log("Erreur de parsing JSON pour DATA_TECH_IA_FULL_STATE : " + e.message);
+                                    console.log("Erreur de parsing JSON : " + e.message);
                                 }
                             } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
                                 // Fallback sur l'ancien système de restauration
@@ -982,7 +983,20 @@
                                 document.getElementById('tech-results-container').style.display = 'block';
                             }
                             if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
-                                document.getElementById('positionnement-results-content').innerHTML = config.techHtmlPos;
+                                var posContainer = document.getElementById('positionnement-results-container');
+                                var posTitle = document.getElementById('positionnement-results-title');
+                                var posContent = document.getElementById('positionnement-results-content');
+                            
+                                posContent.innerHTML = config.techHtmlPos;
+                            
+                                posContainer.style.background = '#fff';
+                                posContainer.style.border = '1px solid #dadce0';
+                                posContainer.style.opacity = '1';
+                                posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                posTitle.style.color = '#08133B';
+                                posTitle.style.borderBottom = '1px solid #f1f3f4';
+                                posContent.style.textAlign = 'left';
+                            
                                 document.getElementById('tech-results-container').style.display = 'block';
                             }
                         }
@@ -3200,9 +3214,9 @@
                 }
             }
             
-            // Étape 2 : on complète jusqu'à 4 si possible
+            // Étape 2 : on complète jusqu'à 3 si possible
             for (var i = 0; i < items.length; i++) {
-                if (selectedIndices.length >= 4) break;
+                if (selectedIndices.length >= 3) break;
                 if (selectedIndices.indexOf(i) === -1) {
                     selectedIndices.push(i);
                 }
@@ -3284,14 +3298,14 @@
             
             var countSpan = document.getElementById('count-' + prefix);
             if (countSpan) {
-                countSpan.innerText = '(' + count + '/4)';
-                countSpan.style.color = count === 4 ? '#188038' : '#5f6368';
+                countSpan.innerText = '(' + count + '/3)';
+                countSpan.style.color = count === 3 ? '#188038' : '#5f6368';
             }
             
             checkboxes.forEach(function(cb) {
                 if (!cb.checked) {
-                    cb.disabled = (count >= 4);
-                    cb.parentElement.style.opacity = (count >= 4) ? '0.5' : '1';
+                    cb.disabled = (count >= 3);
+                    cb.parentElement.style.opacity = (count >= 3) ? '0.5' : '1';
                 } else {
                     cb.disabled = false;
                     cb.parentElement.style.opacity = '1';
@@ -3380,7 +3394,7 @@
                     });
                     
                     if (cb && cb.checked) {
-                        if (checkedIndex <= 4) {
+                        if (checkedIndex <= 3) {
                             data[p.keyPrefix + '_CHECK_' + checkedIndex] = iconeVal;
                             data[p.keyPrefix + '_CONTENT_' + checkedIndex] = contentVal;
                             checkedIndex++;
@@ -3388,8 +3402,8 @@
                     }
                 }
                 
-                // Remplir avec chaînes vides si < 4 cases cochées
-                while (checkedIndex <= 4) {
+                // Remplir avec chaînes vides si < 3 cases cochées
+                while (checkedIndex <= 3) {
                     data[p.keyPrefix + '_CHECK_' + checkedIndex] = "";
                     data[p.keyPrefix + '_CONTENT_' + checkedIndex] = "";
                     checkedIndex++;
