@@ -2407,12 +2407,12 @@ function genererAnalyseTechniqueIA() {
             "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse.\n" +
             "- Un espace obligatoire avant les deux-points ( :).\n" +
             "- Pas de majuscule après les deux-points ( :).\n" +
-            "- Utilise obligatoirement la syntaxe HTML pour les balises : écris &lt;title&gt; et &lt;h1&gt; (jamais 'Title' ou 'H1').\n" +
+            "- Utilise obligatoirement la syntaxe HTML pour les balises : écris <title> et <h1> (jamais 'Title' ou 'H1').\n" +
             "- Encadre l'expression clé de chaque puce avec des astérisques simples (*mot*).\n\n" +
             "DOCTRINE D'ANALYSE PAR BLOC :\n" +
             "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx des 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent. Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS).\n" +
             "2. INDEXATION : Si le site n'est pas multilingue, ignore les hreflangs. S'il l'est, valide la syntaxe ISO et l'auto-référencement." + paginationPromptRule + "\n" +
-            "3. POSITIONNEMENT : Si l'évaluation de &lt;title&gt; ou &lt;h1&gt; est [KO], utilise ton intelligence : si la balise contient des synonymes proches ou le mot-clé dans le désordre, corrige l'évaluation en MOYEN et demande une *optimisation sémantique*. Pour la STRUCTURE HN : vérifie s'il y a des balises parasites de template (ex: H3 'Navigation', H4 'Footer') ou des sauts de hiérarchie. Si oui, mets MOYEN. Pour les 'Schema.org', compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées.\n\n" +
+            "3. POSITIONNEMENT : Si l'évaluation de <title> ou <h1> est [KO], utilise ton intelligence : si la balise contient des synonymes proches ou le mot-clé dans le désordre, corrige l'évaluation en MOYEN et demande une *optimisation sémantique*. Pour la STRUCTURE HN : vérifie s'il y a des balises parasites de template (ex: H3 'Navigation', H4 'Footer') ou des sauts de hiérarchie. Si oui, mets MOYEN. Pour les 'Schema.org', compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées.\n\n" +
             "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
             "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE) :\n" +
             "Génère une liste exhaustive d'options pour l'utilisateur. Pour chaque métrique ou donnée fournie qui présente un statut [KO] ou [AVERTISSEMENT], ou pour laquelle ton analyse experte soulève un point d'attention, génère un constat. Génère également 2 ou 3 puces pour les éléments [OK] les plus importants. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
@@ -2420,7 +2420,7 @@ function genererAnalyseTechniqueIA() {
             "{\n" +
             "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
             "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"L'URL est absente...\" }, ... ],\n" +
-            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise &lt;h1&gt; contient une...\" }, ... ]\n" +
+            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise <h1> contient une...\" }, ... ]\n" +
             "}";
 
         var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Dossier technique à auditer] :\n" + techDataStr;
