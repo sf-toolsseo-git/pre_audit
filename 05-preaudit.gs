@@ -2424,8 +2424,9 @@ function genererAnalyseTechniqueIA() {
             "2. INDEXATION : Si le site n'est pas multilingue, ignore les hreflangs. S'il l'est, valide la syntaxe ISO et l'auto-référencement. Sitemap : si l'URL est dans le sitemap, c'est très bien. Pagination : une balise canonical auto-référencée sur une page paginée (ex: page 2 canonise vers page 2) est la BONNE PRATIQUE pour l'indexation. Ne JAMAIS signaler cela comme un contenu dupliqué." + paginationPromptRule + "\n" +
             "3. POSITIONNEMENT : Si l'évaluation de <title> ou <h1> est [KO], utilise ton intelligence : si la balise contient des synonymes proches ou le mot-clé dans le désordre, corrige l'évaluation en MOYEN et demande une *optimisation sémantique*. Pour la STRUCTURE HN : vérifie s'il y a des balises parasites de template (ex: H3 'Navigation', H4 'Footer') ou des sauts de hiérarchie. Si oui, mets MOYEN. Pour les 'Schema.org', compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées.\n\n" +
             "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
-            "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE) :\n" +
-            "Génère une liste exhaustive de puces (autant que nécessaire) pour couvrir tous les points soulevés par les données. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
+            "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE ET CONCISE) :\n" +
+            "- Concision extrême : STRICTEMENT 25 mots et 100 caractères MAXIMUM par puce. Rédige de façon chirurgicale. Élimine tout le blabla. Va droit au but : un constat, une recommandation.\n" +
+            "- Génère une liste exhaustive de puces (autant que nécessaire) pour couvrir tous les points soulevés par les données. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
             "Format JSON attendu :\n" +
             "{\n" +
             "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
@@ -2537,5 +2538,32 @@ function sauvegarderAnalysesTechniquesIA(data) {
     } catch (e) {
         Logger.log("Erreur : " + e.message);
         return false;
+    }
+}
+
+function recupererIconesTechBase64() {
+    Logger.log("=== DÉBUT : recupererIconesTechBase64 ===");
+    try {
+        var ICON_IDS = {
+            "BON": "1lwxjX4LJWDoNYb19qco0VK93EH1V_aaQ",
+            "MOYEN": "1l-eMhlZ4eXu2zxzH-_D_ZdRbIWB3X7VB",
+            "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
+            "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
+        };
+        var iconsBase64 = {};
+        for (var key in ICON_IDS) {
+            try {
+                var blob = DriveApp.getFileById(ICON_IDS[key]).getBlob().getAs(MimeType.PNG);
+                iconsBase64[key] = Utilities.base64Encode(blob.getBytes());
+            } catch(e) {
+                Logger.log("Erreur de récupération de l'icône " + key + " : " + e.message);
+                iconsBase64[key] = "";
+            }
+        }
+        Logger.log("=== FIN : recupererIconesTechBase64 (Succès) ===");
+        return iconsBase64;
+    } catch(err) {
+        Logger.log("Erreur globale dans recupererIconesTechBase64 : " + err.message);
+        return {};
     }
 }
