@@ -116,7 +116,11 @@ function chargerConfigurationPreAudit() {
         techUrlFiltre: props['TECH_URL_FILTRE'] || "",
         techIsMultilingue: props['TECH_IS_MULTILINGUE'] || "non",
         techLangueCible: props['TECH_LANGUE_CIBLE'] || "",
-        techPaysCible: props['TECH_PAYS_CIBLE'] || ""
+        techPaysCible: props['TECH_PAYS_CIBLE'] || "",
+
+        techHtmlCrawl: props['TECH_HTML_CRAWL'] || "",
+        techHtmlIndex: props['TECH_HTML_INDEX'] || "",
+        techHtmlPos: props['TECH_HTML_POS'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -1814,6 +1818,25 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
     }
 }
 
+function sauvegarderHtmlTechnique(htmlCrawl, htmlIndex, htmlPos) {
+    Logger.log("=== DÉBUT : sauvegarderHtmlTechnique ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'TECH_HTML_CRAWL': htmlCrawl || "",
+            'TECH_HTML_INDEX': htmlIndex || "",
+            'TECH_HTML_POS': htmlPos || ""
+        });
+        Logger.log("HTML de l'onglet 6 sauvegardé avec succès.");
+        Logger.log("=== FIN : sauvegarderHtmlTechnique ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde du HTML technique : " + e.message);
+        Logger.log("=== FIN : sauvegarderHtmlTechnique ===");
+        return false;
+    }
+}
+
 function sauvegarderEtatLieuxTechnique(data) {
     Logger.log("=== DÉBUT : sauvegarderEtatLieuxTechnique ===");
     try {
@@ -2312,6 +2335,27 @@ function genererAnalyseTechniqueIA() {
         var paysCible = props['TECH_PAYS_CIBLE'] || "Non spécifié";
         var hreflangs = props['TECH_CRAWL_HREFLANGS'] || "Aucune balise détectée";
 
+        // PAGINATION (Conditionnelle)
+        var urlPageMere = props['TECH_URL_PAGE_MERE'] || "";
+        var urlPaginees = props['TECH_URL_PAGINEES'] || "";
+        var pagiMetaRobots = props['TECH_INDEX_PAGI_META_ROBOTS'] || "";
+        var pagiCanonical = props['TECH_INDEX_PAGI_CANONICAL'] || "";
+        var pagiErreurLien = props['TECH_CRAWL_PAGI_ERREUR_LIEN'] || "";
+        
+        var hasPagination = (urlPageMere !== "" && urlPaginees !== "");
+        var paginationInfo = "";
+        var paginationPromptRule = "";
+
+        if (hasPagination) {
+            paginationInfo = "- Pagination configurée (Vérification croisée effectuée)\n" +
+                             "- Meta Robots (Page 2) : " + pagiMetaRobots + "\n" +
+                             "- Canonical (Page 2) : " + pagiCanonical + "\n" +
+                             "- Erreur lien parasite vers Page 1 : " + (pagiErreurLien !== "" ? pagiErreurLien : "Aucune") + "\n";
+            paginationPromptRule = " Pour la PAGINATION : si un lien parasite vers la Page 1 est détecté, c'est MAUVAIS (risque de duplicate). Ne signale JAMAIS l'indexabilité des pages paginées comme une erreur (c'est la norme).";
+        } else {
+            paginationPromptRule = " IGNORE totalement le sujet de la pagination car elle n'a pas été configurée.";
+        }
+
         // --- POSITIONNEMENT ---
         var titleText = props['TECH_POS_TITLE'] || "";
         var titleHasKw = props['TECH_POS_TITLE_HAS_KW'] === "true";
@@ -2323,6 +2367,12 @@ function genererAnalyseTechniqueIA() {
 
         var typePage = props['TECH_TYPE_PAGE'] || "Non spécifié";
         var schemas = props['TECH_POS_SCHEMA'] || "Aucun schéma détecté";
+
+        // STRUCTURE HN
+        var structureHnStr = props['TECH_POS_HN'] || "[]";
+        var hnCount = 0;
+        try { hnCount = JSON.parse(structureHnStr).length; } catch(e){}
+        var evalHn = (hnCount > 0) ? "[OK]" : "[KO]";
 
         Logger.log("Étape 2 : Construction du dossier technique pour l'IA");
 
@@ -2338,16 +2388,18 @@ function genererAnalyseTechniqueIA() {
             "- URL dans le Sitemap : " + urlInSitemap + " -> Évaluation stricte : " + evalSitemap + "\n" +
             "- Site multilingue déclaré : " + isMultilingue + "\n" +
             "- Cible déclarée (si multilingue) : Langue=" + langueCible + ", Pays=" + paysCible + "\n" +
-            "- Balises hreflang brutes trouvées : " + hreflangs + "\n\n" +
+            "- Balises hreflang brutes trouvées : " + hreflangs + "\n" +
+            (hasPagination ? paginationInfo + "\n" : "\n") +
             
             "=== BLOC 3 : POSITIONNEMENT ON-PAGE ===\n" +
             "- Mot-clé cible visé : \"" + motCleCible + "\"\n" +
             "- Balise <title> exacte : \"" + titleText + "\" -> Présence stricte : " + evalTitle + "\n" +
             "- Balise <h1> exacte : \"" + h1Text + "\" -> Présence stricte : " + evalH1 + "\n" +
+            "- Structure Hn extraite (" + hnCount + " balises) : " + structureHnStr + " -> Présence stricte : " + evalHn + "\n" +
             "- Type de page déclaré : " + typePage + "\n" +
             "- Données structurées (Schema.org) trouvées : " + schemas + "\n";
 
-        Logger.log("Étape 3 : Définition de la doctrine SEO stricte (Prompt)");
+        Logger.log("Étape 3 : Définition de la doctrine SEO stricte (Prompt avec exhaustivité)");
 
         var systemPrompt = "Tu es un auditeur SEO technique expert. Ton rôle est de restituer un audit sous forme de puces pour le client. Tu dois utiliser ton intelligence pour nuancer certaines données algorithmiques, tout en respectant une doctrine stricte.\n\n" +
             "RÈGLES TYPOGRAPHIQUES OBLIGATOIRES (français) :\n" +
@@ -2355,19 +2407,20 @@ function genererAnalyseTechniqueIA() {
             "- Pas de majuscule au premier mot à l'intérieur d'une parenthèse.\n" +
             "- Un espace obligatoire avant les deux-points ( :).\n" +
             "- Pas de majuscule après les deux-points ( :).\n" +
-            "- Utilise obligatoirement la syntaxe HTML pour les balises : écris <title> et <h1> (jamais 'Title' ou 'H1').\n" +
+            "- Utilise obligatoirement la syntaxe HTML pour les balises : écris &lt;title&gt; et &lt;h1&gt; (jamais 'Title' ou 'H1').\n" +
             "- Encadre l'expression clé de chaque puce avec des astérisques simples (*mot*).\n\n" +
             "DOCTRINE D'ANALYSE PAR BLOC :\n" +
-            "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx (pages introuvables) des erreurs 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent (* et Googlebot). Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS).\n" +
-            "2. INDEXATION : Si le site est déclaré 'non' multilingue, IGNORE TOTALEMENT les hreflangs. S'il l'est, croise la cible déclarée avec les balises trouvées (vérifie la syntaxe ISO et l'auto-référencement). Pour la pagination, sache que les pages paginées DOIVENT être indexables : ne le signale jamais comme un problème.\n" +
-            "3. POSITIONNEMENT : Le script a fait une vérification stricte du mot-clé exact. SI l'évaluation est [KO], utilise ton intelligence sémantique : si tu détectes que la balise <title> ou <h1> contient des synonymes très proches ou le mot-clé dans un ordre différent, corrige l'évaluation en MOYEN et indique qu'une *optimisation sémantique* est nécessaire. Pour les 'Schema.org', fais un Gap Analysis : compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées (ex : manque de 'Review' sur un produit).\n\n" +
+            "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx des 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent. Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS).\n" +
+            "2. INDEXATION : Si le site n'est pas multilingue, ignore les hreflangs. S'il l'est, valide la syntaxe ISO et l'auto-référencement." + paginationPromptRule + "\n" +
+            "3. POSITIONNEMENT : Si l'évaluation de &lt;title&gt; ou &lt;h1&gt; est [KO], utilise ton intelligence : si la balise contient des synonymes proches ou le mot-clé dans le désordre, corrige l'évaluation en MOYEN et demande une *optimisation sémantique*. Pour la STRUCTURE HN : vérifie s'il y a des balises parasites de template (ex: H3 'Navigation', H4 'Footer') ou des sauts de hiérarchie. Si oui, mets MOYEN. Pour les 'Schema.org', compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées.\n\n" +
             "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
-            "SÉLECTION ET FORMAT : Génère exactement 3 puces par catégorie en choisissant les points les plus pertinents. Attribue la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
+            "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE) :\n" +
+            "Génère une liste exhaustive d'options pour l'utilisateur. Pour chaque métrique ou donnée fournie qui présente un statut [KO] ou [AVERTISSEMENT], ou pour laquelle ton analyse experte soulève un point d'attention, génère un constat. Génère également 2 ou 3 puces pour les éléments [OK] les plus importants. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
             "Format JSON attendu :\n" +
             "{\n" +
             "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
             "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"L'URL est absente...\" }, ... ],\n" +
-            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise <h1> contient une...\" }, ... ]\n" +
+            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise &lt;h1&gt; contient une...\" }, ... ]\n" +
             "}";
 
         var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Dossier technique à auditer] :\n" + techDataStr;

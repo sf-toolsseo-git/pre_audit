@@ -690,3 +690,137 @@ function exporterFocusMotCleSlides() {
         return { success: false, error: e.message };
     }
 }
+
+function exporterEtatLieuxTechniqueSlides() {
+    try {
+        Logger.log("=== DÉBUT : exporterEtatLieuxTechniqueSlides ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        var ICON_IDS = {
+            "BON": "1lwxjX4LJWDoNYb19qco0VK93EH1V_aaQ",
+            "MOYEN": "1l-eMhlZ4eXu2zxzH-_D_ZdRbIWB3X7VB",
+            "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
+            "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
+        };
+
+        function formatRichTextTech(shape) {
+            try {
+                var textRange = shape.getText();
+                var textStr = textRange.asString();
+                var regex = /\*\*([^*]+)\*\*/g;
+                var matches = [];
+                var match;
+
+                while ((match = regex.exec(textStr)) !== null) {
+                    matches.push({
+                        start: match.index,
+                        text: match[1],
+                        length: match[0].length
+                    });
+                }
+                
+                for (var i = matches.length - 1; i >= 0; i--) {
+                    var m = matches[i];
+                    var endDoubleAst = m.start + m.text.length + 2;
+                    
+                    textRange.getRange(endDoubleAst, endDoubleAst + 2).clear();
+                    textRange.getRange(m.start, m.start + 2).clear();
+
+                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+                }
+            } catch(e) {
+                Logger.log("Erreur dans formatRichTextTech : " + e.message);
+            }
+        }
+
+        var textMapping = {
+            'CRAWL_CONTENT_1': props['CRAWL_CONTENT_1'] || "",
+            'CRAWL_CONTENT_2': props['CRAWL_CONTENT_2'] || "",
+            'CRAWL_CONTENT_3': props['CRAWL_CONTENT_3'] || "",
+            'INDEX_CONTENT_1': props['INDEX_CONTENT_1'] || "",
+            'INDEX_CONTENT_2': props['INDEX_CONTENT_2'] || "",
+            'INDEX_CONTENT_3': props['INDEX_CONTENT_3'] || "",
+            'POS_CONTENT_1': props['POS_CONTENT_1'] || "",
+            'POS_CONTENT_2': props['POS_CONTENT_2'] || "",
+            'POS_CONTENT_3': props['POS_CONTENT_3'] || ""
+        };
+
+        Logger.log("Parcours récursif des slides pour l'État des lieux technique...");
+
+        slides.forEach(function(slide) {
+            
+            function processElement(element) {
+                var type = element.getPageElementType();
+                
+                if (type === SlidesApp.PageElementType.GROUP) {
+                    element.asGroup().getChildren().forEach(processElement);
+                } else if (type === SlidesApp.PageElementType.TABLE) {
+                    var table = element.asTable();
+                    for (var r = 0; r < table.getNumRows(); r++) {
+                        for (var c = 0; c < table.getNumColumns(); c++) {
+                            processTextContainer(table.getCell(r, c), slide);
+                        }
+                    }
+                } else if (type === SlidesApp.PageElementType.SHAPE) {
+                    processTextContainer(element.asShape(), slide);
+                } else if (type === SlidesApp.PageElementType.IMAGE) {
+                    processTextContainer(element.asImage(), slide);
+                }
+            }
+
+            function processTextContainer(element, currentSlide) {
+                var isShape = (typeof element.getDescription === 'function');
+                var descRaw = isShape ? (element.getDescription() || "") : "";
+
+                if (isShape && descRaw !== "") {
+                    // Remplacement des textes d'analyse
+                    if (textMapping[descRaw] !== undefined) {
+                        element.getText().setText(String(textMapping[descRaw]));
+                        formatRichTextTech(element);
+                        return;
+                    }
+
+                    // Remplacement des icônes d'évaluation (BON, MOYEN, MAUVAIS, INCONNU)
+                    var isIconPlaceholder = (
+                        descRaw === "CRAWL_CHECK_1" || descRaw === "CRAWL_CHECK_2" || descRaw === "CRAWL_CHECK_3" ||
+                        descRaw === "INDEX_CHECK_1" || descRaw === "INDEX_CHECK_2" || descRaw === "INDEX_CHECK_3" ||
+                        descRaw === "POS_CHECK_1" || descRaw === "POS_CHECK_2" || descRaw === "POS_CHECK_3"
+                    );
+
+                    if (isIconPlaceholder && currentSlide) {
+                        var statusValue = props[descRaw] || "INCONNU";
+                        Logger.log("Remplacement de l'icône " + descRaw + " par le statut : " + statusValue);
+                        
+                        var fileId = ICON_IDS[statusValue] || ICON_IDS["INCONNU"];
+                        
+                        try {
+                            var file = DriveApp.getFileById(fileId);
+                            var pngBlob = file.getBlob();
+                            var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                            newImg.setDescription(descRaw);
+                            element.remove();
+                        } catch (errDrive) {
+                            Logger.log("ERREUR lors de l'insertion de l'icône Drive (" + statusValue + ") : " + errDrive.message);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            slide.getPageElements().forEach(processElement);
+        });
+
+        Logger.log("=== FIN : exporterEtatLieuxTechniqueSlides ===");
+        return { success: true, url: presentation.getUrl() };
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT ETAT LIEUX TECHNIQUE : " + e.message);
+        return { success: false, error: e.message };
+    }
+}

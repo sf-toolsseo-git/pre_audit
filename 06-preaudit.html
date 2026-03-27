@@ -158,6 +158,7 @@
             <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux">4. État des lieux du référencement</div>
             <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
             <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
+            <div class="tab" onclick="switchTab('ux')" id="tab-btn-ux">7. UX</div>
         </div>
         <div class="tab-content active" id="content-config">
             <div class="main-area">
@@ -694,7 +695,20 @@
                             </div>
                         </div>
 
+                        <div class="continuer-bar" style="margin-top: 25px;">
+                            <span id="exportMsgTech" style="font-size: 12px; font-weight: bold;"></span>
+                            <button class="btn btn-continuer" id="btnExportSlidesTech" onclick="lancerExportSlidesTech()">📥 Importer dans Slides & continuer</button>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="content-ux">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">Expérience Utilisateur (UX)</h2>
+                    <div class="empty-state">À venir...</div>
                 </div>
             </div>
         </div>
@@ -943,6 +957,20 @@
                                         buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
                                     }
                                 }
+                            }
+                            
+                            // Restauration du HTML des résultats de l'onglet 6
+                            if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
+                                document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
+                                document.getElementById('tech-results-container').style.display = 'block';
+                            }
+                            if (config.techHtmlIndex && config.techHtmlIndex.trim() !== '') {
+                                document.getElementById('indexation-results-content').innerHTML = config.techHtmlIndex;
+                                document.getElementById('tech-results-container').style.display = 'block';
+                            }
+                            if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
+                                document.getElementById('positionnement-results-content').innerHTML = config.techHtmlPos;
+                                document.getElementById('tech-results-container').style.display = 'block';
                             }
                         }
 
@@ -2897,6 +2925,10 @@
                         // Sauvegarde Indexation silencieuse
                         console.log("Sauvegarde des données d'indexation : ", indexDataToSave);
                         google.script.run.sauvegarderResultatsIndexation(indexDataToSave);
+                        
+                        // Sauvegarde asynchrone du HTML généré pour la restauration
+                        console.log("Sauvegarde asynchrone des résultats HTML...");
+                        google.script.run.sauvegarderHtmlTechnique(crawlContent.innerHTML, indexationContent.innerHTML, posContent.innerHTML);
                     }
                 }
 
@@ -3344,6 +3376,43 @@
 
             console.log("Sauvegarde auto des données IA Techniques : ", data);
             google.script.run.sauvegarderAnalysesTechniquesIA(data);
+        }
+
+        function lancerExportSlidesTech() {
+            console.log("=== DÉBUT : lancerExportSlidesTech ===");
+            var btn = document.getElementById('btnExportSlidesTech');
+            var msg = document.getElementById('exportMsgTech');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Import en cours...";
+            msg.innerText = "";
+            
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res.success) {
+                        btn.innerText = "✅ Importé";
+                        msg.innerHTML = '<span style="color:#188038">Données techniques injectées avec succès !</span>';
+                        console.log("Succès de l'export Slides Technique :", res);
+                        setTimeout(function() {
+                            btn.disabled = false;
+                            btn.innerText = "📥 Importer dans Slides & continuer";
+                            msg.innerHTML = "";
+                            switchTab('ux');
+                        }, 2000);
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = "📥 Importer dans Slides & continuer";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
+                        console.error("Erreur logique lors de l'export Slides Technique :", res.error);
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.disabled = false;
+                    btn.innerText = "📥 Importer dans Slides & continuer";
+                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                    console.error("Erreur serveur lors de l'export Slides Technique :", err);
+                })
+                .exporterEtatLieuxTechniqueSlides();
         }
         
         function getRawMarkdownFromCE_Element(el) {
