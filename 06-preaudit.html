@@ -3361,7 +3361,7 @@
                 .genererAnalyseTechniqueIA();
         }
 
-        function autoSaveTechIA() {
+        function getTechIAData() {
             var data = {};
             var fullStateObj = { crawl: [], index: [], pos: [] };
             
@@ -3411,7 +3411,11 @@
             });
 
             data.fullStateStr = JSON.stringify(fullStateObj);
-            
+            return data;
+        }
+
+        function autoSaveTechIA() {
+            var data = getTechIAData();
             console.log("Sauvegarde auto des données IA Techniques : ", data);
             google.script.run.sauvegarderAnalysesTechniquesIA(data);
         }
@@ -3422,35 +3426,48 @@
             var msg = document.getElementById('exportMsgTech');
             
             btn.disabled = true;
-            btn.innerText = "⏳ Import en cours...";
+            btn.innerText = "⏳ Sauvegarde et import...";
             msg.innerText = "";
             
+            var dataToSave = getTechIAData();
+            
             google.script.run
-                .withSuccessHandler(function(res) {
-                    if (res.success) {
-                        btn.innerText = "✅ Importé";
-                        msg.innerHTML = '<span style="color:#188038">Données techniques injectées avec succès !</span>';
-                        console.log("Succès de l'export Slides Technique :", res);
-                        setTimeout(function() {
+                .withSuccessHandler(function(saveRes) {
+                    // Sauvegarde réussie, on lance l'export
+                    google.script.run
+                        .withSuccessHandler(function(res) {
+                            if (res.success) {
+                                btn.innerText = "✅ Importé";
+                                msg.innerHTML = '<span style="color:#188038">Données techniques injectées avec succès !</span>';
+                                console.log("Succès de l'export Slides Technique :", res);
+                                setTimeout(function() {
+                                    btn.disabled = false;
+                                    btn.innerText = "📥 Importer dans Slides & continuer";
+                                    msg.innerHTML = "";
+                                    switchTab('ux');
+                                }, 2000);
+                            } else {
+                                btn.disabled = false;
+                                btn.innerText = "📥 Importer dans Slides & continuer";
+                                msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
+                                console.error("Erreur logique lors de l'export Slides Technique :", res.error);
+                            }
+                        })
+                        .withFailureHandler(function(err) {
                             btn.disabled = false;
                             btn.innerText = "📥 Importer dans Slides & continuer";
-                            msg.innerHTML = "";
-                            switchTab('ux');
-                        }, 2000);
-                    } else {
-                        btn.disabled = false;
-                        btn.innerText = "📥 Importer dans Slides & continuer";
-                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
-                        console.error("Erreur logique lors de l'export Slides Technique :", res.error);
-                    }
+                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                            console.error("Erreur serveur lors de l'export Slides Technique :", err);
+                        })
+                        .exporterEtatLieuxTechniqueSlides();
                 })
                 .withFailureHandler(function(err) {
                     btn.disabled = false;
                     btn.innerText = "📥 Importer dans Slides & continuer";
-                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
-                    console.error("Erreur serveur lors de l'export Slides Technique :", err);
+                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur de sauvegarde : ' + err.message + '</span>';
+                    console.error("Erreur serveur lors de la sauvegarde Technique :", err);
                 })
-                .exporterEtatLieuxTechniqueSlides();
+                .sauvegarderAnalysesTechniquesIA(dataToSave);
         }
         
         function getRawMarkdownFromCE_Element(el) {
