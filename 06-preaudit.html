@@ -682,15 +682,15 @@
                         
                         <div id="tech-ia-results-container" style="display: none; gap: 15px; margin-top: 20px;">
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL <span id="count-crawl" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL <span id="count-crawl" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
                                 <div id="dynamic-list-crawl" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION <span id="count-index" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION <span id="count-index" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
                                 <div id="dynamic-list-index" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                             <div style="flex: 1;">
-                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT <span id="count-pos" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/3)</span></h3>
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT <span id="count-pos" style="font-size: 12px; color: #5f6368; font-weight: normal;">(0/4)</span></h3>
                                 <div id="dynamic-list-pos" style="display: flex; flex-direction: column; gap: 10px;"></div>
                             </div>
                         </div>
@@ -934,14 +934,28 @@
                             if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
                             if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                             
-                            // Restauration des données IA Technique
-                            if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
+                            // Restauration des données IA Technique (Full state)
+                            if (config.DATA_TECH_IA_FULL_STATE) {
+                                try {
+                                    var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
+                                    document.getElementById('tech-ia-results-container').style.display = 'flex';
+                                    
+                                    if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, null, true);
+                                    if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, null, true);
+                                    if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, null, true);
+                                    
+                                    console.log("Restauration du full state réussie.");
+                                } catch(e) {
+                                    console.log("Erreur de parsing JSON pour DATA_TECH_IA_FULL_STATE : " + e.message);
+                                }
+                            } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
+                                // Fallback sur l'ancien système de restauration
                                 document.getElementById('tech-ia-results-container').style.display = 'flex';
                                 var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
                                 
                                 for (var pf in prefixMap) {
                                     var restoredItems = [];
-                                    for (var i = 1; i <= 3; i++) {
+                                    for (var i = 1; i <= 4; i++) {
                                         var checkVal = config[pf + '_CHECK_' + i];
                                         var contentVal = config[pf + '_CONTENT_' + i];
                                         if (contentVal) {
@@ -952,7 +966,6 @@
                                             });
                                         }
                                     }
-                                    // Si on a des items restaurés, on construit la liste dynamique
                                     if (restoredItems.length > 0) {
                                         buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
                                     }
@@ -3187,9 +3200,9 @@
                 }
             }
             
-            // Étape 2 : on complète jusqu'à 3 si possible
+            // Étape 2 : on complète jusqu'à 4 si possible
             for (var i = 0; i < items.length; i++) {
-                if (selectedIndices.length >= 3) break;
+                if (selectedIndices.length >= 4) break;
                 if (selectedIndices.indexOf(i) === -1) {
                     selectedIndices.push(i);
                 }
@@ -3271,14 +3284,14 @@
             
             var countSpan = document.getElementById('count-' + prefix);
             if (countSpan) {
-                countSpan.innerText = '(' + count + '/3)';
-                countSpan.style.color = count === 3 ? '#188038' : '#5f6368';
+                countSpan.innerText = '(' + count + '/4)';
+                countSpan.style.color = count === 4 ? '#188038' : '#5f6368';
             }
             
             checkboxes.forEach(function(cb) {
                 if (!cb.checked) {
-                    cb.disabled = (count >= 3);
-                    cb.parentElement.style.opacity = (count >= 3) ? '0.5' : '1';
+                    cb.disabled = (count >= 4);
+                    cb.parentElement.style.opacity = (count >= 4) ? '0.5' : '1';
                 } else {
                     cb.disabled = false;
                     cb.parentElement.style.opacity = '1';
@@ -3336,6 +3349,8 @@
 
         function autoSaveTechIA() {
             var data = {};
+            var fullStateObj = { crawl: [], index: [], pos: [] };
+            
             var prefixes = [
                 { id: 'crawl', keyPrefix: 'CRAWL' },
                 { id: 'index', keyPrefix: 'INDEX' },
@@ -3351,14 +3366,21 @@
                 
                 for (var i = 0; i < rows.length; i++) {
                     var cb = rows[i].querySelector('.cb-' + p.id);
+                    var hiddenInput = rows[i].querySelector('.hidden-' + p.id);
+                    var ceDiv = rows[i].querySelector('.ce-' + p.id);
+                    
+                    var iconeVal = hiddenInput ? hiddenInput.value : "";
+                    var contentVal = ceDiv ? getRawMarkdownFromCE_Element(ceDiv) : "";
+                    
+                    // On pousse dans le full state pour tout le monde (coché ou non)
+                    fullStateObj[p.id].push({
+                        icone: iconeVal,
+                        texte: contentVal,
+                        restoredChecked: cb ? cb.checked : false
+                    });
+                    
                     if (cb && cb.checked) {
-                        if (checkedIndex <= 3) {
-                            var hiddenInput = rows[i].querySelector('.hidden-' + p.id);
-                            var ceDiv = rows[i].querySelector('.ce-' + p.id);
-                            
-                            var iconeVal = hiddenInput ? hiddenInput.value : "";
-                            var contentVal = ceDiv ? getRawMarkdownFromCE_Element(ceDiv) : "";
-                            
+                        if (checkedIndex <= 4) {
                             data[p.keyPrefix + '_CHECK_' + checkedIndex] = iconeVal;
                             data[p.keyPrefix + '_CONTENT_' + checkedIndex] = contentVal;
                             checkedIndex++;
@@ -3366,14 +3388,16 @@
                     }
                 }
                 
-                // Remplir avec chaînes vides si < 3 cases cochées
-                while (checkedIndex <= 3) {
+                // Remplir avec chaînes vides si < 4 cases cochées
+                while (checkedIndex <= 4) {
                     data[p.keyPrefix + '_CHECK_' + checkedIndex] = "";
                     data[p.keyPrefix + '_CONTENT_' + checkedIndex] = "";
                     checkedIndex++;
                 }
             });
 
+            data.fullStateStr = JSON.stringify(fullStateObj);
+            
             console.log("Sauvegarde auto des données IA Techniques : ", data);
             google.script.run.sauvegarderAnalysesTechniquesIA(data);
         }

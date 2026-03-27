@@ -120,7 +120,8 @@ function chargerConfigurationPreAudit() {
 
         techHtmlCrawl: props['TECH_HTML_CRAWL'] || "",
         techHtmlIndex: props['TECH_HTML_INDEX'] || "",
-        techHtmlPos: props['TECH_HTML_POS'] || ""
+        techHtmlPos: props['TECH_HTML_POS'] || "",
+        DATA_TECH_IA_FULL_STATE: props['DATA_TECH_IA_FULL_STATE'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -2302,6 +2303,12 @@ function genererAnalyseTechniqueIA() {
         Logger.log("Étape 1 : Évaluation algorithmique et préparation des données brutes");
 
         // --- CRAWL ---
+        var firstLinkUrl = props['TECH_CRAWL_FIRST_LINK_URL'] || "";
+        var firstLinkAnchor = props['TECH_CRAWL_FIRST_LINK_ANCHOR'] || "";
+        var pagiMereBody = props['TECH_CRAWL_PAGI_MERE_BODY'] === "true";
+        var pagiMereHead = props['TECH_CRAWL_PAGI_MERE_HEAD'] === "true";
+        var pagiP2Body = props['TECH_CRAWL_PAGI_P2_BODY'] === "true";
+        var pagiP2Head = props['TECH_CRAWL_PAGI_P2_HEAD'] === "true";
         var statusCode = parseInt(props['TECH_CRAWL_STATUS_CODE'], 10);
         var evalStatus = (statusCode === 200) ? "[OK]" : (statusCode >= 300 && statusCode < 400 ? "[AVERTISSEMENT]" : "[KO]");
         var ttfb = parseInt(props['TECH_CRAWL_TTFB_MS'], 10);
@@ -2380,7 +2387,9 @@ function genererAnalyseTechniqueIA() {
             "- Code HTTP : " + statusCode + " -> Évaluation stricte : " + evalStatus + "\n" +
             "- Temps de réponse (TTFB) : " + ttfb + " ms -> Évaluation stricte : " + evalTtfb + "\n" +
             "- Liens sortants morts : " + links4xx + " erreurs 4xx (introuvable) et " + links5xx + " erreurs 5xx (serveur).\n" +
-            "- Fichier robots.txt brut (à auditer) :\n" + robotsTxt + "\n\n" +
+            "- Fichier robots.txt brut (à auditer) :\n" + robotsTxt + "\n" +
+            "- Premier lien dans le contenu : URL=\"" + firstLinkUrl + "\", Ancre=\"" + firstLinkAnchor + "\"\n" +
+            (hasPagination ? "- Présence liens pagination : Page mère Head=" + pagiMereHead + ", Page mère Body=" + pagiMereBody + ", Page 2 Head=" + pagiP2Head + ", Page 2 Body=" + pagiP2Body + "\n\n" : "\n") +
             
             "=== BLOC 2 : INDEXATION ===\n" +
             "- Meta Robots : " + metaRobots + " -> Évaluation stricte : " + evalMetaRobots + "\n" +
@@ -2410,12 +2419,12 @@ function genererAnalyseTechniqueIA() {
             "- Utilise obligatoirement la syntaxe HTML pour les balises : écris <title> et <h1> (jamais 'Title' ou 'H1').\n" +
             "- Encadre l'expression clé de chaque puce avec des astérisques simples (*mot*).\n\n" +
             "DOCTRINE D'ANALYSE PAR BLOC :\n" +
-            "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx des 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent. Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS).\n" +
-            "2. INDEXATION : Si le site n'est pas multilingue, ignore les hreflangs. S'il l'est, valide la syntaxe ISO et l'auto-référencement." + paginationPromptRule + "\n" +
+            "1. CRAWL : Pour les liens, distingue précisément les erreurs 4xx des 5xx. Pour le 'robots.txt', analyse chaque bloc de User-agent. Juge l'optimisation globale : un fichier vide ou basique n'est *pas optimisé* (icône MOYEN), un fichier bloquant l'URL cible est *problématique* (icône MAUVAIS). Le premier lien dans le contenu texte est le plus puissant. S'il pointe vers un domaine externe, c'est une perte de jus SEO (MAUVAIS). S'il est interne, c'est positif. Pour la pagination, vérifie que les liens rel='next'/rel='prev' sont présents.\n" +
+            "2. INDEXATION : Si le site n'est pas multilingue, ignore les hreflangs. S'il l'est, valide la syntaxe ISO et l'auto-référencement. Sitemap : si l'URL est dans le sitemap, c'est très bien. Pagination : une balise canonical auto-référencée sur une page paginée (ex: page 2 canonise vers page 2) est la BONNE PRATIQUE pour l'indexation. Ne JAMAIS signaler cela comme un contenu dupliqué." + paginationPromptRule + "\n" +
             "3. POSITIONNEMENT : Si l'évaluation de <title> ou <h1> est [KO], utilise ton intelligence : si la balise contient des synonymes proches ou le mot-clé dans le désordre, corrige l'évaluation en MOYEN et demande une *optimisation sémantique*. Pour la STRUCTURE HN : vérifie s'il y a des balises parasites de template (ex: H3 'Navigation', H4 'Footer') ou des sauts de hiérarchie. Si oui, mets MOYEN. Pour les 'Schema.org', compare le 'Type de page déclaré' avec les schémas trouvés et liste les opportunités manquées.\n\n" +
             "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
             "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE) :\n" +
-            "Génère une liste exhaustive d'options pour l'utilisateur. Pour chaque métrique ou donnée fournie qui présente un statut [KO] ou [AVERTISSEMENT], ou pour laquelle ton analyse experte soulève un point d'attention, génère un constat. Génère également 2 ou 3 puces pour les éléments [OK] les plus importants. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
+            "Génère une liste exhaustive de puces (autant que nécessaire) pour couvrir tous les points soulevés par les données. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
             "Format JSON attendu :\n" +
             "{\n" +
             "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
@@ -2500,18 +2509,25 @@ function sauvegarderAnalysesTechniquesIA(data) {
             'CRAWL_CONTENT_2': data.CRAWL_CONTENT_2 || "",
             'CRAWL_CHECK_3': data.CRAWL_CHECK_3 || "",
             'CRAWL_CONTENT_3': data.CRAWL_CONTENT_3 || "",
+            'CRAWL_CHECK_4': data.CRAWL_CHECK_4 || "",
+            'CRAWL_CONTENT_4': data.CRAWL_CONTENT_4 || "",
             'INDEX_CHECK_1': data.INDEX_CHECK_1 || "",
             'INDEX_CONTENT_1': data.INDEX_CONTENT_1 || "",
             'INDEX_CHECK_2': data.INDEX_CHECK_2 || "",
             'INDEX_CONTENT_2': data.INDEX_CONTENT_2 || "",
             'INDEX_CHECK_3': data.INDEX_CHECK_3 || "",
             'INDEX_CONTENT_3': data.INDEX_CONTENT_3 || "",
+            'INDEX_CHECK_4': data.INDEX_CHECK_4 || "",
+            'INDEX_CONTENT_4': data.INDEX_CONTENT_4 || "",
             'POS_CHECK_1': data.POS_CHECK_1 || "",
             'POS_CONTENT_1': data.POS_CONTENT_1 || "",
             'POS_CHECK_2': data.POS_CHECK_2 || "",
             'POS_CONTENT_2': data.POS_CONTENT_2 || "",
             'POS_CHECK_3': data.POS_CHECK_3 || "",
-            'POS_CONTENT_3': data.POS_CONTENT_3 || ""
+            'POS_CONTENT_3': data.POS_CONTENT_3 || "",
+            'POS_CHECK_4': data.POS_CHECK_4 || "",
+            'POS_CONTENT_4': data.POS_CONTENT_4 || "",
+            'DATA_TECH_IA_FULL_STATE': data.fullStateStr || ""
         });
         syncPropertiesToConfigSheet();
         Logger.log("Analyses Techniques IA sauvegardées.");
