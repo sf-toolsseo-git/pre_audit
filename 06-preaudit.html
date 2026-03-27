@@ -675,6 +675,67 @@
                             <div id="positionnement-results-content" style="font-size: 12px; color: #80868b; text-align: center; margin-top: 20px;">(À venir)</div>
                         </div>
 
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button type="button" id="btn-gen-tech-ia" class="btn" onclick="lancerAnalyseTechniqueIA()" style="width: auto;">🤖 Générer l'analyse technique</button>
+                        </div>
+                        
+                        <div id="tech-ia-results-container" style="display: none; gap: 15px; margin-top: 20px;">
+                            <div style="flex: 1;">
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">CRAWL</h3>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="crawl-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="crawl-check-1" value="">
+                                    <div id="ce-crawl-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="crawl-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="crawl-check-2" value="">
+                                    <div id="ce-crawl-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="crawl-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="crawl-check-3" value="">
+                                    <div id="ce-crawl-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">INDEXATION</h3>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="index-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="index-check-1" value="">
+                                    <div id="ce-index-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="index-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="index-check-2" value="">
+                                    <div id="ce-index-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="index-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="index-check-3" value="">
+                                    <div id="ce-index-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="margin-top: 0; color: #08133B; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px;">POSITIONNEMENT</h3>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="pos-icon-1" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="pos-check-1" value="">
+                                    <div id="ce-pos-1" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="pos-icon-2" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="pos-check-2" value="">
+                                    <div id="ce-pos-2" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+                                    <img id="pos-icon-3" src="" style="width: 24px; height: 24px; object-fit: contain;">
+                                    <input type="hidden" id="pos-check-3" value="">
+                                    <div id="ce-pos-3" contenteditable="true" class="ce-field" style="flex: 1;" onblur="autoSaveTechIA()"></div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -900,6 +961,23 @@
                             if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
                             if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
                             if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
+                            
+                            // Restauration des données IA Technique
+                            if (config.CRAWL_CONTENT_1) {
+                                document.getElementById('tech-ia-results-container').style.display = 'flex';
+                                var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
+                                var drivesIconsData = null; // Will load on first click if needed, or we can assume it's lost and rely on text
+                                for (var pf in prefixMap) {
+                                    for (var i = 1; i <= 3; i++) {
+                                        var checkVal = config[pf + '_CHECK_' + i];
+                                        var contentVal = config[pf + '_CONTENT_' + i];
+                                        if (contentVal) {
+                                            document.getElementById(prefixMap[pf] + '-check-' + i).value = checkVal;
+                                            setCeContent('ce-' + prefixMap[pf] + '-' + i, contentVal);
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         google.script.run
@@ -3082,6 +3160,92 @@
 
             console.log("=== FIN : lancerAnalyseTechnique ===");
         }
+
+        function lancerAnalyseTechniqueIA() {
+            console.log("=== DÉBUT : lancerAnalyseTechniqueIA ===");
+            var btn = document.getElementById('btn-gen-tech-ia');
+            var container = document.getElementById('tech-ia-results-container');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Génération en cours...";
+            showLoader("Génération de l'analyse technique IA...");
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    hideLoader();
+                    btn.disabled = false;
+                    btn.innerText = "🤖 Générer l'analyse technique";
+                    
+                    if (res.success) {
+                        console.log("Résultat IA reçu : ", res.data);
+                        container.style.display = 'flex';
+                        
+                        var sections = [
+                            { key: 'analyse_crawl', prefix: 'crawl' },
+                            { key: 'analyse_indexation', prefix: 'index' },
+                            { key: 'analyse_positionnement', prefix: 'pos' }
+                        ];
+
+                        sections.forEach(function(sec) {
+                            var items = res.data[sec.key] || [];
+                            for (var i = 0; i < 3; i++) {
+                                var item = items[i] || { icone: "INCONNU", texte: "" };
+                                var idx = i + 1;
+                                
+                                var imgEl = document.getElementById(sec.prefix + '-icon-' + idx);
+                                var checkEl = document.getElementById(sec.prefix + '-check-' + idx);
+                                var ceEl = document.getElementById('ce-' + sec.prefix + '-' + idx);
+                                
+                                checkEl.value = item.icone;
+                                if (res.icons && res.icons[item.icone]) {
+                                    imgEl.src = "data:image/png;base64," + res.icons[item.icone];
+                                }
+                                setCeContent('ce-' + sec.prefix + '-' + idx, item.texte);
+                            }
+                        });
+                        
+                        autoSaveTechIA();
+                    } else {
+                        alert("Erreur de l'IA : " + res.error);
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btn.disabled = false;
+                    btn.innerText = "🤖 Générer l'analyse technique";
+                    alert("Erreur critique : " + err.message);
+                })
+                .genererAnalyseTechniqueIA();
+        }
+
+        function autoSaveTechIA() {
+            console.log("Sauvegarde auto des données IA Techniques");
+            var data = {
+                CRAWL_CHECK_1: document.getElementById('crawl-check-1').value,
+                CRAWL_CONTENT_1: getRawMarkdownFromCE('ce-crawl-1'),
+                CRAWL_CHECK_2: document.getElementById('crawl-check-2').value,
+                CRAWL_CONTENT_2: getRawMarkdownFromCE('ce-crawl-2'),
+                CRAWL_CHECK_3: document.getElementById('crawl-check-3').value,
+                CRAWL_CONTENT_3: getRawMarkdownFromCE('ce-crawl-3'),
+                
+                INDEX_CHECK_1: document.getElementById('index-check-1').value,
+                INDEX_CONTENT_1: getRawMarkdownFromCE('ce-index-1'),
+                INDEX_CHECK_2: document.getElementById('index-check-2').value,
+                INDEX_CONTENT_2: getRawMarkdownFromCE('ce-index-2'),
+                INDEX_CHECK_3: document.getElementById('index-check-3').value,
+                INDEX_CONTENT_3: getRawMarkdownFromCE('ce-index-3'),
+                
+                POS_CHECK_1: document.getElementById('pos-check-1').value,
+                POS_CONTENT_1: getRawMarkdownFromCE('ce-pos-1'),
+                POS_CHECK_2: document.getElementById('pos-check-2').value,
+                POS_CONTENT_2: getRawMarkdownFromCE('ce-pos-2'),
+                POS_CHECK_3: document.getElementById('pos-check-3').value,
+                POS_CONTENT_3: getRawMarkdownFromCE('ce-pos-3')
+            };
+
+            google.script.run.sauvegarderAnalysesTechniquesIA(data);
+        }
+
         </script>
     </body>
 </html>

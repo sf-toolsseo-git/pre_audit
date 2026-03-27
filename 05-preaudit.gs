@@ -2262,3 +2262,153 @@ function sauvegarderResultatsPositionnement(data) {
         return { success: false, error: e.message };
     }
 }
+
+function genererAnalyseTechniqueIA() {
+    Logger.log("=== DÉBUT : genererAnalyseTechniqueIA ===");
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
+
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        // Compilation des données techniques brutes
+        var techDataStr = "=== DONNÉES CRAWL ===\n" +
+            "Status Code: " + (props['TECH_CRAWL_STATUS_CODE'] || "") + "\n" +
+            "TTFB (ms): " + (props['TECH_CRAWL_TTFB_MS'] || "") + " (" + (props['TECH_CRAWL_TTFB_SCORE'] || "") + ")\n" +
+            "Robots Bloqué: " + (props['TECH_CRAWL_ROBOTS_BLOCKED'] || "") + "\n" +
+            "Liens Total: " + (props['TECH_CRAWL_LINKS_TOTAL'] || "") + " (Int: " + (props['TECH_CRAWL_LINKS_INTERNAL'] || "") + ", Ext: " + (props['TECH_CRAWL_LINKS_EXTERNAL'] || "") + ")\n" +
+            "Status Liens: 200=" + (props['TECH_CRAWL_LINKS_200'] || "") + ", 3xx=" + (props['TECH_CRAWL_LINKS_3XX'] || "") + ", 4xx=" + (props['TECH_CRAWL_LINKS_4XX'] || "") + ", 5xx=" + (props['TECH_CRAWL_LINKS_5XX'] || "") + "\n" +
+            "Hreflangs: " + (props['TECH_CRAWL_HREFLANGS'] || "") + "\n\n" +
+            "=== DONNÉES INDEXATION ===\n" +
+            "Sitemap Présent: " + (props['TECH_INDEX_SITEMAP_PRESENT'] || "") + "\n" +
+            "URL dans Sitemap: " + (props['TECH_INDEX_URL_IN_SITEMAP'] || "") + "\n" +
+            "Meta Robots: " + (props['TECH_INDEX_META_ROBOTS'] || "") + "\n" +
+            "Canonical: " + (props['TECH_INDEX_CANONICAL'] || "") + "\n" +
+            "Pagination Meta Robots: " + (props['TECH_INDEX_PAGI_META_ROBOTS'] || "") + "\n" +
+            "Pagination Canonical: " + (props['TECH_INDEX_PAGI_CANONICAL'] || "") + "\n\n" +
+            "=== DONNÉES POSITIONNEMENT ===\n" +
+            "Title: " + (props['TECH_POS_TITLE'] || "") + " (Has Kw: " + (props['TECH_POS_TITLE_HAS_KW'] || "") + ")\n" +
+            "H1: " + (props['TECH_POS_H1'] || "") + " (Has Kw: " + (props['TECH_POS_H1_HAS_KW'] || "") + ")\n" +
+            "Hn: " + (props['TECH_POS_HN'] || "") + "\n" +
+            "Schema.org: " + (props['TECH_POS_SCHEMA'] || "") + "\n";
+
+        var systemPrompt = "Tu es un expert SEO technique et un consultant avant-vente pointu. Ton objectif est d'analyser un jeu de données techniques brutes extraites d'une page web cible et de générer un audit de santé SEO ultra-synthétique, directement intégrable dans une diapositive de présentation.\n" +
+            "Ton analyse est scindée en 3 blocs : Crawl, Indexation, Positionnement.\n" +
+            "RÈGLES DE PRIORISATION ET RATIO (CRUCIAL) : Pour chaque bloc, tu dois générer EXACTEMENT 3 puces respectant ce ratio : 1 point fort (positif) pour rassurer, et 2 points de friction ou d'alerte (négatifs ou moyens) pour justifier un accompagnement. Si la donnée est manquante, adapte le texte.\n" +
+            "GESTION DES ICÔNES : Pour chaque puce, définis la clé 'icone' strictement parmi : BON, MOYEN, MAUVAIS, INCONNU.\n" +
+            "RÈGLES DE RÉDACTION : Maximum 2 lignes très courtes par puce. Encadre les mots-clés importants avec des astérisques simples (*mot*).\n" +
+            "Format de sortie JSON OBLIGATOIRE :\n" +
+            "{\n" +
+            "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"...\" }, ... (3 items) ],\n" +
+            "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"...\" }, ... (3 items) ],\n" +
+            "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"...\" }, ... (3 items) ]\n" +
+            "}";
+
+        var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Données techniques brutes] :\n" + techDataStr;
+
+        var payload = {
+            "system_instruction": {
+                "parts": [{"text": systemPrompt}]
+            },
+            "contents": [
+                {"parts": [{"text": userPrompt}]}
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": {
+                "x-goog-api-key": apiKey
+            },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        Logger.log("Envoi de la requête à Gemini pour Analyse Technique...");
+        var response = UrlFetchApp.fetch(apiUrl, options);
+        var jsonResponse = JSON.parse(response.getContentText());
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (!jsonResponse.candidates || jsonResponse.candidates.length === 0 || !jsonResponse.candidates[0].content) {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+        var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        var jsonGemini = JSON.parse(responseText);
+
+        var ICON_IDS = {
+            "BON": "1lwxjX4LJWDoNYb19qco0VK93EH1V_aaQ",
+            "MOYEN": "1l-eMhlZ4eXu2zxzH-_D_ZdRbIWB3X7VB",
+            "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
+            "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
+        };
+
+        var iconsBase64 = {};
+        for (var key in ICON_IDS) {
+            try {
+                var blob = DriveApp.getFileById(ICON_IDS[key]).getBlob().getAs(MimeType.PNG);
+                iconsBase64[key] = Utilities.base64Encode(blob.getBytes());
+            } catch(e) {
+                Logger.log("Erreur de récupération de l'icône " + key + " : " + e.message);
+                iconsBase64[key] = "";
+            }
+        }
+
+        Logger.log("=== FIN : genererAnalyseTechniqueIA (Succès) ===");
+        return {
+            success: true,
+            data: jsonGemini,
+            icons: iconsBase64
+        };
+
+    } catch(err) {
+        Logger.log("Erreur dans genererAnalyseTechniqueIA : " + err.message);
+        return { success: false, error: err.message };
+    }
+}
+
+function sauvegarderAnalysesTechniquesIA(data) {
+    Logger.log("=== DÉBUT : sauvegarderAnalysesTechniquesIA ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
+            'CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
+            'CRAWL_CHECK_2': data.CRAWL_CHECK_2 || "",
+            'CRAWL_CONTENT_2': data.CRAWL_CONTENT_2 || "",
+            'CRAWL_CHECK_3': data.CRAWL_CHECK_3 || "",
+            'CRAWL_CONTENT_3': data.CRAWL_CONTENT_3 || "",
+            'INDEX_CHECK_1': data.INDEX_CHECK_1 || "",
+            'INDEX_CONTENT_1': data.INDEX_CONTENT_1 || "",
+            'INDEX_CHECK_2': data.INDEX_CHECK_2 || "",
+            'INDEX_CONTENT_2': data.INDEX_CONTENT_2 || "",
+            'INDEX_CHECK_3': data.INDEX_CHECK_3 || "",
+            'INDEX_CONTENT_3': data.INDEX_CONTENT_3 || "",
+            'POS_CHECK_1': data.POS_CHECK_1 || "",
+            'POS_CONTENT_1': data.POS_CONTENT_1 || "",
+            'POS_CHECK_2': data.POS_CHECK_2 || "",
+            'POS_CONTENT_2': data.POS_CONTENT_2 || "",
+            'POS_CHECK_3': data.POS_CHECK_3 || "",
+            'POS_CONTENT_3': data.POS_CONTENT_3 || ""
+        });
+        syncPropertiesToConfigSheet();
+        Logger.log("Analyses Techniques IA sauvegardées.");
+        Logger.log("=== FIN : sauvegarderAnalysesTechniquesIA ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur : " + e.message);
+        return false;
+    }
+}

@@ -318,7 +318,11 @@ function syncPropertiesToConfigSheet() {
                     "---BORDER---",
                     "TECH_INDEX_SITEMAP_PRESENT", "TECH_INDEX_URL_IN_SITEMAP", "TECH_INDEX_META_ROBOTS", "TECH_INDEX_CANONICAL", "TECH_INDEX_PAGI_META_ROBOTS", "TECH_INDEX_PAGI_CANONICAL",
                     "---BORDER---",
-                    "TECH_POS_TITLE", "TECH_POS_TITLE_HAS_KW", "TECH_POS_H1", "TECH_POS_H1_HAS_KW", "TECH_POS_HN", "TECH_POS_SCHEMA"
+                    "TECH_POS_TITLE", "TECH_POS_TITLE_HAS_KW", "TECH_POS_H1", "TECH_POS_H1_HAS_KW", "TECH_POS_HN", "TECH_POS_SCHEMA",
+                    "---BORDER---",
+                    "CRAWL_CHECK_1", "CRAWL_CONTENT_1", "CRAWL_CHECK_2", "CRAWL_CONTENT_2", "CRAWL_CHECK_3", "CRAWL_CONTENT_3",
+                    "INDEX_CHECK_1", "INDEX_CONTENT_1", "INDEX_CHECK_2", "INDEX_CONTENT_2", "INDEX_CHECK_3", "INDEX_CONTENT_3",
+                    "POS_CHECK_1", "POS_CONTENT_1", "POS_CHECK_2", "POS_CONTENT_2", "POS_CHECK_3", "POS_CONTENT_3"
                 ]
             },
             {
