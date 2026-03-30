@@ -743,6 +743,7 @@
                         
                         <div class="continuer-bar" style="margin-top: 25px;">
                             <span id="exportMsgUx" style="font-size: 12px; font-weight: bold;"></span>
+                            <button type="button" class="btn" id="btn-save-ux-manual" style="margin-right: 10px; background-color: #fbbc04; color: #08133B;" onclick="sauvegarderModificationsUX()" disabled>💾 Enregistrer les modifications</button>
                             <button class="btn btn-continuer" id="btn-export-ux" disabled>📥 Importer dans Slides & continuer</button>
                         </div>
                     </div>
@@ -3759,6 +3760,55 @@
                 if (lastChecked) lastChecked.checked = false;
                 alert("Vous ne pouvez sélectionner que 6 éléments maximum pour le Slide.");
             }
+        }
+
+        function sauvegarderModificationsUX() {
+            console.log("=== DÉBUT : sauvegarderModificationsUX ===");
+            var btn = document.getElementById('btn-save-ux-manual');
+            var originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "⏳ Enregistrement...";
+
+            var dataToSave = {
+                uxClientViewportId: idUxClientViewport,
+                uxCompViewportId: idUxCompViewport,
+                selection: [],
+                fullStateStr: ""
+            };
+
+            for (var i = 1; i <= 6; i++) {
+                dataToSave['UX_ELEMENT_' + i] = "";
+                dataToSave['UX_CLIENT_CHECK_' + i] = "";
+                dataToSave['UX_CONCURRENT_CHECK_' + i] = "";
+            }
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res && res.success) {
+                        btn.innerText = "✅ Enregistré";
+                        setTimeout(function() {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                        console.log("=== FIN : sauvegarderModificationsUX (Succès) ===");
+                    } else {
+                        btn.innerText = "❌ Erreur";
+                        setTimeout(function() {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                        console.log("=== FIN : sauvegarderModificationsUX (Erreur) ===");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerText = "❌ Erreur";
+                    setTimeout(function() {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                    console.error("Erreur backend sauvegarderModificationsUX : " + err.message);
+                })
+                .sauvegarderSelectionUX(dataToSave);
         }
 
         </script>

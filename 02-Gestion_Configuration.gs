@@ -1088,3 +1088,31 @@ function sauvegarderAnalyseUXIA(fullStateStr) {
         return false;
     }
 }
+
+function sauvegarderSelectionUX(data) {
+    Logger.log("=== DÉBUT : sauvegarderSelectionUX ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        var propsToSet = {
+            'PLACEHOLDER_UX_CLIENT': data.uxClientViewportId || "",
+            'PLACEHOLDER_UX_CONCURRENT': data.uxCompViewportId || "",
+            'DATA_UX_IA_FULL_STATE': data.fullStateStr || ""
+        };
+
+        for (var i = 1; i <= 6; i++) {
+            propsToSet['UX_ELEMENT_' + i] = data['UX_ELEMENT_' + i] || "";
+            propsToSet['UX_CLIENT_CHECK_' + i] = data['UX_CLIENT_CHECK_' + i] || "";
+            propsToSet['UX_CONCURRENT_CHECK_' + i] = data['UX_CONCURRENT_CHECK_' + i] || "";
+        }
+
+        props.setProperties(propsToSet);
+        syncPropertiesToConfigSheet();
+        
+        Logger.log("=== FIN : sauvegarderSelectionUX (Succès) ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderSelectionUX : " + e.toString());
+        Logger.log("=== FIN : sauvegarderSelectionUX (Erreur) ===");
+        return { success: false, error: e.toString() };
+    }
+}

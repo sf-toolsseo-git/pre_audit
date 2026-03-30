@@ -332,6 +332,21 @@ function syncPropertiesToConfigSheet() {
                 ]
             },
             {
+                name: "🎨 UX",
+                keys: [
+                    "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT",
+                    "---BORDER---",
+                    "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1",
+                    "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2",
+                    "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3",
+                    "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4",
+                    "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5",
+                    "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6",
+                    "---BORDER---",
+                    "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2"
+                ]
+            },
+            {
                 name: "📦 AUTRES",
                 keys: []
             }
