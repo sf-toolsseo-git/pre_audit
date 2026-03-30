@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0; }
+        h3 { font-size: 15px; color: #202124; margin-top: 0; margin-bottom: 15px; font-weight: 600; }
+        .config-card { background-color: #fff; padding: 20px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 20px; }
+        label { font-size: 12px; color: #5f6368; margin-bottom: 5px; font-weight: 500; display: block; }
+        input[type="text"] { width: 100%; padding: 9px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 13px; background-color: #fff; margin-bottom: 10px; }
+        input[type="text"]:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 1px #1a73e8; }
+        .key-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .key-row input { margin-bottom: 0; }
+        .btn-remove { background-color: #fce8e6; color: #c5221f; border: 1px solid #fce8e6; border-radius: 4px; cursor: pointer; padding: 8px 12px; font-weight: bold; font-size: 13px; transition: all 0.2s; }
+        .btn-remove:hover { background-color: #f8d8d8; }
+        .btn-add { background-color: #e8f0fe; color: #1a73e8; border: none; border-radius: 4px; cursor: pointer; padding: 8px 15px; font-weight: 600; font-size: 13px; transition: background-color 0.2s; display: inline-block; margin-top: 5px; }
+        .btn-add:hover { background-color: #d2e3fc; }
+        .action-button { background-color: #08133B; color: white; border: none; padding: 12px 24px; font-size: 14px; font-weight: 700; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; border: 1px solid #08133B; width: 100%; }
+        .action-button:hover { background-color: #152255; }
+        .action-button:disabled { background-color: #dadce0; border-color: #dadce0; cursor: not-allowed; }
+        .btn-success { background-color: #137333 !important; border-color: #137333 !important; color: white !important; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loader"><div class="spinner"></div></div>
+
+    <form id="apiKeysForm">
+        <div class="config-card">
+            <h3>API Gemini</h3>
+            <label>Clé API Gemini (obligatoire pour l'IA)</label>
+            <input type="text" id="geminiApiKey" placeholder="AIzaSy...">
+        </div>
+
+        <div class="config-card">
+            <h3>API SERPStack</h3>
+            <div id="container-serpstack"></div>
+            <button type="button" class="btn-add" onclick="addKeyRow('serpstack')">+ Ajouter une clé</button>
+        </div>
+
+        <div class="config-card">
+            <h3>API SERPAPI</h3>
+            <div id="container-serpapi"></div>
+            <button type="button" class="btn-add" onclick="addKeyRow('serpapi')">+ Ajouter une clé</button>
+        </div>
+
+        <div class="config-card">
+            <h3>API ApiFlash</h3>
+            <div id="container-apiflash"></div>
+            <button type="button" class="btn-add" onclick="addKeyRow('apiflash')">+ Ajouter une clé</button>
+        </div>
+
+        <button type="button" class="action-button" onclick="saveKeys(this)">💾 Enregistrer les clés</button>
+    </form>
+
+    <script>
+        window.onload = function() {
+            console.log("Chargement de l'interface des clés API");
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    console.log("Clés récupérées avec succès", data);
+                    document.getElementById('geminiApiKey').value = data.gemini || "";
+                    
+                    var cles = data.listeCles || {};
+                    populateKeys('serpstack', cles.serpstack);
+                    populateKeys('serpapi', cles.serpapi);
+                    populateKeys('apiflash', cles.apiflash);
+
+                    document.getElementById('loader').style.display = 'none';
+                })
+                .withFailureHandler(function(err) {
+                    console.error("Erreur de chargement des clés API :", err);
+                    document.getElementById('loader').style.display = 'none';
+                })
+                .chargerClesAPI();
+        };
+
+        function populateKeys(type, keysArray) {
+            var container = document.getElementById('container-' + type);
+            container.innerHTML = "";
+            if (keysArray && keysArray.length > 0) {
+                keysArray.forEach(function(key) {
+                    addKeyRow(type, key);
+                });
+            } else {
+                addKeyRow(type, ""); // au moins une ligne vide par défaut
+            }
+        }
+
+        function addKeyRow(type, value) {
+            value = value || "";
+            var container = document.getElementById('container-' + type);
+            var row = document.createElement('div');
+            row.className = 'key-row';
+            
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.placeholder = "Saisissez votre clé API " + type + "...";
+            input.className = 'api-key-input-' + type;
+            
+            var removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-remove';
+            removeBtn.innerText = 'X';
+            removeBtn.onclick = function() {
+                container.removeChild(row);
+            };
+
+            row.appendChild(input);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function saveKeys(btn) {
+            console.log("Tentative de sauvegarde des clés");
+            btn.dataset.originalText = btn.innerText;
+            btn.innerText = "⏳ Enregistrement...";
+            btn.disabled = true;
+
+            var gemini = document.getElementById('geminiApiKey').value.trim();
+
+            function getKeysFromInputs(type) {
+                var inputs = document.querySelectorAll('.api-key-input-' + type);
+                var keys = [];
+                inputs.forEach(function(inp) {
+                    if (inp.value.trim() !== "") {
+                        keys.push(inp.value.trim());
+                    }
+                });
+                return keys;
+            }
+
+            var payload = {
+                gemini: gemini,
+                listeCles: {
+                    serpstack: getKeysFromInputs('serpstack'),
+                    serpapi: getKeysFromInputs('serpapi'),
+                    apiflash: getKeysFromInputs('apiflash')
+                }
+            };
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res.success) {
+                        console.log("Sauvegarde réussie");
+                        btn.classList.add('btn-success');
+                        btn.innerText = "✅ Clés enregistrées";
+                        setTimeout(function() {
+                            btn.classList.remove('btn-success');
+                            btn.innerText = btn.dataset.originalText;
+                            btn.disabled = false;
+                        }, 2000);
+                    } else {
+                        console.error("Erreur côté serveur :", res.error);
+                        btn.innerText = "❌ Erreur";
+                        btn.disabled = false;
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    console.error("Erreur de sauvegarde :", err);
+                    btn.innerText = "❌ Erreur réseau";
+                    btn.disabled = false;
+                })
+                .sauvegarderClesAPI(payload);
+        }
+    </script>
+</body>
+</html>

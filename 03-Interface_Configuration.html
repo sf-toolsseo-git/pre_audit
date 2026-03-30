@@ -209,16 +209,6 @@
                     </div>
                 </div>
 
-                <div class="config-card">
-                    <h3>Configuration API</h3>
-                    <div class="row">
-                        <div class="col">
-                            <label>Clé API Gemini (obligatoire pour la génération de contexte)</label>
-                            <input type="text" id="geminiApiKey" name="geminiApiKey" placeholder="AIzaSy...">
-                        </div>
-                    </div>
-                </div>
-
                 <hr style="border: 0; border-top: 1px solid #dadce0; margin: 30px 0 20px 0;">
                 <div style="text-align:center;">
                     <button type="button" class="action-button" onclick="saveCurrentState(this)">💾 Enregistrer la configuration</button>
@@ -373,14 +363,15 @@
         }
 
         function saveCurrentState(btn) {
+            console.log("Début de la fonction saveCurrentState");
             if (btn) {
                 btn.dataset.originalText = btn.innerText;
                 btn.innerText = "⏳ Enregistrement...";
                 btn.disabled = true;
             }
 
+            console.log("Préparation de la sauvegarde de la configuration");
             var formObj = {
-                geminiApiKey: document.getElementById('geminiApiKey').value,
                 isMultiTheme: document.getElementById('isMultiTheme').checked,
                 projectType: document.getElementById('projectType').value,
                 clientName: document.getElementById('clientName').value,
@@ -419,7 +410,9 @@
                 ctrPos10: document.getElementById('ctrPos10').value
             };
 
+            console.log("Envoi des données de configuration à Google Script");
             google.script.run.withSuccessHandler(function() {
+                console.log("Enregistrement réussi côté serveur");
                 if (btn) {
                     btn.classList.add('btn-success');
                     btn.innerText = "✅ Enregistré";
@@ -429,10 +422,12 @@
                         btn.disabled = false;
                     }, 2000);
                 }
+                console.log("Fin de la fonction saveCurrentState");
             }).enregistrerConfiguration(formObj);
         }
 
         function restoreFormValues(data) {
+            console.log("Début de la fonction restoreFormValues");
             var loader = document.getElementById('loader');
             if (loader) loader.style.display = 'none';
             if (!data) return;
@@ -449,7 +444,7 @@
             }
 
             try {
-                safeSetValue('geminiApiKey', data.geminiApiKey || '');
+                console.log("Restauration des valeurs du formulaire");
                 safeSetValue('isMultiTheme', data.isMultiTheme);
                 safeSetValue('projectType', data.projectType || 'installe');
                 safeSetValue('clientName', data.clientName || '');
@@ -493,8 +488,10 @@
                 if (data.hasMatrix && filterZone) {
                     filterZone.style.display = 'block';
                 }
+                console.log("Fin de la fonction restoreFormValues");
             } catch (e) {
                 console.error("Erreur de restauration : ", e);
+                console.log("Fin de la fonction restoreFormValues (avec erreur)");
             }
         }
 

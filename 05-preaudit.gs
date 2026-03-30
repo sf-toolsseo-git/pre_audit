@@ -763,8 +763,8 @@ function genererDiagnostic(selection) {
 function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, contexteClient) {
     Logger.log("=== DÉBUT : analyserEvolutionSemrushIA ===");
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable dans la configuration générale.");
@@ -982,9 +982,10 @@ function lancerWorkflowSERP(data) {
     Logger.log("=== DÉBUT : lancerWorkflowSERP ===");
     Logger.log("Données reçues : " + JSON.stringify(data));
     try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var geminiApiKey = userProps['CONF_API_KEY_GEMINI'];
+        var listeClesAPIStr = userProps['LISTE_CLES_API'];
         var props = PropertiesService.getScriptProperties().getProperties();
-        var geminiApiKey = props['CONF_API_KEY_GEMINI'];
-        var listeClesAPIStr = props['LISTE_CLES_API'];
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
 
         if (!geminiApiKey || geminiApiKey.trim() === "") {
@@ -1489,8 +1490,8 @@ function testRecuperationFormulaire() {
 function genererProfilageCommercialIA(urlForm, brief, contexte) {
     Logger.log("=== DÉBUT : genererProfilageCommercialIA ===");
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable. Veuillez configurer l'onglet Général.");
@@ -1579,8 +1580,8 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
     var texteOffres = "- " + catalogueOffres.join("\n- ");
     
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -1653,8 +1654,8 @@ function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommerci
     Logger.log("Contexte commercial : " + contexteCommercial);
 
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini manquante.");
@@ -1737,8 +1738,8 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
     Logger.log("Contexte commercial : " + contexteCommercial);
 
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini manquante.");
@@ -2290,8 +2291,9 @@ function sauvegarderResultatsPositionnement(data) {
 function genererAnalyseTechniqueIA() {
     Logger.log("=== DÉBUT : genererAnalyseTechniqueIA ===");
     try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
         var urlCible = props['TECH_URL_CIBLE'] || "";
         var motCleCible = props['TARGET_KW'] || "Non défini";

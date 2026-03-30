@@ -11,6 +11,64 @@ function afficherFenetreConfiguration() {
     }
 }
 
+function afficherFenetreClesAPI() {
+    Logger.log("=== DÉBUT : afficherFenetreClesAPI ===");
+    try {
+        var html = HtmlService.createHtmlOutputFromFile('08-Interface_Cles_API')
+            .setWidth(600)
+            .setHeight(900)
+            .setTitle('Gestion des clés API');
+        Logger.log("Affichage de la modale des clés API");
+        SpreadsheetApp.getUi().showModelessDialog(html, 'Gestion des clés API');
+    } catch (e) {
+        Logger.log("Erreur lors de l'affichage de la fenêtre des clés API : " + e.toString());
+    }
+    Logger.log("=== FIN : afficherFenetreClesAPI ===");
+}
+
+function chargerClesAPI() {
+    Logger.log("=== DÉBUT : chargerClesAPI ===");
+    var userProps = PropertiesService.getUserProperties().getProperties();
+    var listeCles = { serpapi: [], serpstack: [], apiflash: [] };
+
+    try {
+        if (userProps['LISTE_CLES_API']) {
+            Logger.log("Parsing de LISTE_CLES_API");
+            listeCles = JSON.parse(userProps['LISTE_CLES_API']);
+        } else {
+            Logger.log("LISTE_CLES_API est vide, utilisation de la valeur par défaut");
+        }
+    } catch (e) {
+        Logger.log("Erreur de parsing de LISTE_CLES_API : " + e.toString());
+    }
+
+    var result = {
+        gemini: userProps['CONF_API_KEY_GEMINI'] || "",
+        listeCles: listeCles
+    };
+    Logger.log("=== FIN : chargerClesAPI ===");
+    return result;
+}
+
+function sauvegarderClesAPI(data) {
+    Logger.log("=== DÉBUT : sauvegarderClesAPI ===");
+    try {
+        var userProps = PropertiesService.getUserProperties();
+        Logger.log("Sauvegarde des clés dans UserProperties");
+        
+        userProps.setProperties({
+            'CONF_API_KEY_GEMINI': data.gemini || "",
+            'LISTE_CLES_API': JSON.stringify(data.listeCles || { serpapi: [], serpstack: [], apiflash: [] })
+        });
+        Logger.log("=== FIN : sauvegarderClesAPI (Succès) ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur lors de la sauvegarde des clés API : " + e.toString());
+        Logger.log("=== FIN : sauvegarderClesAPI (Erreur) ===");
+        return { success: false, error: e.toString() };
+    }
+}
+
 function afficherFenetrePreparationClustering() {
     try {
         var html = HtmlService.createHtmlOutputFromFile('04-Interface_Preparation_Clustering')
@@ -64,7 +122,6 @@ function chargerDonneesInitiales() {
     var hasMatrix = (ss.getSheetByName("Matrice") !== null);
     var donnees = {
         hasMatrix: hasMatrix,
-        geminiApiKey: props['CONF_API_KEY_GEMINI'] || "",
         urlsContexte: props['PA_URLS_CONTEXTE'] || "",
         contexteClient: props['PA_CONTEXTE_CLIENT'] || "",
         isMultiTheme: props['CONF_IS_MULTI_THEME'] === 'true',
@@ -122,15 +179,7 @@ function enregistrerConfiguration(formulaire) {
     Logger.log("=== DÉBUT : enregistrerConfiguration ===");
     var props = PropertiesService.getScriptProperties();
     
-    // Configuration silencieuse des clés API SERP
-    var listeClesAPI = {
-        serpapi: ["b6f773c4a0676ee0f671b57de0d47f32ce186cf56da118af6264c6f371adefb7", "30be5fb7fab8f6d4e8a53fb1bcfc7344ffc45fe6799e981617033d344b7d7494", "5f68d13d8cc15308a0fcd5410728068a11e76faf968b5841c6c82e2fccc2a1da", "2576b1808240a807454e65cb5f8c36bd874d9c31bff711bfe9b10b53fa1c64e6", "ec4c0e232e63cc29db8728317f929348eec3d538c230c81674cd2ccb89779a01"],
-        serpstack: ["3d87377fc0cf1663bf5ead3b917aea80", "82cb1d4f19dfedd7a0f4b893e05b6ad8", "abd06a2ab6bf28c2c0aa5a5b67d50416", "f765fa48d6f564b4141320993e7d2afa", "ffa21315aec4e4384702bc7556b05962"]
-    };
-    
     props.setProperties({
-        'LISTE_CLES_API': JSON.stringify(listeClesAPI),
-        'CONF_API_KEY_GEMINI': formulaire.geminiApiKey || "",
         'PA_URLS_CONTEXTE': formulaire.urlsContexte || "",
         'PA_CONTEXTE_CLIENT': formulaire.contexteClient || "",
         'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
@@ -881,8 +930,9 @@ function preparerDonneesClustering(jsonMotsCles) {
 function genererContexteClientIA(urlsTexte, briefTexte) {
     Logger.log("=== DÉBUT : genererContexteClientIA ===");
     try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = PropertiesService.getScriptProperties().getProperties();
-        var apiKey = props['CONF_API_KEY_GEMINI'];
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini introuvable.");

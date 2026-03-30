@@ -1,5 +1,7 @@
 function onOpen() {
+    Logger.log("Début de la fonction onOpen");
     var ui = SpreadsheetApp.getUi();
+    Logger.log("Création du menu Stratégie en cours");
     ui.createMenu('🚀 Stratégie')
         .addItem('⚙️ Configuration', 'afficherFenetreConfiguration')
         .addItem('🧩 Clustering', 'afficherFenetrePreparationClustering')
@@ -9,7 +11,9 @@ function onOpen() {
         .addSeparator()
         .addItem('💾 Sauvegarder pré-audit', 'sauvegarderPreAudit')
         .addItem('🔄 Restaurer', 'restaurerProprietesDepuisConfig')
+        .addItem('🔑 Clés API', 'afficherFenetreClesAPI')
         .addToUi();
+    Logger.log("Fin de la fonction onOpen");
 }
 
 function obtenirFeuilleParNom(nomFeuille) {
@@ -249,7 +253,8 @@ function extraireDomaineNettoye(str) {
 }
 
 function syncPropertiesToConfigSheet() {
-    Logger.log("Synchronisation des propriétés vers l'onglet CONFIG...");
+    Logger.log("=== DÉBUT : syncPropertiesToConfigSheet ===");
+    Logger.log("Étape 1 : Initialisation et nettoyage de l'onglet CONFIG.");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var sheetName = "CONFIG";
@@ -263,11 +268,12 @@ function syncPropertiesToConfigSheet() {
         sheet.hideSheet();
         var props = PropertiesService.getScriptProperties().getProperties();
         
+        Logger.log("Étape 2 : Définition des groupes de variables (API exclues).");
         var groups = [
             {
                 name: "⚙️ CONFIG GLOBALE & CONTEXTE",
                 keys: [
-                    "CONF_PROJECT_TYPE", "CONF_API_KEY_GEMINI", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID",
+                    "CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID",
                     "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND",
                     "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1",
                     "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2",
@@ -330,6 +336,7 @@ function syncPropertiesToConfigSheet() {
                 keys: []
             }
         ];
+        
         var knownKeys = [];
         for (var i = 0; i < groups.length; i++) {
             for (var j = 0; j < groups[i].keys.length; j++) {
@@ -339,7 +346,13 @@ function syncPropertiesToConfigSheet() {
             }
         }
         
+        Logger.log("Étape 3 : Détection des clés inconnues et exclusion stricte des clés API.");
         for (var key in props) {
+            // Exclusions explicites pour les clés API sécurisées (elles ne doivent pas fuiter dans CONFIG)
+            if (key === 'CONF_API_KEY_GEMINI' || key === 'LISTE_CLES_API') {
+                continue;
+            }
+            
             if (key.indexOf('DATA_') === 0 || key.indexOf('_CACHE') === 0 || (props[key] && props[key].length > 40000)) {
                 continue;
             }
@@ -386,6 +399,7 @@ function syncPropertiesToConfigSheet() {
         }
         
         if (maxRows > 0) {
+            Logger.log("Étape 4 : Formatage et injection des données dans l'onglet.");
             var range = sheet.getRange(1, 1, maxRows, numGroups * 3);
             range.setValues(grid);
 
@@ -408,6 +422,7 @@ function syncPropertiesToConfigSheet() {
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top")
                     .setHorizontalAlignment("left");
+
                 sheet.setColumnWidth(cBase, 350);
                 sheet.setColumnWidth(cBase + 1, 350);
                 if (cBase + 2 <= numGroups * 3) {
@@ -426,6 +441,7 @@ function syncPropertiesToConfigSheet() {
 
             SpreadsheetApp.flush();
             try {
+                Logger.log("Étape 5 : Appel API Sheets v4 pour redimensionner les lignes.");
                 var token = ScriptApp.getOAuthToken();
                 var requests = [{
                     updateDimensionProperties: {
@@ -439,6 +455,7 @@ function syncPropertiesToConfigSheet() {
                         fields: "pixelSize"
                     }
                 }];
+                
                 var response = UrlFetchApp.fetch(
                     "https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate",
                     {
