@@ -121,7 +121,12 @@ function chargerConfigurationPreAudit() {
         techHtmlCrawl: props['TECH_HTML_CRAWL'] || "",
         techHtmlIndex: props['TECH_HTML_INDEX'] || "",
         techHtmlPos: props['TECH_HTML_POS'] || "",
-        DATA_TECH_IA_FULL_STATE: props['DATA_TECH_IA_FULL_STATE'] || ""
+        DATA_TECH_IA_FULL_STATE: props['DATA_TECH_IA_FULL_STATE'] || "",
+        
+        uxClientViewportId: props['UX_CLIENT_VIEWPORT_ID'] || "",
+        uxClientFullId: props['UX_CLIENT_FULL_ID'] || "",
+        uxCompViewportId: props['UX_COMP_VIEWPORT_ID'] || "",
+        uxCompFullId: props['UX_COMP_FULL_ID'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -974,6 +979,24 @@ function getDriveImageBase64(featureName) {
         return b64;
     } catch (e) {
         Logger.log("Erreur dans getDriveImageBase64 : " + e.message);
+        return null;
+    }
+}
+
+function getDriveImageBase64ById(fileId) {
+    Logger.log("=== DÉBUT : getDriveImageBase64ById ===");
+    try {
+        if (!fileId) {
+            Logger.log("ID fourni vide.");
+            return null;
+        }
+        var file = DriveApp.getFileById(fileId);
+        var blob = file.getBlob();
+        var b64 = Utilities.base64Encode(blob.getBytes());
+        Logger.log("=== FIN : getDriveImageBase64ById (Succès) ===");
+        return b64;
+    } catch (e) {
+        Logger.log("Erreur dans getDriveImageBase64ById (" + fileId + ") : " + e.message);
         return null;
     }
 }
@@ -2575,12 +2598,26 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
 
     var baseUrl = "https://api.apiflash.com/v1/urltoimage";
 
+    // Sécurité : s'assurer que l'URL commence bien par http ou https
+    var finalUrlToCapture = urlToCapture.trim();
+    if (!/^https?:\/\//i.test(finalUrlToCapture)) {
+        finalUrlToCapture = "https://" + finalUrlToCapture;
+    }
+
+    // Extraction du nom de domaine pour le nom du fichier (Ex: cenatho.fr)
+    var domain = "";
+    try {
+        domain = finalUrlToCapture.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+    } catch(e) {
+        domain = "Capture";
+    }
+
     for (var i = 0; i < apiKeys.length; i++) {
         var key = apiKeys[i];
         
         var queryParams = [
             "access_key=" + encodeURIComponent(key),
-            "url=" + encodeURIComponent(urlToCapture),
+            "url=" + encodeURIComponent(finalUrlToCapture),
             "format=jpeg",
             "quality=80",
             "no_cookie_banners=true",
@@ -2596,18 +2633,34 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
         
         var fullUrl = baseUrl + "?" + queryParams.join("&");
         
-        Logger.log("Appel API ApiFlash pour URL cible : " + urlToCapture + " (Clé index " + i + ")");
+        Logger.log("Appel API ApiFlash pour URL cible : " + finalUrlToCapture + " (Clé index " + i + ")");
         
         try {
             var response = UrlFetchApp.fetch(fullUrl, { muteHttpExceptions: true });
             var code = response.getResponseCode();
             
             if (code === 200) {
-                var blob = response.getBlob();
-                var b64 = Utilities.base64Encode(blob.getBytes());
-                Logger.log("Capture réussie avec succès.");
+                var suffix = isFullPage ? "Full" : "Viewport";
+                var fileName = domain + "-" + suffix + ".jpeg";
+                
+                var blob = response.getBlob().setName(fileName);
+                
+                // Enregistrement dans le dossier Drive spécifique
+                var folderId = "1CXlwCajJ4LsYYgfdE2KolGI-1HDxVKW3";
+                var folder = DriveApp.getFolderById(folderId);
+                var file = folder.createFile(blob);
+                
+                // On isole la gestion des droits de partage pour éviter le crash (Access denied: DriveApp)
+                try {
+                    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+                } catch (shareErr) {
+                    Logger.log("Avertissement partage : impossible de modifier les droits. Le fichier reste privé.");
+                }
+                
+                var fileId = file.getId();
+                Logger.log("Capture réussie et sauvegardée sur Drive (ID : " + fileId + " | Nom : " + fileName + ").");
                 Logger.log("=== FIN : fetchCaptureApiFlash (Succès) ===");
-                return b64;
+                return fileId;
             } else if (code === 401 || code === 402 || code === 429) {
                 Logger.log("Erreur quota ou auth (Code " + code + ") : rotation de clé.");
                 continue;
@@ -2665,42 +2718,53 @@ function lancerCapturesUX() {
     
     Logger.log("Démarrage des captures UX en séquence...");
     
-    var clientViewport = fetchCaptureApiFlash(urlClient, false, apiKeys);
-    if (!clientViewport) {
+    var clientViewportId = fetchCaptureApiFlash(urlClient, false, apiKeys);
+    if (!clientViewportId) {
         Logger.log("Échec de la capture Client Viewport.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Client (Viewport)." };
     }
     
-    var clientFull = fetchCaptureApiFlash(urlClient, true, apiKeys);
-    if (!clientFull) {
+    var clientFullId = fetchCaptureApiFlash(urlClient, true, apiKeys);
+    if (!clientFullId) {
         Logger.log("Échec de la capture Client Full Page.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Client (Full Page)." };
     }
     
-    var compViewport = fetchCaptureApiFlash(urlComp, false, apiKeys);
-    if (!compViewport) {
+    var compViewportId = fetchCaptureApiFlash(urlComp, false, apiKeys);
+    if (!compViewportId) {
         Logger.log("Échec de la capture Concurrent Viewport.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Concurrent (Viewport)." };
     }
     
-    var compFull = fetchCaptureApiFlash(urlComp, true, apiKeys);
-    if (!compFull) {
+    var compFullId = fetchCaptureApiFlash(urlComp, true, apiKeys);
+    if (!compFullId) {
         Logger.log("Échec de la capture Concurrent Full Page.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Concurrent (Full Page)." };
     }
+    
+    Logger.log("Sauvegarde des IDs dans les propriétés du script...");
+    PropertiesService.getScriptProperties().setProperties({
+        'UX_CLIENT_VIEWPORT_ID': clientViewportId,
+        'UX_CLIENT_FULL_ID': clientFullId,
+        'UX_COMP_VIEWPORT_ID': compViewportId,
+        'UX_COMP_FULL_ID': compFullId
+    });
+    
+    Logger.log("Synchronisation vers l'onglet CONFIG...");
+    syncPropertiesToConfigSheet();
     
     Logger.log("Toutes les captures ont été réalisées avec succès.");
     Logger.log("=== FIN : lancerCapturesUX (Succès) ===");
     
     return {
         success: true,
-        clientViewportBase64: clientViewport,
-        clientFullBase64: clientFull,
-        compViewportBase64: compViewport,
-        compFullBase64: compFull
+        clientViewportId: clientViewportId,
+        clientFullId: clientFullId,
+        compViewportId: compViewportId,
+        compFullId: compFullId
     };
 }
