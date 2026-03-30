@@ -719,8 +719,13 @@
         <div class="tab-content" id="content-ux">
             <div class="main-area">
                 <div class="config-card">
-                    <h2 class="section-title">Expérience Utilisateur (UX)</h2>
-                    <div class="section-description">Générez et comparez la ligne de flottaison du client face à son concurrent.</div>
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title">Expérience Utilisateur (UX)</h2>
+                            <div class="section-description">Générez et comparez la ligne de flottaison du client face à son concurrent.</div>
+                        </div>
+                        <button type="button" class="btn" onclick="ouvrirTabsUX()">Ouvrir les pages ↗</button>
+                    </div>
                     
                     <div style="margin-top: 15px;">
                         <button type="button" class="btn" id="btn-capture-ux" onclick="lancerCapturesUXFront()">📸 Capturer les pages</button>
@@ -3684,6 +3689,25 @@
                 })
                 .lancerCapturesUX();
         }
+
+        function ouvrirTabsUX() {
+                console.log("=== DÉBUT : ouvrirTabsUX ===");
+                var conf = window.globalConfig || {};
+                var urlClient = conf.focusClientUrl || conf.clientUrl || "";
+                var urlComp = conf.focusCompUrl || "";
+
+                if (!urlClient || !urlComp || urlClient === "-" || urlComp === "-") {
+                    alert("Veuillez d'abord définir l'URL cible du client et du concurrent (onglet 5. Focus mot-clé).");
+                    console.log("=== FIN : ouvrirTabsUX (URLs manquantes) ===");
+                    return;
+                }
+
+                // Ouvre les deux URLs dans de nouveaux onglets classiques
+                window.open(urlClient, '_blank');
+                window.open(urlComp, '_blank');
+                
+                console.log("=== FIN : ouvrirTabsUX (Onglets ouverts) ===");
+            }
 
         function lancerAnalyseUXIAFront() {
             console.log("=== DÉBUT : lancerAnalyseUXIAFront ===");
