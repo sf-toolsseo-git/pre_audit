@@ -142,14 +142,14 @@
         .serp-icon-box svg{width:100%;height:100%}
         .serp-inputs{flex:1;display:flex;gap:10px}
         .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-        .ux-element-summary { display: flex; align-items: center; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; gap: 15px; }
+        .ux-element-summary { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; gap: 15px; }
         .ux-element-summary::-webkit-details-marker { display: none; }
         .ux-element-summary:hover { background-color: #f8f9fa; }
         .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
-        .ux-icon-status { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .ux-icon-status { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; }
         .ux-element-title { color: #08133B; flex: 0 0 400px; width: 400px; text-align: center; }
-        .ux-cb-limit { transform: scale(1.3); margin: 0; flex-shrink: 0; }
-        .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; margin-left: auto; }
+        .ux-cb-limit { transform: scale(1.3); position: absolute; left: 15px; margin: 0; }
+        .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; position: absolute; right: 15px; }
         .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
         </style>
     </head>
@@ -3788,13 +3788,14 @@
                 var rowDiv = document.createElement('div');
                 rowDiv.className = 'row';
                 
+                // Transformation des constats en champs éditables (ce-field) pour garantir la sauvegarde et l'édition
                 var colClient = document.createElement('div');
                 colClient.className = 'col';
-                colClient.innerHTML = '<label class="input-label" style="color:#1a73e8;">Constat client</label><div style="font-size:13px; color:#3c4043; padding:8px; background:#e8f0fe; border-radius:4px;">' + (el.constat_client || 'N/A') + '</div>';
+                colClient.innerHTML = '<label class="input-label" style="color:#1a73e8;">Constat client</label><div class="ce-field ux-constat-client" contenteditable="true" data-placeholder="Constat client..." style="font-size:13px; color:#3c4043; padding:8px; background:#e8f0fe; border-radius:4px; min-height:40px; border:1px solid transparent;">' + renderMarkupToHtml(el.constat_client || '') + '</div>';
                 
                 var colComp = document.createElement('div');
                 colComp.className = 'col';
-                colComp.innerHTML = '<label class="input-label" style="color:#d93025;">Constat concurrent</label><div style="font-size:13px; color:#3c4043; padding:8px; background:#fce8e6; border-radius:4px;">' + (el.constat_concurrent || 'N/A') + '</div>';
+                colComp.innerHTML = '<label class="input-label" style="color:#d93025;">Constat concurrent</label><div class="ce-field ux-constat-concurrent" contenteditable="true" data-placeholder="Constat concurrent..." style="font-size:13px; color:#3c4043; padding:8px; background:#fce8e6; border-radius:4px; min-height:40px; border:1px solid transparent;">' + renderMarkupToHtml(el.constat_concurrent || '') + '</div>';
                 
                 rowDiv.appendChild(colClient);
                 rowDiv.appendChild(colComp);
@@ -3805,9 +3806,8 @@
                 recoLabel.style.marginTop = '10px';
                 
                 var recoDiv = document.createElement('div');
-                recoDiv.className = 'ce-field';
+                recoDiv.className = 'ce-field ux-reco-element';
                 recoDiv.contentEditable = "true";
-                // Rendu Markdown géré ici pour les recos des éléments si l'IA y place du gras
                 recoDiv.innerHTML = renderMarkupToHtml(el.texte_recommandation || '');
                 recoDiv.dataset.raw = el.texte_recommandation || '';
                 
@@ -3857,14 +3857,12 @@
                 recoGlobale2: getRawMarkdownFromCE('ux-reco-globale-2')
             };
 
-            // Initialisation par défaut
             for (var i = 1; i <= 6; i++) {
                 dataToSave['UX_ELEMENT_' + i] = "";
                 dataToSave['UX_CLIENT_CHECK_' + i] = "";
                 dataToSave['UX_CONCURRENT_CHECK_' + i] = "";
             }
 
-            // Récupération dynamique des éléments cochés
             var checkboxes = document.querySelectorAll('.ux-cb-limit:checked');
             var count = 1;
             checkboxes.forEach(function(cb) {
@@ -3874,7 +3872,6 @@
                     var imgs = details.querySelectorAll('.ux-icon-status');
                     
                     dataToSave['UX_ELEMENT_' + count] = title;
-                    // L'attribut 'alt' contient l'évaluation (BON, MOYEN, MAUVAIS)
                     dataToSave['UX_CLIENT_CHECK_' + count] = imgs[0] ? imgs[0].alt : "INCONNU";
                     dataToSave['UX_CONCURRENT_CHECK_' + count] = imgs[1] ? imgs[1].alt : "INCONNU";
                     
@@ -3882,21 +3879,23 @@
                 }
             });
 
-            // Sauvegarde de l'état complet pour la restauration (fullState)
+            // Sauvegarde de l'état complet via les sélecteurs sécurisés
             var allElements = [];
             document.querySelectorAll('.ux-element-row').forEach(function(details) {
                 var cb = details.querySelector('.ux-cb-limit');
                 var title = details.querySelector('.ux-element-title').innerText;
                 var imgs = details.querySelectorAll('.ux-icon-status');
-                var divs = details.querySelectorAll('.col > div'); 
-                var recoDiv = details.querySelector('.ce-field');
+                
+                var divClient = details.querySelector('.ux-constat-client');
+                var divComp = details.querySelector('.ux-constat-concurrent');
+                var recoDiv = details.querySelector('.ux-reco-element');
                 
                 allElements.push({
                     nom_element: title,
                     evaluation_client: imgs[0] ? imgs[0].alt : "INCONNU",
                     evaluation_concurrent: imgs[1] ? imgs[1].alt : "INCONNU",
-                    constat_client: divs[0] ? divs[0].innerText : "",
-                    constat_concurrent: divs[1] ? divs[1].innerText : "",
+                    constat_client: divClient ? getRawMarkdownFromCE_Element(divClient) : "",
+                    constat_concurrent: divComp ? getRawMarkdownFromCE_Element(divComp) : "",
                     texte_recommandation: recoDiv ? getRawMarkdownFromCE_Element(recoDiv) : "",
                     recommande_par_defaut: cb.checked
                 });
