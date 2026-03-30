@@ -2563,3 +2563,144 @@ function recupererIconesTechBase64() {
         return {};
     }
 }
+
+function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
+    Logger.log("=== DÉBUT : fetchCaptureApiFlash ===");
+    
+    if (!apiKeys || apiKeys.length === 0) {
+        Logger.log("Erreur : aucune clé API ApiFlash fournie.");
+        Logger.log("=== FIN : fetchCaptureApiFlash (Échec) ===");
+        return null;
+    }
+
+    var baseUrl = "https://api.apiflash.com/v1/urltoimage";
+
+    for (var i = 0; i < apiKeys.length; i++) {
+        var key = apiKeys[i];
+        
+        var queryParams = [
+            "access_key=" + encodeURIComponent(key),
+            "url=" + encodeURIComponent(urlToCapture),
+            "format=jpeg",
+            "quality=80",
+            "no_cookie_banners=true",
+            "wait_until=page_loaded",
+            "width=1920"
+        ];
+        
+        if (isFullPage) {
+            queryParams.push("full_page=true");
+        } else {
+            queryParams.push("height=1080");
+        }
+        
+        var fullUrl = baseUrl + "?" + queryParams.join("&");
+        
+        Logger.log("Appel API ApiFlash pour URL cible : " + urlToCapture + " (Clé index " + i + ")");
+        
+        try {
+            var response = UrlFetchApp.fetch(fullUrl, { muteHttpExceptions: true });
+            var code = response.getResponseCode();
+            
+            if (code === 200) {
+                var blob = response.getBlob();
+                var b64 = Utilities.base64Encode(blob.getBytes());
+                Logger.log("Capture réussie avec succès.");
+                Logger.log("=== FIN : fetchCaptureApiFlash (Succès) ===");
+                return b64;
+            } else if (code === 401 || code === 402 || code === 429) {
+                Logger.log("Erreur quota ou auth (Code " + code + ") : rotation de clé.");
+                continue;
+            } else {
+                Logger.log("Erreur inattendue API (Code " + code + ") : " + response.getContentText());
+                continue;
+            }
+        } catch (e) {
+            Logger.log("Exception lors de l'appel ApiFlash : " + e.message);
+            continue;
+        }
+    }
+    
+    Logger.log("Toutes les clés API ont échoué.");
+    Logger.log("=== FIN : fetchCaptureApiFlash (Échec) ===");
+    return null;
+}
+
+function lancerCapturesUX() {
+    Logger.log("=== DÉBUT : lancerCapturesUX ===");
+    
+    var props = PropertiesService.getScriptProperties().getProperties();
+    var urlClient = props['TARGET_URL_CLIENT'];
+    var urlComp = props['TARGET_URL_CONCURRENT'];
+    
+    if (!urlClient || urlClient === "-" || !urlComp || urlComp === "-") {
+        var msgErreurUrls = "Les URLs cible du client ou du concurrent sont manquantes ou invalides.";
+        Logger.log(msgErreurUrls);
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: msgErreurUrls };
+    }
+    
+    var userProps = PropertiesService.getUserProperties().getProperty('LISTE_CLES_API');
+    if (!userProps) {
+        var msgErreurConfig = "Configuration des clés API introuvable.";
+        Logger.log(msgErreurConfig);
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: msgErreurConfig };
+    }
+    
+    var apiKeys = [];
+    try {
+        var parsedKeys = JSON.parse(userProps);
+        if (parsedKeys.apiflash && Array.isArray(parsedKeys.apiflash) && parsedKeys.apiflash.length > 0) {
+            apiKeys = parsedKeys.apiflash;
+        } else {
+            throw new Error("Tableau apiflash vide ou absent.");
+        }
+    } catch (e) {
+        var msgErreurParse = "Veuillez configurer vos clés API pour ApiFlash.";
+        Logger.log(msgErreurParse);
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: msgErreurParse };
+    }
+    
+    Logger.log("Démarrage des captures UX en séquence...");
+    
+    var clientViewport = fetchCaptureApiFlash(urlClient, false, apiKeys);
+    if (!clientViewport) {
+        Logger.log("Échec de la capture Client Viewport.");
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: "Échec de la capture Client (Viewport)." };
+    }
+    
+    var clientFull = fetchCaptureApiFlash(urlClient, true, apiKeys);
+    if (!clientFull) {
+        Logger.log("Échec de la capture Client Full Page.");
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: "Échec de la capture Client (Full Page)." };
+    }
+    
+    var compViewport = fetchCaptureApiFlash(urlComp, false, apiKeys);
+    if (!compViewport) {
+        Logger.log("Échec de la capture Concurrent Viewport.");
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: "Échec de la capture Concurrent (Viewport)." };
+    }
+    
+    var compFull = fetchCaptureApiFlash(urlComp, true, apiKeys);
+    if (!compFull) {
+        Logger.log("Échec de la capture Concurrent Full Page.");
+        Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
+        return { success: false, error: "Échec de la capture Concurrent (Full Page)." };
+    }
+    
+    Logger.log("Toutes les captures ont été réalisées avec succès.");
+    Logger.log("=== FIN : lancerCapturesUX (Succès) ===");
+    
+    return {
+        success: true,
+        clientViewportBase64: clientViewport,
+        clientFullBase64: clientFull,
+        compViewportBase64: compViewport,
+        compFullBase64: compFull
+    };
+}

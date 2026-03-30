@@ -709,7 +709,33 @@
             <div class="main-area">
                 <div class="config-card">
                     <h2 class="section-title">Expérience Utilisateur (UX)</h2>
-                    <div class="empty-state">À venir...</div>
+                    <div class="section-description">Générez et comparez la ligne de flottaison du client face à son concurrent.</div>
+                    
+                    <div style="margin-top: 15px;">
+                        <button type="button" class="btn" id="btn-capture-ux" onclick="lancerCapturesUXFront()">📸 Capturer les pages</button>
+                    </div>
+
+                    <div id="ux-results-container" style="display: none; margin-top: 20px;">
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">Vue client (ligne de flottaison)</label>
+                                <img id="img-ux-client" src="" style="width: 100%; border: 1px solid #dadce0; border-radius: 8px;">
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Vue concurrent (ligne de flottaison)</label>
+                                <img id="img-ux-comp" src="" style="width: 100%; border: 1px solid #dadce0; border-radius: 8px;">
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button type="button" class="btn" id="btn-gen-ux-ia" disabled>🤖 Générer l'analyse comparative UX</button>
+                        </div>
+                        
+                        <div class="continuer-bar" style="margin-top: 25px;">
+                            <span id="exportMsgUx" style="font-size: 12px; font-weight: bold;"></span>
+                            <button class="btn btn-continuer" id="btn-export-ux" disabled>📥 Importer dans Slides & continuer</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -720,6 +746,11 @@
             var base64ImgTrafic = null;
             var mimeImgTrafic = null;
             var activeDropzone = null;
+            
+            var base64UxClientViewport = null;
+            var base64UxCompViewport = null;
+            var base64UxClientFull = null;
+            var base64UxCompFull = null;
             
             var isInitializingTree = false;
 
@@ -3500,6 +3531,47 @@
             });
             var text = clone.innerText || clone.textContent || "";
             return text.trim();
+        }
+
+        function lancerCapturesUXFront() {
+            console.log("=== DÉBUT : lancerCapturesUXFront ===");
+            
+            var btnCapture = document.getElementById('btn-capture-ux');
+            btnCapture.disabled = true;
+            
+            showLoader("Génération des captures d'écran en cours (cela peut prendre quelques secondes)...");
+            
+            console.log("Appel de google.script.run.lancerCapturesUX()...");
+            
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    hideLoader();
+                    console.log("=== MILIEU : Réponse reçue de lancerCapturesUX ===", res);
+                    
+                    if (res.success) {
+                        base64UxClientViewport = res.clientViewportBase64;
+                        base64UxCompViewport = res.compViewportBase64;
+                        base64UxClientFull = res.clientFullBase64;
+                        base64UxCompFull = res.compFullBase64;
+                        
+                        document.getElementById('img-ux-client').src = "data:image/jpeg;base64," + base64UxClientViewport;
+                        document.getElementById('img-ux-comp').src = "data:image/jpeg;base64," + base64UxCompViewport;
+                        
+                        document.getElementById('ux-results-container').style.display = 'block';
+                    } else {
+                        alert(res.error);
+                    }
+                    
+                    btnCapture.disabled = false;
+                    console.log("=== FIN : lancerCapturesUXFront (succès du handler) ===");
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btnCapture.disabled = false;
+                    alert("Erreur réseau : " + err.message);
+                    console.error("=== FIN : lancerCapturesUXFront (erreur réseau) ===", err);
+                })
+                .lancerCapturesUX();
         }
 
         </script>
