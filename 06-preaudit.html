@@ -141,6 +141,14 @@
           .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
           .serp-icon-box svg{width:100%;height:100%}
           .serp-inputs{flex:1;display:flex;gap:10px}
+          .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+          .ux-element-summary { display: flex; align-items: center; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; }
+          .ux-element-summary::-webkit-details-marker { display: none; }
+          .ux-element-summary:hover { background-color: #f8f9fa; }
+          .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
+          .ux-icon-status { width: 24px; height: 24px; object-fit: contain; }
+          .ux-element-title { flex: 1; text-align: center; color: #08133B; }
+          .ux-cb-limit { margin-right: 15px; transform: scale(1.3); }
         </style>
     </head>
     <body>
@@ -728,8 +736,10 @@
                         </div>
                         
                         <div style="margin-top: 20px; text-align: center;">
-                            <button type="button" class="btn" id="btn-gen-ux-ia" disabled>🤖 Générer l'analyse comparative UX</button>
+                            <button type="button" class="btn" id="btn-gen-ux-ia" disabled onclick="lancerAnalyseUXIAFront()">🤖 Générer l'analyse comparative UX</button>
                         </div>
+                        
+                        <div id="ux-ia-list" style="margin-top:20px;"></div>
                         
                         <div class="continuer-bar" style="margin-top: 25px;">
                             <span id="exportMsgUx" style="font-size: 12px; font-weight: bold;"></span>
@@ -753,6 +763,7 @@
             var idUxCompFull = null;
             
             var isInitializingTree = false;
+            var uxElementsData = [];
 
             var DRIVE_ICONS_MAPPING = {
                 "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
@@ -3613,6 +3624,141 @@
                     console.error("=== FIN : lancerCapturesUXFront (erreur réseau) ===", err);
                 })
                 .lancerCapturesUX();
+        }
+
+        function lancerAnalyseUXIAFront() {
+            console.log("=== DÉBUT : lancerAnalyseUXIAFront ===");
+            var btnIa = document.getElementById('btn-gen-ux-ia');
+            btnIa.disabled = true;
+            showLoader("Analyse visuelle IA en cours...");
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if (res.success) {
+                        uxElementsData = res.data.analyse_elements || [];
+                        
+                        // Récupérer les icônes pour le rendu
+                        google.script.run.withSuccessHandler(function(icons) {
+                            hideLoader();
+                            renderUxList(icons);
+                            console.log("=== FIN : lancerAnalyseUXIAFront (Succès) ===");
+                        }).recupererIconesTechBase64();
+                        
+                    } else {
+                        hideLoader();
+                        btnIa.disabled = false;
+                        alert("Erreur de l'IA : " + res.error);
+                        console.log("=== FIN : lancerAnalyseUXIAFront (Erreur IA) ===");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btnIa.disabled = false;
+                    alert("Erreur critique : " + err.message);
+                    console.error("=== FIN : lancerAnalyseUXIAFront (Erreur critique) ===", err);
+                })
+                .genererAnalyseComparativeUXIA();
+        }
+
+        function renderUxList(icons) {
+            var container = document.getElementById('ux-ia-list');
+            container.innerHTML = '';
+            
+            if (!uxElementsData || uxElementsData.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucune donnée trouvée.</div>';
+                return;
+            }
+            
+            uxElementsData.forEach(function(el, index) {
+                var iconClient = icons[el.evaluation_client] ? "data:image/png;base64," + icons[el.evaluation_client] : "";
+                var iconComp = icons[el.evaluation_concurrent] ? "data:image/png;base64," + icons[el.evaluation_concurrent] : "";
+                
+                var details = document.createElement('details');
+                details.className = 'ux-element-row';
+                
+                var summary = document.createElement('summary');
+                summary.className = 'ux-element-summary';
+                
+                var cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'ux-cb-limit';
+                cb.onchange = checkUxLimit;
+                
+                var imgClientEl = document.createElement('img');
+                imgClientEl.className = 'ux-icon-status';
+                imgClientEl.src = iconClient;
+                imgClientEl.alt = el.evaluation_client;
+                imgClientEl.style.marginRight = '10px';
+                
+                var titleSpan = document.createElement('span');
+                titleSpan.className = 'ux-element-title';
+                titleSpan.innerText = el.nom_element;
+                
+                var imgCompEl = document.createElement('img');
+                imgCompEl.className = 'ux-icon-status';
+                imgCompEl.src = iconComp;
+                imgCompEl.alt = el.evaluation_concurrent;
+                imgCompEl.style.marginLeft = '10px';
+                
+                summary.appendChild(cb);
+                summary.appendChild(imgClientEl);
+                summary.appendChild(titleSpan);
+                summary.appendChild(imgCompEl);
+                
+                var contentDiv = document.createElement('div');
+                contentDiv.className = 'ux-element-content';
+                
+                var rowDiv = document.createElement('div');
+                rowDiv.className = 'row';
+                
+                var colClient = document.createElement('div');
+                colClient.className = 'col';
+                colClient.innerHTML = '<label class="input-label" style="color:#1a73e8;">Constat client</label><div style="font-size:13px; color:#3c4043; padding:8px; background:#e8f0fe; border-radius:4px;">' + (el.constat_client || 'N/A') + '</div>';
+                
+                var colComp = document.createElement('div');
+                colComp.className = 'col';
+                colComp.innerHTML = '<label class="input-label" style="color:#d93025;">Constat concurrent</label><div style="font-size:13px; color:#3c4043; padding:8px; background:#fce8e6; border-radius:4px;">' + (el.constat_concurrent || 'N/A') + '</div>';
+                
+                rowDiv.appendChild(colClient);
+                rowDiv.appendChild(colComp);
+                
+                var recoLabel = document.createElement('label');
+                recoLabel.className = 'input-label';
+                recoLabel.innerText = 'Recommandation stratégique';
+                recoLabel.style.marginTop = '10px';
+                
+                var recoDiv = document.createElement('div');
+                recoDiv.className = 'ce-field';
+                recoDiv.contentEditable = "true";
+                recoDiv.innerText = el.texte_recommandation || '';
+                
+                contentDiv.appendChild(rowDiv);
+                contentDiv.appendChild(recoLabel);
+                contentDiv.appendChild(recoDiv);
+                
+                details.appendChild(summary);
+                details.appendChild(contentDiv);
+                
+                container.appendChild(details);
+            });
+        }
+
+        function checkUxLimit() {
+            var checkboxes = document.querySelectorAll('.ux-cb-limit');
+            var checkedCount = 0;
+            var lastChecked = null;
+            
+            checkboxes.forEach(function(cb) {
+                if (cb.checked) {
+                    checkedCount++;
+                    lastChecked = cb;
+                }
+            });
+            
+            if (checkedCount > 6) {
+                if (lastChecked) lastChecked.checked = false;
+                alert("Vous ne pouvez sélectionner que 6 éléments maximum pour le Slide.");
+            }
         }
 
         </script>

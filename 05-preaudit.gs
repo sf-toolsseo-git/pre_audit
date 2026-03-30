@@ -2679,6 +2679,122 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
     return null;
 }
 
+function genererAnalyseComparativeUXIA() {
+    Logger.log("=== DÉBUT : genererAnalyseComparativeUXIA ===");
+    try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var clientFullId = props['UX_CLIENT_FULL_ID'];
+        var compFullId = props['UX_COMP_FULL_ID'];
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
+
+        if (!clientFullId || !compFullId) {
+            throw new Error("Les identifiants des captures Full Page (Client et Concurrent) sont manquants.");
+        }
+
+        Logger.log("Récupération des images depuis Google Drive...");
+        var imgClient = DriveApp.getFileById(clientFullId);
+        var b64Client = Utilities.base64Encode(imgClient.getBlob().getBytes());
+
+        var imgComp = DriveApp.getFileById(compFullId);
+        var b64Comp = Utilities.base64Encode(imgComp.getBlob().getBytes());
+
+        Logger.log("Construction du prompt système...");
+        var systemPrompt = "Tu es un expert en conversion (CRO) et UX. Analyse ces deux captures d'écran (la première est le site Client, la seconde est le site Concurrent) pour auditer 12 éléments précis.\n\n" +
+            "Liste stricte des 12 éléments à analyser :\n" +
+            "1. Images\n2. Vidéos\n3. Prix\n4. Contenu descriptif du produit / service\n5. Boutons de conversion (appel, devis, démo)\n6. Boutons de navigation (en savoir plus)\n7. Téléchargement (livre blanc, plaquette)\n8. Avis site\n9. Avis produits\n10. Personnalisation / Auteur (ex: photo, citation)\n11. Éléments de réassurance (ancienneté, livraison, sécurité...)\n12. Étude de cas\n\n" +
+            "Doctrine d'évaluation :\n" +
+            "Pour chaque élément, évalue le client et le concurrent avec l'une de ces 3 valeurs strictes : 'BON', 'MOYEN', 'MAUVAIS'. Règle : présence/absence de l'élément (ne pas compter le nombre exact d'éléments).\n\n" +
+            "BON : Élément présent et bien valorisé.\n" +
+            "MOYEN : Élément présent mais peu visible, ou moins bien exploité que l'autre.\n" +
+            "MAUVAIS : Élément absent.\n\n" +
+            "Génère ta réponse STRICTEMENT au format JSON :\n" +
+            "{\n" +
+            "  \"type_page\": \"Catégorie de la page (ex: E-commerce, Vitrine)\",\n" +
+            "  \"analyse_elements\": [\n" +
+            "    {\n" +
+            "      \"nom_element\": \"Nom exact de l'élément parmi les 12\",\n" +
+            "      \"evaluation_client\": \"BON/MOYEN/MAUVAIS\",\n" +
+            "      \"evaluation_concurrent\": \"BON/MOYEN/MAUVAIS\",\n" +
+            "      \"constat_client\": \"Analyse hyper concise de la page client (max 15 mots).\",\n" +
+            "      \"constat_concurrent\": \"Analyse hyper concise de la page concurrente (max 15 mots).\",\n" +
+            "      \"texte_recommandation\": \"Action recommandée au client (max 20 mots).\"\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n\n" +
+            "Respecte la typographie stricte : Majuscule uniquement au premier mot, un espace avant les deux-points (:), acronymes (UX, IA, CTA) en majuscules.\n" +
+            "Le contexte du client : " + contexteClient;
+
+        var payload = {
+            "system_instruction": {
+                "parts": [{"text": systemPrompt}]
+            },
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "inlineData": {
+                                "mimeType": "image/jpeg",
+                                "data": b64Client
+                            }
+                        },
+                        {
+                            "inlineData": {
+                                "mimeType": "image/jpeg",
+                                "data": b64Comp
+                            }
+                        }
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": {
+                "x-goog-api-key": apiKey
+            },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        Logger.log("Appel de l'API Gemini...");
+        var response = UrlFetchApp.fetch(apiUrl, options);
+        var jsonResponse = JSON.parse(response.getContentText());
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (!jsonResponse.candidates || jsonResponse.candidates.length === 0 || !jsonResponse.candidates[0].content) {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+        var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        var parsedJson = JSON.parse(responseText);
+
+        Logger.log("Analyse IA générée avec succès.");
+        Logger.log("=== FIN : genererAnalyseComparativeUXIA ===");
+        return { success: true, data: parsedJson };
+
+    } catch (e) {
+        Logger.log("Erreur dans genererAnalyseComparativeUXIA : " + e.message);
+        Logger.log("=== FIN : genererAnalyseComparativeUXIA (Erreur) ===");
+        return { success: false, error: e.message };
+    }
+}
+
 function lancerCapturesUX() {
     Logger.log("=== DÉBUT : lancerCapturesUX ===");
     

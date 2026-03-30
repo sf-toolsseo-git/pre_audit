@@ -1073,3 +1073,18 @@ function sauvegarderContexteIA(urls, contexte) {
     Logger.log("=== FIN : sauvegarderContexteIA ===");
     return true;
 }
+
+function sauvegarderAnalyseUXIA(fullStateStr) {
+    Logger.log("=== DÉBUT : sauvegarderAnalyseUXIA ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperty('DATA_UX_IA_FULL_STATE', fullStateStr || "");
+        syncPropertiesToConfigSheet();
+        Logger.log("=== FIN : sauvegarderAnalyseUXIA (Succès) ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderAnalyseUXIA : " + e.message);
+        Logger.log("=== FIN : sauvegarderAnalyseUXIA (Erreur) ===");
+        return false;
+    }
+}
