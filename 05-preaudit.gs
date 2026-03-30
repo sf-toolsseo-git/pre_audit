@@ -2679,9 +2679,11 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
     return null;
 }
 
-function genererAnalyseComparativeUXIA() {
+function genererAnalyseComparativeUXIA(typePage, intention) {
     Logger.log("=== DÉBUT : genererAnalyseComparativeUXIA ===");
     try {
+        typePage = typePage || "";
+        intention = intention || "";
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         if (!apiKey || apiKey.trim() === "") {
@@ -2705,30 +2707,40 @@ function genererAnalyseComparativeUXIA() {
         var b64Comp = Utilities.base64Encode(imgComp.getBlob().getBytes());
 
         Logger.log("Construction du prompt système...");
-        var systemPrompt = "Tu es un expert en conversion (CRO) et UX. Analyse ces deux captures d'écran (la première est le site Client, la seconde est le site Concurrent) pour auditer 12 éléments précis.\n\n" +
-            "Liste stricte des 12 éléments à analyser :\n" +
-            "1. Images\n2. Vidéos\n3. Prix\n4. Contenu descriptif du produit / service\n5. Boutons de conversion (appel, devis, démo)\n6. Boutons de navigation (en savoir plus)\n7. Téléchargement (livre blanc, plaquette)\n8. Avis site\n9. Avis produits\n10. Personnalisation / Auteur (ex: photo, citation)\n11. Éléments de réassurance (ancienneté, livraison, sécurité...)\n12. Étude de cas\n\n" +
+        var systemPrompt = "Tu es un expert en conversion (CRO) et UX. Analyse ces deux captures d'écran (la première est le site Client, la seconde est le site Concurrent) en tenant compte du [Type de page cible] et de [l'Intention de recherche] fournis par l'utilisateur pour adapter ton analyse.\n\n" +
+            "Tu peux t'appuyer sur la liste suivante (non exhaustive) d'éléments à analyser, piocher dedans ou en inventer de nouveaux spécifiques au type de page (ex: e-commerce, génération de leads) :\n" +
+            "- Images, Vidéos, Prix, Contenu descriptif du produit / service, Boutons de conversion (appel, devis, démo), Boutons de navigation (en savoir plus), Téléchargement (livre blanc, plaquette), Avis site, Avis produits, Personnalisation / Auteur (ex: photo, citation), Éléments de réassurance (ancienneté, livraison, sécurité...), Étude de cas.\n\n" +
             "Doctrine d'évaluation :\n" +
             "Pour chaque élément, évalue le client et le concurrent avec l'une de ces 3 valeurs strictes : 'BON', 'MOYEN', 'MAUVAIS'. Règle : présence/absence de l'élément (ne pas compter le nombre exact d'éléments).\n\n" +
             "BON : Élément présent et bien valorisé.\n" +
             "MOYEN : Élément présent mais peu visible, ou moins bien exploité que l'autre.\n" +
             "MAUVAIS : Élément absent.\n\n" +
+            "Génère à la fin exactement 2 recommandations globales (stratégie UX/CRO).\n\n" +
             "Génère ta réponse STRICTEMENT au format JSON :\n" +
             "{\n" +
-            "  \"type_page\": \"Catégorie de la page (ex: E-commerce, Vitrine)\",\n" +
+            "  \"type_page_analyse\": \"Catégorie de la page (ex: E-commerce, Vitrine)\",\n" +
             "  \"analyse_elements\": [\n" +
             "    {\n" +
-            "      \"nom_element\": \"Nom exact de l'élément parmi les 12\",\n" +
-            "      \"evaluation_client\": \"BON/MOYEN/MAUVAIS\",\n" +
-            "      \"evaluation_concurrent\": \"BON/MOYEN/MAUVAIS\",\n" +
+            "      \"nom_element\": \"Nom exact de l'élément (court)\",\n" +
+            "      \"evaluation_client\": \"BON|MOYEN|MAUVAIS\",\n" +
+            "      \"evaluation_concurrent\": \"BON|MOYEN|MAUVAIS\",\n" +
             "      \"constat_client\": \"Analyse hyper concise de la page client (max 15 mots).\",\n" +
             "      \"constat_concurrent\": \"Analyse hyper concise de la page concurrente (max 15 mots).\",\n" +
-            "      \"texte_recommandation\": \"Action recommandée au client (max 20 mots).\"\n" +
+            "      \"texte_recommandation\": \"Action recommandée au client (max 20 mots).\",\n" +
+            "      \"recommande_par_defaut\": true|false\n" +
             "    }\n" +
+            "  ],\n" +
+            "  \"recommandations_globales\": [\n" +
+            "    \"Recommandation globale 1...\",\n" +
+            "    \"Recommandation globale 2...\"\n" +
             "  ]\n" +
             "}\n\n" +
-            "Respecte la typographie stricte : Majuscule uniquement au premier mot, un espace avant les deux-points (:), acronymes (UX, IA, CTA) en majuscules.\n" +
-            "Le contexte du client : " + contexteClient;
+            "Note sur `recommande_par_defaut` : Mets à `true` pour les 6 éléments les plus cruciaux à afficher au client, `false` pour les autres.\n\n" +
+            "Respecte la typographie stricte : Majuscule uniquement au premier mot, un espace avant les deux-points (:), acronymes (UX, IA, CTA) en majuscules.";
+
+        var userPrompt = "[Contexte du client] : " + contexteClient + "\n" +
+                         "[Type de page cible] : " + typePage + "\n" +
+                         "[Intention de recherche] : " + intention;
 
         var payload = {
             "system_instruction": {
@@ -2737,6 +2749,7 @@ function genererAnalyseComparativeUXIA() {
             "contents": [
                 {
                     "parts": [
+                        {"text": userPrompt},
                         {
                             "inlineData": {
                                 "mimeType": "image/jpeg",

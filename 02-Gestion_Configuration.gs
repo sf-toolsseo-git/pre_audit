@@ -1096,7 +1096,9 @@ function sauvegarderSelectionUX(data) {
         var propsToSet = {
             'PLACEHOLDER_UX_CLIENT': data.uxClientViewportId || "",
             'PLACEHOLDER_UX_CONCURRENT': data.uxCompViewportId || "",
-            'DATA_UX_IA_FULL_STATE': data.fullStateStr || ""
+            'DATA_UX_IA_FULL_STATE': data.fullStateStr || "",
+            'UX_RECOMMANDATION_1': data.recoGlobale1 || "",
+            'UX_RECOMMANDATION_2': data.recoGlobale2 || ""
         };
 
         for (var i = 1; i <= 6; i++) {

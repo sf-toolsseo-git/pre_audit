@@ -149,6 +149,8 @@
           .ux-icon-status { width: 24px; height: 24px; object-fit: contain; }
           .ux-element-title { flex: 1; text-align: center; color: #08133B; }
           .ux-cb-limit { margin-right: 15px; transform: scale(1.3); }
+          .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; margin-left: 10px; }
+          .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
         </style>
     </head>
     <body>
@@ -739,11 +741,21 @@
                             <button type="button" class="btn" id="btn-gen-ux-ia" disabled onclick="lancerAnalyseUXIAFront()">🤖 Générer l'analyse comparative UX</button>
                         </div>
                         
-                        <div id="ux-ia-list" style="margin-top:20px;"></div>
+                        <div class="row" style="margin-top:20px;">
+                            <div class="col" style="flex: 2;">
+                                <div id="ux-ia-list"></div>
+                            </div>
+                            <div class="col" style="flex: 1;">
+                                <label class="input-label">Recommandation UX globale 1</label>
+                                <div id="ux-reco-globale-1" contenteditable="true" class="ce-field" data-placeholder="Recommandation globale 1..."></div>
+                                <label class="input-label" style="margin-top:15px;">Recommandation UX globale 2</label>
+                                <div id="ux-reco-globale-2" contenteditable="true" class="ce-field" data-placeholder="Recommandation globale 2..."></div>
+                            </div>
+                        </div>
                         
                         <div class="continuer-bar" style="margin-top: 25px;">
                             <span id="exportMsgUx" style="font-size: 12px; font-weight: bold;"></span>
-                            <button type="button" class="btn" id="btn-save-ux-manual" style="margin-right: 10px; background-color: #fbbc04; color: #08133B;" onclick="sauvegarderModificationsUX()" disabled>💾 Enregistrer les modifications</button>
+                            <button type="button" class="btn" id="btn-save-ux-manual" style="margin-right: 10px;" onclick="sauvegarderModificationsUX()" disabled>💾 Enregistrer les modifications</button>
                             <button class="btn btn-continuer" id="btn-export-ux" disabled>📥 Importer dans Slides & continuer</button>
                         </div>
                     </div>
@@ -3632,16 +3644,26 @@
             var btnIa = document.getElementById('btn-gen-ux-ia');
             btnIa.disabled = true;
             showLoader("Analyse visuelle IA en cours...");
+            
+            var typePageElem = document.getElementById('tech-type-page');
+            var intentionElem = document.getElementById('intention-titre');
+            var typePage = typePageElem ? typePageElem.value : "";
+            var intention = intentionElem ? intentionElem.value : "";
 
             google.script.run
                 .withSuccessHandler(function(res) {
                     if (res.success) {
                         uxElementsData = res.data.analyse_elements || [];
                         
+                        var recosGlobales = res.data.recommandations_globales || [];
+                        if (recosGlobales.length > 0) setCeContent('ux-reco-globale-1', recosGlobales[0] || "");
+                        if (recosGlobales.length > 1) setCeContent('ux-reco-globale-2', recosGlobales[1] || "");
+                        
                         // Récupérer les icônes pour le rendu
                         google.script.run.withSuccessHandler(function(icons) {
                             hideLoader();
                             renderUxList(icons);
+                            document.getElementById('btn-save-ux-manual').disabled = false;
                             console.log("=== FIN : lancerAnalyseUXIAFront (Succès) ===");
                         }).recupererIconesTechBase64();
                         
@@ -3658,7 +3680,7 @@
                     alert("Erreur critique : " + err.message);
                     console.error("=== FIN : lancerAnalyseUXIAFront (Erreur critique) ===", err);
                 })
-                .genererAnalyseComparativeUXIA();
+                .genererAnalyseComparativeUXIA(typePage, intention);
         }
 
         function renderUxList(icons) {
@@ -3684,6 +3706,9 @@
                 cb.type = 'checkbox';
                 cb.className = 'ux-cb-limit';
                 cb.onchange = checkUxLimit;
+                if (el.recommande_par_defaut === true) {
+                    cb.checked = true;
+                }
                 
                 var imgClientEl = document.createElement('img');
                 imgClientEl.className = 'ux-icon-status';
@@ -3742,6 +3767,7 @@
                 
                 container.appendChild(details);
             });
+            checkUxLimit();
         }
 
         function checkUxLimit() {
@@ -3773,7 +3799,9 @@
                 uxClientViewportId: idUxClientViewport,
                 uxCompViewportId: idUxCompViewport,
                 selection: [],
-                fullStateStr: ""
+                fullStateStr: "",
+                recoGlobale1: getRawMarkdownFromCE('ux-reco-globale-1'),
+                recoGlobale2: getRawMarkdownFromCE('ux-reco-globale-2')
             };
 
             for (var i = 1; i <= 6; i++) {
