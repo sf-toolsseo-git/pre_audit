@@ -691,6 +691,7 @@ function exporterFocusMotCleSlides() {
     }
 }
 
+
 function exporterEtatLieuxTechniqueSlides() {
     try {
         Logger.log("=== DÉBUT : exporterEtatLieuxTechniqueSlides ===");
@@ -821,6 +822,169 @@ function exporterEtatLieuxTechniqueSlides() {
 
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT ETAT LIEUX TECHNIQUE : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function exporterUXSlides() {
+    try {
+        Logger.log("=== DÉBUT : exporterUXSlides ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        var ICON_IDS = {
+            "BON": "1lwxjX4LJWDoNYb19qco0VK93EH1V_aaQ",
+            "MOYEN": "1l-eMhlZ4eXu2zxzH-_D_ZdRbIWB3X7VB",
+            "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
+            "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
+        };
+
+        function formatRichTextUX(shape) {
+            try {
+                var textRange = shape.getText();
+                var textStr = textRange.asString();
+                var regex = /\*([^*]+)\*/g;
+                var matches = [];
+                var match;
+
+                while ((match = regex.exec(textStr)) !== null) {
+                    matches.push({
+                        start: match.index,
+                        text: match[1],
+                        length: match[0].length
+                    });
+                }
+                
+                for (var i = matches.length - 1; i >= 0; i--) {
+                    var m = matches[i];
+                    var endAst = m.start + m.text.length + 1;
+                    
+                    textRange.getRange(endAst, endAst + 1).clear();
+                    textRange.getRange(m.start, m.start + 1).clear();
+
+                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+                }
+            } catch(e) {
+                Logger.log("Erreur dans formatRichTextUX : " + e.message);
+            }
+        }
+
+        var elementsMapping = {};
+        for (var i = 1; i <= 6; i++) {
+            elementsMapping['UX_ELEMENT_' + i] = props['UX_ELEMENT_' + i] || "";
+        }
+        
+        var recoMapping = {
+            'UX_RECOMMANDATION_1': props['UX_RECOMMANDATION_1'] || "",
+            'UX_RECOMMANDATION_2': props['UX_RECOMMANDATION_2'] || ""
+        };
+
+        var clientViewportId = props['UX_CLIENT_VIEWPORT_ID'];
+        var compViewportId = props['UX_COMP_VIEWPORT_ID'];
+
+        Logger.log("Parcours récursif des slides pour l'UX...");
+
+        slides.forEach(function(slide) {
+            
+            function processElement(element) {
+                var type = element.getPageElementType();
+                
+                if (type === SlidesApp.PageElementType.GROUP) {
+                    element.asGroup().getChildren().forEach(processElement);
+                } else if (type === SlidesApp.PageElementType.TABLE) {
+                    var table = element.asTable();
+                    for (var r = 0; r < table.getNumRows(); r++) {
+                        for (var c = 0; c < table.getNumColumns(); c++) {
+                            processTextContainer(table.getCell(r, c), slide);
+                        }
+                    }
+                } else if (type === SlidesApp.PageElementType.SHAPE) {
+                    processTextContainer(element.asShape(), slide);
+                } else if (type === SlidesApp.PageElementType.IMAGE) {
+                    processTextContainer(element.asImage(), slide);
+                }
+            }
+
+            function processTextContainer(element, currentSlide) {
+                var isShape = (typeof element.getDescription === 'function');
+                var descRaw = isShape ? (element.getDescription() || "") : "";
+
+                if (isShape && descRaw !== "") {
+                    // Éléments UX
+                    if (elementsMapping[descRaw] !== undefined) {
+                        element.getText().setText(String(elementsMapping[descRaw]));
+                        return;
+                    }
+
+                    // Recommandations UX
+                    if (recoMapping[descRaw] !== undefined) {
+                        element.getText().setText(String(recoMapping[descRaw]));
+                        formatRichTextUX(element);
+                        return;
+                    }
+
+                    // Icônes d'évaluation
+                    var isIconPlaceholder = descRaw.indexOf("UX_CLIENT_CHECK_") === 0 || descRaw.indexOf("UX_CONCURRENT_CHECK_") === 0;
+                    if (isIconPlaceholder && currentSlide) {
+                        var statusValue = props[descRaw] || "INCONNU";
+                        Logger.log("Remplacement de l'icône " + descRaw + " par le statut : " + statusValue);
+                        
+                        var fileId = ICON_IDS[statusValue] || ICON_IDS["INCONNU"];
+                        
+                        try {
+                            var file = DriveApp.getFileById(fileId);
+                            var pngBlob = file.getBlob();
+                            var newImg = currentSlide.insertImage(pngBlob, element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                            newImg.setDescription(descRaw);
+                            element.remove();
+                        } catch (errDrive) {
+                            Logger.log("ERREUR lors de l'insertion de l'icône Drive (" + statusValue + ") : " + errDrive.message);
+                        }
+                        return;
+                    }
+
+                    // Captures d'écran
+                    if (descRaw === "PLACEHOLDER_UX_CLIENT" && clientViewportId && currentSlide) {
+                        Logger.log("Insertion capture client : " + clientViewportId);
+                        try {
+                            var fileClient = DriveApp.getFileById(clientViewportId);
+                            var imgClient = currentSlide.insertImage(fileClient.getBlob(), element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                            imgClient.setDescription(descRaw);
+                            element.remove();
+                        } catch (e) {
+                            Logger.log("Erreur insertion capture client : " + e.message);
+                        }
+                        return;
+                    }
+
+                    if (descRaw === "PLACEHOLDER_UX_CONCURRENT" && compViewportId && currentSlide) {
+                        Logger.log("Insertion capture concurrent : " + compViewportId);
+                        try {
+                            var fileComp = DriveApp.getFileById(compViewportId);
+                            var imgComp = currentSlide.insertImage(fileComp.getBlob(), element.getLeft(), element.getTop(), element.getWidth(), element.getHeight());
+                            imgComp.setDescription(descRaw);
+                            element.remove();
+                        } catch (e) {
+                            Logger.log("Erreur insertion capture concurrent : " + e.message);
+                        }
+                        return;
+                    }
+                }
+            }
+
+            slide.getPageElements().forEach(processElement);
+        });
+
+        Logger.log("=== FIN : exporterUXSlides ===");
+        return { success: true, url: presentation.getUrl() };
+
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT UX : " + e.message);
         return { success: false, error: e.message };
     }
 }

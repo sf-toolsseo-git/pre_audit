@@ -135,22 +135,22 @@
           .step-label { font-size: 12px; color: #5f6368; margin-top: 8px; font-weight: 500; text-align: center; }
           .step.active .step-label { color: #1a73e8; font-weight: bold; }
           .step.completed .step-label { color: #188038; }
-          .step.error .step-label { color: #d93025; }
-          .analysis-results { display: none; margin-top: 20px; }
-          .serp-element-row{display:flex;align-items:center;gap:15px;margin-bottom:10px;background:#f8f9fa;padding:10px;border-radius:8px;border:1px solid #dadce0}
-          .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
-          .serp-icon-box svg{width:100%;height:100%}
-          .serp-inputs{flex:1;display:flex;gap:10px}
-          .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-          .ux-element-summary { display: flex; align-items: center; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; }
-          .ux-element-summary::-webkit-details-marker { display: none; }
-          .ux-element-summary:hover { background-color: #f8f9fa; }
-          .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
-          .ux-icon-status { width: 24px; height: 24px; object-fit: contain; }
-          .ux-element-title { flex: 1; text-align: center; color: #08133B; }
-          .ux-cb-limit { margin-right: 15px; transform: scale(1.3); }
-          .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; margin-left: 10px; }
-          .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
+        .step.error .step-label { color: #d93025; }
+        .analysis-results { display: none; margin-top: 20px; }
+        .serp-element-row{display:flex;align-items:center;gap:15px;margin-bottom:10px;background:#f8f9fa;padding:10px;border-radius:8px;border:1px solid #dadce0}
+        .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
+        .serp-icon-box svg{width:100%;height:100%}
+        .serp-inputs{flex:1;display:flex;gap:10px}
+        .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .ux-element-summary { display: flex; align-items: center; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; gap: 15px; }
+        .ux-element-summary::-webkit-details-marker { display: none; }
+        .ux-element-summary:hover { background-color: #f8f9fa; }
+        .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
+        .ux-icon-status { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .ux-element-title { color: #08133B; flex: 0 0 400px; width: 400px; text-align: center; }
+        .ux-cb-limit { transform: scale(1.3); margin: 0; flex-shrink: 0; }
+        .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; margin-left: auto; }
+        .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
         </style>
     </head>
     <body>
@@ -169,6 +169,7 @@
             <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
             <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
             <div class="tab" onclick="switchTab('ux')" id="tab-btn-ux">7. UX</div>
+            <div class="tab" onclick="switchTab('contenu')" id="tab-btn-contenu">8. Contenu</div>
         </div>
         <div class="tab-content active" id="content-config">
             <div class="main-area">
@@ -741,7 +742,7 @@
                             <button type="button" class="btn" id="btn-gen-ux-ia" disabled onclick="lancerAnalyseUXIAFront()">🤖 Générer l'analyse comparative UX</button>
                         </div>
                         
-                        <div class="row" style="margin-top:20px;">
+                        <div class="row" id="ux-analysis-wrapper" style="margin-top:20px; display:none;">
                             <div class="col" style="flex: 2;">
                                 <div id="ux-ia-list"></div>
                             </div>
@@ -756,9 +757,18 @@
                         <div class="continuer-bar" style="margin-top: 25px;">
                             <span id="exportMsgUx" style="font-size: 12px; font-weight: bold;"></span>
                             <button type="button" class="btn" id="btn-save-ux-manual" style="margin-right: 10px;" onclick="sauvegarderModificationsUX()" disabled>💾 Enregistrer les modifications</button>
-                            <button class="btn btn-continuer" id="btn-export-ux" disabled>📥 Importer dans Slides & continuer</button>
+                            <button class="btn btn-continuer" id="btn-export-ux" onclick="lancerExportSlidesUX()" disabled>📥 Importer dans Slides & continuer</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="content-contenu">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">Stratégie de contenu</h2>
+                    <div class="empty-state">Onglet en cours de construction...</div>
                 </div>
             </div>
         </div>
@@ -1081,6 +1091,23 @@
                                     var imgComp = document.getElementById('img-ux-comp');
                                     if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
                                 }).getDriveImageBase64ById(idUxCompViewport);
+
+                                if (config.dataUxIaFullState) {
+                                  try {
+                                    var parsedState = JSON.parse(config.dataUxIaFullState);
+                                    uxElementsData = parsedState.analyse_elements || [];
+                                    if (config.uxRecommandation1) setCeContent('ux-reco-globale-1', config.uxRecommandation1);
+                                    if (config.uxRecommandation2) setCeContent('ux-reco-globale-2', config.uxRecommandation2);
+                                    document.getElementById('ux-analysis-wrapper').style.display = 'flex';
+                                    
+                                    google.script.run.withSuccessHandler(function(icons) { 
+                                      renderUxList(icons); 
+                                      document.getElementById('btn-save-ux-manual').disabled = false; 
+                                    }).recupererIconesTechBase64();
+                                  } catch (e) {
+                                    console.error("Erreur parsing dataUxIaFullState :", e);
+                                  }
+                                }
                             }
                       }
 
@@ -3659,6 +3686,9 @@
                         if (recosGlobales.length > 0) setCeContent('ux-reco-globale-1', recosGlobales[0] || "");
                         if (recosGlobales.length > 1) setCeContent('ux-reco-globale-2', recosGlobales[1] || "");
                         
+                        // Afficher le bloc de résultats et recommandations
+                        document.getElementById('ux-analysis-wrapper').style.display = 'flex';
+                        
                         // Récupérer les icônes pour le rendu
                         google.script.run.withSuccessHandler(function(icons) {
                             hideLoader();
@@ -3714,7 +3744,6 @@
                 imgClientEl.className = 'ux-icon-status';
                 imgClientEl.src = iconClient;
                 imgClientEl.alt = el.evaluation_client;
-                imgClientEl.style.marginRight = '10px';
                 
                 var titleSpan = document.createElement('span');
                 titleSpan.className = 'ux-element-title';
@@ -3724,7 +3753,6 @@
                 imgCompEl.className = 'ux-icon-status';
                 imgCompEl.src = iconComp;
                 imgCompEl.alt = el.evaluation_concurrent;
-                imgCompEl.style.marginLeft = '10px';
                 
                 summary.appendChild(cb);
                 summary.appendChild(imgClientEl);
@@ -3756,7 +3784,9 @@
                 var recoDiv = document.createElement('div');
                 recoDiv.className = 'ce-field';
                 recoDiv.contentEditable = "true";
-                recoDiv.innerText = el.texte_recommandation || '';
+                // Rendu Markdown géré ici pour les recos des éléments si l'IA y place du gras
+                recoDiv.innerHTML = renderMarkupToHtml(el.texte_recommandation || '');
+                recoDiv.dataset.raw = el.texte_recommandation || '';
                 
                 contentDiv.appendChild(rowDiv);
                 contentDiv.appendChild(recoLabel);
@@ -3804,11 +3834,54 @@
                 recoGlobale2: getRawMarkdownFromCE('ux-reco-globale-2')
             };
 
+            // Initialisation par défaut
             for (var i = 1; i <= 6; i++) {
                 dataToSave['UX_ELEMENT_' + i] = "";
                 dataToSave['UX_CLIENT_CHECK_' + i] = "";
                 dataToSave['UX_CONCURRENT_CHECK_' + i] = "";
             }
+
+            // Récupération dynamique des éléments cochés
+            var checkboxes = document.querySelectorAll('.ux-cb-limit:checked');
+            var count = 1;
+            checkboxes.forEach(function(cb) {
+                if (count <= 6) {
+                    var details = cb.closest('.ux-element-row');
+                    var title = details.querySelector('.ux-element-title').innerText;
+                    var imgs = details.querySelectorAll('.ux-icon-status');
+                    
+                    dataToSave['UX_ELEMENT_' + count] = title;
+                    // L'attribut 'alt' contient l'évaluation (BON, MOYEN, MAUVAIS)
+                    dataToSave['UX_CLIENT_CHECK_' + count] = imgs[0] ? imgs[0].alt : "INCONNU";
+                    dataToSave['UX_CONCURRENT_CHECK_' + count] = imgs[1] ? imgs[1].alt : "INCONNU";
+                    
+                    count++;
+                }
+            });
+
+            // Sauvegarde de l'état complet pour la restauration (fullState)
+            var allElements = [];
+            document.querySelectorAll('.ux-element-row').forEach(function(details) {
+                var cb = details.querySelector('.ux-cb-limit');
+                var title = details.querySelector('.ux-element-title').innerText;
+                var imgs = details.querySelectorAll('.ux-icon-status');
+                var divs = details.querySelectorAll('.col > div'); 
+                var recoDiv = details.querySelector('.ce-field');
+                
+                allElements.push({
+                    nom_element: title,
+                    evaluation_client: imgs[0] ? imgs[0].alt : "INCONNU",
+                    evaluation_concurrent: imgs[1] ? imgs[1].alt : "INCONNU",
+                    constat_client: divs[0] ? divs[0].innerText : "",
+                    constat_concurrent: divs[1] ? divs[1].innerText : "",
+                    texte_recommandation: recoDiv ? getRawMarkdownFromCE_Element(recoDiv) : "",
+                    recommande_par_defaut: cb.checked
+                });
+            });
+            dataToSave.fullStateStr = JSON.stringify({ 
+                analyse_elements: allElements, 
+                recommandations_globales: [dataToSave.recoGlobale1, dataToSave.recoGlobale2] 
+            });
 
             google.script.run
                 .withSuccessHandler(function(res) {
@@ -3837,6 +3910,45 @@
                     console.error("Erreur backend sauvegarderModificationsUX : " + err.message);
                 })
                 .sauvegarderSelectionUX(dataToSave);
+        }
+
+        function lancerExportSlidesUX() {
+            var btnExport = document.getElementById('btn-export-ux');
+            var msg = document.getElementById('exportMsgUx');
+            
+            btnExport.disabled = true;
+            btnExport.innerText = "⏳ Import en cours...";
+            msg.innerText = "";
+            showLoader("Exportation de l'analyse UX vers Google Slides...");
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    hideLoader();
+                    if (res && res.success) {
+                        btnExport.innerText = "✅ Importé";
+                        msg.innerHTML = '<span style="color:#188038">Données UX injectées avec succès !</span>';
+                        setTimeout(function() {
+                            btnExport.disabled = false;
+                            btnExport.innerText = "📥 Importer dans Slides & continuer";
+                            msg.innerHTML = "";
+                            switchTab('contenu');
+                        }, 2000);
+                        console.log("=== FIN : lancerExportSlidesUX (Succès) ===");
+                    } else {
+                        btnExport.disabled = false;
+                        btnExport.innerText = "📥 Importer dans Slides & continuer";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : 'inconnue') + '</span>';
+                        console.log("=== FIN : lancerExportSlidesUX (Erreur) ===");
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btnExport.disabled = false;
+                    btnExport.innerText = "📥 Importer dans Slides & continuer";
+                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + err.message + '</span>';
+                    console.error("Erreur backend lancerExportSlidesUX : " + err.message);
+                })
+                .exporterUXSlides();
         }
 
         </script>

@@ -126,7 +126,11 @@ function chargerConfigurationPreAudit() {
         uxClientViewportId: props['UX_CLIENT_VIEWPORT_ID'] || "",
         uxClientFullId: props['UX_CLIENT_FULL_ID'] || "",
         uxCompViewportId: props['UX_COMP_VIEWPORT_ID'] || "",
-        uxCompFullId: props['UX_COMP_FULL_ID'] || ""
+        uxCompFullId: props['UX_COMP_FULL_ID'] || "",
+        
+        dataUxIaFullState: props['DATA_UX_IA_FULL_STATE'] || "",
+        uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
+        uxRecommandation2: props['UX_RECOMMANDATION_2'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -2707,7 +2711,12 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         var b64Comp = Utilities.base64Encode(imgComp.getBlob().getBytes());
 
         Logger.log("Construction du prompt système...");
-        var systemPrompt = "Tu es un expert en conversion (CRO) et UX. Analyse ces deux captures d'écran (la première est le site Client, la seconde est le site Concurrent) en tenant compte du [Type de page cible] et de [l'Intention de recherche] fournis par l'utilisateur pour adapter ton analyse.\n\n" +
+        var systemPrompt = "Tu es un expert en conversion (CRO) et UX en contexte d'avant-vente (pré-audit). Analyse ces deux captures d'écran (la première est la page du Client, la seconde la page du Concurrent) en tenant compte du [Type de page cible] et de [l'Intention de recherche] fournis par l'utilisateur pour adapter ton analyse.\n\n" +
+            "Ton et Posture Commerciale (TRÈS IMPORTANT) :\n" +
+            "- Ton but est de donner envie au prospect d'être accompagné. Sois constructif, diplomate et encourageant pour vendre la prestation.\n" +
+            "- Ne sois JAMAIS cassant, violent ou rabaissant. Bannis totalement les expressions radicales comme 'refondre intégralement', 'désastreux', 'nuisible', 'trop dense' ou 'mauvais'.\n" +
+            "- Préfère un vocabulaire d'élévation et de solution : *optimiser*, *moderniser*, *aérer*, *structurer*, *mettre en valeur votre expertise*.\n" +
+            "- Périmètre strict : Parle TOUJOURS au singulier de **cette page** spécifiquement. Ne généralise pas à tout le site ou à un groupe de pages (ex: dis 'cette page' et non 'les pages articles').\n\n" +
             "Tu peux t'appuyer sur la liste suivante (non exhaustive) d'éléments à analyser, piocher dedans ou en inventer de nouveaux spécifiques au type de page (ex: e-commerce, génération de leads) :\n" +
             "- Images, Vidéos, Prix, Contenu descriptif du produit / service, Boutons de conversion (appel, devis, démo), Boutons de navigation (en savoir plus), Téléchargement (livre blanc, plaquette), Avis site, Avis produits, Personnalisation / Auteur (ex: photo, citation), Éléments de réassurance (ancienneté, livraison, sécurité...), Étude de cas.\n\n" +
             "Doctrine d'évaluation :\n" +
@@ -2715,7 +2724,7 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             "BON : Élément présent et bien valorisé.\n" +
             "MOYEN : Élément présent mais peu visible, ou moins bien exploité que l'autre.\n" +
             "MAUVAIS : Élément absent.\n\n" +
-            "Génère à la fin exactement 2 recommandations globales (stratégie UX/CRO).\n\n" +
+            "Génère à la fin exactement 2 recommandations globales (stratégie UX/CRO) bienveillantes mais persuasives. IMPORTANT : Encadre les concepts clés de ces recommandations globales avec des astérisques simples (ex: *optimiser le CTA*).\n\n" +
             "Génère ta réponse STRICTEMENT au format JSON :\n" +
             "{\n" +
             "  \"type_page_analyse\": \"Catégorie de la page (ex: E-commerce, Vitrine)\",\n" +
@@ -2726,13 +2735,13 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             "      \"evaluation_concurrent\": \"BON|MOYEN|MAUVAIS\",\n" +
             "      \"constat_client\": \"Analyse hyper concise de la page client (max 15 mots).\",\n" +
             "      \"constat_concurrent\": \"Analyse hyper concise de la page concurrente (max 15 mots).\",\n" +
-            "      \"texte_recommandation\": \"Action recommandée au client (max 20 mots).\",\n" +
+            "      \"texte_recommandation\": \"Action recommandée au client avec des concepts clés entre astérisques simples *mot* (max 20 mots).\",\n" +
             "      \"recommande_par_defaut\": true|false\n" +
             "    }\n" +
             "  ],\n" +
             "  \"recommandations_globales\": [\n" +
-            "    \"Recommandation globale 1...\",\n" +
-            "    \"Recommandation globale 2...\"\n" +
+            "    \"Recommandation globale 1 avec des *concepts en gras*...\",\n" +
+            "    \"Recommandation globale 2 avec des *concepts en gras*...\"\n" +
             "  ]\n" +
             "}\n\n" +
             "Note sur `recommande_par_defaut` : Mets à `true` pour les 6 éléments les plus cruciaux à afficher au client, `false` pour les autres.\n\n" +
