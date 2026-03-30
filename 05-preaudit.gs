@@ -130,10 +130,70 @@ function chargerConfigurationPreAudit() {
         
         dataUxIaFullState: props['DATA_UX_IA_FULL_STATE'] || "",
         uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
-        uxRecommandation2: props['UX_RECOMMANDATION_2'] || ""
+        uxRecommandation2: props['UX_RECOMMANDATION_2'] || "",
+        
+        contenuStructureClient: props['CONTENU_STRUCTURE_CLIENT'] || "",
+        contenuStructureClientHtml: props['CONTENU_STRUCTURE_CLIENT_HTML'] || "",
+        contenuYtgClient: props['CONTENU_YTG_CLIENT'] || "",
+        contenuYtgClientHtml: props['CONTENU_YTG_CLIENT_HTML'] || "",
+        contenuYtgScoreClient: props['CONTENU_YTG_SCORE_CLIENT'] || "",
+        contenuYtgCibleClient: props['CONTENU_YTG_CIBLE_CLIENT'] || "",
+        contenu1frClient: props['CONTENU_1FR_CLIENT'] || "",
+        contenu1frClientHtml: props['CONTENU_1FR_CLIENT_HTML'] || "",
+        contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
+        contenu1frUrlClient: props['CONTENU_1FR_URL_CLIENT'] || "",
+        
+        contenuStructureConcurrent: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
+        contenuStructureConcurrentHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
+        contenuYtgConcurrent: props['CONTENU_YTG_CONCURRENT'] || "",
+        contenuYtgConcurrentHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
+        contenuYtgScoreConcurrent: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
+        contenuYtgCibleConcurrent: props['CONTENU_YTG_CIBLE_CONCURRENT'] || "",
+        contenu1frConcurrent: props['CONTENU_1FR_CONCURRENT'] || "",
+        contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
+        contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
+        contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
+}
+
+function sauvegarderDonneesContenu(data) {
+    Logger.log("=== DÉBUT : sauvegarderDonneesContenu ===");
+    try {
+        var propsToSet = {
+            'CONTENU_STRUCTURE_CLIENT': data.contenuStructureClient || "",
+            'CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
+            'CONTENU_YTG_CLIENT': data.contenuYtgClient || "",
+            'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
+            'CONTENU_YTG_SCORE_CLIENT': data.contenuYtgScoreClient || "",
+            'CONTENU_YTG_CIBLE_CLIENT': data.contenuYtgCibleClient || "",
+            'CONTENU_1FR_CLIENT': data.contenu1frClient || "",
+            'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
+            'CONTENU_1FR_SCORE_CLIENT': data.contenu1frScoreClient || "",
+            'CONTENU_1FR_URL_CLIENT': data.contenu1frUrlClient || "",
+            
+            'CONTENU_STRUCTURE_CONCURRENT': data.contenuStructureConcurrent || "",
+            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureConcurrentHtml || "",
+            'CONTENU_YTG_CONCURRENT': data.contenuYtgConcurrent || "",
+            'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgConcurrentHtml || "",
+            'CONTENU_YTG_SCORE_CONCURRENT': data.contenuYtgScoreConcurrent || "",
+            'CONTENU_YTG_CIBLE_CONCURRENT': data.contenuYtgCibleConcurrent || "",
+            'CONTENU_1FR_CONCURRENT': data.contenu1frConcurrent || "",
+            'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frConcurrentHtml || "",
+            'CONTENU_1FR_SCORE_CONCURRENT': data.contenu1frScoreConcurrent || "",
+            'CONTENU_1FR_URL_CONCURRENT': data.contenu1frUrlConcurrent || ""
+        };
+        
+        PropertiesService.getScriptProperties().setProperties(propsToSet);
+        syncPropertiesToConfigSheet();
+        
+        Logger.log("=== FIN : sauvegarderDonneesContenu ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderDonneesContenu : " + e.message);
+        return { success: false, error: e.message };
+    }
 }
 
 function recupererDetailsMotCle(motCle) {

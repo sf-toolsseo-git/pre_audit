@@ -771,10 +771,159 @@
 
         <div class="tab-content" id="content-contenu">
             <div class="main-area">
+                
+                <h2 class="section-title">Stratégie de contenu</h2>
+                <div class="section-description" style="margin-bottom: 15px;">Évaluez la sémantique et la structure de la page cible face à son concurrent.</div>
+
                 <div class="config-card">
-                    <h2 class="section-title">Stratégie de contenu</h2>
-                    <div class="empty-state">Onglet en cours de construction...</div>
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                                Analyse Client <span class="badge-client" style="position: static; transform: none;">Client</span>
+                            </h2>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" id="btn-save-contenu-client" onclick="sauvegarderContenuClient()" style="padding: 6px 12px;">💾 Enregistrer</button>
+                            <button class="btn" id="btn-ia-contenu-client" onclick="lancerAnalyseContenuIA('client')" disabled style="padding: 6px 12px;">🤖 Générer l'analyse IA</button>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col">
+                            <label class="input-label">Mot-clé cible</label>
+                            <input type="text" id="contenu-kw" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                        </div>
+                        <div class="col" style="flex: 0 0 100px;">
+                            <label class="input-label">Volume</label>
+                            <input type="text" id="contenu-vol" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                        </div>
+                        <div class="col" style="flex: 2;">
+                            <label class="input-label">URL Client</label>
+                            <input type="text" id="contenu-url-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                        </div>
+                        <div class="col" style="flex: 0 0 80px;">
+                            <label class="input-label">Position</label>
+                            <input type="text" id="contenu-pos-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Score Yourtext.Guru</label>
+                            <input type="text" id="contenu-ytg-score-client" placeholder="Score client (ex: 75)">
+                        </div>
+                        <div class="col">
+                            <label class="input-label">Cible Yourtext.Guru</label>
+                            <input type="text" id="contenu-ytg-cible-client" placeholder="ex: 61-85">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Score 1.fr</label>
+                            <input type="text" id="contenu-1fr-score-client" placeholder="Score 1.fr client (ex: 80%)">
+                        </div>
+                        <div class="col">
+                            <label class="input-label">URL de l'analyse 1.fr</label>
+                            <input type="text" id="contenu-1fr-url-client" placeholder="Lien vers l'analyse">
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col">
+                            <div class="dropzone" id="dz-svg-client">
+                                <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col">
+                            <label class="input-label">Structure du contenu</label>
+                            <div id="ce-contenu-structure-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Itération des termes</label>
+                            <div id="ce-contenu-ytg-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique</label>
+                            <div id="ce-contenu-1fr-client" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="config-card" style="margin-top: 20px;">
+                    <div class="header-inline">
+                        <div>
+                            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                                Analyse Concurrent <span class="badge-leader" style="position: static; transform: none; background: #d93025;">Concurrent</span>
+                            </h2>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn" id="btn-save-contenu-comp" onclick="sauvegarderContenuConcurrent()" style="padding: 6px 12px;">💾 Enregistrer</button>
+                            <button class="btn" id="btn-ia-contenu-comp" onclick="lancerAnalyseContenuIA('comp')" disabled style="padding: 6px 12px;">🤖 Générer l'analyse IA</button>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 15px;">
+                        <div class="col" style="flex: 2;">
+                            <label class="input-label">URL Concurrent</label>
+                            <input type="text" id="contenu-url-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                        </div>
+                        <div class="col" style="flex: 0 0 80px;">
+                            <label class="input-label">Position</label>
+                            <input type="text" id="contenu-pos-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Score Yourtext.Guru</label>
+                            <input type="text" id="contenu-ytg-score-comp" placeholder="Score concurrent (ex: 75)">
+                        </div>
+                        <div class="col">
+                            <label class="input-label">Cible Yourtext.Guru</label>
+                            <input type="text" id="contenu-ytg-cible-comp" placeholder="ex: 61-85">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Score 1.fr</label>
+                            <input type="text" id="contenu-1fr-score-comp" placeholder="Score 1.fr concurrent (ex: 80%)">
+                        </div>
+                        <div class="col">
+                            <label class="input-label">URL de l'analyse 1.fr</label>
+                            <input type="text" id="contenu-1fr-url-comp" placeholder="Lien vers l'analyse">
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col">
+                            <div class="dropzone" id="dz-svg-comp">
+                                <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top: 10px;">
+                        <div class="col">
+                            <label class="input-label">Structure du contenu</label>
+                            <div id="ce-contenu-structure-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Itération des termes</label>
+                            <div id="ce-contenu-ytg-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique</label>
+                            <div id="ce-contenu-1fr-comp" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="continuer-bar" style="margin-top: 25px;">
+                    <span id="exportMsgContenu" style="font-size: 12px; font-weight: bold;"></span>
+                    <button class="btn btn-continuer" id="btn-export-contenu" onclick="lancerExportSlidesContenu()">📥 Importer dans Slides & terminer</button>
+                </div>
+
             </div>
         </div>
 
@@ -793,6 +942,9 @@
             var isInitializingTree = false;
             var uxElementsData = [];
 
+            var svgDataClient = null;
+            var svgDataComp = null;
+
             var DRIVE_ICONS_MAPPING = {
                 "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
                 "ads": "1pwUCDRXZ02ua0xuifRQaqnISmFnlAZsC",
@@ -809,6 +961,7 @@
 
             window.onload = function() {
             initDropzones();
+            initSvgDropzones();
             showLoader("Chargement de la configuration...");
 
             google.script.run
@@ -1122,6 +1275,34 @@
                                 }
                             }
                         }
+
+                        // Restauration de l'onglet 8 (Contenu)
+                        document.getElementById('contenu-kw').value = config.contenuKw || config.focusKw || "";
+                        document.getElementById('contenu-vol').value = config.focusVol || "";
+                        document.getElementById('contenu-url-client').value = config.focusClientUrl || "";
+                        document.getElementById('contenu-pos-client').value = config.focusClientPos || "";
+                        document.getElementById('contenu-url-comp').value = config.focusCompUrl || "";
+                        document.getElementById('contenu-pos-comp').value = config.focusCompPos || "";
+
+                        // Restauration Client
+                        if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
+                        if(config.contenuYtgCibleClient) document.getElementById('contenu-ytg-cible-client').value = config.contenuYtgCibleClient;
+                        if(config.contenu1frScoreClient) document.getElementById('contenu-1fr-score-client').value = config.contenu1frScoreClient;
+                        if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
+
+                        if (config.contenuStructureClientHtml) setCeContent('ce-contenu-structure-client', config.contenuStructureClient);
+                        if (config.contenuYtgClientHtml) setCeContent('ce-contenu-ytg-client', config.contenuYtgClient);
+                        if (config.contenu1frClientHtml) setCeContent('ce-contenu-1fr-client', config.contenu1frClient);
+
+                        // Restauration Concurrent
+                        if(config.contenuYtgScoreComp) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreComp;
+                        if(config.contenuYtgCibleComp) document.getElementById('contenu-ytg-cible-comp').value = config.contenuYtgCibleComp;
+                        if(config.contenu1frScoreComp) document.getElementById('contenu-1fr-score-comp').value = config.contenu1frScoreComp;
+                        if(config.contenu1frUrlComp) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlComp;
+
+                        if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
+                        if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
+                        if (config.contenu1frCompHtml) setCeContent('ce-contenu-1fr-comp', config.contenu1frComp);
                     }
 
                     google.script.run
@@ -3956,6 +4137,180 @@
                     console.error("Erreur backend sauvegarderModificationsUX : " + err.message);
                 })
                 .sauvegarderSelectionUX(dataToSave);
+        }
+
+        function initSvgDropzones() {
+            var dzClient = document.getElementById('dz-svg-client');
+            var dzComp = document.getElementById('dz-svg-comp');
+
+            function setupSvgDz(dz, type) {
+                if(!dz) return;
+                dz.addEventListener('dragover', function(e) { e.preventDefault(); dz.classList.add('dragover'); });
+                dz.addEventListener('dragleave', function() { dz.classList.remove('dragover'); });
+                dz.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    dz.classList.remove('dragover');
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        var file = e.dataTransfer.files[0];
+                        if(file.name.toLowerCase().endsWith('.svg')) {
+                            var reader = new FileReader();
+                            reader.onload = function(evt) {
+                                var txt = evt.target.result;
+                                var txtEl = dz.querySelector('.dropzone-text');
+                                if (type === 'client') {
+                                    svgDataClient = txt;
+                                    document.getElementById('btn-ia-contenu-client').disabled = false;
+                                    if(txtEl) txtEl.innerHTML = "✅ SVG Client chargé";
+                                } else {
+                                    svgDataComp = txt;
+                                    document.getElementById('btn-ia-contenu-comp').disabled = false;
+                                    if(txtEl) txtEl.innerHTML = "✅ SVG Concurrent chargé";
+                                }
+                                dz.style.borderColor = "#188038";
+                                dz.style.backgroundColor = "#e6f4ea";
+                            };
+                            reader.readAsText(file);
+                        } else {
+                            alert("Veuillez déposer un fichier .svg");
+                        }
+                    }
+                });
+            }
+
+            setupSvgDz(dzClient, 'client');
+            setupSvgDz(dzComp, 'comp');
+        }
+
+        function sauvegarderContenuClient() {
+            var btn = document.getElementById('btn-save-contenu-client');
+            btn.disabled = true;
+            var originalText = btn.innerText;
+            btn.innerText = "⏳ Enregistrement...";
+
+            var data = {
+                CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
+                CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
+                CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
+                CONTENU_YTG_CIBLE_CLIENT: document.getElementById('contenu-ytg-cible-client').value,
+                CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
+                CONTENU_1FR_SCORE_CLIENT: document.getElementById('contenu-1fr-score-client').value,
+                CONTENU_1FR_URL_CLIENT: document.getElementById('contenu-1fr-url-client').value,
+
+                // Sauvegarde HTML pour le mode édition
+                contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
+                contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
+                contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML
+            };
+
+            google.script.run
+                .withSuccessHandler(function() {
+                    btn.innerText = "✅ Enregistré";
+                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerText = "❌ Erreur";
+                    alert("Erreur de sauvegarde : " + err.message);
+                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                })
+                .sauvegarderDonneesContenu(data);
+        }
+
+        function sauvegarderContenuConcurrent() {
+            var btn = document.getElementById('btn-save-contenu-comp');
+            btn.disabled = true;
+            var originalText = btn.innerText;
+            btn.innerText = "⏳ Enregistrement...";
+
+            var data = {
+                CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
+                CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
+                CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
+                CONTENU_YTG_CIBLE_CONCURRENT: document.getElementById('contenu-ytg-cible-comp').value,
+                CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
+                CONTENU_1FR_SCORE_CONCURRENT: document.getElementById('contenu-1fr-score-comp').value,
+                CONTENU_1FR_URL_CONCURRENT: document.getElementById('contenu-1fr-url-comp').value,
+
+                // Sauvegarde HTML pour le mode édition
+                contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
+                contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
+                contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
+            };
+
+            google.script.run
+                .withSuccessHandler(function() {
+                    btn.innerText = "✅ Enregistré";
+                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                })
+                .withFailureHandler(function(err) {
+                    btn.innerText = "❌ Erreur";
+                    alert("Erreur de sauvegarde : " + err.message);
+                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                })
+                .sauvegarderDonneesContenu(data);
+        }
+
+        function lancerAnalyseContenuIA(cible) {
+            var btnId = cible === 'client' ? 'btn-ia-contenu-client' : 'btn-ia-contenu-comp';
+            var btn = document.getElementById(btnId);
+            btn.disabled = true;
+            showLoader("Génération de l'analyse sémantique IA pour le " + cible + "...");
+
+            var htmlContent = cible === 'client' ? getRawMarkdownFromCE('ce-contenu-structure-client') : getRawMarkdownFromCE('ce-contenu-structure-comp');
+            var svgContent = cible === 'client' ? svgDataClient : svgDataComp;
+            var contexte = document.getElementById('conf-contexte-preaudit') ? document.getElementById('conf-contexte-preaudit').value : '';
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    hideLoader();
+                    btn.disabled = false;
+                    if(res && res.success) {
+                        if(res.data.structure) setCeContent(cible === 'client' ? 'ce-contenu-structure-client' : 'ce-contenu-structure-comp', res.data.structure);
+                        if(res.data.ytg) setCeContent(cible === 'client' ? 'ce-contenu-ytg-client' : 'ce-contenu-ytg-comp', res.data.ytg);
+                        if(res.data.semantique) setCeContent(cible === 'client' ? 'ce-contenu-1fr-client' : 'ce-contenu-1fr-comp', res.data.semantique);
+                    } else {
+                        alert("Erreur de l'IA : " + (res ? res.error : "Erreur inconnue"));
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btn.disabled = false;
+                    alert("Erreur critique : " + err.message);
+                })
+                .lancerAnalyseContenuIA(cible, htmlContent, svgContent, contexte);
+        }
+
+        function lancerExportSlidesContenu() {
+            var btnExport = document.getElementById('btn-export-contenu');
+            var msg = document.getElementById('exportMsgContenu');
+            btnExport.disabled = true;
+            btnExport.innerText = "⏳ Export en cours...";
+            msg.innerText = "";
+            showLoader("Exportation de l'analyse de contenu...");
+
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    hideLoader();
+                    if(res && res.success) {
+                        btnExport.innerText = "✅ Terminé";
+                        msg.innerHTML = '<span style="color:#188038">Données exportées avec succès !</span>';
+                        setTimeout(function() {
+                            btnExport.disabled = false;
+                            btnExport.innerText = "📥 Importer dans Slides & terminer";
+                            msg.innerHTML = "";
+                        }, 2000);
+                    } else {
+                        btnExport.disabled = false;
+                        btnExport.innerText = "📥 Importer dans Slides & terminer";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : "Erreur inconnue") + '</span>';
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btnExport.disabled = false;
+                    btnExport.innerText = "📥 Importer dans Slides & terminer";
+                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                })
+                .exporterContenuSlides();
         }
 
         function lancerExportSlidesUX() {
