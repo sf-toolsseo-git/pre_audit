@@ -803,341 +803,349 @@
             // ========================== INIT ==========================
 
             window.onload = function() {
-              initDropzones();
-              showLoader("Chargement de la configuration...");
+            initDropzones();
+            showLoader("Chargement de la configuration...");
 
-              google.script.run
-                  .withSuccessHandler(function(config) {
-                      window.globalConfig = config || {}; 
-                      if (config) {
-                          // Onglet 1
-                          document.getElementById('conf-client-name').value = config.clientName;
-                          document.getElementById('conf-client-url').value = config.clientUrl;
-                          document.getElementById('conf-urls-contexte').value = config.urlsContexte;
-                          document.getElementById('conf-contexte-client').value = config.contexteClient;
-                          document.getElementById('conf-slide-id').value = config.slideId;
-                          document.getElementById('conf-brief').value = config.brief;
-                          document.getElementById('conf-url-reponses').value = config.urlReponses;
-                          document.getElementById('conf-contexte-preaudit').value = config.contextePreaudit;
+            google.script.run
+                .withSuccessHandler(function(config) {
+                    window.globalConfig = config || {}; 
+                    if (config) {
+                        // Onglet 1
+                        document.getElementById('conf-client-name').value = config.clientName;
+                        document.getElementById('conf-client-url').value = config.clientUrl;
+                        document.getElementById('conf-urls-contexte').value = config.urlsContexte;
+                        document.getElementById('conf-contexte-client').value = config.contexteClient;
+                        document.getElementById('conf-slide-id').value = config.slideId;
+                        document.getElementById('conf-brief').value = config.brief;
+                        document.getElementById('conf-url-reponses').value = config.urlReponses;
+                        document.getElementById('conf-contexte-preaudit').value = config.contextePreaudit;
 
-                          // Onglet 2 — Besoin/Solution
-                          if (config.besoinHtml || config.solutionHtml) {
-                              var ceBesoin = document.getElementById('ce-besoin');
-                              var ceSolution = document.getElementById('ce-solution');
-                              ceBesoin.innerHTML = config.besoinHtml;
-                              ceBesoin.dataset.raw = config.besoinTexte;
-                              ceSolution.innerHTML = config.solutionHtml;
-                              ceSolution.dataset.raw = config.solutionTexte;
-                              document.getElementById('besoin-result-card').style.display = 'block';
-                          }
+                        // Onglet 2 — Besoin/Solution
+                        if (config.besoinHtml || config.solutionHtml) {
+                            var ceBesoin = document.getElementById('ce-besoin');
+                            var ceSolution = document.getElementById('ce-solution');
+                            ceBesoin.innerHTML = config.besoinHtml;
+                            ceBesoin.dataset.raw = config.besoinTexte;
+                            ceSolution.innerHTML = config.solutionHtml;
+                            ceSolution.dataset.raw = config.solutionTexte;
+                            document.getElementById('besoin-result-card').style.display = 'block';
+                        }
 
-                          // Onglet 2 — Semrush
-                          if (config.titreSemrush || config.analyseKwHtml || config.analyseTraficHtml) {
-                              document.getElementById('ia-titre').value = config.titreSemrush;
-                              var ceKw = document.getElementById('ce-kw');
-                              var ceTrafic = document.getElementById('ce-trafic');
-                              ceKw.innerHTML = config.analyseKwHtml;
-                              ceKw.dataset.raw = config.analyseKwTexte;
-                              ceTrafic.innerHTML = config.analyseTraficHtml;
-                              ceTrafic.dataset.raw = config.analyseTraficTexte;
-                              document.getElementById('ia-result-card').style.display = 'block';
-                          }
+                        // Onglet 2 — Semrush
+                        if (config.titreSemrush || config.analyseKwHtml || config.analyseTraficHtml) {
+                            document.getElementById('ia-titre').value = config.titreSemrush;
+                            var ceKw = document.getElementById('ce-kw');
+                            var ceTrafic = document.getElementById('ce-trafic');
+                            ceKw.innerHTML = config.analyseKwHtml;
+                            ceKw.dataset.raw = config.analyseKwTexte;
+                            ceTrafic.innerHTML = config.analyseTraficHtml;
+                            ceTrafic.dataset.raw = config.analyseTraficTexte;
+                            document.getElementById('ia-result-card').style.display = 'block';
+                        }
 
-                          // Restauration de l'onglet actif
-                          if (config.activeTab && config.activeTab !== 'config') {
-                              console.log("Restauration de l'onglet actif : " + config.activeTab);
-                              switchTab(config.activeTab, true); 
-                              if (config.activeTab === 'etat-lieux') {
-                                  console.log("Étape clé : préparation de l'état des lieux au chargement");
-                                  preparerOngletEtatLieux();
-                              }
-                              if (config.activeTab === 'focus-mot-cle') {
-                                  preparerOngletFocusMotCle();
-                              }
-                          }
+                        // Restauration de l'onglet actif
+                        if (config.activeTab && config.activeTab !== 'config') {
+                            console.log("Restauration de l'onglet actif : " + config.activeTab);
+                            switchTab(config.activeTab, true); 
+                            if (config.activeTab === 'etat-lieux') {
+                                console.log("Étape clé : préparation de l'état des lieux au chargement");
+                                preparerOngletEtatLieux();
+                            }
+                            if (config.activeTab === 'focus-mot-cle') {
+                                preparerOngletFocusMotCle();
+                            }
+                        }
 
-                          // Restauration de l'onglet 5
-                          if (config.focusKw) document.getElementById('focus-kw').value = config.focusKw;
-                          if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
-                          if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
-                          if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
-                          if (config.focusLocalisation) {
-                              var locVal = config.focusLocalisation;
-                              document.getElementById('focus-localisation').value = (locVal.toLowerCase() === "france") ? "" : locVal;
-                          }
-                          if (config.focusClientPos) {
-                              var elPosCli = document.getElementById('focus-client-pos');
-                              if (elPosCli) elPosCli.value = config.focusClientPos;
-                          }
-                          if (config.focusCompPos) {
-                              var elPosComp = document.getElementById('focus-comp-pos');
-                              if (elPosComp) elPosComp.value = config.focusCompPos;
-                          }
-                          if (config.focusNoPage === "true") {
-                              var cb = document.getElementById('focus-no-page');
-                              if (cb) cb.checked = true;
-                              toggleFocusClientUrl();
-                          }
-                          
-                          // Restauration de l'onglet 5 (Analyses détaillées)
-                          if (config.intentionTitre || config.standard1 || config.serpTitre1) {
-                              // SERP
-                              document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
-                              document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
-                              document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
-                              if (config.serpSvg1) {
-                                  google.script.run.withSuccessHandler(function(b64) {
-                                      if (b64) {
-                                          var iconRender = document.getElementById('serp-icon-render-1');
-                                          if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                      }
-                                  }).getDriveImageBase64(config.serpSvg1);
-                              }
-                              
-                              document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
-                              document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
-                              document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
-                              if (config.serpSvg2) {
-                                  google.script.run.withSuccessHandler(function(b64) {
-                                      if (b64) {
-                                          var iconRender = document.getElementById('serp-icon-render-2');
-                                          if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                      }
-                                  }).getDriveImageBase64(config.serpSvg2);
-                              }
-                              
-                              document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
-                              document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
-                              document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
-                              if (config.serpSvg3) {
-                                  google.script.run.withSuccessHandler(function(b64) {
-                                      if (b64) {
-                                          var iconRender = document.getElementById('serp-icon-render-3');
-                                          if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                      }
-                                  }).getDriveImageBase64(config.serpSvg3);
-                              }
-                              
-                              document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
-                              document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
-                              document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
-                              if (config.serpSvg4) {
-                                  google.script.run.withSuccessHandler(function(b64) {
-                                      if (b64) {
-                                          var iconRender = document.getElementById('serp-icon-render-4');
-                                          if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                      }
-                                  }).getDriveImageBase64(config.serpSvg4);
-                              }
-
-                              // Intention
-                              document.getElementById('intention-titre').value = config.intentionTitre || "";
-                              if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
-
-                              // Standard
-                              if (config.standard1Html) setCeContent('standard-1', config.standard1);
-                              if (config.standard2Html) setCeContent('standard-2', config.standard2);
-                              if (config.standard3Html) setCeContent('standard-3', config.standard3);
-
-                              // Sémantique
-                              if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
-                              if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
-                              if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
-
-                              // GAP Analysis
-                              document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
-                              if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
-                              document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
-                              if (config.gapDesc2Html) setCeContent('gap-desc-2', config.gapDesc2);
-                              document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
-                              if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
-
-                              // Recommandations
-                              if (config.reco1Html) setCeContent('reco-1', config.reco1);
-                              if (config.reco2Html) setCeContent('reco-2', config.reco2);
-                              if (config.reco3Html) setCeContent('reco-3', config.reco3);
-                              if (config.reco4Html) setCeContent('reco-4', config.reco4);
-
-                              document.getElementById('analysis-results').style.display = 'block';
-                          }
-                          
-                          // Restauration de l'onglet 6
-                          var cibleVal = config.techUrlCible;
-                          
-                          // On vérifie d'abord la page cible renseignée dans l'onglet Focus (TARGET_URL_CLIENT)
-                          if (!cibleVal || cibleVal === "-") {
-                              cibleVal = config.focusClientUrl;
-                          }
-                          
-                          // Si toujours vide, on bascule sur la page d'accueil (CONF_CLIENT_URL)
-                          if (!cibleVal || cibleVal === "-") {
-                              cibleVal = config.clientUrl || "";
-                          }
-                          
-                          document.getElementById('tech-url-cible').value = cibleVal;
-                          
-                          var robotsUrl = "";
-                          if (cibleVal) {
-                              try {
-                                  var urlObj = new URL(cibleVal);
-                                  robotsUrl = urlObj.origin + "/robots.txt";
-                              } catch(e) {
-                                  if (cibleVal.indexOf("http") === -1) {
-                                      robotsUrl = "https://" + cibleVal.split('/')[0] + "/robots.txt";
-                                  }
-                              }
-                          }
-                          document.getElementById('tech-robots-url').value = robotsUrl;
-                          if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
-                          if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
-                          if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
-                          if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
-                          if (config.techIsMultilingue) {
-                              document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
-                              toggleMultilingueFields();
-                          }
-                          if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
-                          if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
-                          if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
-                          
-                          // Restauration des données IA Technique (Full state)
-                          if (config.DATA_TECH_IA_FULL_STATE) {
-                              try {
-                                  var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
-                                  document.getElementById('tech-ia-results-container').style.display = 'flex';
-                                  
-                                  google.script.run.withSuccessHandler(function(icons) {
-                                      window.lastTechIaIcons = icons;
-                                      if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, icons, true);
-                                      if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, icons, true);
-                                      if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, icons, true);
-                                  }).recupererIconesTechBase64();
-                              } catch(e) {
-                                  console.log("Erreur de parsing JSON : " + e.message);
-                              }
-                          } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
-                              // Fallback sur l'ancien système de restauration
-                              document.getElementById('tech-ia-results-container').style.display = 'flex';
-                              var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
-                              
-                              for (var pf in prefixMap) {
-                                  var restoredItems = [];
-                                  for (var i = 1; i <= 4; i++) {
-                                      var checkVal = config[pf + '_CHECK_' + i];
-                                      var contentVal = config[pf + '_CONTENT_' + i];
-                                      if (contentVal) {
-                                          restoredItems.push({
-                                              icone: checkVal || "INCONNU",
-                                              texte: contentVal,
-                                              restoredChecked: true
-                                          });
-                                      }
-                                  }
-                                  if (restoredItems.length > 0) {
-                                      buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
-                                  }
-                              }
-                          }
-                          
-                          // Restauration du HTML des résultats de l'onglet 6
-                          if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
-                              document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
-                              document.getElementById('tech-results-container').style.display = 'block';
-                          }
-                          if (config.techHtmlIndex && config.techHtmlIndex.trim() !== '') {
-                              document.getElementById('indexation-results-content').innerHTML = config.techHtmlIndex;
-                              document.getElementById('tech-results-container').style.display = 'block';
-                          }
-                          if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
-                              var posContainer = document.getElementById('positionnement-results-container');
-                              var posTitle = document.getElementById('positionnement-results-title');
-                              var posContent = document.getElementById('positionnement-results-content');
-                          
-                              posContent.innerHTML = config.techHtmlPos;
-                          
-                              posContainer.style.background = '#fff';
-                              posContainer.style.border = '1px solid #dadce0';
-                              posContainer.style.opacity = '1';
-                              posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                              posTitle.style.color = '#08133B';
-                              posTitle.style.borderBottom = '1px solid #f1f3f4';
-                              posContent.style.textAlign = 'left';
-                          
-                              document.getElementById('tech-results-container').style.display = 'block';
-                          }
-                          
-                          // Restauration de l'onglet 7 (UX)
-                            if (config.uxClientViewportId && config.uxCompViewportId) {
-                                idUxClientViewport = config.uxClientViewportId;
-                                idUxCompViewport = config.uxCompViewportId;
-                                idUxClientFull = config.uxClientFullId;
-                                idUxCompFull = config.uxCompFullId;
-                                
-                                var containerUx = document.getElementById('ux-results-container');
-                                if (containerUx) containerUx.style.display = 'block';
-                                
-                                var btnIa = document.getElementById('btn-gen-ux-ia');
-                                var btnExport = document.getElementById('btn-export-ux');
-                                if (btnIa) btnIa.disabled = false;
-                                if (btnExport) btnExport.disabled = false;
-
-                                // Récupération sécurisée via le serveur
+                        // Restauration de l'onglet 5
+                        if (config.focusKw) document.getElementById('focus-kw').value = config.focusKw;
+                        if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
+                        if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
+                        if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
+                        if (config.focusLocalisation) {
+                            var locVal = config.focusLocalisation;
+                            document.getElementById('focus-localisation').value = (locVal.toLowerCase() === "france") ? "" : locVal;
+                        }
+                        if (config.focusClientPos) {
+                            var elPosCli = document.getElementById('focus-client-pos');
+                            if (elPosCli) elPosCli.value = config.focusClientPos;
+                        }
+                        if (config.focusCompPos) {
+                            var elPosComp = document.getElementById('focus-comp-pos');
+                            if (elPosComp) elPosComp.value = config.focusCompPos;
+                        }
+                        if (config.focusNoPage === "true") {
+                            var cb = document.getElementById('focus-no-page');
+                            if (cb) cb.checked = true;
+                            toggleFocusClientUrl();
+                        }
+                        
+                        // Restauration de l'onglet 5 (Analyses détaillées)
+                        if (config.intentionTitre || config.standard1 || config.serpTitre1) {
+                            // SERP
+                            document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
+                            document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
+                            document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
+                            if (config.serpSvg1) {
                                 google.script.run.withSuccessHandler(function(b64) {
-                                    var imgClient = document.getElementById('img-ux-client');
-                                    if (imgClient && b64) imgClient.src = "data:image/jpeg;base64," + b64;
-                                }).getDriveImageBase64ById(idUxClientViewport);
-
+                                    if (b64) {
+                                        var iconRender = document.getElementById('serp-icon-render-1');
+                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                    }
+                                }).getDriveImageBase64(config.serpSvg1);
+                            }
+                            
+                            document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
+                            document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
+                            document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
+                            if (config.serpSvg2) {
                                 google.script.run.withSuccessHandler(function(b64) {
-                                    var imgComp = document.getElementById('img-ux-comp');
-                                    if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
-                                }).getDriveImageBase64ById(idUxCompViewport);
+                                    if (b64) {
+                                        var iconRender = document.getElementById('serp-icon-render-2');
+                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                    }
+                                }).getDriveImageBase64(config.serpSvg2);
+                            }
+                            
+                            document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
+                            document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
+                            document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
+                            if (config.serpSvg3) {
+                                google.script.run.withSuccessHandler(function(b64) {
+                                    if (b64) {
+                                        var iconRender = document.getElementById('serp-icon-render-3');
+                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                    }
+                                }).getDriveImageBase64(config.serpSvg3);
+                            }
+                            
+                            document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
+                            document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
+                            document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
+                            if (config.serpSvg4) {
+                                google.script.run.withSuccessHandler(function(b64) {
+                                    if (b64) {
+                                        var iconRender = document.getElementById('serp-icon-render-4');
+                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                    }
+                                }).getDriveImageBase64(config.serpSvg4);
+                            }
 
-                                if (config.dataUxIaFullState) {
-                                  try {
+                            // Intention
+                            document.getElementById('intention-titre').value = config.intentionTitre || "";
+                            if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
+
+                            // Standard
+                            if (config.standard1Html) setCeContent('standard-1', config.standard1);
+                            if (config.standard2Html) setCeContent('standard-2', config.standard2);
+                            if (config.standard3Html) setCeContent('standard-3', config.standard3);
+
+                            // Sémantique
+                            if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
+                            if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
+                            if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
+
+                            // GAP Analysis
+                            document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
+                            if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
+                            document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
+                            if (config.gapDesc2Html) setCeContent('gap-desc-2', config.gapDesc2);
+                            document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
+                            if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
+
+                            // Recommandations
+                            if (config.reco1Html) setCeContent('reco-1', config.reco1);
+                            if (config.reco2Html) setCeContent('reco-2', config.reco2);
+                            if (config.reco3Html) setCeContent('reco-3', config.reco3);
+                            if (config.reco4Html) setCeContent('reco-4', config.reco4);
+
+                            document.getElementById('analysis-results').style.display = 'block';
+                        }
+                        
+                        // Restauration de l'onglet 6
+                        var cibleVal = config.techUrlCible;
+                        
+                        // On vérifie d'abord la page cible renseignée dans l'onglet Focus (TARGET_URL_CLIENT)
+                        if (!cibleVal || cibleVal === "-") {
+                            cibleVal = config.focusClientUrl;
+                        }
+                        
+                        // Si toujours vide, on bascule sur la page d'accueil (CONF_CLIENT_URL)
+                        if (!cibleVal || cibleVal === "-") {
+                            cibleVal = config.clientUrl || "";
+                        }
+                        
+                        document.getElementById('tech-url-cible').value = cibleVal;
+                        
+                        var robotsUrl = "";
+                        if (cibleVal) {
+                            try {
+                                var urlObj = new URL(cibleVal);
+                                robotsUrl = urlObj.origin + "/robots.txt";
+                            } catch(e) {
+                                if (cibleVal.indexOf("http") === -1) {
+                                    robotsUrl = "https://" + cibleVal.split('/')[0] + "/robots.txt";
+                                }
+                            }
+                        }
+                        document.getElementById('tech-robots-url').value = robotsUrl;
+                        if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
+                        if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
+                        if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
+                        if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
+                        if (config.techIsMultilingue) {
+                            document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
+                            toggleMultilingueFields();
+                        }
+                        if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
+                        if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
+                        if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
+                        
+                        // Restauration des données IA Technique (Full state)
+                        if (config.DATA_TECH_IA_FULL_STATE) {
+                            try {
+                                var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
+                                document.getElementById('tech-ia-results-container').style.display = 'flex';
+                                
+                                google.script.run.withSuccessHandler(function(icons) {
+                                    window.lastTechIaIcons = icons;
+                                    if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, icons, true);
+                                    if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, icons, true);
+                                    if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, icons, true);
+                                }).recupererIconesTechBase64();
+                            } catch(e) {
+                                console.log("Erreur de parsing JSON : " + e.message);
+                            }
+                        } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
+                            // Fallback sur l'ancien système de restauration
+                            document.getElementById('tech-ia-results-container').style.display = 'flex';
+                            var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
+                            
+                            for (var pf in prefixMap) {
+                                var restoredItems = [];
+                                for (var i = 1; i <= 4; i++) {
+                                    var checkVal = config[pf + '_CHECK_' + i];
+                                    var contentVal = config[pf + '_CONTENT_' + i];
+                                    if (contentVal) {
+                                        restoredItems.push({
+                                            icone: checkVal || "INCONNU",
+                                            texte: contentVal,
+                                            restoredChecked: true
+                                        });
+                                    }
+                                }
+                                if (restoredItems.length > 0) {
+                                    buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
+                                }
+                            }
+                        }
+                        
+                        // Restauration du HTML des résultats de l'onglet 6
+                        if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
+                            document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
+                            document.getElementById('tech-results-container').style.display = 'block';
+                        }
+                        if (config.techHtmlIndex && config.techHtmlIndex.trim() !== '') {
+                            document.getElementById('indexation-results-content').innerHTML = config.techHtmlIndex;
+                            document.getElementById('tech-results-container').style.display = 'block';
+                        }
+                        if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
+                            var posContainer = document.getElementById('positionnement-results-container');
+                            var posTitle = document.getElementById('positionnement-results-title');
+                            var posContent = document.getElementById('positionnement-results-content');
+                        
+                            posContent.innerHTML = config.techHtmlPos;
+                        
+                            posContainer.style.background = '#fff';
+                            posContainer.style.border = '1px solid #dadce0';
+                            posContainer.style.opacity = '1';
+                            posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                            posTitle.style.color = '#08133B';
+                            posTitle.style.borderBottom = '1px solid #f1f3f4';
+                            posContent.style.textAlign = 'left';
+                        
+                            document.getElementById('tech-results-container').style.display = 'block';
+                        }
+                        
+                        // Restauration de l'onglet 7 (UX)
+                        if (config.uxClientViewportId && config.uxCompViewportId) {
+                            idUxClientViewport = config.uxClientViewportId;
+                            idUxCompViewport = config.uxCompViewportId;
+                            idUxClientFull = config.uxClientFullId;
+                            idUxCompFull = config.uxCompFullId;
+                            
+                            var containerUx = document.getElementById('ux-results-container');
+                            if (containerUx) containerUx.style.display = 'block';
+                            
+                            var btnIa = document.getElementById('btn-gen-ux-ia');
+                            var btnExport = document.getElementById('btn-export-ux');
+                            if (btnIa) btnIa.disabled = false;
+                            if (btnExport) btnExport.disabled = false;
+
+                            // Récupération sécurisée via le serveur (Client)
+                            google.script.run.withSuccessHandler(function(b64) {
+                                var imgClient = document.getElementById('img-ux-client');
+                                if (imgClient && b64) imgClient.src = "data:image/jpeg;base64," + b64;
+                            }).getDriveImageBase64ById(idUxClientViewport);
+
+                            // Récupération sécurisée via le serveur (Concurrent)
+                            google.script.run.withSuccessHandler(function(b64) {
+                                var imgComp = document.getElementById('img-ux-comp');
+                                if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
+                            }).getDriveImageBase64ById(idUxCompViewport);
+
+                            // Restauration des recommandations et de la liste
+                            if (config.dataUxIaFullState) {
+                                try {
                                     var parsedState = JSON.parse(config.dataUxIaFullState);
                                     uxElementsData = parsedState.analyse_elements || [];
                                     if (config.uxRecommandation1) setCeContent('ux-reco-globale-1', config.uxRecommandation1);
                                     if (config.uxRecommandation2) setCeContent('ux-reco-globale-2', config.uxRecommandation2);
-                                    document.getElementById('ux-analysis-wrapper').style.display = 'flex';
                                     
-                                    google.script.run.withSuccessHandler(function(icons) { 
-                                      renderUxList(icons); 
-                                      document.getElementById('btn-save-ux-manual').disabled = false; 
+                                    // Appel asynchrone des icônes avant affichage du bloc
+                                    google.script.run.withSuccessHandler(function(icons) {
+                                        renderUxList(icons);
+                                        
+                                        var wrapper = document.getElementById('ux-analysis-wrapper');
+                                        if (wrapper) wrapper.style.display = 'flex';
+                                        
+                                        var btnSave = document.getElementById('btn-save-ux-manual');
+                                        if (btnSave) btnSave.disabled = false;
+                                        
                                     }).recupererIconesTechBase64();
-                                  } catch (e) {
-                                    console.error("Erreur parsing dataUxIaFullState :", e);
-                                  }
+                                } catch(e) {
+                                    console.log("Erreur parsing dataUxIaFullState : " + e.message);
                                 }
                             }
-                      }
+                        }
+                    }
 
-                      google.script.run
-                          .withSuccessHandler(function(treeData) {
-                              renderTree(treeData);
-                              google.script.run
-                                  .withSuccessHandler(function(savedSelection) {
-                                      applySavedSelection(savedSelection);
-                                      if (savedSelection && savedSelection.length > 0) {
-                                          document.getElementById('dashboardArea').innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Restauration du diagnostic en cours...</div>';
-                                          google.script.run
-                                              .withSuccessHandler(function(data) {
-                                                  renderDashboard(data);
-                                              })
-                                              .withFailureHandler(function(err) {
-                                                  document.getElementById('dashboardArea').innerHTML = '<div class="empty-state" style="color:#d93025">Erreur lors de la restauration : ' + err.message + '</div>';
-                                              })
-                                              .genererDiagnostic(savedSelection);
-                                      }
-                                  })
-                                  .chargerSelectionAnalyse();
-                              hideLoader();
-                          })
-                          .withFailureHandler(handleError)
-                          .recupererArborescenceCluster();
-                  })
-                  .withFailureHandler(handleError)
-                  .chargerConfigurationPreAudit();
-          };
+                    google.script.run
+                        .withSuccessHandler(function(treeData) {
+                            renderTree(treeData);
+                            google.script.run
+                                .withSuccessHandler(function(savedSelection) {
+                                    applySavedSelection(savedSelection);
+                                    if (savedSelection && savedSelection.length > 0) {
+                                        document.getElementById('dashboardArea').innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Restauration du diagnostic en cours...</div>';
+                                        google.script.run
+                                            .withSuccessHandler(function(data) {
+                                                renderDashboard(data);
+                                            })
+                                            .withFailureHandler(function(err) {
+                                                document.getElementById('dashboardArea').innerHTML = '<div class="empty-state" style="color:#d93025">Erreur lors de la restauration : ' + err.message + '</div>';
+                                            })
+                                            .genererDiagnostic(savedSelection);
+                                    }
+                                })
+                                .chargerSelectionAnalyse();
+                            hideLoader();
+                        })
+                        .withFailureHandler(handleError)
+                        .recupererArborescenceCluster();
+                })
+                .withFailureHandler(handleError)
+                .chargerConfigurationPreAudit();
+        };
             // ========================== NAVIGATION ==========================
 
             function switchTab(tab, silently) {
@@ -1566,7 +1574,13 @@
                 // Reconvertir le gras (HTML) en markdown (**)
                 var strongs = clone.querySelectorAll('strong, b');
                 strongs.forEach(function(node) {
-                    node.replaceWith("**" + node.textContent + "**");
+                    var color = node.style.color || "";
+                    // Tolérance pour la détection du code Hexa ou RGB
+                    if (color.indexOf('246, 118, 4') !== -1 || color.indexOf('f67604') !== -1) {
+                        node.replaceWith("*" + node.textContent + "*");
+                    } else {
+                        node.replaceWith("**" + node.textContent + "**");
+                    }
                 });
                 
                 var text = clone.innerText || clone.textContent || "";
@@ -3605,7 +3619,12 @@
             var clone = el.cloneNode(true);
             var strongs = clone.querySelectorAll('strong, b');
             strongs.forEach(function(node) {
-                node.replaceWith("**" + node.textContent + "**");
+                var color = node.style.color || "";
+                if (color.indexOf('246, 118, 4') !== -1 || color.indexOf('f67604') !== -1) {
+                    node.replaceWith("*" + node.textContent + "*");
+                } else {
+                    node.replaceWith("**" + node.textContent + "**");
+                }
             });
             var text = clone.innerText || clone.textContent || "";
             return text.trim();
@@ -3686,14 +3705,18 @@
                         if (recosGlobales.length > 0) setCeContent('ux-reco-globale-1', recosGlobales[0] || "");
                         if (recosGlobales.length > 1) setCeContent('ux-reco-globale-2', recosGlobales[1] || "");
                         
-                        // Afficher le bloc de résultats et recommandations
-                        document.getElementById('ux-analysis-wrapper').style.display = 'flex';
-                        
-                        // Récupérer les icônes pour le rendu
+                        // Récupérer les icônes pour le rendu avant d'afficher le bloc
                         google.script.run.withSuccessHandler(function(icons) {
                             hideLoader();
                             renderUxList(icons);
-                            document.getElementById('btn-save-ux-manual').disabled = false;
+                            
+                            // On affiche le bloc "tout ou rien" une fois que la liste est prête
+                            var wrapper = document.getElementById('ux-analysis-wrapper');
+                            if (wrapper) wrapper.style.display = 'flex';
+                            
+                            var btnSave = document.getElementById('btn-save-ux-manual');
+                            if (btnSave) btnSave.disabled = false;
+                            
                             console.log("=== FIN : lancerAnalyseUXIAFront (Succès) ===");
                         }).recupererIconesTechBase64();
                         
