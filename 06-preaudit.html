@@ -817,13 +817,6 @@
                                 <input type="text" id="contenu-ytg-score-client" placeholder="ex: 75">
                             </div>
                             <div class="col">
-                                <label class="input-label">Score 1.fr</label>
-                                <input type="text" id="contenu-1fr-score-client" placeholder="ex: 80%">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col">
                                 <label class="input-label">URL de l'analyse 1.fr</label>
                                 <input type="text" id="contenu-1fr-url-client" placeholder="Lien vers l'analyse">
                             </div>
@@ -836,6 +829,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div id="extraction-results-client" style="display:none; font-size:12px; background:#f8f9fa; padding:10px; border-radius:4px; margin-top:10px;"></div>
                     </div>
 
                     <!-- COLONNE DROITE : CONCURRENT -->
@@ -861,13 +856,6 @@
                                 <input type="text" id="contenu-ytg-score-comp" placeholder="ex: 75">
                             </div>
                             <div class="col">
-                                <label class="input-label">Score 1.fr</label>
-                                <input type="text" id="contenu-1fr-score-comp" placeholder="ex: 80%">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col">
                                 <label class="input-label">URL de l'analyse 1.fr</label>
                                 <input type="text" id="contenu-1fr-url-comp" placeholder="Lien vers l'analyse">
                             </div>
@@ -880,12 +868,14 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div id="extraction-results-comp" style="display:none; font-size:12px; background:#f8f9fa; padding:10px; border-radius:4px; margin-top:10px;"></div>
                     </div>
                 </div>
 
                 <div style="text-align: center; margin-bottom: 20px;">
                     <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">💾 Enregistrer</button>
-                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse IA comparative</button>
+                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse</button>
                 </div>
 
                 <div id="contenu-results-container" style="display: none;">
@@ -915,7 +905,7 @@
 
                 <div class="continuer-bar" style="margin-top: 25px;">
                     <span id="exportMsgContenu" style="font-size: 12px; font-weight: bold;"></span>
-                    <button class="btn btn-continuer" id="btn-export-contenu" onclick="lancerExportSlidesContenu()">📥 Importer dans Slides & terminer</button>
+                    <button class="btn btn-continuer" id="btn-export-contenu" onclick="lancerExportSlidesContenu()">📥 Importer dans Slides</button>
                 </div>
 
             </div>
@@ -938,6 +928,10 @@
 
             var svgDataClient = null;
             var svgDataComp = null;
+            var extractedYtgClient = null;
+            var extractedYtgComp = null;
+            var extracted1frClient = null;
+            var extracted1frComp = null;
 
             var DRIVE_ICONS_MAPPING = {
                 "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
@@ -1281,8 +1275,11 @@
 
                         // Restauration Client
                         if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
-                        if(config.contenu1frScoreClient) document.getElementById('contenu-1fr-score-client').value = config.contenu1frScoreClient;
                         if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
+
+                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); } catch(e) {} }
+                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); } catch(e) {} }
+                        renderExtractionData('client');
 
                         if (config.contenuStructureClientHtml) setCeContent('ce-contenu-structure-client', config.contenuStructureClient);
                         if (config.contenuYtgClientHtml) setCeContent('ce-contenu-ytg-client', config.contenuYtgClient);
@@ -1290,8 +1287,11 @@
 
                         // Restauration Concurrent
                         if(config.contenuYtgScoreComp) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreComp;
-                        if(config.contenu1frScoreComp) document.getElementById('contenu-1fr-score-comp').value = config.contenu1frScoreComp;
                         if(config.contenu1frUrlComp) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlComp;
+
+                        if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); } catch(e) {} }
+                        if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); } catch(e) {} }
+                        renderExtractionData('comp');
 
                         if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
                         if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
@@ -4136,6 +4136,51 @@
                 .sauvegarderSelectionUX(dataToSave);
         }
 
+        function renderExtractionData(cible) {
+            var el = document.getElementById('extraction-results-' + cible);
+            if(!el) return;
+
+            var ytg = cible === 'client' ? extractedYtgClient : extractedYtgComp;
+            var unfr = cible === 'client' ? extracted1frClient : extracted1frComp;
+
+            if(!ytg && !unfr) {
+                el.style.display = 'none';
+                return;
+            }
+
+            var html = '';
+            
+            if(unfr && unfr.score) {
+                html += '<div style="margin-bottom:8px;"><strong>Score 1.fr :</strong> <span style="color:#1a73e8; font-weight:bold; font-size:14px;">' + unfr.score + '</span></div>';
+            }
+
+            if(ytg && (ytg.suroptimises.length > 0 || ytg.sous_optimises.length > 0)) {
+                html += '<div style="margin-bottom:8px;">';
+                if(ytg.suroptimises.length > 0) {
+                    html += '<div style="margin-bottom:4px;"><strong>🔴 Dangers (Sur-opti) :</strong> ' + ytg.suroptimises.slice(0, 10).join(', ') + '</div>';
+                }
+                if(ytg.sous_optimises.length > 0) {
+                    html += '<div><strong>🔵 Opportunités (Sous-opti) :</strong> ' + ytg.sous_optimises.slice(0, 10).join(', ') + '</div>';
+                }
+                html += '</div>';
+            }
+
+            if(unfr && unfr.audiences && unfr.audiences.length > 0) {
+                html += '<div style="margin-bottom:8px;"><strong>👥 Principales Audiences :</strong><br>';
+                html += unfr.audiences.slice(0,3).map(function(a) { return a.label + " (" + a.pourcentage + ")"; }).join(' | ');
+                html += '</div>';
+            }
+
+            if(unfr && unfr.themes && unfr.themes.length > 0) {
+                html += '<div><strong>📑 Thématiques :</strong><br>';
+                html += unfr.themes.slice(0,5).map(function(t) { return t.theme + " (" + t.rang + ")"; }).join(' | ');
+                html += '</div>';
+            }
+
+            el.innerHTML = html;
+            el.style.display = 'block';
+        }
+
         function initSvgDropzones() {
             var dzClient = document.getElementById('dz-svg-client');
             var dzComp = document.getElementById('dz-svg-comp');
@@ -4154,14 +4199,19 @@
                             reader.onload = function(evt) {
                                 var txt = evt.target.result;
                                 var txtEl = dz.querySelector('.dropzone-text');
+                                
+                                var parsedYtg = extraireDonneesYtg(txt);
+
                                 if (type === 'client') {
                                     svgDataClient = txt;
-                                    document.getElementById('btn-ia-contenu').disabled = false;
-                                    if(txtEl) txtEl.innerHTML = "✅ SVG Client chargé";
+                                    extractedYtgClient = parsedYtg;
+                                    if(txtEl) txtEl.innerHTML = "✅ SVG Client parsé";
+                                    renderExtractionData('client');
                                 } else {
                                     svgDataComp = txt;
-                                    document.getElementById('btn-ia-contenu').disabled = false;
-                                    if(txtEl) txtEl.innerHTML = "✅ SVG Concurrent chargé";
+                                    extractedYtgComp = parsedYtg;
+                                    if(txtEl) txtEl.innerHTML = "✅ SVG Concurrent parsé";
+                                    renderExtractionData('comp');
                                 }
                                 dz.style.borderColor = "#188038";
                                 dz.style.backgroundColor = "#e6f4ea";
@@ -4182,46 +4232,111 @@
             var btn = document.getElementById('btn-save-contenu');
             btn.disabled = true;
             var originalText = btn.innerText;
-            btn.innerText = "⏳ Enregistrement...";
+            btn.innerText = "⏳ Enregistrement & Extraction...";
 
-            var data = {
-                CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
-                
-                CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
-                CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
-                CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
-                CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
-                CONTENU_1FR_SCORE_CLIENT: document.getElementById('contenu-1fr-score-client').value,
-                CONTENU_1FR_URL_CLIENT: document.getElementById('contenu-1fr-url-client').value,
+            var url1frClient = document.getElementById('contenu-1fr-url-client').value.trim();
+            var url1frComp = document.getElementById('contenu-1fr-url-comp').value.trim();
 
-                CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
-                CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
-                CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
-                CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
-                CONTENU_1FR_SCORE_CONCURRENT: document.getElementById('contenu-1fr-score-comp').value,
-                CONTENU_1FR_URL_CONCURRENT: document.getElementById('contenu-1fr-url-comp').value,
+            var appelsAttendus = 0;
+            var appelsTermines = 0;
+            var erreurs1fr = [];
 
-                // Sauvegarde HTML pour le mode édition
-                contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
-                contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
-                contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
-                
-                contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
-                contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
-                contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
-            };
+            if (url1frClient) appelsAttendus++;
+            if (url1frComp) appelsAttendus++;
 
-            google.script.run
-                .withSuccessHandler(function() {
-                    btn.innerText = "✅ Enregistré";
-                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
-                })
-                .withFailureHandler(function(err) {
-                    btn.innerText = "❌ Erreur";
-                    alert("Erreur de sauvegarde : " + err.message);
-                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
-                })
-                .sauvegarderDonneesContenu(data);
+            function verifierSauvegardeFinale() {
+                if (appelsTermines === appelsAttendus) {
+                    renderExtractionData('client');
+                    renderExtractionData('comp');
+
+                    var data = {
+                        CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
+                        
+                        CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
+                        CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
+                        CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
+                        CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
+                        CONTENU_1FR_URL_CLIENT: url1frClient,
+                        CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
+                        CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
+
+                        CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
+                        CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
+                        CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
+                        CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
+                        CONTENU_1FR_URL_CONCURRENT: url1frComp,
+                        CONTENU_YTG_DATA_CONCURRENT: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
+                        CONTENU_1FR_DATA_CONCURRENT: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
+
+                        // Sauvegarde HTML pour le mode édition
+                        contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
+                        contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
+                        contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
+                        
+                        contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
+                        contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
+                        contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
+                    };
+
+                    google.script.run
+                        .withSuccessHandler(function() {
+                            btn.innerText = "✅ Enregistré";
+                            document.getElementById('btn-ia-contenu').disabled = false;
+                            if (erreurs1fr.length > 0) {
+                                alert("Sauvegardé, mais attention :\n" + erreurs1fr.join("\n"));
+                            }
+                            setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                        })
+                        .withFailureHandler(function(err) {
+                            btn.innerText = "❌ Erreur";
+                            alert("Erreur de sauvegarde : " + err.message);
+                            setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                        })
+                        .sauvegarderDonneesContenu(data);
+                }
+            }
+
+            if (url1frClient) {
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if (res.success) {
+                            extracted1frClient = res.data;
+                        } else {
+                            erreurs1fr.push("Client 1.fr : " + res.error);
+                        }
+                        appelsTermines++;
+                        verifierSauvegardeFinale();
+                    })
+                    .withFailureHandler(function(err) {
+                        erreurs1fr.push("Erreur critique 1.fr Client : " + err.message);
+                        appelsTermines++;
+                        verifierSauvegardeFinale();
+                    })
+                    .analyser1frBackend(url1frClient);
+            }
+
+            if (url1frComp) {
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if (res.success) {
+                            extracted1frComp = res.data;
+                        } else {
+                            erreurs1fr.push("Concurrent 1.fr : " + res.error);
+                        }
+                        appelsTermines++;
+                        verifierSauvegardeFinale();
+                    })
+                    .withFailureHandler(function(err) {
+                        erreurs1fr.push("Erreur critique 1.fr Concurrent : " + err.message);
+                        appelsTermines++;
+                        verifierSauvegardeFinale();
+                    })
+                    .analyser1frBackend(url1frComp);
+            }
+
+            if (appelsAttendus === 0) {
+                verifierSauvegardeFinale();
+            }
         }
 
         function lancerAnalyseContenuIA() {

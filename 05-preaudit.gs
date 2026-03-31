@@ -139,20 +139,22 @@ function chargerConfigurationPreAudit() {
         contenuYtgClient: props['CONTENU_YTG_CLIENT'] || "",
         contenuYtgClientHtml: props['CONTENU_YTG_CLIENT_HTML'] || "",
         contenuYtgScoreClient: props['CONTENU_YTG_SCORE_CLIENT'] || "",
+        contenuYtgDataClient: props['CONTENU_YTG_DATA_CLIENT'] || "",
         contenu1frClient: props['CONTENU_1FR_CLIENT'] || "",
         contenu1frClientHtml: props['CONTENU_1FR_CLIENT_HTML'] || "",
-        contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
         contenu1frUrlClient: props['CONTENU_1FR_URL_CLIENT'] || "",
+        contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
         
         contenuStructureConcurrent: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
         contenuStructureConcurrentHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
         contenuYtgConcurrent: props['CONTENU_YTG_CONCURRENT'] || "",
         contenuYtgConcurrentHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
         contenuYtgScoreConcurrent: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
+        contenuYtgDataComp: props['CONTENU_YTG_DATA_CONCURRENT'] || "",
         contenu1frConcurrent: props['CONTENU_1FR_CONCURRENT'] || "",
         contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
-        contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
-        contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || ""
+        contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || "",
+        contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -169,20 +171,22 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
             'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
             'CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
+            'CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
             'CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
             'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
-            'CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
             'CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
+            'CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
             
             'CONTENU_STRUCTURE_CONCURRENT': data.CONTENU_STRUCTURE_CONCURRENT || "",
             'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureCompHtml || "",
             'CONTENU_YTG_CONCURRENT': data.CONTENU_YTG_CONCURRENT || "",
             'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgCompHtml || "",
             'CONTENU_YTG_SCORE_CONCURRENT': data.CONTENU_YTG_SCORE_CONCURRENT || "",
+            'CONTENU_YTG_DATA_CONCURRENT': data.CONTENU_YTG_DATA_CONCURRENT || "",
             'CONTENU_1FR_CONCURRENT': data.CONTENU_1FR_CONCURRENT || "",
             'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frCompHtml || "",
-            'CONTENU_1FR_SCORE_CONCURRENT': data.CONTENU_1FR_SCORE_CONCURRENT || "",
-            'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || ""
+            'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || "",
+            'CONTENU_1FR_DATA_CONCURRENT': data.CONTENU_1FR_DATA_CONCURRENT || ""
         };
         
         PropertiesService.getScriptProperties().setProperties(propsToSet);
