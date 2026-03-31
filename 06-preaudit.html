@@ -1294,12 +1294,13 @@
 
                         var hasExtractionData = false;
 
-                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) {} }
-                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) {} }
+                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Client"); } }
+                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Client"); } }
                         renderExtractionData('client');
 
-                        if(config.contenuYtgDataConcurrent) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataConcurrent); hasExtractionData = true; } catch(e) {} }
-                        if(config.contenu1frDataConcurrent) { try { extracted1frComp = JSON.parse(config.contenu1frDataConcurrent); hasExtractionData = true; } catch(e) {} }
+                        // Correction appliquée ici : config.contenuYtgDataComp & config.contenu1frDataComp
+                        if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Comp"); } }
+                        if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Comp"); } }
                         renderExtractionData('comp');
 
                         if (hasExtractionData) {
@@ -1349,7 +1350,6 @@
                 .withFailureHandler(handleError)
                 .chargerConfigurationPreAudit();
         };
-            
         // ========================== NAVIGATION ==========================
 
             function switchTab(tab, silently) {
@@ -4158,50 +4158,82 @@
         }
 
         function renderExtractionData(cible) {
+            console.log("=== DÉBUT : renderExtractionData (" + cible + ") ===");
             var el = document.getElementById('extraction-results-' + cible);
-            if(!el) return;
+            if (!el) return;
 
             var ytg = cible === 'client' ? extractedYtgClient : extractedYtgComp;
             var unfr = cible === 'client' ? extracted1frClient : extracted1frComp;
 
-            if(!ytg && !unfr) {
+            if (!ytg && !unfr) {
                 el.innerHTML = '<div style="color:#5f6368; font-style:italic;">Aucune donnée extraite.</div>';
                 return;
             }
 
             var html = '';
-            
-            if(unfr && unfr.score) {
-                html += '<div style="margin-bottom:8px;"><strong>Score 1.fr :</strong> <span style="color:#1a73e8; font-weight:bold; font-size:14px;">' + unfr.score + '</span></div>';
+
+            // --- BLOC ANALYSE YOURTEXT.GURU ---
+            if (ytg && ytg.mots_presents > 0) {
+                html += '<div style="margin-bottom: 20px;">';
+                html += '<h4 style="margin: 0 0 10px 0; font-size: 14px; color: #08133B; border-left: 3px solid #1a73e8; padding-left: 8px;">Analyse Yourtext.Guru</h4>';
+                html += '<table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff; border: 1px solid #dadce0;">';
+                html += '<thead><tr style="background:#f8f9fa;">';
+                html += '<th style="padding:8px; text-align:left; border: 1px solid #dadce0; color:#5f6368;">Niveau d\'optimisation</th>';
+                html += '<th style="padding:8px; text-align:left; border: 1px solid #dadce0; color:#5f6368;">Mots-clés</th>';
+                html += '</tr></thead><tbody>';
+
+                var rows = [
+                    { label: 'Dépassement critique', icon: '⚪', data: ytg.depassement, color: '#3c4043' },
+                    { label: 'Sur-optimisation', icon: '🔴', data: ytg.suroptimisation, color: '#d93025' },
+                    { label: 'Optimisation forte', icon: '🟠', data: ytg.optimisation_forte, color: '#e67c73' },
+                    { label: 'Optimisation normale', icon: '🟢', data: ytg.optimisation_normale, color: '#188038' },
+                    { label: 'Sous-optimisation', icon: '🔵', data: ytg.sous_optimisation, color: '#1a73e8' },
+                    { label: 'Absents prioritaires (Top)', icon: '⚠️', data: ytg.absents_top, color: '#b06000' },
+                    { label: 'Absents secondaires', icon: '👻', data: ytg.absents_traine, color: '#9aa0a6' }
+                ];
+
+                rows.forEach(function(row) {
+                    var words = (row.data && row.data.length > 0) ? row.data.join(', ') : '-';
+                    html += '<tr>';
+                    html += '<td style="padding:8px; border: 1px solid #dadce0; font-weight:600; width:180px; color:' + row.color + ';">' + row.icon + ' ' + row.label + '</td>';
+                    html += '<td style="padding:8px; border: 1px solid #dadce0; line-height:1.4;">' + words + '</td>';
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div>';
             }
 
-            if(ytg && (ytg.suroptimises.length > 0 || ytg.sous_optimises.length > 0)) {
-                html += '<div style="margin-bottom:8px;">';
-                if(ytg.suroptimises.length > 0) {
-                    html += '<div style="margin-bottom:4px;"><strong>🔴 Dangers (Sur-opti) :</strong> ' + ytg.suroptimises.slice(0, 10).join(', ') + '</div>';
+            // Séparateur visuel
+            if (ytg && unfr) {
+                html += '<hr style="border:0; border-top:1px dashed #dadce0; margin:20px 0;">';
+            }
+
+            // --- BLOC ANALYSE 1.FR ---
+            if (unfr && (unfr.score || (unfr.audiences && unfr.audiences.length > 0))) {
+                html += '<div>';
+                html += '<h4 style="margin: 0 0 10px 0; font-size: 14px; color: #08133B; border-left: 3px solid #1a73e8; padding-left: 8px;">Analyse 1.fr</h4>';
+                
+                if (unfr.score) {
+                    html += '<div style="margin-bottom:12px; font-size:13px;"><strong>Score sémantique :</strong> <span style="background:#e8f0fe; color:#1a73e8; padding:3px 8px; border-radius:4px; font-weight:bold; font-size:15px;">' + unfr.score + '</span></div>';
                 }
-                if(ytg.sous_optimises.length > 0) {
-                    html += '<div><strong>🔵 Opportunités (Sous-opti) :</strong> ' + ytg.sous_optimises.slice(0, 10).join(', ') + '</div>';
+
+                if (unfr.audiences && unfr.audiences.length > 0) {
+                    html += '<div style="margin-bottom:12px; font-size:12px;"><strong>👥 Audiences cibles :</strong> ' + 
+                            unfr.audiences.slice(0,3).map(function(a) { return a.label + " (" + a.pourcentage + ")"; }).join(' | ') + 
+                            '</div>';
                 }
-                html += '</div>';
-            }
 
-            if(unfr && unfr.audiences && unfr.audiences.length > 0) {
-                html += '<div style="margin-bottom:8px;"><strong>👥 Principales Audiences :</strong><br>';
-                html += unfr.audiences.slice(0,3).map(function(a) { return a.label + " (" + a.pourcentage + ")"; }).join(' | ');
-                html += '</div>';
-            }
-
-            if(unfr && unfr.themes && unfr.themes.length > 0) {
-                html += '<div><strong>📑 Thématiques :</strong><br>';
-                html += unfr.themes.slice(0,5).map(function(t) { return t.theme + " (" + t.rang + ")"; }).join(' | ');
+                if (unfr.themes && unfr.themes.length > 0) {
+                    html += '<div style="font-size:12px;"><strong>📑 Thématiques clés :</strong> ' + 
+                            unfr.themes.slice(0,5).map(function(t) { return t.theme + " (" + t.rang + ")"; }).join(' | ') + 
+                            '</div>';
+                }
                 html += '</div>';
             }
 
             el.innerHTML = html;
-            
-            // Afficher le wrapper global si des données sont injectées
             document.getElementById('extraction-results-wrapper').style.display = 'flex';
+            console.log("=== FIN : renderExtractionData (" + cible + ") ===");
         }
 
         function initSvgDropzones() {
@@ -4499,152 +4531,111 @@
         }
 
         function extraireDonneesYtg(svgString) {
-            console.log("=== DÉBUT extraireDonneesYtg ===");
+            var resultats = {
+                depassement: [],
+                suroptimisation: [],
+                optimisation_forte: [],
+                optimisation_normale: [],
+                sous_optimisation: [],
+                absents_top: [],
+                absents_traine: [],
+                mots_presents: 0
+            };
+
+            function extractYValues(pathD, limitN) {
+                if (!pathD) return [];
+                var yValues = [];
+                // Regex pour matcher les commandes M (MoveTo) et L (LineTo)
+                // Ex: "M 10 20 L 30 40 L 50 60"
+                // Match capture les X et Y, on s'intéresse au Y (capture group 2)
+                var regex = /[ML]\s*-?[\d.]+\s+(-?[\d.]+)/g;
+                var match;
+                while ((match = regex.exec(pathD)) !== null) {
+                    yValues.push(parseFloat(match[1]));
+                    if (limitN && yValues.length === limitN) {
+                        break;
+                    }
+                }
+                return yValues;
+            }
+
             try {
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(svgString, "image/svg+xml");
 
-                // 1. Extraire les mots (Axe X)
-                var motsNodes = doc.querySelectorAll('g.apexcharts-xaxis-texts-g text, g.apexcharts-xaxis text');
-                if (motsNodes.length === 0) {
-                    console.log("Sélecteur ApexCharts des mots non trouvé, fallback sur tous les <text>.");
-                    motsNodes = doc.querySelectorAll('text');
+                // 1. Extraction des mots
+                var motsNodes = doc.querySelectorAll('.highcharts-xaxis-labels text');
+                var mots = Array.from(motsNodes).map(function(n) { return n.textContent.trim(); }).filter(function(m) { return m.length > 0; });
+                var N = mots.length;
+
+                if (N === 0) {
+                    console.log("Aucun mot trouvé dans le SVG.");
+                    return resultats;
+                }
+                
+                resultats.mots_presents = N;
+                console.log("Mots détectés : \u00a0" + N);
+
+                // 2. Extraction de la courbe client (Série 4)
+                var pathClientNode = doc.querySelector('.highcharts-series-4 path.highcharts-graph[stroke="#000000"]') || 
+                                     doc.querySelector('.highcharts-series-4 path.highcharts-graph[stroke="#000"]');
+                if (!pathClientNode) {
+                    console.log("Courbe client introuvable dans la série 4.");
+                    return resultats;
+                }
+                
+                var clientY = extractYValues(pathClientNode.getAttribute('d'), N);
+                if (clientY.length !== N) {
+                    console.log("Attention :\u00a0Incohérence entre le nombre de mots (" + N + ") et de points client (" + clientY.length + ").");
+                } else {
+                    console.log("Points client extraits :\u00a0" + clientY.length);
                 }
 
-                var mots = [];
-                motsNodes.forEach(function(node) {
-                    var texte = node.textContent.trim();
-                    if (!texte || texte.length === 0) return;
-                    
-                    var x = parseFloat(node.getAttribute('x'));
-                    var transform = node.getAttribute('transform');
-                    if (isNaN(x) && transform) {
-                        var m = transform.match(/translate\(([\d.]+)/);
-                        if (m) x = parseFloat(m[1]);
-                    }
-                    if (isNaN(x)) x = 0;
+                // 3. Extraction des zones d'optimisation
+                var getZoneY = function(selectorClass) {
+                    var zoneNode = doc.querySelector('.' + selectorClass + ' path.highcharts-area');
+                    if (!zoneNode) return [];
+                    return extractYValues(zoneNode.getAttribute('d'), N);
+                };
 
-                    var y = parseFloat(node.getAttribute('y'));
-                    if (isNaN(y) && transform) {
-                        var mY = transform.match(/translate\([\d.]+\s*,\s*([\d.]+)\)/);
-                        if (mY) y = parseFloat(mY[1]);
-                    }
-                    if (isNaN(y)) y = 0;
+                var rougeY = getZoneY('highcharts-series-0');
+                var orangeY = getZoneY('highcharts-series-1');
+                var vertY = getZoneY('highcharts-series-2');
+                var bleuY = getZoneY('highcharts-series-3');
+                
+                console.log("Points zone rouge :\u00a0" + rougeY.length);
+                console.log("Points zone bleue :\u00a0" + bleuY.length);
 
-                    if (texte.length > 1) {
-                        mots.push({ texte: texte, x: x, y: y });
-                    }
-                });
-
-                if (mots.length === 0) return { suroptimises: [], sous_optimises: [], mots_presents: 0 };
-
-                var yCounts = {};
-                mots.forEach(function(m) {
-                    var yRounded = Math.round(m.y / 10) * 10;
-                    yCounts[yRounded] = (yCounts[yRounded] || 0) + 1;
-                });
-                var yKeys = Object.keys(yCounts);
-                var bestY = yKeys.length > 0 ? yKeys.reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b }) : 0;
-                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 15 });
-                motsFinaux.sort(function(a, b) { return a.x - b.x });
-                console.log("✅ Mots extraits (" + motsFinaux.length + ").");
-
-                // 2. Extraire la ligne noire (Votre contenu)
-                var blackPoints = [];
-                var circles = Array.from(doc.querySelectorAll('circle'));
-                circles.forEach(function(c) {
-                    var cx = parseFloat(c.getAttribute('cx'));
-                    var cy = parseFloat(c.getAttribute('cy'));
-                    if (!isNaN(cx) && !isNaN(cy)) blackPoints.push({x: cx, y: cy});
-                });
-
-                var blackPaths = Array.from(doc.querySelectorAll('path')).filter(function(p) {
-                    var stroke = (p.getAttribute('stroke') || "").toLowerCase();
-                    var fill = (p.getAttribute('fill') || "").toLowerCase();
-                    var cls = (p.getAttribute('class') || "").toLowerCase();
-                    return stroke === '#000000' || stroke === 'black' || stroke === '#000' ||
-                           fill === '#000000' || fill === 'black' || fill === '#000' ||
-                           cls.indexOf('apexcharts-line-series') > -1;
-                });
-
-                blackPaths.forEach(function(p) {
-                    var d = p.getAttribute('d');
-                    var coordsRegex = /[ML]\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/g;
-                    var match;
-                    while ((match = coordsRegex.exec(d)) !== null) {
-                        blackPoints.push({ x: parseFloat(match[1]), y: parseFloat(match[2]) });
-                    }
-                });
-
-                if (blackPoints.length === 0) {
-                    console.log("❌ Erreur : aucun point (cx, cy) extrait du SVG.");
-                    return { suroptimises: [], sous_optimises: [], mots_presents: motsFinaux.length };
+                if (rougeY.length !== N || bleuY.length !== N) {
+                    console.log("Attention :\u00a0Certaines zones d'optimisation n'ont pas pu être extraites correctement.");
+                    return resultats;
                 }
 
-                // 3. Extraire les zones de couleurs
-                var dataPaths = Array.from(doc.querySelectorAll('path')).filter(function(p) {
-                    var fill = (p.getAttribute('fill') || "").toLowerCase();
-                    if (!fill || fill === 'none' || fill === 'transparent' || fill === '#000000' || fill === 'black' || fill === '#000' || fill === '#ffffff' || fill === 'white') return false;
-                    var d = p.getAttribute('d') || "";
-                    var lCount = (d.match(/L/g) || []).length;
-                    return lCount > 5;
-                });
-
-                var areas = dataPaths.map(function(p) {
-                    var d = p.getAttribute('d');
-                    var pts = [];
-                    var coordsRegex = /[ML]\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/g;
-                    var match;
-                    while ((match = coordsRegex.exec(d)) !== null) {
-                        pts.push({ x: parseFloat(match[1]), y: parseFloat(match[2]) });
-                    }
-                    return pts;
-                });
-
-                var resultats = { suroptimises: [], sous_optimises: [], mots_presents: motsFinaux.length };
-
-                // 4. Analyse par mots (Topographie)
-                motsFinaux.forEach(function(mot) {
-                    var ptNoir = blackPoints.reduce(function(prev, curr) { 
-                        return Math.abs(curr.x - mot.x) < Math.abs(prev.x - mot.x) ? curr : prev 
-                    });
-                    if (Math.abs(ptNoir.x - mot.x) > 20) return; 
+                // 4. Comparaison algorithmique par index (Y = 0 est en haut)
+                for (var i = 0; i < N; i++) {
+                    var mot = mots[i];
+                    var yCli = clientY[i];
+                    var yRouge = rougeY[i];
+                    var yBleu = bleuY[i];
                     
-                    var cy = ptNoir.y;
-                    var yTops = [];
-                    areas.forEach(function(pts) {
-                        var cands = pts.filter(function(p) { return Math.abs(p.x - mot.x) <= 3; });
-                        if (cands.length === 0) {
-                            var closest = pts.reduce(function(prev, curr) { return Math.abs(curr.x - mot.x) < Math.abs(prev.x - mot.x) ? curr : prev });
-                            cands = pts.filter(function(p) { return Math.abs(p.x - closest.x) <= 0.1; });
-                        }
-                        if (cands.length > 0) {
-                            yTops.push(Math.min.apply(null, cands.map(function(c) { return c.y; })));
-                        }
-                    });
+                    if (yCli === undefined || yRouge === undefined || yBleu === undefined) continue;
 
-                    if (yTops.length >= 4) {
-                        yTops.sort(function(a, b) { return a - b; });
-                        var seuilSuropti = yTops[1] + 1;
-                        var seuilSousopti = yTops[3] - 1;
-
-                        if (cy <= seuilSuropti) resultats.suroptimises.push(mot.texte);
-                        if (cy >= seuilSousopti) resultats.sous_optimises.push(mot.texte);
+                    // Les valeurs nulles (bas du graphe) sont à 248. 
+                    // Si yCli <= yRouge => il a atteint ou dépassé (vers le haut) la zone rouge.
+                    if (yCli <= yRouge) {
+                        resultats.suroptimises.push(mot);
+                    } else if (yCli >= yBleu) {
+                        // S'il est en dessous (ou égal) à la zone bleue (vers le bas).
+                        resultats.sous_optimises.push(mot);
                     }
-                });
+                }
 
-                resultats.suroptimises = resultats.suroptimises.filter(function(v, i, a) { return a.indexOf(v) === i });
-                resultats.sous_optimises = resultats.sous_optimises.filter(function(v, i, a) { return a.indexOf(v) === i });
-
-                console.log("✅ Suropti : " + resultats.suroptimises.join(', '));
-                console.log("✅ Sous-opti : " + resultats.sous_optimises.join(', '));
-                console.log("=== FIN extraireDonneesYtg (Succès) ===");
-
+                console.log("Analyse SVG terminée avec succès.");
                 return resultats;
 
             } catch (e) {
-                console.error("❌ Erreur dans extraireDonneesYtg :", e);
-                return { suroptimises: [], sous_optimises: [], mots_presents: 0, erreur: true, message: e.message };
+                console.log("Erreur lors de l'extraction des données SVG :\u00a0" + e.message);
+                return resultats;
             }
         }
 
