@@ -1451,7 +1451,6 @@ function scrapeUrlsParallel(urls) {
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     ];
-
     // Création du tableau de requêtes pour UrlFetchApp.fetchAll
     var requests = urls.map(function(url) {
         return {
@@ -1467,21 +1466,19 @@ function scrapeUrlsParallel(urls) {
             }
         };
     });
-
+    
     var results = [];
     try {
         // Exécution massive en parallèle (extrêmement rapide)
         var responses = UrlFetchApp.fetchAll(requests);
-        
         responses.forEach(function(response, index) {
             var url = urls[index];
             if (response.getResponseCode() === 200) {
                 var html = response.getContentText();
                 var analysis = analyzePageContent(html);
                 
-                // Troncature pour ne pas exploser la fenêtre contextuelle (token limit) de Gemini
+                // SUPPRESSION DE LA TRONCATURE : On envoie le texte intégral pour Gemini 2.5 Pro
                 var cleanText = analysis.cleaned_html;
-                if (cleanText.length > 3000) cleanText = cleanText.substring(0, 3000) + "...";
 
                 results.push({
                     url: url,

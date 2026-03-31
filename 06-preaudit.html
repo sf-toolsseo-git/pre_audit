@@ -4457,9 +4457,33 @@
         function lancerAnalyseContenuIA() {
             var btn = document.getElementById('btn-ia-contenu');
             btn.disabled = true;
-            showLoader("Génération de l'analyse sémantique IA (Scraping & Analyse en cours)...");
+            
+            // 1. Mise en place du loader évolutif
+            var loader = document.getElementById('loader');
+            loader.style.display = 'flex';
+            var loaderMsg = document.getElementById('loaderMsg');
+            
+            var steps = [
+                "1/3 : Scraping des pages client et concurrent...",
+                "2/3 : Compilation des données sémantiques (YTG & 1.fr)...",
+                "3/3 : Rédaction de l'analyse par l'IA (cela peut prendre quelques secondes)...",
+                "Finalisation en cours..."
+            ];
+            
+            var stepIndex = 0;
+            loaderMsg.innerText = steps[0];
+            
+            var stepTimer = setInterval(function() {
+                stepIndex++;
+                if (stepIndex < steps.length - 1) {
+                    loaderMsg.innerText = steps[stepIndex];
+                } else {
+                    loaderMsg.innerText = steps[steps.length - 1];
+                    clearInterval(stepTimer);
+                }
+            }, 7000); // Le message évolue toutes les 7 secondes
 
-            // Récupération des URLs actuelles dans les champs (en cas de modification)
+            // 2. Récupération des URLs actuelles dans les champs (en cas de modification manuelle)
             var urlClient = document.getElementById('contenu-url-client').value.trim();
             var urlComp = document.getElementById('contenu-url-comp').value.trim();
             var ytgCible = document.getElementById('contenu-ytg-cible').value.trim();
@@ -4470,21 +4494,24 @@
             ytgClientData.cible = ytgCible;
 
             var unfrClientData = extracted1frClient || {};
-            // Le score 1.fr est déjà dans l'objet s'il a été récupéré à l'étape précédente
+            unfrClientData.score_saisi = document.getElementById('contenu-1fr-score-client') ? document.getElementById('contenu-1fr-score-client').value : "";
 
             var ytgCompData = extractedYtgComp || {};
             ytgCompData.score_reel = document.getElementById('contenu-ytg-score-comp').value;
             ytgCompData.cible = ytgCible;
 
             var unfrCompData = extracted1frComp || {};
+            unfrCompData.score_saisi = document.getElementById('contenu-1fr-score-comp') ? document.getElementById('contenu-1fr-score-comp').value : "";
 
+            // 3. Lancement de l'analyse
             google.script.run
                 .withSuccessHandler(function(res) {
+                    clearInterval(stepTimer);
                     hideLoader();
                     btn.disabled = false;
                     
                     if (res && res.success) {
-                        // Injection des réponses dans le HTML avec formatage gras orange
+                        // Injection des réponses dans le HTML avec formatage gras orange (*mot*) via setCeContent
                         if (res.data.client) {
                             setCeContent('ce-contenu-structure-client', res.data.client.structure || "");
                             setCeContent('ce-contenu-ytg-client', res.data.client.ytg || "");
@@ -4503,6 +4530,7 @@
                     }
                 })
                 .withFailureHandler(function(err) {
+                    clearInterval(stepTimer);
                     hideLoader();
                     btn.disabled = false;
                     alert("Erreur critique serveur : " + err.message);
