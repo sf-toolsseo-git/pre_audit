@@ -4160,20 +4160,26 @@
         function renderExtractionData(cible) {
             console.log("=== DÉBUT : renderExtractionData (" + cible + ") ===");
             var el = document.getElementById('extraction-results-' + cible);
-            if (!el) return;
+            if (!el) {
+                console.log("Élément d'affichage introuvable pour : " + cible);
+                return;
+            }
 
             var ytg = cible === 'client' ? extractedYtgClient : extractedYtgComp;
             var unfr = cible === 'client' ? extracted1frClient : extracted1frComp;
 
             if (!ytg && !unfr) {
                 el.innerHTML = '<div style="color:#5f6368; font-style:italic;">Aucune donnée extraite.</div>';
+                console.log("Aucune donnée YTG ou 1.fr pour : " + cible);
                 return;
             }
 
             var html = '';
 
             // --- BLOC ANALYSE YOURTEXT.GURU ---
-            if (ytg && ytg.mots_presents > 0) {
+            if (ytg && (ytg.mots_presents > 0 || ytg.mots_absents)) {
+                console.log("Données YTG détectées, préparation du tableau pour " + cible);
+
                 html += '<div style="margin-bottom: 20px;">';
                 html += '<h4 style="margin: 0 0 10px 0; font-size: 14px; color: #08133B; border-left: 3px solid #1a73e8; padding-left: 8px;">Analyse Yourtext.Guru</h4>';
                 html += '<table style="width:100%; border-collapse:collapse; font-size:12px; background:#fff; border: 1px solid #dadce0;">';
@@ -4182,34 +4188,73 @@
                 html += '<th style="padding:8px; text-align:left; border: 1px solid #dadce0; color:#5f6368;">Mots-clés</th>';
                 html += '</tr></thead><tbody>';
 
+                // Sécurité : initialise les tableaux s'ils sont indéfinis (données anciennes)
+                function mergeAndFormat(obli, enri) {
+                    obli = obli || [];
+                    enri = enri || [];
+                    var formattedObli = obli.map(function(m) { return "<strong>" + m + "</strong>"; });
+                    var combined = formattedObli.concat(enri);
+                    return combined.length > 0 ? combined.join(', ') : '-';
+                }
+
                 var rows = [
-                    { label: 'Dépassement critique', icon: '⚪', data: ytg.depassement, color: '#3c4043' },
-                    { label: 'Sur-optimisation', icon: '🔴', data: ytg.suroptimisation, color: '#d93025' },
-                    { label: 'Optimisation forte', icon: '🟠', data: ytg.optimisation_forte, color: '#e67c73' },
-                    { label: 'Optimisation normale', icon: '🟢', data: ytg.optimisation_normale, color: '#188038' },
-                    { label: 'Sous-optimisation', icon: '🔵', data: ytg.sous_optimisation, color: '#1a73e8' },
-                    { label: 'Absents prioritaires (Top)', icon: '⚠️', data: ytg.absents_top, color: '#b06000' },
-                    { label: 'Absents secondaires', icon: '👻', data: ytg.absents_traine, color: '#9aa0a6' }
+                    { 
+                        label: 'Dépassement critique', 
+                        icon: '⚪', 
+                        data: mergeAndFormat(ytg.depassement_obligatoires, ytg.depassement_enrichissement), 
+                        color: '#3c4043' 
+                    },
+                    { 
+                        label: 'Sur-optimisation', 
+                        icon: '🔴', 
+                        data: mergeAndFormat(ytg.suroptimisation_obligatoires, ytg.suroptimisation_enrichissement), 
+                        color: '#d93025' 
+                    },
+                    { 
+                        label: 'Optimisation forte', 
+                        icon: '🟠', 
+                        data: mergeAndFormat(ytg.optimisation_forte_obligatoires, ytg.optimisation_forte_enrichissement), 
+                        color: '#e67c73' 
+                    },
+                    { 
+                        label: 'Optimisation normale', 
+                        icon: '🟢', 
+                        data: mergeAndFormat(ytg.optimisation_normale_obligatoires, ytg.optimisation_normale_enrichissement), 
+                        color: '#188038' 
+                    },
+                    { 
+                        label: 'Sous-optimisation', 
+                        icon: '🔵', 
+                        data: mergeAndFormat(ytg.sous_optimisation_obligatoires, ytg.sous_optimisation_enrichissement), 
+                        color: '#1a73e8' 
+                    },
+                    { 
+                        label: 'Absents prioritaires (Top)', 
+                        icon: '⚠️', 
+                        data: (ytg.absents_obligatoires && ytg.absents_obligatoires.length > 0) ? ytg.absents_obligatoires.join(', ') : '-', 
+                        color: '#b06000' 
+                    },
+                    { 
+                        label: 'Absents secondaires', 
+                        icon: '👻', 
+                        data: (ytg.absents_enrichissement && ytg.absents_enrichissement.length > 0) ? ytg.absents_enrichissement.join(', ') : '-', 
+                        color: '#9aa0a6' 
+                    }
                 ];
 
                 rows.forEach(function(row) {
-                    var words = (row.data && row.data.length > 0) ? row.data.join(', ') : '-';
                     html += '<tr>';
                     html += '<td style="padding:8px; border: 1px solid #dadce0; font-weight:600; width:180px; color:' + row.color + ';">' + row.icon + ' ' + row.label + '</td>';
-                    html += '<td style="padding:8px; border: 1px solid #dadce0; line-height:1.4;">' + words + '</td>';
+                    html += '<td style="padding:8px; border: 1px solid #dadce0; line-height:1.4;">' + row.data + '</td>';
                     html += '</tr>';
                 });
 
                 html += '</tbody></table></div>';
             }
 
-            // Séparateur visuel
-            if (ytg && unfr) {
-                html += '<hr style="border:0; border-top:1px dashed #dadce0; margin:20px 0;">';
-            }
-
             // --- BLOC ANALYSE 1.FR ---
             if (unfr && (unfr.score || (unfr.audiences && unfr.audiences.length > 0))) {
+                console.log("Données 1.fr détectées pour " + cible);
                 html += '<div>';
                 html += '<h4 style="margin: 0 0 10px 0; font-size: 14px; color: #08133B; border-left: 3px solid #1a73e8; padding-left: 8px;">Analyse 1.fr</h4>';
                 
@@ -4232,7 +4277,10 @@
             }
 
             el.innerHTML = html;
-            document.getElementById('extraction-results-wrapper').style.display = 'flex';
+            var wrapper = document.getElementById('extraction-results-wrapper');
+            if (wrapper) {
+                wrapper.style.display = 'flex';
+            }
             console.log("=== FIN : renderExtractionData (" + cible + ") ===");
         }
 
@@ -4531,110 +4579,191 @@
         }
 
         function extraireDonneesYtg(svgString) {
+            console.log("=== ÉTAPE 1 : SÉPARATION GAUCHE / DROITE ===");
+
             var resultats = {
-                depassement: [],
-                suroptimisation: [],
-                optimisation_forte: [],
-                optimisation_normale: [],
-                sous_optimisation: [],
-                absents_top: [],
-                absents_traine: [],
-                mots_presents: 0
+                termes_obligatoires: [],
+                termes_enrichissement: [],
+                
+                presents_obligatoires: [],
+                presents_enrichissement: [],
+                absents_obligatoires: [],
+                absents_enrichissement: [],
+                
+                depassement_obligatoires: [],
+                depassement_enrichissement: [],
+                suroptimisation_obligatoires: [],
+                suroptimisation_enrichissement: [],
+                optimisation_forte_obligatoires: [],
+                optimisation_forte_enrichissement: [],
+                optimisation_normale_obligatoires: [],
+                optimisation_normale_enrichissement: [],
+                sous_optimisation_obligatoires: [],
+                sous_optimisation_enrichissement: []
             };
 
-            function extractYValues(pathD, limitN) {
+            // Utilitaire : extraire les paires (X,Y) d'une chaîne de tracé SVG
+            function extractPointsFromPath(pathD) {
                 if (!pathD) return [];
-                var yValues = [];
-                // Regex pour matcher les commandes M (MoveTo) et L (LineTo)
-                // Ex: "M 10 20 L 30 40 L 50 60"
-                // Match capture les X et Y, on s'intéresse au Y (capture group 2)
-                var regex = /[ML]\s*-?[\d.]+\s+(-?[\d.]+)/g;
+                var points = [];
+                var regex = /[ML]\s*(-?[\d.]+)\s+(-?[\d.]+)/g;
                 var match;
                 while ((match = regex.exec(pathD)) !== null) {
-                    yValues.push(parseFloat(match[1]));
-                    if (limitN && yValues.length === limitN) {
-                        break;
-                    }
+                    points.push({
+                        x: parseFloat(match[1]),
+                        y: parseFloat(match[2])
+                    });
                 }
-                return yValues;
+                return points;
             }
 
             try {
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(svgString, "image/svg+xml");
 
-                // 1. Extraction des mots
-                var motsNodes = doc.querySelectorAll('.highcharts-xaxis-labels text');
-                var mots = Array.from(motsNodes).map(function(n) { return n.textContent.trim(); }).filter(function(m) { return m.length > 0; });
-                var N = mots.length;
+                // --- ÉTAPE 1 : SÉPARATION GAUCHE / DROITE ---
+                var plotLine = doc.querySelector('.highcharts-plot-line');
+                var separateurX = 0;
 
-                if (N === 0) {
-                    console.log("Aucun mot trouvé dans le SVG.");
-                    return resultats;
+                if (plotLine) {
+                    var dAttr = plotLine.getAttribute('d');
+                    var matchX = dAttr.match(/M\s+([\d.]+)/);
+                    if (matchX && matchX[1]) {
+                        separateurX = parseFloat(matchX[1]);
+                    }
                 }
                 
-                resultats.mots_presents = N;
-                console.log("Mots détectés : \u00a0" + N);
+                console.log("Coordonnée X de la ligne de séparation : " + separateurX);
 
-                // 2. Extraction de la courbe client (Série 4)
+                var motsNodes = doc.querySelectorAll('.highcharts-xaxis-labels text');
+                var mots = []; 
+                
+                motsNodes.forEach(function(node) {
+                    var mot = node.textContent.trim();
+                    var xAttr = node.getAttribute('x');
+                    
+                    if (mot.length > 0 && xAttr !== null) {
+                        var motX = parseFloat(xAttr);
+                        var isObligatoire = (motX <= separateurX);
+                        
+                        mots.push({ text: mot, x: motX, isObligatoire: isObligatoire });
+                        
+                        if (isObligatoire) resultats.termes_obligatoires.push(mot);
+                        else resultats.termes_enrichissement.push(mot);
+                    }
+                });
+
+                console.log("Termes obligatoires (Gauche) [" + resultats.termes_obligatoires.length + "] :", resultats.termes_obligatoires);
+                console.log("Termes d'enrichissement (Droite) [" + resultats.termes_enrichissement.length + "] :", resultats.termes_enrichissement);
+
+                // --- ÉTAPE 2 : PRÉSENT / ABSENT ---
+                console.log("=== ÉTAPE 2 : PRÉSENT / ABSENT ===");
                 var pathClientNode = doc.querySelector('.highcharts-series-4 path.highcharts-graph[stroke="#000000"]') || 
                                      doc.querySelector('.highcharts-series-4 path.highcharts-graph[stroke="#000"]');
-                if (!pathClientNode) {
-                    console.log("Courbe client introuvable dans la série 4.");
-                    return resultats;
-                }
-                
-                var clientY = extractYValues(pathClientNode.getAttribute('d'), N);
-                if (clientY.length !== N) {
-                    console.log("Attention :\u00a0Incohérence entre le nombre de mots (" + N + ") et de points client (" + clientY.length + ").");
-                } else {
-                    console.log("Points client extraits :\u00a0" + clientY.length);
-                }
+                var clientPoints = extractPointsFromPath(pathClientNode ? pathClientNode.getAttribute('d') : "");
 
-                // 3. Extraction des zones d'optimisation
-                var getZoneY = function(selectorClass) {
-                    var zoneNode = doc.querySelector('.' + selectorClass + ' path.highcharts-area');
-                    if (!zoneNode) return [];
-                    return extractYValues(zoneNode.getAttribute('d'), N);
+                console.log("Nombre de mots détectés : " + mots.length);
+                console.log("Nombre de points client extraits : " + clientPoints.length);
+
+                var baselineY = 0;
+                if (clientPoints.length > 0) {
+                    baselineY = Math.max.apply(Math, clientPoints.map(function(p) { return p.y; }));
+                }
+                console.log("Ligne de base calculée (Y max = absent) : " + baselineY);
+
+                // --- ÉTAPE 3 À 6 : EXTRACTION DES PLAFONDS DE COULEURS ---
+                var extractTopY = function(selector) {
+                    var node = doc.querySelector(selector);
+                    if (!node) return [];
+                    var parts = node.getAttribute('d').split('M').filter(function(p) { return p.trim().length > 0; });
+                    if (parts.length < 2) return [];
+                    return extractPointsFromPath('M ' + parts[1]).map(function(p) { return p.y; }).reverse();
                 };
 
-                var rougeY = getZoneY('highcharts-series-0');
-                var orangeY = getZoneY('highcharts-series-1');
-                var vertY = getZoneY('highcharts-series-2');
-                var bleuY = getZoneY('highcharts-series-3');
-                
-                console.log("Points zone rouge :\u00a0" + rougeY.length);
-                console.log("Points zone bleue :\u00a0" + bleuY.length);
+                var topBleuY = extractTopY('.highcharts-series-3 path.highcharts-graph');
+                var topVertY = extractTopY('.highcharts-series-2 path.highcharts-graph');
+                var topOrangeY = extractTopY('.highcharts-series-1 path.highcharts-graph');
+                var topRougeY = extractTopY('.highcharts-series-0 path.highcharts-graph');
 
-                if (rougeY.length !== N || bleuY.length !== N) {
-                    console.log("Attention :\u00a0Certaines zones d'optimisation n'ont pas pu être extraites correctement.");
-                    return resultats;
-                }
+                console.log("=== ÉTAPE 3 : SOUS-OPTIMISATION (Bleu) ===");
+                console.log("Sommets bleus extraits : " + topBleuY.length);
+                console.log("=== ÉTAPE 4 : OPTIMISATION NORMALE (Vert) ===");
+                console.log("Sommets verts extraits : " + topVertY.length);
+                console.log("=== ÉTAPE 5 : OPTIMISATION FORTE (Orange) ===");
+                console.log("Sommets oranges extraits : " + topOrangeY.length);
+                console.log("=== ÉTAPE 6 : SUROPTIMISATION (Rouge) ===");
+                console.log("Sommets rouges extraits : " + topRougeY.length);
 
-                // 4. Comparaison algorithmique par index (Y = 0 est en haut)
-                for (var i = 0; i < N; i++) {
-                    var mot = mots[i];
-                    var yCli = clientY[i];
-                    var yRouge = rougeY[i];
-                    var yBleu = bleuY[i];
+                // --- ÉTAPE 7 : CLASSIFICATION FINALE ---
+                console.log("=== ÉTAPE 7 : DÉPASSEMENT CRITIQUE (Gris) ===");
+
+                for (var i = 0; i < mots.length; i++) {
+                    var motTexte = mots[i].text;
+                    var isObligatoire = mots[i].isObligatoire;
+                    var pCli = clientPoints[i]; 
                     
-                    if (yCli === undefined || yRouge === undefined || yBleu === undefined) continue;
+                    if (pCli) {
+                        var isPresent = (pCli.y < baselineY - 1);
 
-                    // Les valeurs nulles (bas du graphe) sont à 248. 
-                    // Si yCli <= yRouge => il a atteint ou dépassé (vers le haut) la zone rouge.
-                    if (yCli <= yRouge) {
-                        resultats.suroptimises.push(mot);
-                    } else if (yCli >= yBleu) {
-                        // S'il est en dessous (ou égal) à la zone bleue (vers le bas).
-                        resultats.sous_optimises.push(mot);
+                        if (!isPresent) {
+                            if (isObligatoire) resultats.absents_obligatoires.push(motTexte);
+                            else resultats.absents_enrichissement.push(motTexte);
+                        } else {
+                            if (isObligatoire) resultats.presents_obligatoires.push(motTexte);
+                            else resultats.presents_enrichissement.push(motTexte);
+
+                            var y = pCli.y;
+                            var r = topRougeY[i];
+                            var o = topOrangeY[i];
+                            var v = topVertY[i];
+                            var b = topBleuY[i];
+
+                            // 1. Dépassement (Au-dessus du rouge)
+                            if (r !== undefined && y <= r + 0.1) {
+                                if (isObligatoire) resultats.depassement_obligatoires.push(motTexte);
+                                else resultats.depassement_enrichissement.push(motTexte);
+                            }
+                            // 2. Suroptimisation (Dans le rouge)
+                            else if (o !== undefined && y <= o + 0.1) {
+                                if (isObligatoire) resultats.suroptimisation_obligatoires.push(motTexte);
+                                else resultats.suroptimisation_enrichissement.push(motTexte);
+                            }
+                            // 3. Optimisation forte (Dans l'orange)
+                            else if (v !== undefined && y <= v + 0.1) {
+                                if (isObligatoire) resultats.optimisation_forte_obligatoires.push(motTexte);
+                                else resultats.optimisation_forte_enrichissement.push(motTexte);
+                            }
+                            // 4. Optimisation normale (Dans le vert)
+                            else if (b !== undefined && y <= b + 0.1) {
+                                if (isObligatoire) resultats.optimisation_normale_obligatoires.push(motTexte);
+                                else resultats.optimisation_normale_enrichissement.push(motTexte);
+                            }
+                            // 5. Sous-optimisation (Dans le bleu)
+                            else {
+                                if (isObligatoire) resultats.sous_optimisation_obligatoires.push(motTexte);
+                                else resultats.sous_optimisation_enrichissement.push(motTexte);
+                            }
+                        }
                     }
                 }
 
-                console.log("Analyse SVG terminée avec succès.");
+                console.log("Absents - Obligatoires :", resultats.absents_obligatoires);
+                console.log("Absents - Enrichissement :", resultats.absents_enrichissement);
+                console.log("Sous-opti (Bleu) - Obligatoires :", resultats.sous_optimisation_obligatoires);
+                console.log("Sous-opti (Bleu) - Enrichissement :", resultats.sous_optimisation_enrichissement);
+                console.log("Optimisation Normale (Vert) - Obligatoires :", resultats.optimisation_normale_obligatoires);
+                console.log("Optimisation Normale (Vert) - Enrichissement :", resultats.optimisation_normale_enrichissement);
+                console.log("Optimisation Forte (Orange) - Obligatoires :", resultats.optimisation_forte_obligatoires);
+                console.log("Optimisation Forte (Orange) - Enrichissement :", resultats.optimisation_forte_enrichissement);
+                console.log("Suroptimisation (Rouge) - Obligatoires :", resultats.suroptimisation_obligatoires);
+                console.log("Suroptimisation (Rouge) - Enrichissement :", resultats.suroptimisation_enrichissement);
+                console.log("Dépassement (Gris) - Obligatoires :", resultats.depassement_obligatoires);
+                console.log("Dépassement (Gris) - Enrichissement :", resultats.depassement_enrichissement);
+
                 return resultats;
 
             } catch (e) {
-                console.log("Erreur lors de l'extraction des données SVG :\u00a0" + e.message);
+                console.log("Erreur lors de l'extraction : " + e.message);
                 return resultats;
             }
         }
