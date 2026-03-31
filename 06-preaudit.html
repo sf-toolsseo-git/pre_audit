@@ -4176,8 +4176,16 @@
 
             var html = '';
 
+            // Nouvelle vérification de présence des données YTG basée sur les nouveaux tableaux
+            var hasYtgData = ytg && (
+                (ytg.presents_obligatoires && ytg.presents_obligatoires.length > 0) || 
+                (ytg.presents_enrichissement && ytg.presents_enrichissement.length > 0) || 
+                (ytg.absents_obligatoires && ytg.absents_obligatoires.length > 0) || 
+                (ytg.absents_enrichissement && ytg.absents_enrichissement.length > 0)
+            );
+
             // --- BLOC ANALYSE YOURTEXT.GURU ---
-            if (ytg && (ytg.mots_presents > 0 || ytg.mots_absents)) {
+            if (hasYtgData) {
                 console.log("Données YTG détectées, préparation du tableau pour " + cible);
 
                 html += '<div style="margin-bottom: 20px;">';
@@ -4188,7 +4196,7 @@
                 html += '<th style="padding:8px; text-align:left; border: 1px solid #dadce0; color:#5f6368;">Mots-clés</th>';
                 html += '</tr></thead><tbody>';
 
-                // Sécurité : initialise les tableaux s'ils sont indéfinis (données anciennes)
+                // Sécurité : initialise les tableaux s'ils sont indéfinis et fusionne avec formatage
                 function mergeAndFormat(obli, enri) {
                     obli = obli || [];
                     enri = enri || [];
@@ -4283,7 +4291,7 @@
             }
             console.log("=== FIN : renderExtractionData (" + cible + ") ===");
         }
-
+        
         function initSvgDropzones() {
             var dzClient = document.getElementById('dz-svg-client');
             var dzComp = document.getElementById('dz-svg-comp');
@@ -4360,6 +4368,7 @@
                         CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
                         CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
                         CONTENU_1FR_URL_CLIENT: url1frClient,
+                        CONTENU_1FR_SCORE_CLIENT: (extracted1frClient && extracted1frClient.score) ? extracted1frClient.score : "",
                         CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
                         CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
 
@@ -4368,6 +4377,7 @@
                         CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
                         CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
                         CONTENU_1FR_URL_CONCURRENT: url1frComp,
+                        CONTENU_1FR_SCORE_CONCURRENT: (extracted1frComp && extracted1frComp.score) ? extracted1frComp.score : "",
                         CONTENU_YTG_DATA_CONCURRENT: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
                         CONTENU_1FR_DATA_CONCURRENT: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
 
@@ -4447,62 +4457,61 @@
         function lancerAnalyseContenuIA() {
             var btn = document.getElementById('btn-ia-contenu');
             btn.disabled = true;
-            showLoader("Génération de l'analyse sémantique IA en cours (Client et Concurrent)...");
+            showLoader("Génération de l'analyse sémantique IA (Scraping & Analyse en cours)...");
 
-            var contexte = document.getElementById('conf-contexte-preaudit') ? document.getElementById('conf-contexte-preaudit').value : '';
-            var htmlClient = getRawMarkdownFromCE('ce-contenu-structure-client');
-            var htmlComp = getRawMarkdownFromCE('ce-contenu-structure-comp');
-            
-            var appelsTermines = 0;
-            var erreurs = [];
+            // Récupération des URLs actuelles dans les champs (en cas de modification)
+            var urlClient = document.getElementById('contenu-url-client').value.trim();
+            var urlComp = document.getElementById('contenu-url-comp').value.trim();
+            var ytgCible = document.getElementById('contenu-ytg-cible').value.trim();
 
-            function verifierFinAppels() {
-                appelsTermines++;
-                if (appelsTermines >= 2) {
+            // Packaging des données YTG et 1.fr actuelles + Ajout manuel des scores saisis
+            var ytgClientData = extractedYtgClient || {};
+            ytgClientData.score_reel = document.getElementById('contenu-ytg-score-client').value;
+            ytgClientData.cible = ytgCible;
+
+            var unfrClientData = extracted1frClient || {};
+            // Le score 1.fr est déjà dans l'objet s'il a été récupéré à l'étape précédente
+
+            var ytgCompData = extractedYtgComp || {};
+            ytgCompData.score_reel = document.getElementById('contenu-ytg-score-comp').value;
+            ytgCompData.cible = ytgCible;
+
+            var unfrCompData = extracted1frComp || {};
+
+            google.script.run
+                .withSuccessHandler(function(res) {
                     hideLoader();
                     btn.disabled = false;
-                    document.getElementById('contenu-results-container').style.display = 'block';
-                    if (erreurs.length > 0) {
-                        alert("Erreurs rencontrées :\n" + erreurs.join("\n"));
-                    }
-                }
-            }
-
-            // Appel Client
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    if(res && res.success) {
-                        if(res.data.structure) setCeContent('ce-contenu-structure-client', res.data.structure);
-                        if(res.data.ytg) setCeContent('ce-contenu-ytg-client', res.data.ytg);
-                        if(res.data.semantique) setCeContent('ce-contenu-1fr-client', res.data.semantique);
+                    
+                    if (res && res.success) {
+                        // Injection des réponses dans le HTML avec formatage gras orange
+                        if (res.data.client) {
+                            setCeContent('ce-contenu-structure-client', res.data.client.structure || "");
+                            setCeContent('ce-contenu-ytg-client', res.data.client.ytg || "");
+                            setCeContent('ce-contenu-1fr-client', res.data.client.unfr || "");
+                        }
+                        if (res.data.concurrent) {
+                            setCeContent('ce-contenu-structure-comp', res.data.concurrent.structure || "");
+                            setCeContent('ce-contenu-ytg-comp', res.data.concurrent.ytg || "");
+                            setCeContent('ce-contenu-1fr-comp', res.data.concurrent.unfr || "");
+                        }
+                        
+                        document.getElementById('contenu-results-container').style.display = 'block';
+                        console.log("Analyse IA de contenu générée et injectée avec succès.");
                     } else {
-                        erreurs.push("Erreur IA Client : " + (res ? res.error : "Erreur inconnue"));
+                        alert("Erreur de l'IA : " + (res ? res.error : "Erreur inconnue"));
                     }
-                    verifierFinAppels();
                 })
                 .withFailureHandler(function(err) {
-                    erreurs.push("Erreur critique Client : " + err.message);
-                    verifierFinAppels();
+                    hideLoader();
+                    btn.disabled = false;
+                    alert("Erreur critique serveur : " + err.message);
                 })
-                .lancerAnalyseContenuIA('client', htmlClient, svgDataClient, contexte);
-
-            // Appel Concurrent
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    if(res && res.success) {
-                        if(res.data.structure) setCeContent('ce-contenu-structure-comp', res.data.structure);
-                        if(res.data.ytg) setCeContent('ce-contenu-ytg-comp', res.data.ytg);
-                        if(res.data.semantique) setCeContent('ce-contenu-1fr-comp', res.data.semantique);
-                    } else {
-                        erreurs.push("Erreur IA Concurrent : " + (res ? res.error : "Erreur inconnue"));
-                    }
-                    verifierFinAppels();
-                })
-                .withFailureHandler(function(err) {
-                    erreurs.push("Erreur critique Concurrent : " + err.message);
-                    verifierFinAppels();
-                })
-                .lancerAnalyseContenuIA('comp', htmlComp, svgDataComp, contexte);
+                .genererAnalyseContenuDoubleIA(
+                    urlClient, urlComp, 
+                    JSON.stringify(ytgClientData), JSON.stringify(unfrClientData),
+                    JSON.stringify(ytgCompData), JSON.stringify(unfrCompData)
+                );
         }
 
         function lancerExportSlidesContenu() {

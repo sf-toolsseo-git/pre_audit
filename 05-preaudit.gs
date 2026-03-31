@@ -143,6 +143,7 @@ function chargerConfigurationPreAudit() {
         contenu1frClient: props['CONTENU_1FR_CLIENT'] || "",
         contenu1frClientHtml: props['CONTENU_1FR_CLIENT_HTML'] || "",
         contenu1frUrlClient: props['CONTENU_1FR_URL_CLIENT'] || "",
+        contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
         contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
         
         contenuStructureConcurrent: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
@@ -154,6 +155,7 @@ function chargerConfigurationPreAudit() {
         contenu1frConcurrent: props['CONTENU_1FR_CONCURRENT'] || "",
         contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
         contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || "",
+        contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
         contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
@@ -171,10 +173,11 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
             'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
             'CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
-            'CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
             'CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
             'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
             'CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
+            'CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
+            'CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
             'CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
             
             'CONTENU_STRUCTURE_CONCURRENT': data.CONTENU_STRUCTURE_CONCURRENT || "",
@@ -182,10 +185,11 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_YTG_CONCURRENT': data.CONTENU_YTG_CONCURRENT || "",
             'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgCompHtml || "",
             'CONTENU_YTG_SCORE_CONCURRENT': data.CONTENU_YTG_SCORE_CONCURRENT || "",
-            'CONTENU_YTG_DATA_CONCURRENT': data.CONTENU_YTG_DATA_CONCURRENT || "",
             'CONTENU_1FR_CONCURRENT': data.CONTENU_1FR_CONCURRENT || "",
             'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frCompHtml || "",
             'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || "",
+            'CONTENU_1FR_SCORE_CONCURRENT': data.CONTENU_1FR_SCORE_CONCURRENT || "",
+            'CONTENU_YTG_DATA_CONCURRENT': data.CONTENU_YTG_DATA_CONCURRENT || "",
             'CONTENU_1FR_DATA_CONCURRENT': data.CONTENU_1FR_DATA_CONCURRENT || ""
         };
         
@@ -3049,5 +3053,132 @@ function analyser1frBackend(url1fr) {
         Logger.log("Erreur dans analyser1frBackend : " + e.message);
         Logger.log("=== FIN : analyser1frBackend (Erreur) ===");
         return { success: false, error: e.message };
+    }
+}
+
+function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrClientStr, ytgCompStr, unfrCompStr) {
+    Logger.log("=== DÉBUT : genererAnalyseContenuDoubleIA ===");
+    try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var profilage = props['PA_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
+        var intention = props['FOCUS_INTENTION_TITRE'] || "Non renseignée.";
+        var motCle = props['TARGET_KW'] || "Non défini.";
+
+        Logger.log("Étape 1 : Scraping à la volée des URLs...");
+        var urlsToScrape = [];
+        if (urlClient && urlClient !== "-") urlsToScrape.push(urlClient);
+        if (urlComp && urlComp !== "-") urlsToScrape.push(urlComp);
+
+        var scrapedData = [];
+        if (urlsToScrape.length > 0) {
+            scrapedData = scrapeUrlsParallel(urlsToScrape);
+        }
+
+        var clientScraped = scrapedData.find(function(s) { return s.url === urlClient; }) || { structure_hn: [], content_sample: "" };
+        var compScraped = scrapedData.find(function(s) { return s.url === urlComp; }) || { structure_hn: [], content_sample: "" };
+
+        // Comptage des mots basé sur le texte brut nettoyé
+        var clientWordCount = clientScraped.content_sample ? clientScraped.content_sample.split(/\s+/).length : 0;
+        var compWordCount = compScraped.content_sample ? compScraped.content_sample.split(/\s+/).length : 0;
+
+        Logger.log("Étape 2 : Préparation du Payload de données...");
+        var extractionData = {
+            mot_cle_cible: motCle,
+            intention_serp: intention,
+            client: {
+                structure_hn: clientScraped.structure_hn,
+                mots_comptes: clientWordCount,
+                ytg_data: ytgClientStr ? JSON.parse(ytgClientStr) : {},
+                unfr_data: unfrClientStr ? JSON.parse(unfrClientStr) : {}
+            },
+            concurrent: {
+                structure_hn: compScraped.structure_hn,
+                mots_comptes: compWordCount,
+                ytg_data: ytgCompStr ? JSON.parse(ytgCompStr) : {},
+                unfr_data: unfrCompStr ? JSON.parse(unfrCompStr) : {}
+            }
+        };
+
+        Logger.log("Étape 3 : Construction du Prompt Système...");
+        var systemPrompt = "Tu es un auditeur SEO ultra-analytique et un stratège en conversion. Ta mission est de générer 6 constats hyper-concis sur la stratégie de contenu d'une page client et d'une page concurrente.\n" +
+            "Tu dois croiser les données de la SERP (intention de recherche) avec les scores des outils YourTextGuru (YTG) et 1.fr, ainsi que la structure Hn.\n\n" +
+            "Règles d'évaluation strictes :\n" +
+            "1. Structure Hn : le mot-clé (ou champ lexical) doit être dans les titres. L'ordre doit faire sens (réponse à l'intention d'abord, détails ensuite).\n" +
+            "2. Itération (YTG) :\n" +
+            "- Si le nombre de mots est inférieur à 500 : signalez que le contenu n'est pas assez dense et détaillé.\n" +
+            "- Comparez le score réel à la cible : indiquez s'il est sur-optimisé ou sous-optimisé.\n" +
+            "- Justification : citez 1 ou 2 mots exacts tirés des listes d'absents prioritaires ou de suroptimisation.\n" +
+            "3. Sémantique (1.fr) : si le score est inférieur à 90 %, le champ lexical est perfectible. Vérifiez si l'audience et les thématiques correspondent à l'intention de la SERP.\n\n" +
+            "Contraintes de formatage et limites (critique) :\n" +
+            "- Concision extrême : maximum 20 mots et 100 caractères par champ. Soyez télégraphique.\n" +
+            "- Mise en forme : utilisez des astérisques simples (*mot*) pour mettre en gras orange les mots-clés, scores ou concepts clés de l'analyse.\n" +
+            "- Format : fournissez exactement 6 champs dans le JSON.\n\n" +
+            "Règles typographiques obligatoires (français) :\n" +
+            "- Titres et labels : majuscule uniquement au premier mot (sauf noms propres).\n" +
+            "- Parenthèses : pas de majuscule au premier mot à l'intérieur (sauf nom propre).\n" +
+            "- Jours, mois et langues : toujours en minuscule.\n" +
+            "- Deux-points (:) : un espace obligatoire avant le deux-points. Pas de majuscule après, sauf phrase complète indépendante.\n" +
+            "- Listes à puces : majuscule au premier mot après la puce ou le tiret.\n" +
+            "- Acronymes : toujours en majuscules (ex : SEO, IA, ROI, YTG, SERP).\n\n" +
+            "Format de sortie JSON strict :\n" +
+            "{\n" +
+            "  \"client\": {\n" +
+            "    \"structure\": \"Analyse Hn hyper-concise...\",\n" +
+            "    \"ytg\": \"Analyse YTG hyper-concise...\",\n" +
+            "    \"unfr\": \"Analyse 1.fr hyper-concise...\"\n" +
+            "  },\n" +
+            "  \"concurrent\": {\n" +
+            "    \"structure\": \"Analyse Hn hyper-concise...\",\n" +
+            "    \"ytg\": \"Analyse YTG hyper-concise...\",\n" +
+            "    \"unfr\": \"Analyse 1.fr hyper-concise...\"\n" +
+            "  }\n" +
+            "}";
+
+        var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Profilage commercial] :\n" + profilage + "\n\n[Données techniques extraites] :\n" + JSON.stringify(extractionData);
+
+        var payload = {
+            "system_instruction": { "parts": [{"text": systemPrompt}] },
+            "contents": [ { "parts": [{"text": userPrompt}] } ],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        Logger.log("Étape 4 : Appel à l'API Gemini 2.5 Pro...");
+        var response = UrlFetchApp.fetch(apiUrl, options);
+        var jsonResponse = JSON.parse(response.getContentText());
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
+        }
+
+        if (!jsonResponse.candidates || jsonResponse.candidates.length === 0 || !jsonResponse.candidates[0].content) {
+            throw new Error("L'API Gemini n'a renvoyé aucune analyse valide.");
+        }
+
+        var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        var parsedJson = JSON.parse(responseText);
+
+        Logger.log("=== FIN : genererAnalyseContenuDoubleIA (Succès) ===");
+        return { success: true, data: parsedJson };
+
+    } catch(err) {
+        Logger.log("Erreur dans genererAnalyseContenuDoubleIA : " + err.message);
+        return { success: false, error: err.message };
     }
 }

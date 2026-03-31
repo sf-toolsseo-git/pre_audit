@@ -293,15 +293,18 @@ function syncPropertiesToConfigSheet() {
                     "---BORDER---",
                     "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_TRAFIC", "ANALYSE_SEMRUSH_TRAFIC_HTML", "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE", "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC",
                     "---BORDER---",
-                    "MOTCLE_CLIENT_GLOBAL", "MOTCLE_CLIENT_TOP10", "MOTCLE_CLIENT_TOP3", "MOTCLE_CLIENT_URL", "MOTCLE_CLIENT_TRANSAC", "MOTCLE_CLIENT_TRANSAC_TOP10", "MOTCLE_CLIENT_TRANSAC_PCT", "JAUGE_TRANSAC_TOP10", "MOTCLE_CLIENT_INFO", "MOTCLE_CLIENT_INFO_TOP10", "MOTCLE_CLIENT_INFO_PCT", "JAUGE_INFO_TOP10",
+                    "MOTCLE_CLIENT_GLOBAL", "MOTCLE_CLIENT_TOP10", "MOTCLE_CLIENT_TOP3", "MOTCLE_CLIENT_URL", 
+                    "MOTCLE_CLIENT_TRANSAC", "MOTCLE_CLIENT_TRANSAC_TOP10", "MOTCLE_CLIENT_TRANSAC_PCT", "JAUGE_TRANSAC_TOP10", "MOTCLE_CLIENT_INFO", "MOTCLE_CLIENT_INFO_TOP10", "MOTCLE_CLIENT_INFO_PCT", "JAUGE_INFO_TOP10",
                     "---BORDER---",
                     "TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "ANALYSE_THEMATIQUETOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_2", "ANALYSE_THEMATIQUETOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_3", "ANALYSE_THEMATIQUETOP_CLIENT_3_HTML", "top_thm_client_1", "top_thm_client_top10_1", "top_thm_client_tec_1", "top_thm_client_tpm_1", "top_thm_client_ddt_1", "top_thm_client_2", "top_thm_client_top10_2", "top_thm_client_tec_2", "top_thm_client_tpm_2", "top_thm_client_ddt_2", "top_thm_client_3", "top_thm_client_top10_3", "top_thm_client_tec_3", "top_thm_client_tpm_3", "top_thm_client_ddt_3",
                     "---BORDER---",
                     "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "ANALYSE_THEMATIQUEFLOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_2", "ANALYSE_THEMATIQUEFLOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_3", "ANALYSE_THEMATIQUEFLOP_CLIENT_3_HTML", "flop_thm_client_1", "flop_thm_client_flop10_1", "flop_thm_client_tec_1", "flop_thm_client_tpm_1", "flop_thm_client_ddt_1", "flop_thm_client_2", "flop_thm_client_flop10_2", "flop_thm_client_tec_2", "flop_thm_client_tpm_2", "flop_thm_client_ddt_2", "flop_thm_client_3", "flop_thm_client_flop10_3", "flop_thm_client_tec_3", "flop_thm_client_tpm_3", "flop_thm_client_ddt_3",
                     "---BORDER---",
-                    "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1_HTML", "ANALYSE_MCTOP_CLIENT_2", "ANALYSE_MCTOP_CLIENT_2_HTML", "ANALYSE_MCTOP_CLIENT_3", "ANALYSE_MCTOP_CLIENT_3_HTML", "top_mc_client_1", "top_mc_client_vol_1", "top_mc_client_ddt_1", "top_mc_client_pos_1", "qw_mc_client_1", "qw_mc_client_vol_1", "qw_mc_client_ddt_1", "qw_mc_client_pos_1", "top_mc_client_2", "top_mc_client_vol_2", "top_mc_client_ddt_2", "top_mc_client_pos_2", "qw_mc_client_2", "qw_mc_client_vol_2", "qw_mc_client_ddt_2", "qw_mc_client_pos_2", "top_mc_client_3", "top_mc_client_vol_3", "top_mc_client_ddt_3", "top_mc_client_pos_3", "qw_mc_client_3", "qw_mc_client_vol_3", "qw_mc_client_ddt_3", "qw_mc_client_pos_3", "top_mc_client_4", "top_mc_client_vol_4", "top_mc_client_ddt_4", "top_mc_client_pos_4", "qw_mc_client_4", "qw_mc_client_vol_4", "qw_mc_client_ddt_4", "qw_mc_client_pos_4", "top_mc_client_5", "top_mc_client_vol_5", "top_mc_client_ddt_5", "top_mc_client_pos_5", "qw_mc_client_5", "qw_mc_client_vol_5", "qw_mc_client_ddt_5", "qw_mc_client_pos_5",
+                    "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1_HTML", "ANALYSE_MCTOP_CLIENT_2", "ANALYSE_MCTOP_CLIENT_2_HTML", "ANALYSE_MCTOP_CLIENT_3", "ANALYSE_MCTOP_CLIENT_3_HTML", "top_mc_client_1", "top_mc_client_vol_1", "top_mc_client_ddt_1", "top_mc_client_pos_1", "qw_mc_client_1", "qw_mc_client_vol_1", "qw_mc_client_ddt_1", "qw_mc_client_pos_1", "top_mc_client_2", "top_mc_client_vol_2", "top_mc_client_ddt_2", "top_mc_client_pos_2", "qw_mc_client_2", "qw_mc_client_vol_2", "qw_mc_client_ddt_2", "qw_mc_client_pos_2", "top_mc_client_3", "top_mc_client_vol_3", "top_mc_client_ddt_3", "top_mc_client_pos_3", "qw_mc_client_3", "qw_mc_client_vol_3", "qw_mc_client_ddt_3", "qw_mc_client_pos_3", 
+                    "top_mc_client_4", "top_mc_client_vol_4", "top_mc_client_ddt_4", "top_mc_client_pos_4", "qw_mc_client_4", "qw_mc_client_vol_4", "qw_mc_client_ddt_4", "qw_mc_client_pos_4", "top_mc_client_5", "top_mc_client_vol_5", "top_mc_client_ddt_5", "top_mc_client_pos_5", "qw_mc_client_5", "qw_mc_client_vol_5", "qw_mc_client_ddt_5", "qw_mc_client_pos_5",
                     "---BORDER---",
-                    "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1_HTML", "ANALYSE_MCFLOP_CLIENT_2", "ANALYSE_MCFLOP_CLIENT_2_HTML", "ANALYSE_MCFLOP_CLIENT_3", "ANALYSE_MCFLOP_CLIENT_3_HTML", "pc_mc_client_1", "pc_mc_client_vol_1", "pc_mc_client_ddt_1", "pc_mc_conc_pos_1", "tap_mc_client_1", "tap_mc_client_vol_1", "tap_mc_client_ddt_1", "tap_mc_conc_pos_1", "pc_mc_client_2", "pc_mc_client_vol_2", "pc_mc_client_ddt_2", "pc_mc_conc_pos_2", "tap_mc_client_2", "tap_mc_client_vol_2", "tap_mc_client_ddt_2", "tap_mc_conc_pos_2", "pc_mc_client_3", "pc_mc_client_vol_3", "pc_mc_client_ddt_3", "pc_mc_conc_pos_3", "tap_mc_client_3", "tap_mc_client_vol_3", "tap_mc_client_ddt_3", "tap_mc_conc_pos_3", "pc_mc_client_4", "pc_mc_client_vol_4", "pc_mc_client_ddt_4", "pc_mc_conc_pos_4", "tap_mc_client_4", "tap_mc_client_vol_4", "tap_mc_client_ddt_4", "tap_mc_conc_pos_4", "pc_mc_client_5", "pc_mc_client_vol_5", "pc_mc_client_ddt_5", "pc_mc_conc_pos_5", "tap_mc_client_5", "tap_mc_client_vol_5", "tap_mc_client_ddt_5", "tap_mc_conc_pos_5",
+                    "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1_HTML", "ANALYSE_MCFLOP_CLIENT_2", "ANALYSE_MCFLOP_CLIENT_2_HTML", "ANALYSE_MCFLOP_CLIENT_3", "ANALYSE_MCFLOP_CLIENT_3_HTML", "pc_mc_client_1", "pc_mc_client_vol_1", "pc_mc_client_ddt_1", "pc_mc_conc_pos_1", "tap_mc_client_1", "tap_mc_client_vol_1", "tap_mc_client_ddt_1", "tap_mc_conc_pos_1", "pc_mc_client_2", "pc_mc_client_vol_2", "pc_mc_client_ddt_2", "pc_mc_conc_pos_2", "tap_mc_client_2", "tap_mc_client_vol_2", "tap_mc_client_ddt_2", "tap_mc_conc_pos_2", "pc_mc_client_3", "pc_mc_client_vol_3", "pc_mc_client_ddt_3", "pc_mc_conc_pos_3", "tap_mc_client_3", "tap_mc_client_vol_3", "tap_mc_client_ddt_3", "tap_mc_conc_pos_3", "pc_mc_client_4", "pc_mc_client_vol_4", "pc_mc_client_ddt_4", "pc_mc_conc_pos_4", "tap_mc_client_4", "tap_mc_client_vol_4", "tap_mc_client_ddt_4", "tap_mc_conc_pos_4", "pc_mc_client_5", "pc_mc_client_vol_5", "pc_mc_client_ddt_5", "pc_mc_conc_pos_5", "tap_mc_client_5", "tap_mc_client_vol_5", 
+                    "tap_mc_client_ddt_5", "tap_mc_conc_pos_5",
                     "---BORDER---",
                     "TITRE_SLIDE_CONCURRENCE", "NOM_CLIENT", "VALEUR_TOP10_CLIENT", "VALEUR_PAGES_CLIENT", "PLACEHOLDER_LOGO_CLIENT", "NOM_LEADER", "VALEUR_TOP10_LEADER", "VALEUR_PAGES_LEADER", "PLACEHOLDER_LOGO_LEADER", "NOM_COMP1", "VALEUR_TOP10_COMP1", "VALEUR_PAGES_COMP1", "PLACEHOLDER_LOGO_COMP1", "NOM_COMP2", "VALEUR_TOP10_COMP2", "VALEUR_PAGES_COMP2", "PLACEHOLDER_LOGO_COMP2", "NOM_COMP3", "VALEUR_TOP10_COMP3", "VALEUR_PAGES_COMP3", "PLACEHOLDER_LOGO_COMP3", "NOM_COMP4", "VALEUR_TOP10_COMP4", "VALEUR_PAGES_COMP4", "PLACEHOLDER_LOGO_COMP4",
                     "---BORDER---",
@@ -351,9 +354,9 @@ function syncPropertiesToConfigSheet() {
                 keys: [
                     "CONTENU_YTG_CIBLE",
                     "---BORDER---",
-                    "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_DATA_CLIENT",
+                    "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT",
                     "---BORDER---",
-                    "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT"
+                    "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT"
                 ]
             },
             {
@@ -361,7 +364,6 @@ function syncPropertiesToConfigSheet() {
                 keys: []
             }
         ];
-        
         var knownKeys = [];
         for (var i = 0; i < groups.length; i++) {
             for (var j = 0; j < groups[i].keys.length; j++) {
@@ -430,7 +432,6 @@ function syncPropertiesToConfigSheet() {
 
             sheet.setFrozenRows(1);
             sheet.setHiddenGridlines(true);
-
             for (var i = 0; i < numGroups; i++) {
                 var cBase = (i * 3) + 1;
                 // En-têtes centrés
@@ -447,7 +448,6 @@ function syncPropertiesToConfigSheet() {
                 sheet.getRange(2, cBase + 1, maxRows - 1, 1)
                     .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top")
                     .setHorizontalAlignment("left");
-
                 sheet.setColumnWidth(cBase, 350);
                 sheet.setColumnWidth(cBase + 1, 350);
                 if (cBase + 2 <= numGroups * 3) {
@@ -480,7 +480,6 @@ function syncPropertiesToConfigSheet() {
                         fields: "pixelSize"
                     }
                 }];
-                
                 var response = UrlFetchApp.fetch(
                     "https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate",
                     {
