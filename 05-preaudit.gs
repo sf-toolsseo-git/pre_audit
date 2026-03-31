@@ -132,12 +132,13 @@ function chargerConfigurationPreAudit() {
         uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
         uxRecommandation2: props['UX_RECOMMANDATION_2'] || "",
         
+        contenuYtgCible: props['CONTENU_YTG_CIBLE'] || "",
+        
         contenuStructureClient: props['CONTENU_STRUCTURE_CLIENT'] || "",
         contenuStructureClientHtml: props['CONTENU_STRUCTURE_CLIENT_HTML'] || "",
         contenuYtgClient: props['CONTENU_YTG_CLIENT'] || "",
         contenuYtgClientHtml: props['CONTENU_YTG_CLIENT_HTML'] || "",
         contenuYtgScoreClient: props['CONTENU_YTG_SCORE_CLIENT'] || "",
-        contenuYtgCibleClient: props['CONTENU_YTG_CIBLE_CLIENT'] || "",
         contenu1frClient: props['CONTENU_1FR_CLIENT'] || "",
         contenu1frClientHtml: props['CONTENU_1FR_CLIENT_HTML'] || "",
         contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
@@ -148,7 +149,6 @@ function chargerConfigurationPreAudit() {
         contenuYtgConcurrent: props['CONTENU_YTG_CONCURRENT'] || "",
         contenuYtgConcurrentHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
         contenuYtgScoreConcurrent: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
-        contenuYtgCibleConcurrent: props['CONTENU_YTG_CIBLE_CONCURRENT'] || "",
         contenu1frConcurrent: props['CONTENU_1FR_CONCURRENT'] || "",
         contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
         contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
@@ -162,27 +162,27 @@ function sauvegarderDonneesContenu(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesContenu ===");
     try {
         var propsToSet = {
-            'CONTENU_STRUCTURE_CLIENT': data.contenuStructureClient || "",
-            'CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
-            'CONTENU_YTG_CLIENT': data.contenuYtgClient || "",
-            'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
-            'CONTENU_YTG_SCORE_CLIENT': data.contenuYtgScoreClient || "",
-            'CONTENU_YTG_CIBLE_CLIENT': data.contenuYtgCibleClient || "",
-            'CONTENU_1FR_CLIENT': data.contenu1frClient || "",
-            'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
-            'CONTENU_1FR_SCORE_CLIENT': data.contenu1frScoreClient || "",
-            'CONTENU_1FR_URL_CLIENT': data.contenu1frUrlClient || "",
+            'CONTENU_YTG_CIBLE': data.CONTENU_YTG_CIBLE || "",
             
-            'CONTENU_STRUCTURE_CONCURRENT': data.contenuStructureConcurrent || "",
-            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureConcurrentHtml || "",
-            'CONTENU_YTG_CONCURRENT': data.contenuYtgConcurrent || "",
-            'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgConcurrentHtml || "",
-            'CONTENU_YTG_SCORE_CONCURRENT': data.contenuYtgScoreConcurrent || "",
-            'CONTENU_YTG_CIBLE_CONCURRENT': data.contenuYtgCibleConcurrent || "",
-            'CONTENU_1FR_CONCURRENT': data.contenu1frConcurrent || "",
-            'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frConcurrentHtml || "",
-            'CONTENU_1FR_SCORE_CONCURRENT': data.contenu1frScoreConcurrent || "",
-            'CONTENU_1FR_URL_CONCURRENT': data.contenu1frUrlConcurrent || ""
+            'CONTENU_STRUCTURE_CLIENT': data.CONTENU_STRUCTURE_CLIENT || "",
+            'CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
+            'CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
+            'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
+            'CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
+            'CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
+            'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
+            'CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
+            'CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
+            
+            'CONTENU_STRUCTURE_CONCURRENT': data.CONTENU_STRUCTURE_CONCURRENT || "",
+            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureCompHtml || "",
+            'CONTENU_YTG_CONCURRENT': data.CONTENU_YTG_CONCURRENT || "",
+            'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgCompHtml || "",
+            'CONTENU_YTG_SCORE_CONCURRENT': data.CONTENU_YTG_SCORE_CONCURRENT || "",
+            'CONTENU_1FR_CONCURRENT': data.CONTENU_1FR_CONCURRENT || "",
+            'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frCompHtml || "",
+            'CONTENU_1FR_SCORE_CONCURRENT': data.CONTENU_1FR_SCORE_CONCURRENT || "",
+            'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || ""
         };
         
         PropertiesService.getScriptProperties().setProperties(propsToSet);
@@ -2965,4 +2965,85 @@ function lancerCapturesUX() {
         compViewportId: compViewportId,
         compFullId: compFullId
     };
+}
+
+function analyser1frBackend(url1fr) {
+    Logger.log("=== DÉBUT : analyser1frBackend ===");
+    try {
+        if (!url1fr || url1fr.trim() === "") {
+            throw new Error("L'URL 1.fr est vide.");
+        }
+
+        Logger.log("Fetch de l'URL 1.fr : " + url1fr);
+        var response = UrlFetchApp.fetch(url1fr, { muteHttpExceptions: true });
+        var html = response.getContentText();
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error("Erreur HTTP " + response.getResponseCode() + " lors de l'accès à 1.fr.");
+        }
+
+        if (typeof Cheerio === 'undefined') {
+            throw new Error("La librairie Cheerio est introuvable.");
+        }
+
+        var $ = Cheerio.load(html);
+        var resultats = {
+            score: "",
+            audiences: [],
+            themes: []
+        };
+
+        // 1. Extraction du Score Global
+        var scoreMatches = html.match(/Score:\s*(\d+%)/i);
+        if (scoreMatches && scoreMatches[1]) {
+            resultats.score = scoreMatches[1];
+            Logger.log("Score 1.fr extrait : " + resultats.score);
+        } else {
+            // Fallback Cheerio au cas où
+            var scoreNode = $('span.font20').filter(function() { return $(this).text().indexOf('Score:') > -1; }).first();
+            if (scoreNode.length) {
+                resultats.score = scoreNode.text().replace('Score:', '').trim();
+                Logger.log("Score 1.fr extrait (via Cheerio) : " + resultats.score);
+            }
+        }
+
+        // 2. Extraction "À qui s'adresse votre texte ?" (Audiences)
+        Logger.log("Recherche des audiences...");
+        // On cherche le titre h3/strong de la section
+        var blocAudience = $('strong:contains("À qui s\'adresse votre texte ?")').parent();
+        if (blocAudience.length) {
+            blocAudience.find('table.bg_f5f7f7').each(function() {
+                var label = $(this).find('b.font16').text().trim();
+                var pourcentage = $(this).find('strong.font20').text().trim();
+                if (label && pourcentage && pourcentage !== "0%") {
+                    resultats.audiences.push({ label: label, pourcentage: pourcentage });
+                }
+            });
+            Logger.log(resultats.audiences.length + " audience(s) trouvée(s).");
+        }
+
+        // 3. Extraction "De quoi traite votre texte ?" (Thématiques / Champs lexicaux)
+        Logger.log("Recherche des thématiques...");
+        var blocTheme = $('strong:contains("De quoi traite votre texte ?")').parent();
+        if (blocTheme.length) {
+            blocTheme.find('div.bg_f5f7f7').each(function() {
+                var theme = $(this).find('strong.color_3a4a59.font16').text().trim();
+                var rang = $(this).find('span.bg_00afd8').text().replace(/\s+/g, " ").trim();
+                if (theme) {
+                    resultats.themes.push({ theme: theme, rang: rang });
+                }
+            });
+            Logger.log(resultats.themes.length + " thématique(s) trouvée(s).");
+        }
+
+        Logger.log("Résultat 1.fr final : " + JSON.stringify(resultats));
+        Logger.log("=== FIN : analyser1frBackend (Succès) ===");
+        
+        return { success: true, data: resultats };
+
+    } catch (e) {
+        Logger.log("Erreur dans analyser1frBackend : " + e.message);
+        Logger.log("=== FIN : analyser1frBackend (Erreur) ===");
+        return { success: false, error: e.message };
+    }
 }

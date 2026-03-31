@@ -776,144 +776,138 @@
                 <div class="section-description" style="margin-bottom: 15px;">Évaluez la sémantique et la structure de la page cible face à son concurrent.</div>
 
                 <div class="config-card">
-                    <div class="header-inline">
-                        <div>
-                            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
-                                Analyse Client <span class="badge-client" style="position: static; transform: none;">Client</span>
-                            </h2>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn" id="btn-save-contenu-client" onclick="sauvegarderContenuClient()" style="padding: 6px 12px;">💾 Enregistrer</button>
-                            <button class="btn" id="btn-ia-contenu-client" onclick="lancerAnalyseContenuIA('client')" disabled style="padding: 6px 12px;">🤖 Générer l'analyse IA</button>
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 15px;">
+                    <h2 class="section-title">Données globales</h2>
+                    <div class="row">
                         <div class="col">
                             <label class="input-label">Mot-clé cible</label>
                             <input type="text" id="contenu-kw" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
                         </div>
-                        <div class="col" style="flex: 0 0 100px;">
+                        <div class="col">
                             <label class="input-label">Volume</label>
                             <input type="text" id="contenu-vol" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
                         </div>
-                        <div class="col" style="flex: 2;">
-                            <label class="input-label">URL Client</label>
-                            <input type="text" id="contenu-url-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
-                        </div>
-                        <div class="col" style="flex: 0 0 80px;">
-                            <label class="input-label">Position</label>
-                            <input type="text" id="contenu-pos-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <label class="input-label">Score Yourtext.Guru</label>
-                            <input type="text" id="contenu-ytg-score-client" placeholder="Score client (ex: 75)">
-                        </div>
                         <div class="col">
                             <label class="input-label">Cible Yourtext.Guru</label>
-                            <input type="text" id="contenu-ytg-cible-client" placeholder="ex: 61-85">
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col">
-                            <label class="input-label">Score 1.fr</label>
-                            <input type="text" id="contenu-1fr-score-client" placeholder="Score 1.fr client (ex: 80%)">
-                        </div>
-                        <div class="col">
-                            <label class="input-label">URL de l'analyse 1.fr</label>
-                            <input type="text" id="contenu-1fr-url-client" placeholder="Lien vers l'analyse">
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 10px;">
-                        <div class="col">
-                            <div class="dropzone" id="dz-svg-client">
-                                <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 10px;">
-                        <div class="col">
-                            <label class="input-label">Structure du contenu</label>
-                            <div id="ce-contenu-structure-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Itération des termes</label>
-                            <div id="ce-contenu-ytg-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique</label>
-                            <div id="ce-contenu-1fr-client" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
+                            <input type="text" id="contenu-ytg-cible" placeholder="ex: 61-85">
                         </div>
                     </div>
                 </div>
 
-                <div class="config-card" style="margin-top: 20px;">
-                    <div class="header-inline">
-                        <div>
-                            <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
-                                Analyse Concurrent <span class="badge-leader" style="position: static; transform: none; background: #d93025;">Concurrent</span>
-                            </h2>
+                <div class="row" style="margin-top: 15px; margin-bottom: 15px; gap: 15px;">
+                    <!-- COLONNE GAUCHE : CLIENT -->
+                    <div class="col config-card" style="margin-bottom: 0;">
+                        <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                            Analyse Client <span class="badge-client" style="position: static; transform: none;">Client</span>
+                        </h2>
+                        
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="col" style="flex: 2;">
+                                <label class="input-label">URL Client</label>
+                                <input type="text" id="contenu-url-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                            </div>
+                            <div class="col" style="flex: 0 0 60px;">
+                                <label class="input-label">Position</label>
+                                <input type="text" id="contenu-pos-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn" id="btn-save-contenu-comp" onclick="sauvegarderContenuConcurrent()" style="padding: 6px 12px;">💾 Enregistrer</button>
-                            <button class="btn" id="btn-ia-contenu-comp" onclick="lancerAnalyseContenuIA('comp')" disabled style="padding: 6px 12px;">🤖 Générer l'analyse IA</button>
-                        </div>
-                    </div>
 
-                    <div class="row" style="margin-top: 15px;">
-                        <div class="col" style="flex: 2;">
-                            <label class="input-label">URL Concurrent</label>
-                            <input type="text" id="contenu-url-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">Score Yourtext.Guru</label>
+                                <input type="text" id="contenu-ytg-score-client" placeholder="ex: 75">
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Score 1.fr</label>
+                                <input type="text" id="contenu-1fr-score-client" placeholder="ex: 80%">
+                            </div>
                         </div>
-                        <div class="col" style="flex: 0 0 80px;">
-                            <label class="input-label">Position</label>
-                            <input type="text" id="contenu-pos-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col">
-                            <label class="input-label">Score Yourtext.Guru</label>
-                            <input type="text" id="contenu-ytg-score-comp" placeholder="Score concurrent (ex: 75)">
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">URL de l'analyse 1.fr</label>
+                                <input type="text" id="contenu-1fr-url-client" placeholder="Lien vers l'analyse">
+                            </div>
                         </div>
-                        <div class="col">
-                            <label class="input-label">Cible Yourtext.Guru</label>
-                            <input type="text" id="contenu-ytg-cible-comp" placeholder="ex: 61-85">
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col">
-                            <label class="input-label">Score 1.fr</label>
-                            <input type="text" id="contenu-1fr-score-comp" placeholder="Score 1.fr concurrent (ex: 80%)">
-                        </div>
-                        <div class="col">
-                            <label class="input-label">URL de l'analyse 1.fr</label>
-                            <input type="text" id="contenu-1fr-url-comp" placeholder="Lien vers l'analyse">
-                        </div>
-                    </div>
-
-                    <div class="row" style="margin-top: 10px;">
-                        <div class="col">
-                            <div class="dropzone" id="dz-svg-comp">
-                                <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col">
+                                <div class="dropzone" id="dz-svg-client">
+                                    <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row" style="margin-top: 10px;">
+                    <!-- COLONNE DROITE : CONCURRENT -->
+                    <div class="col config-card" style="margin-bottom: 0;">
+                        <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
+                            Analyse Concurrent <span class="badge-leader" style="position: static; transform: none; background: #d93025;">Concurrent</span>
+                        </h2>
+                        
+                        <div class="row" style="margin-top: 15px;">
+                            <div class="col" style="flex: 2;">
+                                <label class="input-label">URL Concurrent</label>
+                                <input type="text" id="contenu-url-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                            </div>
+                            <div class="col" style="flex: 0 0 60px;">
+                                <label class="input-label">Position</label>
+                                <input type="text" id="contenu-pos-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368; text-align: center;" placeholder="-">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">Score Yourtext.Guru</label>
+                                <input type="text" id="contenu-ytg-score-comp" placeholder="ex: 75">
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Score 1.fr</label>
+                                <input type="text" id="contenu-1fr-score-comp" placeholder="ex: 80%">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <label class="input-label">URL de l'analyse 1.fr</label>
+                                <input type="text" id="contenu-1fr-url-comp" placeholder="Lien vers l'analyse">
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top: 10px;">
+                            <div class="col">
+                                <div class="dropzone" id="dz-svg-comp">
+                                    <span class="dropzone-text">Glissez le SVG Yourtext.Guru ici</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">💾 Enregistrer</button>
+                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse IA comparative</button>
+                </div>
+
+                <div id="contenu-results-container" style="display: none;">
+                    <div class="row" style="gap: 15px;">
                         <div class="col">
-                            <label class="input-label">Structure du contenu</label>
+                            <label class="input-label">Structure du contenu (Client)</label>
+                            <div id="ce-contenu-structure-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Itération des termes (Client)</label>
+                            <div id="ce-contenu-ytg-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
+                            
+                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique (Client)</label>
+                            <div id="ce-contenu-1fr-client" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
+                        </div>
+                        <div class="col">
+                            <label class="input-label">Structure du contenu (Concurrent)</label>
                             <div id="ce-contenu-structure-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
                             
-                            <label class="input-label" style="margin-top: 10px;">Itération des termes</label>
+                            <label class="input-label" style="margin-top: 10px;">Itération des termes (Concurrent)</label>
                             <div id="ce-contenu-ytg-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
                             
-                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique</label>
+                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique (Concurrent)</label>
                             <div id="ce-contenu-1fr-comp" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
                         </div>
                     </div>
@@ -1279,6 +1273,7 @@
                         // Restauration de l'onglet 8 (Contenu)
                         document.getElementById('contenu-kw').value = config.contenuKw || config.focusKw || "";
                         document.getElementById('contenu-vol').value = config.focusVol || "";
+                        document.getElementById('contenu-ytg-cible').value = config.contenuYtgCible || "";
                         document.getElementById('contenu-url-client').value = config.focusClientUrl || "";
                         document.getElementById('contenu-pos-client').value = config.focusClientPos || "";
                         document.getElementById('contenu-url-comp').value = config.focusCompUrl || "";
@@ -1286,7 +1281,6 @@
 
                         // Restauration Client
                         if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
-                        if(config.contenuYtgCibleClient) document.getElementById('contenu-ytg-cible-client').value = config.contenuYtgCibleClient;
                         if(config.contenu1frScoreClient) document.getElementById('contenu-1fr-score-client').value = config.contenu1frScoreClient;
                         if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
 
@@ -1296,13 +1290,16 @@
 
                         // Restauration Concurrent
                         if(config.contenuYtgScoreComp) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreComp;
-                        if(config.contenuYtgCibleComp) document.getElementById('contenu-ytg-cible-comp').value = config.contenuYtgCibleComp;
                         if(config.contenu1frScoreComp) document.getElementById('contenu-1fr-score-comp').value = config.contenu1frScoreComp;
                         if(config.contenu1frUrlComp) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlComp;
 
                         if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
                         if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
                         if (config.contenu1frCompHtml) setCeContent('ce-contenu-1fr-comp', config.contenu1frComp);
+
+                        if (config.contenuStructureClientHtml || config.contenuStructureCompHtml) {
+                            document.getElementById('contenu-results-container').style.display = 'block';
+                        }
                     }
 
                     google.script.run
@@ -4159,11 +4156,11 @@
                                 var txtEl = dz.querySelector('.dropzone-text');
                                 if (type === 'client') {
                                     svgDataClient = txt;
-                                    document.getElementById('btn-ia-contenu-client').disabled = false;
+                                    document.getElementById('btn-ia-contenu').disabled = false;
                                     if(txtEl) txtEl.innerHTML = "✅ SVG Client chargé";
                                 } else {
                                     svgDataComp = txt;
-                                    document.getElementById('btn-ia-contenu-comp').disabled = false;
+                                    document.getElementById('btn-ia-contenu').disabled = false;
                                     if(txtEl) txtEl.innerHTML = "✅ SVG Concurrent chargé";
                                 }
                                 dz.style.borderColor = "#188038";
@@ -4181,56 +4178,34 @@
             setupSvgDz(dzComp, 'comp');
         }
 
-        function sauvegarderContenuClient() {
-            var btn = document.getElementById('btn-save-contenu-client');
+        function sauvegarderContenu() {
+            var btn = document.getElementById('btn-save-contenu');
             btn.disabled = true;
             var originalText = btn.innerText;
             btn.innerText = "⏳ Enregistrement...";
 
             var data = {
+                CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
+                
                 CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
                 CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
                 CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
-                CONTENU_YTG_CIBLE_CLIENT: document.getElementById('contenu-ytg-cible-client').value,
                 CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
                 CONTENU_1FR_SCORE_CLIENT: document.getElementById('contenu-1fr-score-client').value,
                 CONTENU_1FR_URL_CLIENT: document.getElementById('contenu-1fr-url-client').value,
 
-                // Sauvegarde HTML pour le mode édition
-                contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
-                contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
-                contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML
-            };
-
-            google.script.run
-                .withSuccessHandler(function() {
-                    btn.innerText = "✅ Enregistré";
-                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
-                })
-                .withFailureHandler(function(err) {
-                    btn.innerText = "❌ Erreur";
-                    alert("Erreur de sauvegarde : " + err.message);
-                    setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
-                })
-                .sauvegarderDonneesContenu(data);
-        }
-
-        function sauvegarderContenuConcurrent() {
-            var btn = document.getElementById('btn-save-contenu-comp');
-            btn.disabled = true;
-            var originalText = btn.innerText;
-            btn.innerText = "⏳ Enregistrement...";
-
-            var data = {
                 CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
                 CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
                 CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
-                CONTENU_YTG_CIBLE_CONCURRENT: document.getElementById('contenu-ytg-cible-comp').value,
                 CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
                 CONTENU_1FR_SCORE_CONCURRENT: document.getElementById('contenu-1fr-score-comp').value,
                 CONTENU_1FR_URL_CONCURRENT: document.getElementById('contenu-1fr-url-comp').value,
 
                 // Sauvegarde HTML pour le mode édition
+                contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
+                contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
+                contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
+                
                 contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
                 contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
                 contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
@@ -4249,34 +4224,65 @@
                 .sauvegarderDonneesContenu(data);
         }
 
-        function lancerAnalyseContenuIA(cible) {
-            var btnId = cible === 'client' ? 'btn-ia-contenu-client' : 'btn-ia-contenu-comp';
-            var btn = document.getElementById(btnId);
+        function lancerAnalyseContenuIA() {
+            var btn = document.getElementById('btn-ia-contenu');
             btn.disabled = true;
-            showLoader("Génération de l'analyse sémantique IA pour le " + cible + "...");
+            showLoader("Génération de l'analyse sémantique IA en cours (Client et Concurrent)...");
 
-            var htmlContent = cible === 'client' ? getRawMarkdownFromCE('ce-contenu-structure-client') : getRawMarkdownFromCE('ce-contenu-structure-comp');
-            var svgContent = cible === 'client' ? svgDataClient : svgDataComp;
             var contexte = document.getElementById('conf-contexte-preaudit') ? document.getElementById('conf-contexte-preaudit').value : '';
+            var htmlClient = getRawMarkdownFromCE('ce-contenu-structure-client');
+            var htmlComp = getRawMarkdownFromCE('ce-contenu-structure-comp');
+            
+            var appelsTermines = 0;
+            var erreurs = [];
 
+            function verifierFinAppels() {
+                appelsTermines++;
+                if (appelsTermines >= 2) {
+                    hideLoader();
+                    btn.disabled = false;
+                    document.getElementById('contenu-results-container').style.display = 'block';
+                    if (erreurs.length > 0) {
+                        alert("Erreurs rencontrées :\n" + erreurs.join("\n"));
+                    }
+                }
+            }
+
+            // Appel Client
             google.script.run
                 .withSuccessHandler(function(res) {
-                    hideLoader();
-                    btn.disabled = false;
                     if(res && res.success) {
-                        if(res.data.structure) setCeContent(cible === 'client' ? 'ce-contenu-structure-client' : 'ce-contenu-structure-comp', res.data.structure);
-                        if(res.data.ytg) setCeContent(cible === 'client' ? 'ce-contenu-ytg-client' : 'ce-contenu-ytg-comp', res.data.ytg);
-                        if(res.data.semantique) setCeContent(cible === 'client' ? 'ce-contenu-1fr-client' : 'ce-contenu-1fr-comp', res.data.semantique);
+                        if(res.data.structure) setCeContent('ce-contenu-structure-client', res.data.structure);
+                        if(res.data.ytg) setCeContent('ce-contenu-ytg-client', res.data.ytg);
+                        if(res.data.semantique) setCeContent('ce-contenu-1fr-client', res.data.semantique);
                     } else {
-                        alert("Erreur de l'IA : " + (res ? res.error : "Erreur inconnue"));
+                        erreurs.push("Erreur IA Client : " + (res ? res.error : "Erreur inconnue"));
                     }
+                    verifierFinAppels();
                 })
                 .withFailureHandler(function(err) {
-                    hideLoader();
-                    btn.disabled = false;
-                    alert("Erreur critique : " + err.message);
+                    erreurs.push("Erreur critique Client : " + err.message);
+                    verifierFinAppels();
                 })
-                .lancerAnalyseContenuIA(cible, htmlContent, svgContent, contexte);
+                .lancerAnalyseContenuIA('client', htmlClient, svgDataClient, contexte);
+
+            // Appel Concurrent
+            google.script.run
+                .withSuccessHandler(function(res) {
+                    if(res && res.success) {
+                        if(res.data.structure) setCeContent('ce-contenu-structure-comp', res.data.structure);
+                        if(res.data.ytg) setCeContent('ce-contenu-ytg-comp', res.data.ytg);
+                        if(res.data.semantique) setCeContent('ce-contenu-1fr-comp', res.data.semantique);
+                    } else {
+                        erreurs.push("Erreur IA Concurrent : " + (res ? res.error : "Erreur inconnue"));
+                    }
+                    verifierFinAppels();
+                })
+                .withFailureHandler(function(err) {
+                    erreurs.push("Erreur critique Concurrent : " + err.message);
+                    verifierFinAppels();
+                })
+                .lancerAnalyseContenuIA('comp', htmlComp, svgDataComp, contexte);
         }
 
         function lancerExportSlidesContenu() {
@@ -4350,6 +4356,133 @@
                     console.error("Erreur backend lancerExportSlidesUX : " + err.message);
                 })
                 .exporterUXSlides();
+        }
+
+        function extraireDonneesYtg(svgString) {
+            console.log("=== DÉBUT extraireDonneesYtg ===");
+            try {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(svgString, "image/svg+xml");
+
+                // 1. Extraire les mots (Axe X)
+                // Cible spécifique ApexCharts
+                var motsNodes = doc.querySelectorAll('g.apexcharts-xaxis-texts-g text, g.apexcharts-xaxis text');
+                if (motsNodes.length === 0) {
+                    console.log("Sélecteur ApexCharts non trouvé, recherche de fallback (tous les textes).");
+                    motsNodes = doc.querySelectorAll('text');
+                }
+
+                var mots = [];
+                motsNodes.forEach(function(node) {
+                    var texte = node.textContent.trim();
+                    // L'attribut X est parfois direct, parfois dans un transform="translate(x,y)"
+                    var xRaw = node.getAttribute('x');
+                    var transform = node.getAttribute('transform');
+                    var x = parseFloat(xRaw || (transform ? transform.match(/translate\(([\d.]+)/)?.[1] : 0));
+                    var y = parseFloat(node.getAttribute('y') || 0);
+
+                    // Filtrer les textes vides
+                    if (texte && texte.length > 0) {
+                        mots.push({ texte: texte, x: x, y: y });
+                    }
+                });
+
+                // Heuristique : L'axe X est la ligne horizontale qui contient le plus de textes
+                var yCounts = {};
+                mots.forEach(function(m) {
+                    var yRounded = Math.round(m.y / 10) * 10; // Grouper par dizaines de pixels
+                    yCounts[yRounded] = (yCounts[yRounded] || 0) + 1;
+                });
+                var bestY = Object.keys(yCounts).reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b });
+                
+                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 10 });
+                motsFinaux.sort(function(a, b) { return a.x - b.x }); // Trier de gauche à droite
+                
+                console.log("Mots extraits (" + motsFinaux.length + ") :", motsFinaux.map(function(m) { return m.texte }).join(', '));
+
+                // 2. Extraire les points de la courbe "Votre contenu" (Axe Y)
+                var circles = doc.querySelectorAll('circle');
+                var points = [];
+                circles.forEach(function(circle) {
+                    var cx = parseFloat(circle.getAttribute('cx'));
+                    var cy = parseFloat(circle.getAttribute('cy'));
+                    var fill = circle.getAttribute('fill') || circle.style.fill || "";
+                    
+                    // La courbe utilisateur YTG est généralement constituée de points noirs (#000000, black, etc.)
+                    if (!isNaN(cx) && !isNaN(cy) && (fill === "#000000" || fill === "black" || fill === "#000" || fill.indexOf("0, 0, 0") !== -1)) {
+                        points.push({ cx: cx, cy: cy });
+                    }
+                });
+
+                // Fallback si la couleur a changé : on prend tous les cercles valides
+                if (points.length === 0) {
+                    console.log("Attention: Aucun cercle noir trouvé, fallback sur tous les points.");
+                    circles.forEach(function(c) {
+                        var cx = parseFloat(c.getAttribute('cx')), cy = parseFloat(c.getAttribute('cy'));
+                        if(!isNaN(cx) && !isNaN(cy)) points.push({cx: cx, cy: cy});
+                    });
+                }
+
+                points.sort(function(a, b) { return a.cx - b.cx }); // Trier de gauche à droite
+                console.log("Points extraits (" + points.length + ").");
+
+                // 3. Calcul des seuils d'optimisation
+                // En SVG, Y=0 est en haut. Donc 'cy' petit = zone rouge (haut). 'cy' grand = zone bleue (bas).
+                var cyValues = points.map(function(p) { return p.cy });
+                var minCy = Math.min.apply(null, cyValues); // Le plus haut
+                var maxCy = Math.max.apply(null, cyValues); // Le plus bas
+                var amplitude = maxCy - minCy;
+                var svgHeight = parseFloat(doc.querySelector('svg').getAttribute('height') || amplitude);
+
+                // Seuils dynamiques (25% haut et bas)
+                var seuilSuropti = minCy + (amplitude > 0 ? amplitude * 0.25 : svgHeight * 0.25);
+                var seuilSousopti = maxCy - (amplitude > 0 ? amplitude * 0.25 : svgHeight * 0.25);
+
+                console.log("Amplitude Y : min=" + minCy + " (Suropti), max=" + maxCy + " (Sousopti)");
+                console.log("Seuils calculés : <= " + seuilSuropti + " (Rouge), >= " + seuilSousopti + " (Bleu)");
+
+                var resultats = {
+                    suroptimises: [],
+                    sous_optimises: [],
+                    mots_presents: motsFinaux.length
+                };
+
+                // 4. Réconciliation Mots <-> Points
+                if (points.length === motsFinaux.length) {
+                    console.log("Correspondance parfaite (1 mot = 1 point).");
+                    for (var i = 0; i < motsFinaux.length; i++) {
+                        var mot = motsFinaux[i].texte;
+                        var cy = points[i].cy;
+                        if (cy <= seuilSuropti) resultats.suroptimises.push(mot);
+                        if (cy >= seuilSousopti) resultats.sous_optimises.push(mot);
+                    }
+                } else {
+                    console.log("Correspondance par proximité X (mots: " + motsFinaux.length + ", points: " + points.length + ").");
+                    motsFinaux.forEach(function(m) {
+                        var pointProche = points.reduce(function(prev, curr) { 
+                            return Math.abs(curr.cx - m.x) < Math.abs(prev.cx - m.x) ? curr : prev 
+                        });
+                        if (pointProche) {
+                            if (pointProche.cy <= seuilSuropti) resultats.suroptimises.push(m.texte);
+                            if (pointProche.cy >= seuilSousopti) resultats.sous_optimises.push(m.texte);
+                        }
+                    });
+                }
+
+                // Dédoublonnage sécurisé
+                resultats.suroptimises = resultats.suroptimises.filter(function(v, i, a) { return a.indexOf(v) === i });
+                resultats.sous_optimises = resultats.sous_optimises.filter(function(v, i, a) { return a.indexOf(v) === i });
+
+                console.log("Suroptimisés trouvés : " + resultats.suroptimises.join(', '));
+                console.log("Sous-optimisés trouvés : " + resultats.sous_optimises.join(', '));
+                console.log("=== FIN extraireDonneesYtg (Succès) ===");
+
+                return resultats;
+
+            } catch (e) {
+                console.error("Erreur dans extraireDonneesYtg :", e);
+                return { suroptimises: [], sous_optimises: [], mots_presents: 0, erreur: true, message: e.message };
+            }
         }
 
         </script>
