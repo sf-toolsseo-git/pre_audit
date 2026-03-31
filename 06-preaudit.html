@@ -772,15 +772,23 @@
         <div class="tab-content" id="content-contenu">
             <div class="main-area">
                 
-                <h2 class="section-title">Stratégie de contenu</h2>
-                <div class="section-description" style="margin-bottom: 15px;">Évaluez la sémantique et la structure de la page cible face à son concurrent.</div>
+                <div class="header-inline">
+                    <div>
+                        <h2 class="section-title">Stratégie de contenu</h2>
+                        <div class="section-description" style="margin-bottom: 15px;">Évaluez la sémantique et la structure de la page cible face à son concurrent.</div>
+                    </div>
+                    <button type="button" class="btn" onclick="ouvrirTabsUX()">Ouvrir les pages ↗</button>
+                </div>
 
                 <div class="config-card">
                     <h2 class="section-title">Données globales</h2>
                     <div class="row">
                         <div class="col">
                             <label class="input-label">Mot-clé cible</label>
-                            <input type="text" id="contenu-kw" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                            <div style="display: flex; gap: 5px;">
+                                <input type="text" id="contenu-kw" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                                <button type="button" class="btn" style="padding: 4px 8px; font-size: 11px; height: 35px;" onclick="copierDansPressePapier('contenu-kw', this)" title="Copier">📋</button>
+                            </div>
                         </div>
                         <div class="col">
                             <label class="input-label">Volume</label>
@@ -803,7 +811,10 @@
                         <div class="row" style="margin-top: 15px;">
                             <div class="col" style="flex: 2;">
                                 <label class="input-label">URL Client</label>
-                                <input type="text" id="contenu-url-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="contenu-url-client" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                                    <button type="button" class="btn" style="padding: 4px 8px; font-size: 11px; height: 35px;" onclick="copierDansPressePapier('contenu-url-client', this)" title="Copier">📋</button>
+                                </div>
                             </div>
                             <div class="col" style="flex: 0 0 60px;">
                                 <label class="input-label">Position</label>
@@ -842,7 +853,10 @@
                         <div class="row" style="margin-top: 15px;">
                             <div class="col" style="flex: 2;">
                                 <label class="input-label">URL Concurrent</label>
-                                <input type="text" id="contenu-url-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                                <div style="display: flex; gap: 5px;">
+                                    <input type="text" id="contenu-url-comp" readonly style="background-color: #f1f3f4; cursor: not-allowed; color: #5f6368;" placeholder="-">
+                                    <button type="button" class="btn" style="padding: 4px 8px; font-size: 11px; height: 35px;" onclick="copierDansPressePapier('contenu-url-comp', this)" title="Copier">📋</button>
+                                </div>
                             </div>
                             <div class="col" style="flex: 0 0 60px;">
                                 <label class="input-label">Position</label>
@@ -874,8 +888,8 @@
                 </div>
 
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">💾 Enregistrer</button>
-                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse</button>
+                    <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">Analyse 1.fr et YTG</button>
+                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="display: none; padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse IA</button>
                 </div>
 
                 <div id="contenu-results-container" style="display: none;">
@@ -912,6 +926,23 @@
         </div>
 
         <script>
+            function copierDansPressePapier(idElement, btn) {
+                var elem = document.getElementById(idElement);
+                if (!elem) return;
+                var textToCopy = elem.value || elem.innerText || "";
+                if (!textToCopy || textToCopy === "-") return;
+                
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    var originalText = btn.innerHTML;
+                    btn.innerHTML = "✅";
+                    setTimeout(function() {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(function(err) {
+                    console.error("Erreur copie : ", err);
+                });
+            }
+
             var base64ImgKw = null;
             var mimeImgKw = null;
             var base64ImgTrafic = null;
@@ -4281,7 +4312,9 @@
                     google.script.run
                         .withSuccessHandler(function() {
                             btn.innerText = "✅ Enregistré";
-                            document.getElementById('btn-ia-contenu').disabled = false;
+                            var btnIa = document.getElementById('btn-ia-contenu');
+                            btnIa.disabled = false;
+                            btnIa.style.display = 'inline-block';
                             if (erreurs1fr.length > 0) {
                                 alert("Sauvegardé, mais attention :\n" + erreurs1fr.join("\n"));
                             }
@@ -4480,81 +4513,137 @@
                 var doc = parser.parseFromString(svgString, "image/svg+xml");
 
                 // 1. Extraire les mots (Axe X)
-                // Cible spécifique ApexCharts
                 var motsNodes = doc.querySelectorAll('g.apexcharts-xaxis-texts-g text, g.apexcharts-xaxis text');
                 if (motsNodes.length === 0) {
-                    console.log("Sélecteur ApexCharts non trouvé, recherche de fallback (tous les textes).");
+                    console.log("Sélecteur ApexCharts non trouvé, fallback sur tous les <text>.");
                     motsNodes = doc.querySelectorAll('text');
                 }
 
                 var mots = [];
                 motsNodes.forEach(function(node) {
                     var texte = node.textContent.trim();
-                    // L'attribut X est parfois direct, parfois dans un transform="translate(x,y)"
                     var xRaw = node.getAttribute('x');
+                    var yRaw = node.getAttribute('y');
                     var transform = node.getAttribute('transform');
-                    var x = parseFloat(xRaw || (transform ? transform.match(/translate\(([\d.]+)/)?.[1] : 0));
-                    var y = parseFloat(node.getAttribute('y') || 0);
+                    
+                    var x = parseFloat(xRaw);
+                    if (isNaN(x) && transform) {
+                        var m = transform.match(/translate\(([\d.]+)/);
+                        if (m) x = parseFloat(m[1]);
+                    }
+                    if (isNaN(x)) x = 0;
 
-                    // Filtrer les textes vides
+                    var y = parseFloat(yRaw);
+                    if (isNaN(y) && transform) {
+                        var mY = transform.match(/translate\([\d.]+\s*,\s*([\d.]+)\)/);
+                        if (mY) y = parseFloat(mY[1]);
+                    }
+                    if (isNaN(y)) y = 0;
+
                     if (texte && texte.length > 0) {
                         mots.push({ texte: texte, x: x, y: y });
                     }
                 });
 
-                // Heuristique : L'axe X est la ligne horizontale qui contient le plus de textes
-                var yCounts = {};
-                mots.forEach(function(m) {
-                    var yRounded = Math.round(m.y / 10) * 10; // Grouper par dizaines de pixels
-                    yCounts[yRounded] = (yCounts[yRounded] || 0) + 1;
-                });
-                var bestY = Object.keys(yCounts).reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b });
-                
-                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 10 });
-                motsFinaux.sort(function(a, b) { return a.x - b.x }); // Trier de gauche à droite
-                
-                console.log("Mots extraits (" + motsFinaux.length + ") :", motsFinaux.map(function(m) { return m.texte }).join(', '));
-
-                // 2. Extraire les points de la courbe "Votre contenu" (Axe Y)
-                var circles = doc.querySelectorAll('circle');
-                var points = [];
-                circles.forEach(function(circle) {
-                    var cx = parseFloat(circle.getAttribute('cx'));
-                    var cy = parseFloat(circle.getAttribute('cy'));
-                    var fill = circle.getAttribute('fill') || circle.style.fill || "";
-                    
-                    // La courbe utilisateur YTG est généralement constituée de points noirs (#000000, black, etc.)
-                    if (!isNaN(cx) && !isNaN(cy) && (fill === "#000000" || fill === "black" || fill === "#000" || fill.indexOf("0, 0, 0") !== -1)) {
-                        points.push({ cx: cx, cy: cy });
-                    }
-                });
-
-                // Fallback si la couleur a changé : on prend tous les cercles valides
-                if (points.length === 0) {
-                    console.log("Attention: Aucun cercle noir trouvé, fallback sur tous les points.");
-                    circles.forEach(function(c) {
-                        var cx = parseFloat(c.getAttribute('cx')), cy = parseFloat(c.getAttribute('cy'));
-                        if(!isNaN(cx) && !isNaN(cy)) points.push({cx: cx, cy: cy});
-                    });
+                if (mots.length === 0) {
+                    console.log("❌ Erreur : Aucun texte (mot) trouvé dans le SVG.");
+                    return { suroptimises: [], sous_optimises: [], mots_presents: 0 };
                 }
 
-                points.sort(function(a, b) { return a.cx - b.cx }); // Trier de gauche à droite
-                console.log("Points extraits (" + points.length + ").");
+                // Heuristique pour l'axe X : le Y le plus fréquent
+                var yCounts = {};
+                mots.forEach(function(m) {
+                    var yRounded = Math.round(m.y / 10) * 10;
+                    yCounts[yRounded] = (yCounts[yRounded] || 0) + 1;
+                });
 
-                // 3. Calcul des seuils d'optimisation
-                // En SVG, Y=0 est en haut. Donc 'cy' petit = zone rouge (haut). 'cy' grand = zone bleue (bas).
-                var cyValues = points.map(function(p) { return p.cy });
-                var minCy = Math.min.apply(null, cyValues); // Le plus haut
-                var maxCy = Math.max.apply(null, cyValues); // Le plus bas
-                var amplitude = maxCy - minCy;
-                var svgHeight = parseFloat(doc.querySelector('svg').getAttribute('height') || amplitude);
+                var yKeys = Object.keys(yCounts);
+                var bestY = 0;
+                if (yKeys.length > 0) {
+                    bestY = yKeys.reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b });
+                }
 
-                // Seuils dynamiques (25% haut et bas)
-                var seuilSuropti = minCy + (amplitude > 0 ? amplitude * 0.25 : svgHeight * 0.25);
-                var seuilSousopti = maxCy - (amplitude > 0 ? amplitude * 0.25 : svgHeight * 0.25);
+                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 10 });
+                motsFinaux.sort(function(a, b) { return a.x - b.x });
 
-                console.log("Amplitude Y : min=" + minCy + " (Suropti), max=" + maxCy + " (Sousopti)");
-                console.log("Seuils calculés : <= " + seuilSuropti + " (Rouge), >= " + seuilSousopti + " (Bleu)");
+                console.log("✅ Mots extraits (" + motsFinaux.length + ") :", motsFinaux.map(function(m) { return m.texte }).join(', '));
+
+                // 2. Extraire les points (Axe Y)
+                var circles = Array.from(doc.querySelectorAll('circle'));
+                var points = [];
+
+                if (circles.length === 0) {
+                    console.log("❌ Erreur : Aucun cercle trouvé, tentative de fallback (ex: .apexcharts-marker ou <path>).");
+                    // Fallback avancé possible ici, par ex chercher .apexcharts-marker
+                    var markers = doc.querySelectorAll('.apexcharts-marker');
+                    markers.forEach(function(m) {
+                        var cx = parseFloat(m.getAttribute('cx')), cy = parseFloat(m.getAttribute('cy'));
+                        if (!isNaN(cx) && !isNaN(cy)) points.push({ cx: cx, cy: cy });
+                    });
+                } else {
+                    // Trier par couleur et privilégier la couleur de la courbe "Votre contenu" (noir)
+                    var pointsNoirs = [];
+                    var autresPoints = [];
+                    
+                    circles.forEach(function(circle) {
+                        var cx = parseFloat(circle.getAttribute('cx'));
+                        var cy = parseFloat(circle.getAttribute('cy'));
+                        if (isNaN(cx) || isNaN(cy)) return;
+                        
+                        var fill = (circle.getAttribute('fill') || circle.style.fill || "").toLowerCase();
+                        var isBlack = fill === "#000000" || fill === "black" || fill === "#000" || fill.indexOf("0, 0, 0") !== -1 || fill.indexOf("rgb(0,0,0)") !== -1;
+                        var isMarker = circle.classList && circle.classList.contains("apexcharts-marker");
+                        
+                        var pt = { cx: cx, cy: cy };
+                        if (isBlack || isMarker) {
+                            pointsNoirs.push(pt);
+                        } else {
+                            autresPoints.push(pt);
+                        }
+                    });
+
+                    if (pointsNoirs.length > 0) {
+                        console.log("ℹ️ Points noirs/markers trouvés : " + pointsNoirs.length);
+                        points = pointsNoirs;
+                    } else if (autresPoints.length > 0) {
+                        console.log("⚠️ Aucun point noir, fallback sur les autres points : " + autresPoints.length);
+                        points = autresPoints;
+                    }
+                }
+
+                if (points.length === 0) {
+                    console.log("❌ Erreur : Aucun point (cx, cy) extrait du SVG.");
+                    return { suroptimises: [], sous_optimises: [], mots_presents: motsFinaux.length };
+                }
+
+                points.sort(function(a, b) { return a.cx - b.cx });
+                console.log("✅ Points triés extraits (" + points.length + ").");
+
+                // 3. Calcul des seuils
+                var svgEl = doc.querySelector('svg');
+                var svgHeight = svgEl ? parseFloat(svgEl.getAttribute('height')) : NaN;
+                if (isNaN(svgHeight) && svgEl) {
+                    var vb = svgEl.getAttribute('viewBox');
+                    if (vb) {
+                        var vbParts = vb.split(/[\s,]+/);
+                        if (vbParts.length >= 4) svgHeight = parseFloat(vbParts[3]);
+                    }
+                }
+                
+                // Fallback hauteur
+                if (isNaN(svgHeight) || svgHeight <= 0) {
+                    var cyValues = points.map(function(p) { return p.cy });
+                    var minCy = Math.min.apply(null, cyValues);
+                    var maxCy = Math.max.apply(null, cyValues);
+                    svgHeight = maxCy - minCy;
+                    if (svgHeight === 0) svgHeight = 100; // anti-div-0
+                }
+
+                // Seuils : haut du graph = proche de Y=0 (suropti), bas du graph = grand Y (sous-opti)
+                var seuilSuropti = svgHeight * 0.25;
+                var seuilSousopti = svgHeight * 0.75;
+                
+                console.log("Hauteur de référence : " + svgHeight + " | Seuil Suropti (<=) : " + seuilSuropti + " | Seuil Sousopti (>=) : " + seuilSousopti);
 
                 var resultats = {
                     suroptimises: [],
@@ -4562,17 +4651,17 @@
                     mots_presents: motsFinaux.length
                 };
 
-                // 4. Réconciliation Mots <-> Points
+                // 4. Réconciliation
                 if (points.length === motsFinaux.length) {
-                    console.log("Correspondance parfaite (1 mot = 1 point).");
+                    console.log("✅ Correspondance parfaite (1 mot = 1 point).");
                     for (var i = 0; i < motsFinaux.length; i++) {
                         var mot = motsFinaux[i].texte;
                         var cy = points[i].cy;
                         if (cy <= seuilSuropti) resultats.suroptimises.push(mot);
                         if (cy >= seuilSousopti) resultats.sous_optimises.push(mot);
                     }
-                } else {
-                    console.log("Correspondance par proximité X (mots: " + motsFinaux.length + ", points: " + points.length + ").");
+                } else if (points.length > 0 && motsFinaux.length > 0) {
+                    console.log("⚠️ Correspondance par proximité X (mots: " + motsFinaux.length + ", points: " + points.length + ").");
                     motsFinaux.forEach(function(m) {
                         var pointProche = points.reduce(function(prev, curr) { 
                             return Math.abs(curr.cx - m.x) < Math.abs(prev.cx - m.x) ? curr : prev 
@@ -4584,18 +4673,17 @@
                     });
                 }
 
-                // Dédoublonnage sécurisé
                 resultats.suroptimises = resultats.suroptimises.filter(function(v, i, a) { return a.indexOf(v) === i });
                 resultats.sous_optimises = resultats.sous_optimises.filter(function(v, i, a) { return a.indexOf(v) === i });
 
-                console.log("Suroptimisés trouvés : " + resultats.suroptimises.join(', '));
-                console.log("Sous-optimisés trouvés : " + resultats.sous_optimises.join(', '));
+                console.log("Suroptimisés : " + resultats.suroptimises.join(', '));
+                console.log("Sous-optimisés : " + resultats.sous_optimises.join(', '));
                 console.log("=== FIN extraireDonneesYtg (Succès) ===");
 
                 return resultats;
 
             } catch (e) {
-                console.error("Erreur dans extraireDonneesYtg :", e);
+                console.error("❌ Erreur fatale dans extraireDonneesYtg :", e);
                 return { suroptimises: [], sous_optimises: [], mots_presents: 0, erreur: true, message: e.message };
             }
         }
