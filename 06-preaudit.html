@@ -802,7 +802,6 @@
                 </div>
 
                 <div class="row" style="margin-top: 15px; margin-bottom: 15px; gap: 15px;">
-                    <!-- COLONNE GAUCHE : CLIENT -->
                     <div class="col config-card" style="margin-bottom: 0;">
                         <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
                             Analyse Client <span class="badge-client" style="position: static; transform: none;">Client</span>
@@ -840,11 +839,8 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div id="extraction-results-client" style="display:none; font-size:12px; background:#f8f9fa; padding:10px; border-radius:4px; margin-top:10px;"></div>
                     </div>
 
-                    <!-- COLONNE DROITE : CONCURRENT -->
                     <div class="col config-card" style="margin-bottom: 0;">
                         <h2 class="section-title" style="display: flex; align-items: center; gap: 8px;">
                             Analyse Concurrent <span class="badge-leader" style="position: static; transform: none; background: #d93025;">Concurrent</span>
@@ -882,13 +878,25 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div id="extraction-results-comp" style="display:none; font-size:12px; background:#f8f9fa; padding:10px; border-radius:4px; margin-top:10px;"></div>
                     </div>
                 </div>
 
                 <div style="text-align: center; margin-bottom: 20px;">
                     <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">Analyse 1.fr et YTG</button>
+                </div>
+
+                <div class="row" id="extraction-results-wrapper" style="display:none; margin-bottom: 20px; gap: 15px;">
+                    <div class="col" style="background:#f8f9fa; padding:15px; border-radius:8px; border: 1px solid #dadce0;">
+                        <h3 style="margin-top:0; font-size:14px; color:#08133B; border-bottom: 1px solid #dadce0; padding-bottom: 8px;">Résultats Client</h3>
+                        <div id="extraction-results-client" style="font-size:12px;"></div>
+                    </div>
+                    <div class="col" style="background:#f8f9fa; padding:15px; border-radius:8px; border: 1px solid #dadce0;">
+                        <h3 style="margin-top:0; font-size:14px; color:#08133B; border-bottom: 1px solid #dadce0; padding-bottom: 8px;">Résultats Concurrent</h3>
+                        <div id="extraction-results-comp" style="font-size:12px;"></div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px;">
                     <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="display: none; padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse IA</button>
                 </div>
 
@@ -1058,7 +1066,6 @@
                         
                         // Restauration de l'onglet 5 (Analyses détaillées)
                         if (config.intentionTitre || config.standard1 || config.serpTitre1) {
-                            // SERP
                             document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
                             document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
                             document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
@@ -1107,21 +1114,17 @@
                                 }).getDriveImageBase64(config.serpSvg4);
                             }
 
-                            // Intention
                             document.getElementById('intention-titre').value = config.intentionTitre || "";
                             if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
 
-                            // Standard
                             if (config.standard1Html) setCeContent('standard-1', config.standard1);
                             if (config.standard2Html) setCeContent('standard-2', config.standard2);
                             if (config.standard3Html) setCeContent('standard-3', config.standard3);
 
-                            // Sémantique
                             if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
                             if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
                             if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
 
-                            // GAP Analysis
                             document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
                             if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
                             document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
@@ -1129,7 +1132,6 @@
                             document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
                             if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
 
-                            // Recommandations
                             if (config.reco1Html) setCeContent('reco-1', config.reco1);
                             if (config.reco2Html) setCeContent('reco-2', config.reco2);
                             if (config.reco3Html) setCeContent('reco-3', config.reco3);
@@ -1140,17 +1142,8 @@
                         
                         // Restauration de l'onglet 6
                         var cibleVal = config.techUrlCible;
-                        
-                        // On vérifie d'abord la page cible renseignée dans l'onglet Focus (TARGET_URL_CLIENT)
-                        if (!cibleVal || cibleVal === "-") {
-                            cibleVal = config.focusClientUrl;
-                        }
-                        
-                        // Si toujours vide, on bascule sur la page d'accueil (CONF_CLIENT_URL)
-                        if (!cibleVal || cibleVal === "-") {
-                            cibleVal = config.clientUrl || "";
-                        }
-                        
+                        if (!cibleVal || cibleVal === "-") cibleVal = config.focusClientUrl;
+                        if (!cibleVal || cibleVal === "-") cibleVal = config.clientUrl || "";
                         document.getElementById('tech-url-cible').value = cibleVal;
                         
                         var robotsUrl = "";
@@ -1177,7 +1170,6 @@
                         if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
                         if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                         
-                        // Restauration des données IA Technique (Full state)
                         if (config.DATA_TECH_IA_FULL_STATE) {
                             try {
                                 var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
@@ -1193,7 +1185,6 @@
                                 console.log("Erreur de parsing JSON : " + e.message);
                             }
                         } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
-                            // Fallback sur l'ancien système de restauration
                             document.getElementById('tech-ia-results-container').style.display = 'flex';
                             var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
                             
@@ -1216,7 +1207,6 @@
                             }
                         }
                         
-                        // Restauration du HTML des résultats de l'onglet 6
                         if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
                             document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
                             document.getElementById('tech-results-container').style.display = 'block';
@@ -1253,24 +1243,21 @@
                             var containerUx = document.getElementById('ux-results-container');
                             if (containerUx) containerUx.style.display = 'block';
                             
-                            var btnIa = document.getElementById('btn-gen-ux-ia');
-                            var btnExport = document.getElementById('btn-export-ux');
-                            if (btnIa) btnIa.disabled = false;
-                            if (btnExport) btnExport.disabled = false;
+                            var btnIaUx = document.getElementById('btn-gen-ux-ia');
+                            var btnExportUx = document.getElementById('btn-export-ux');
+                            if (btnIaUx) btnIaUx.disabled = false;
+                            if (btnExportUx) btnExportUx.disabled = false;
 
-                            // Récupération sécurisée via le serveur (Client)
                             google.script.run.withSuccessHandler(function(b64) {
                                 var imgClient = document.getElementById('img-ux-client');
                                 if (imgClient && b64) imgClient.src = "data:image/jpeg;base64," + b64;
                             }).getDriveImageBase64ById(idUxClientViewport);
 
-                            // Récupération sécurisée via le serveur (Concurrent)
                             google.script.run.withSuccessHandler(function(b64) {
                                 var imgComp = document.getElementById('img-ux-comp');
                                 if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
                             }).getDriveImageBase64ById(idUxCompViewport);
 
-                            // Restauration des recommandations et de la liste
                             if (config.dataUxIaFullState) {
                                 try {
                                     var parsedState = JSON.parse(config.dataUxIaFullState);
@@ -1278,16 +1265,12 @@
                                     if (config.uxRecommandation1) setCeContent('ux-reco-globale-1', config.uxRecommandation1);
                                     if (config.uxRecommandation2) setCeContent('ux-reco-globale-2', config.uxRecommandation2);
                                     
-                                    // Appel asynchrone des icônes avant affichage du bloc
                                     google.script.run.withSuccessHandler(function(icons) {
                                         renderUxList(icons);
-                                        
                                         var wrapper = document.getElementById('ux-analysis-wrapper');
                                         if (wrapper) wrapper.style.display = 'flex';
-                                        
                                         var btnSave = document.getElementById('btn-save-ux-manual');
                                         if (btnSave) btnSave.disabled = false;
-                                        
                                     }).recupererIconesTechBase64();
                                 } catch(e) {
                                     console.log("Erreur parsing dataUxIaFullState : " + e.message);
@@ -1304,25 +1287,31 @@
                         document.getElementById('contenu-url-comp').value = config.focusCompUrl || "";
                         document.getElementById('contenu-pos-comp').value = config.focusCompPos || "";
 
-                        // Restauration Client
                         if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
                         if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
+                        if(config.contenuYtgScoreConcurrent) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreConcurrent;
+                        if(config.contenu1frUrlConcurrent) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlConcurrent;
 
-                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); } catch(e) {} }
-                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); } catch(e) {} }
+                        var hasExtractionData = false;
+
+                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) {} }
+                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) {} }
                         renderExtractionData('client');
+
+                        if(config.contenuYtgDataConcurrent) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataConcurrent); hasExtractionData = true; } catch(e) {} }
+                        if(config.contenu1frDataConcurrent) { try { extracted1frComp = JSON.parse(config.contenu1frDataConcurrent); hasExtractionData = true; } catch(e) {} }
+                        renderExtractionData('comp');
+
+                        if (hasExtractionData) {
+                            document.getElementById('extraction-results-wrapper').style.display = 'flex';
+                            var btnIa = document.getElementById('btn-ia-contenu');
+                            btnIa.disabled = false;
+                            btnIa.style.display = 'inline-block';
+                        }
 
                         if (config.contenuStructureClientHtml) setCeContent('ce-contenu-structure-client', config.contenuStructureClient);
                         if (config.contenuYtgClientHtml) setCeContent('ce-contenu-ytg-client', config.contenuYtgClient);
                         if (config.contenu1frClientHtml) setCeContent('ce-contenu-1fr-client', config.contenu1frClient);
-
-                        // Restauration Concurrent
-                        if(config.contenuYtgScoreComp) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreComp;
-                        if(config.contenu1frUrlComp) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlComp;
-
-                        if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); } catch(e) {} }
-                        if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); } catch(e) {} }
-                        renderExtractionData('comp');
 
                         if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
                         if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
@@ -1360,7 +1349,8 @@
                 .withFailureHandler(handleError)
                 .chargerConfigurationPreAudit();
         };
-            // ========================== NAVIGATION ==========================
+            
+        // ========================== NAVIGATION ==========================
 
             function switchTab(tab, silently) {
                 document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
@@ -4175,7 +4165,7 @@
             var unfr = cible === 'client' ? extracted1frClient : extracted1frComp;
 
             if(!ytg && !unfr) {
-                el.style.display = 'none';
+                el.innerHTML = '<div style="color:#5f6368; font-style:italic;">Aucune donnée extraite.</div>';
                 return;
             }
 
@@ -4209,7 +4199,9 @@
             }
 
             el.innerHTML = html;
-            el.style.display = 'block';
+            
+            // Afficher le wrapper global si des données sont injectées
+            document.getElementById('extraction-results-wrapper').style.display = 'flex';
         }
 
         function initSvgDropzones() {
@@ -4515,175 +4507,143 @@
                 // 1. Extraire les mots (Axe X)
                 var motsNodes = doc.querySelectorAll('g.apexcharts-xaxis-texts-g text, g.apexcharts-xaxis text');
                 if (motsNodes.length === 0) {
-                    console.log("Sélecteur ApexCharts non trouvé, fallback sur tous les <text>.");
+                    console.log("Sélecteur ApexCharts des mots non trouvé, fallback sur tous les <text>.");
                     motsNodes = doc.querySelectorAll('text');
                 }
 
                 var mots = [];
                 motsNodes.forEach(function(node) {
                     var texte = node.textContent.trim();
-                    var xRaw = node.getAttribute('x');
-                    var yRaw = node.getAttribute('y');
-                    var transform = node.getAttribute('transform');
+                    if (!texte || texte.length === 0) return;
                     
-                    var x = parseFloat(xRaw);
+                    var x = parseFloat(node.getAttribute('x'));
+                    var transform = node.getAttribute('transform');
                     if (isNaN(x) && transform) {
                         var m = transform.match(/translate\(([\d.]+)/);
                         if (m) x = parseFloat(m[1]);
                     }
                     if (isNaN(x)) x = 0;
 
-                    var y = parseFloat(yRaw);
+                    var y = parseFloat(node.getAttribute('y'));
                     if (isNaN(y) && transform) {
                         var mY = transform.match(/translate\([\d.]+\s*,\s*([\d.]+)\)/);
                         if (mY) y = parseFloat(mY[1]);
                     }
                     if (isNaN(y)) y = 0;
 
-                    if (texte && texte.length > 0) {
+                    if (texte.length > 1) {
                         mots.push({ texte: texte, x: x, y: y });
                     }
                 });
 
-                if (mots.length === 0) {
-                    console.log("❌ Erreur : Aucun texte (mot) trouvé dans le SVG.");
-                    return { suroptimises: [], sous_optimises: [], mots_presents: 0 };
-                }
+                if (mots.length === 0) return { suroptimises: [], sous_optimises: [], mots_presents: 0 };
 
-                // Heuristique pour l'axe X : le Y le plus fréquent
                 var yCounts = {};
                 mots.forEach(function(m) {
                     var yRounded = Math.round(m.y / 10) * 10;
                     yCounts[yRounded] = (yCounts[yRounded] || 0) + 1;
                 });
-
                 var yKeys = Object.keys(yCounts);
-                var bestY = 0;
-                if (yKeys.length > 0) {
-                    bestY = yKeys.reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b });
-                }
-
-                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 10 });
+                var bestY = yKeys.length > 0 ? yKeys.reduce(function(a, b) { return yCounts[a] > yCounts[b] ? a : b }) : 0;
+                var motsFinaux = mots.filter(function(m) { return Math.abs(Math.round(m.y / 10) * 10 - bestY) <= 15 });
                 motsFinaux.sort(function(a, b) { return a.x - b.x });
+                console.log("✅ Mots extraits (" + motsFinaux.length + ").");
 
-                console.log("✅ Mots extraits (" + motsFinaux.length + ") :", motsFinaux.map(function(m) { return m.texte }).join(', '));
-
-                // 2. Extraire les points (Axe Y)
+                // 2. Extraire la ligne noire (Votre contenu)
+                var blackPoints = [];
                 var circles = Array.from(doc.querySelectorAll('circle'));
-                var points = [];
+                circles.forEach(function(c) {
+                    var cx = parseFloat(c.getAttribute('cx'));
+                    var cy = parseFloat(c.getAttribute('cy'));
+                    if (!isNaN(cx) && !isNaN(cy)) blackPoints.push({x: cx, y: cy});
+                });
 
-                if (circles.length === 0) {
-                    console.log("❌ Erreur : Aucun cercle trouvé, tentative de fallback (ex: .apexcharts-marker ou <path>).");
-                    // Fallback avancé possible ici, par ex chercher .apexcharts-marker
-                    var markers = doc.querySelectorAll('.apexcharts-marker');
-                    markers.forEach(function(m) {
-                        var cx = parseFloat(m.getAttribute('cx')), cy = parseFloat(m.getAttribute('cy'));
-                        if (!isNaN(cx) && !isNaN(cy)) points.push({ cx: cx, cy: cy });
-                    });
-                } else {
-                    // Trier par couleur et privilégier la couleur de la courbe "Votre contenu" (noir)
-                    var pointsNoirs = [];
-                    var autresPoints = [];
-                    
-                    circles.forEach(function(circle) {
-                        var cx = parseFloat(circle.getAttribute('cx'));
-                        var cy = parseFloat(circle.getAttribute('cy'));
-                        if (isNaN(cx) || isNaN(cy)) return;
-                        
-                        var fill = (circle.getAttribute('fill') || circle.style.fill || "").toLowerCase();
-                        var isBlack = fill === "#000000" || fill === "black" || fill === "#000" || fill.indexOf("0, 0, 0") !== -1 || fill.indexOf("rgb(0,0,0)") !== -1;
-                        var isMarker = circle.classList && circle.classList.contains("apexcharts-marker");
-                        
-                        var pt = { cx: cx, cy: cy };
-                        if (isBlack || isMarker) {
-                            pointsNoirs.push(pt);
-                        } else {
-                            autresPoints.push(pt);
-                        }
-                    });
+                var blackPaths = Array.from(doc.querySelectorAll('path')).filter(function(p) {
+                    var stroke = (p.getAttribute('stroke') || "").toLowerCase();
+                    var fill = (p.getAttribute('fill') || "").toLowerCase();
+                    var cls = (p.getAttribute('class') || "").toLowerCase();
+                    return stroke === '#000000' || stroke === 'black' || stroke === '#000' ||
+                           fill === '#000000' || fill === 'black' || fill === '#000' ||
+                           cls.indexOf('apexcharts-line-series') > -1;
+                });
 
-                    if (pointsNoirs.length > 0) {
-                        console.log("ℹ️ Points noirs/markers trouvés : " + pointsNoirs.length);
-                        points = pointsNoirs;
-                    } else if (autresPoints.length > 0) {
-                        console.log("⚠️ Aucun point noir, fallback sur les autres points : " + autresPoints.length);
-                        points = autresPoints;
+                blackPaths.forEach(function(p) {
+                    var d = p.getAttribute('d');
+                    var coordsRegex = /[ML]\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/g;
+                    var match;
+                    while ((match = coordsRegex.exec(d)) !== null) {
+                        blackPoints.push({ x: parseFloat(match[1]), y: parseFloat(match[2]) });
                     }
-                }
+                });
 
-                if (points.length === 0) {
-                    console.log("❌ Erreur : Aucun point (cx, cy) extrait du SVG.");
+                if (blackPoints.length === 0) {
+                    console.log("❌ Erreur : aucun point (cx, cy) extrait du SVG.");
                     return { suroptimises: [], sous_optimises: [], mots_presents: motsFinaux.length };
                 }
 
-                points.sort(function(a, b) { return a.cx - b.cx });
-                console.log("✅ Points triés extraits (" + points.length + ").");
+                // 3. Extraire les zones de couleurs
+                var dataPaths = Array.from(doc.querySelectorAll('path')).filter(function(p) {
+                    var fill = (p.getAttribute('fill') || "").toLowerCase();
+                    if (!fill || fill === 'none' || fill === 'transparent' || fill === '#000000' || fill === 'black' || fill === '#000' || fill === '#ffffff' || fill === 'white') return false;
+                    var d = p.getAttribute('d') || "";
+                    var lCount = (d.match(/L/g) || []).length;
+                    return lCount > 5;
+                });
 
-                // 3. Calcul des seuils
-                var svgEl = doc.querySelector('svg');
-                var svgHeight = svgEl ? parseFloat(svgEl.getAttribute('height')) : NaN;
-                if (isNaN(svgHeight) && svgEl) {
-                    var vb = svgEl.getAttribute('viewBox');
-                    if (vb) {
-                        var vbParts = vb.split(/[\s,]+/);
-                        if (vbParts.length >= 4) svgHeight = parseFloat(vbParts[3]);
+                var areas = dataPaths.map(function(p) {
+                    var d = p.getAttribute('d');
+                    var pts = [];
+                    var coordsRegex = /[ML]\s*(-?[\d.]+)[,\s]+(-?[\d.]+)/g;
+                    var match;
+                    while ((match = coordsRegex.exec(d)) !== null) {
+                        pts.push({ x: parseFloat(match[1]), y: parseFloat(match[2]) });
                     }
-                }
-                
-                // Fallback hauteur
-                if (isNaN(svgHeight) || svgHeight <= 0) {
-                    var cyValues = points.map(function(p) { return p.cy });
-                    var minCy = Math.min.apply(null, cyValues);
-                    var maxCy = Math.max.apply(null, cyValues);
-                    svgHeight = maxCy - minCy;
-                    if (svgHeight === 0) svgHeight = 100; // anti-div-0
-                }
+                    return pts;
+                });
 
-                // Seuils : haut du graph = proche de Y=0 (suropti), bas du graph = grand Y (sous-opti)
-                var seuilSuropti = svgHeight * 0.25;
-                var seuilSousopti = svgHeight * 0.75;
-                
-                console.log("Hauteur de référence : " + svgHeight + " | Seuil Suropti (<=) : " + seuilSuropti + " | Seuil Sousopti (>=) : " + seuilSousopti);
+                var resultats = { suroptimises: [], sous_optimises: [], mots_presents: motsFinaux.length };
 
-                var resultats = {
-                    suroptimises: [],
-                    sous_optimises: [],
-                    mots_presents: motsFinaux.length
-                };
-
-                // 4. Réconciliation
-                if (points.length === motsFinaux.length) {
-                    console.log("✅ Correspondance parfaite (1 mot = 1 point).");
-                    for (var i = 0; i < motsFinaux.length; i++) {
-                        var mot = motsFinaux[i].texte;
-                        var cy = points[i].cy;
-                        if (cy <= seuilSuropti) resultats.suroptimises.push(mot);
-                        if (cy >= seuilSousopti) resultats.sous_optimises.push(mot);
-                    }
-                } else if (points.length > 0 && motsFinaux.length > 0) {
-                    console.log("⚠️ Correspondance par proximité X (mots: " + motsFinaux.length + ", points: " + points.length + ").");
-                    motsFinaux.forEach(function(m) {
-                        var pointProche = points.reduce(function(prev, curr) { 
-                            return Math.abs(curr.cx - m.x) < Math.abs(prev.cx - m.x) ? curr : prev 
-                        });
-                        if (pointProche) {
-                            if (pointProche.cy <= seuilSuropti) resultats.suroptimises.push(m.texte);
-                            if (pointProche.cy >= seuilSousopti) resultats.sous_optimises.push(m.texte);
+                // 4. Analyse par mots (Topographie)
+                motsFinaux.forEach(function(mot) {
+                    var ptNoir = blackPoints.reduce(function(prev, curr) { 
+                        return Math.abs(curr.x - mot.x) < Math.abs(prev.x - mot.x) ? curr : prev 
+                    });
+                    if (Math.abs(ptNoir.x - mot.x) > 20) return; 
+                    
+                    var cy = ptNoir.y;
+                    var yTops = [];
+                    areas.forEach(function(pts) {
+                        var cands = pts.filter(function(p) { return Math.abs(p.x - mot.x) <= 3; });
+                        if (cands.length === 0) {
+                            var closest = pts.reduce(function(prev, curr) { return Math.abs(curr.x - mot.x) < Math.abs(prev.x - mot.x) ? curr : prev });
+                            cands = pts.filter(function(p) { return Math.abs(p.x - closest.x) <= 0.1; });
+                        }
+                        if (cands.length > 0) {
+                            yTops.push(Math.min.apply(null, cands.map(function(c) { return c.y; })));
                         }
                     });
-                }
+
+                    if (yTops.length >= 4) {
+                        yTops.sort(function(a, b) { return a - b; });
+                        var seuilSuropti = yTops[1] + 1;
+                        var seuilSousopti = yTops[3] - 1;
+
+                        if (cy <= seuilSuropti) resultats.suroptimises.push(mot.texte);
+                        if (cy >= seuilSousopti) resultats.sous_optimises.push(mot.texte);
+                    }
+                });
 
                 resultats.suroptimises = resultats.suroptimises.filter(function(v, i, a) { return a.indexOf(v) === i });
                 resultats.sous_optimises = resultats.sous_optimises.filter(function(v, i, a) { return a.indexOf(v) === i });
 
-                console.log("Suroptimisés : " + resultats.suroptimises.join(', '));
-                console.log("Sous-optimisés : " + resultats.sous_optimises.join(', '));
+                console.log("✅ Suropti : " + resultats.suroptimises.join(', '));
+                console.log("✅ Sous-opti : " + resultats.sous_optimises.join(', '));
                 console.log("=== FIN extraireDonneesYtg (Succès) ===");
 
                 return resultats;
 
             } catch (e) {
-                console.error("❌ Erreur fatale dans extraireDonneesYtg :", e);
+                console.error("❌ Erreur dans extraireDonneesYtg :", e);
                 return { suroptimises: [], sous_optimises: [], mots_presents: 0, erreur: true, message: e.message };
             }
         }
