@@ -170,6 +170,7 @@
             <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
             <div class="tab" onclick="switchTab('ux')" id="tab-btn-ux">7. UX</div>
             <div class="tab" onclick="switchTab('contenu')" id="tab-btn-contenu">8. Contenu</div>
+            <div class="tab" onclick="preparerOngletEditorial()" id="tab-btn-editorial">9. Éditorial</div>
         </div>
         <div class="tab-content active" id="content-config">
             <div class="main-area">
@@ -948,9 +949,33 @@
 
                 <div class="continuer-bar" style="margin-top: 25px;">
                     <span id="exportMsgContenu" style="font-size: 12px; font-weight: bold;"></span>
-                    <button class="btn btn-continuer" id="btn-export-contenu" onclick="lancerExportSlidesContenu()">📥 Importer dans Slides</button>
+                    <button class="btn btn-continuer" id="btn-export-contenu" onclick="lancerExportSlidesContenu()">📥 Importer dans Slides & continuer</button>
                 </div>
 
+            </div>
+        </div>
+
+        <div class="tab-content" id="content-editorial">
+            <div class="main-area">
+                <div class="config-card">
+                    <h2 class="section-title">Analyse Éditoriale (Informationnelle)</h2>
+                    <div class="section-description">Vue d'ensemble des performances du client sur la sélection de mots-clés informationnels.</div>
+                    
+                    <div style="margin-top: 15px;">
+                        <label class="input-label">Titre de la slide</label>
+                        <input type="text" id="ia-titre-editorial" placeholder="Titre de la slide..." onblur="autoSaveEditorial()">
+                    </div>
+                    
+                    <div id="kpi-editorial-container" style="margin-top: 15px;">
+                        <div class="empty-state">Veuillez d'abord générer le diagnostic à l'étape 3.</div>
+                    </div>
+                </div>
+                
+                <div class="continuer-bar">
+                    <span id="exportMsgEditorial" style="font-size: 12px; font-weight: bold;"></span>
+                    <button type="button" class="btn" id="btn-save-editorial-manual" style="margin-right: 10px;" onclick="autoSaveEditorial()">💾 Enregistrer les modifications</button>
+                    <button class="btn btn-continuer" id="btnExportSlidesEditorial" onclick="lancerExportSlidesEditorial()">📥 Importer dans Slides</button>
+                </div>
             </div>
         </div>
 
@@ -1061,6 +1086,9 @@
                                 }
                                 if (config.activeTab === 'focus-mot-cle') {
                                     preparerOngletFocusMotCle();
+                                }
+                                if (config.activeTab === 'editorial') {
+                                    preparerOngletEditorial();
                                 }
                             }
 
@@ -1349,6 +1377,11 @@
 
                             if (config.contenuStructureClientHtml || config.contenuStructureCompHtml) {
                                 document.getElementById('contenu-results-container').style.display = 'block';
+                            }
+                            
+                            // Restauration de l'onglet 9 (Editorial)
+                            if (config.titreSlideEditorial) {
+                                document.getElementById('ia-titre-editorial').value = config.titreSlideEditorial;
                             }
                         }
 
@@ -2352,6 +2385,264 @@
                 }
 
                 console.log("=== FIN : preparerOngletEtatLieux ===");
+            }
+            
+            function preparerOngletEditorial() {
+                console.log("=== DÉBUT : preparerOngletEditorial ===");
+                
+                // Forcer l'affichage de l'onglet
+                switchTab('editorial');
+
+                var container = document.getElementById('kpi-editorial-container');
+
+                if (!window.lastDiagnosticData) {
+                    console.log("Information : aucune donnée de diagnostic en mémoire.");
+                    container.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Analyse en cours de chargement...<br>Si l\'attente se prolonge, veuillez générer le diagnostic à l\'étape 3.</div>';
+                    console.log("=== FIN : preparerOngletEditorial (mise en attente) ===");
+                    return;
+                }
+
+                console.log("Étape clé : données trouvées, début de la construction de l'interface éditoriale.");
+                var data = window.lastDiagnosticData;
+                
+                var allEntities = data.kpis.slice().sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
+                var leaderKpi = allEntities.length > 0 ? allEntities[0] : null;
+                var clientKpi = allEntities.find(function(k) { return k.isClient; });
+
+                if (allEntities.length > 0) {
+                    var html = '<div class="panel" style="margin-top:20px;">';
+                    html += '<div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span>🏆</span> Paysage concurrentiel (Informationnel)</div>';
+                    html += '<div class="section-description">Analyse du client face au leader et aux principaux concurrents sur la sélection de mots-clés informationnels.</div>';
+                    html += '<div class="comp-grid">';
+
+                    // Helper pour l'URL du favicon en utilisant le service historique (plus fiable)
+                    function getFaviconUrl(domain) {
+                        if (!domain) return '';
+                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                    }
+
+                    // Helper pour trouver le domaine via la config
+                    function findDomainByName(name) {
+                        var conf = window.globalConfig || {};
+                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                        for (var i = 1; i <= 5; i++) {
+                            if (conf['competitorName' + i] === name) return conf['competitor' + i];
+                        }
+                        return name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                    }
+
+                    var fbImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><text x='50' y='55' font-family='Arial' font-size='40' font-weight='bold' fill='%239e9e9e' text-anchor='middle' dominant-baseline='middle'>?</text></svg>";
+                    
+                    var conf = window.globalConfig || {};
+                    var maxComps = 5; // Client + 4 concurrents (ou Leader + 3 autres si client = leader)
+
+                    // Carte Leader (Toujours en premier)
+                    if (leaderKpi) {
+                        var leaderDomain = findDomainByName(leaderKpi.name);
+                        var leaderLogoUrl = getFaviconUrl(leaderDomain);
+                        var isClientLeader = leaderKpi.isClient;
+                        var blogVal = isClientLeader ? (conf.blogClientEdito || "Non") : (conf.blogLeaderEdito || "Non");
+                        
+                        html += '<div class="comp-card leader">';
+                        html += '<div class="badge-leader">Leader</div>';
+                        if (isClientLeader) html += '<div class="badge-client" style="top: -28px; background: #1a73e8;">Vous</div>';
+                        html += '<img class="comp-logo" src="' + leaderLogoUrl + '" alt="Logo ' + leaderKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                        html += '<div class="comp-name">' + leaderKpi.name + '</div>';
+                        html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + leaderKpi.infoTop10 + '</span></div>';
+                        html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + leaderKpi.infoUrlsCount + '</span></div>';
+                        html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
+                        html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
+                        html += '<select class="select-blog" data-entity="leader" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
+                        html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
+                        html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
+                        html += '</select></div>';
+                        html += '</div>';
+                    }
+
+                    // Carte Client (Si non leader)
+                    if (clientKpi && !clientKpi.isClientLeader) {
+                        // On vérifie si le client n'est pas le leader
+                        if (!leaderKpi || leaderKpi.name !== clientKpi.name) {
+                            var clientDomain = findDomainByName(clientKpi.name);
+                            var clientLogoUrl = getFaviconUrl(clientDomain);
+                            var blogVal = conf.blogClientEdito || "Non";
+                            
+                            html += '<div class="comp-card client">';
+                            html += '<div class="badge-client">Vous</div>';
+                            html += '<img class="comp-logo" src="' + clientLogoUrl + '" alt="Logo ' + clientKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                            html += '<div class="comp-name">' + clientKpi.name + '</div>';
+                            html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + clientKpi.infoTop10 + '</span></div>';
+                            html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + clientKpi.infoUrlsCount + '</span></div>';
+                            html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
+                            html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
+                            html += '<select class="select-blog" data-entity="client" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
+                            html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
+                            html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
+                            html += '</select></div>';
+                            html += '</div>';
+                        }
+                    }
+
+                    // Cartes autres concurrents
+                    var compCount = 1;
+                    allEntities.forEach(function(comp) {
+                        if (comp.name === (leaderKpi ? leaderKpi.name : "") || comp.isClient) return; // Déjà affiché
+                        if (compCount > 4) return; // Limite
+
+                        var compDomain = findDomainByName(comp.name);
+                        var compLogoUrl = getFaviconUrl(compDomain);
+                        var blogVal = conf['blogComp' + compCount + 'Edito'] || "Non";
+                        
+                        html += '<div class="comp-card">';
+                        html += '<img class="comp-logo" src="' + compLogoUrl + '" alt="Logo ' + comp.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                        html += '<div class="comp-name">' + comp.name + '</div>';
+                        html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + comp.infoTop10 + '</span></div>';
+                        html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + comp.infoUrlsCount + '</span></div>';
+                        html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
+                        html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
+                        html += '<select class="select-blog" data-entity="comp' + compCount + '" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
+                        html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
+                        html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
+                        html += '</select></div>';
+                        html += '</div>';
+                        
+                        compCount++;
+                    });
+
+                    html += '</div></div>';
+                    container.innerHTML = html;
+                    console.log("Interface éditoriale générée avec succès.");
+                } else {
+                    container.innerHTML = '<div class="empty-state">Aucune donnée trouvée.</div>';
+                }
+
+                console.log("=== FIN : preparerOngletEditorial ===");
+            }
+            
+            function autoSaveEditorial() {
+                var titre = document.getElementById('ia-titre-editorial').value;
+                var selects = document.querySelectorAll('.select-blog');
+                
+                var data = {
+                    titreSlideEditorial: titre
+                };
+                
+                selects.forEach(function(select) {
+                    var entity = select.getAttribute('data-entity');
+                    if (entity === 'client') data.blogClientEdito = select.value;
+                    else if (entity === 'leader') data.blogLeaderEdito = select.value;
+                    else if (entity === 'comp1') data.blogComp1Edito = select.value;
+                    else if (entity === 'comp2') data.blogComp2Edito = select.value;
+                    else if (entity === 'comp3') data.blogComp3Edito = select.value;
+                    else if (entity === 'comp4') data.blogComp4Edito = select.value;
+                });
+                
+                google.script.run.sauvegarderDonneesEditorial(data);
+                
+                if (window.globalConfig) {
+                    Object.assign(window.globalConfig, data);
+                }
+            }
+            
+            function lancerExportSlidesEditorial() {
+                console.log("=== DÉBUT : lancerExportSlidesEditorial ===");
+                var btn = document.getElementById('btnExportSlidesEditorial');
+                var msg = document.getElementById('exportMsgEditorial');
+                btn.disabled = true;
+                btn.innerText = "⏳ Import en cours...";
+                msg.innerText = "";
+                
+                // Préparation des données du paysage concurrentiel (comme pour l'état des lieux mais pour Edito)
+                var concurrenceDataEdito = null;
+                if (window.lastDiagnosticData) {
+                    var allEntities = window.lastDiagnosticData.kpis.slice().sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
+                    var leaderKpi = allEntities.length > 0 ? allEntities[0] : null;
+                    var clientKpi = allEntities.find(function(k) { return k.isClient; });
+
+                    function findDomainByNameForExport(name) {
+                        var conf = window.globalConfig || {};
+                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                        for (var i = 1; i <= 5; i++) {
+                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                        }
+                        return name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                    }
+                    
+                    function getFavUrl(domain) {
+                        if (!domain) return '';
+                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                    }
+
+                    var otherComps = [];
+                    allEntities.forEach(function(comp) {
+                        if (comp.name !== (leaderKpi ? leaderKpi.name : "") && !comp.isClient) {
+                            otherComps.push(comp);
+                        }
+                    });
+                    otherComps = otherComps.slice(0, 4);
+
+                    if (clientKpi) {
+                        concurrenceDataEdito = {
+                            client: {
+                                name: clientKpi.name,
+                                top10: clientKpi.infoTop10,
+                                pages: clientKpi.infoUrlsCount,
+                                logoUrl: getFavUrl(findDomainByNameForExport(clientKpi.name))
+                            },
+                            leader: leaderKpi ? {
+                                name: leaderKpi.name,
+                                top10: leaderKpi.infoTop10,
+                                pages: leaderKpi.infoUrlsCount,
+                                logoUrl: getFavUrl(findDomainByNameForExport(leaderKpi.name)),
+                                isClient: leaderKpi.isClient
+                            } : null,
+                            comps: otherComps.map(function(c) {
+                                return {
+                                    name: c.name,
+                                    top10: c.infoTop10,
+                                    pages: c.infoUrlsCount,
+                                    logoUrl: getFavUrl(findDomainByNameForExport(c.name))
+                                };
+                            })
+                        };
+                    }
+                }
+                
+                var titreSlide = document.getElementById('ia-titre-editorial').value;
+                var conf = window.globalConfig || {};
+                var donneesBlog = {
+                    client: conf.blogClientEdito || "Non",
+                    leader: conf.blogLeaderEdito || "Non",
+                    comp1: conf.blogComp1Edito || "Non",
+                    comp2: conf.blogComp2Edito || "Non",
+                    comp3: conf.blogComp3Edito || "Non",
+                    comp4: conf.blogComp4Edito || "Non"
+                };
+
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if(res.success) {
+                            btn.innerText = "✅ Importé";
+                            msg.innerHTML = '<span style="color:#188038">Données injectées avec succès !</span>';
+                            setTimeout(function() {
+                                btn.disabled = false;
+                                btn.innerText = "📥 Importer dans Slides";
+                                msg.innerHTML = "";
+                            }, 3000);
+                        } else {
+                            btn.disabled = false;
+                            btn.innerText = "📥 Importer dans Slides";
+                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        btn.disabled = false;
+                        btn.innerText = "📥 Importer dans Slides";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                    })
+                    .exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog);
             }
 
             function lancerAnalyseSegmentsIA() {
@@ -4656,28 +4947,29 @@
 
             google.script.run
                 .withSuccessHandler(function(res) {
-                    hideLoader();
-                    if(res && res.success) {
-                        btnExport.innerText = "✅ Terminé";
-                        msg.innerHTML = '<span style="color:#188038">Données exportées avec succès !</span>';
-                        setTimeout(function() {
+                        hideLoader();
+                        if(res && res.success) {
+                            btnExport.innerText = "✅ Terminé";
+                            msg.innerHTML = '<span style="color:#188038">Données exportées avec succès !</span>';
+                            setTimeout(function() {
+                                btnExport.disabled = false;
+                                btnExport.innerText = "📥 Importer dans Slides & continuer";
+                                msg.innerHTML = "";
+                                switchTab('editorial');
+                            }, 2000);
+                        } else {
                             btnExport.disabled = false;
-                            btnExport.innerText = "📥 Importer dans Slides & terminer";
-                            msg.innerHTML = "";
-                        }, 2000);
-                    } else {
+                            btnExport.innerText = "📥 Importer dans Slides & continuer";
+                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : "Erreur inconnue") + '</span>';
+                        }
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoader();
                         btnExport.disabled = false;
-                        btnExport.innerText = "📥 Importer dans Slides & terminer";
-                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : "Erreur inconnue") + '</span>';
-                    }
-                })
-                .withFailureHandler(function(err) {
-                    hideLoader();
-                    btnExport.disabled = false;
-                    btnExport.innerText = "📥 Importer dans Slides & terminer";
-                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
-                })
-                .exporterContenuSlides();
+                        btnExport.innerText = "📥 Importer dans Slides & continuer";
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                    })
+                    .exporterContenuSlides();
         }
 
         function lancerExportSlidesUX() {

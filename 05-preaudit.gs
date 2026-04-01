@@ -164,10 +164,42 @@ function chargerConfigurationPreAudit() {
         contenu1frScoreComp: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
         contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || "",
         contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || "",
-        TITRE_SLIDE_CONTENU_CONCURRENT: props['TITRE_SLIDE_CONTENU_CONCURRENT'] || ""
+        TITRE_SLIDE_CONTENU_CONCURRENT: props['TITRE_SLIDE_CONTENU_CONCURRENT'] || "",
+        
+        titreSlideEditorial: props['TITRE_SLIDE_CONCURRENCE_EDITO'] || "",
+        blogClientEdito: props['BLOG_CLIENT_EDITO'] || "Non",
+        blogLeaderEdito: props['BLOG_LEADER_EDITO'] || "Non",
+        blogComp1Edito: props['BLOG_COMP1_EDITO'] || "Non",
+        blogComp2Edito: props['BLOG_COMP2_EDITO'] || "Non",
+        blogComp3Edito: props['BLOG_COMP3_EDITO'] || "Non",
+        blogComp4Edito: props['BLOG_COMP4_EDITO'] || "Non"
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
+}
+
+function sauvegarderDonneesEditorial(data) {
+    Logger.log("=== DÉBUT : sauvegarderDonneesEditorial ===");
+    try {
+        var propsToSet = {
+            'TITRE_SLIDE_CONCURRENCE_EDITO': data.titreSlideEditorial || "",
+            'BLOG_CLIENT_EDITO': data.blogClientEdito || "Non",
+            'BLOG_LEADER_EDITO': data.blogLeaderEdito || "Non",
+            'BLOG_COMP1_EDITO': data.blogComp1Edito || "Non",
+            'BLOG_COMP2_EDITO': data.blogComp2Edito || "Non",
+            'BLOG_COMP3_EDITO': data.blogComp3Edito || "Non",
+            'BLOG_COMP4_EDITO': data.blogComp4Edito || "Non"
+        };
+        
+        PropertiesService.getScriptProperties().setProperties(propsToSet);
+        syncPropertiesToConfigSheet();
+        
+        Logger.log("=== FIN : sauvegarderDonneesEditorial ===");
+        return { success: true };
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderDonneesEditorial : " + e.message);
+        return { success: false, error: e.message };
+    }
 }
 
 function sauvegarderDonneesContenu(data) {
@@ -656,7 +688,7 @@ function genererDiagnostic(selection) {
 
     var kpis = {};
     entities.forEach(function(e) {
-        kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set(), TEC: 0, TPM: 0 };
+        kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set(), TEC: 0, TPM: 0, infoTop10: 0, infoUrls: new Set() };
     });
 
     var themeStats = {};
@@ -695,6 +727,12 @@ function genererDiagnostic(selection) {
             if (p <= 3)   kpis[e.name].top3++;
             if (p <= 10)  kpis[e.name].top10++;
             if (url && url !== "-") kpis[e.name].urls.add(url);
+            
+            var isInfoInner = kwMeta.intent.indexOf("information") > -1 || kwMeta.intent === "i";
+            if (kwMeta.isMain && isInfoInner && p <= 10) {
+                kpis[e.name].infoTop10++;
+                if (url && url !== "-") kpis[e.name].infoUrls.add(url);
+            }
 
             var eTEC = computeTEC(vol, p);
             kpis[e.name].TEC += eTEC;
@@ -781,7 +819,9 @@ function genererDiagnostic(selection) {
             posAll: kpis[e.name].posAll,
             top3: kpis[e.name].top3,
             top10: kpis[e.name].top10,
+            infoTop10: kpis[e.name].infoTop10,
             urlsCount: kpis[e.name].urls.size,
+            infoUrlsCount: kpis[e.name].infoUrls.size,
             TEC: Math.round(eTEC),
             TPM: Math.round(eTPM),
             PdM: eTPM > 0 ? (eTEC / eTPM) * 100 : 0

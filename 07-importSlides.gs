@@ -1246,3 +1246,116 @@ function exporterContenuSlides() {
         return { success: false, error: e.message };
     }
 }
+
+function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) {
+    try {
+        Logger.log("=== DÉBUT : exporterEditorialSlides ===");
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        function safeNum(val) {
+            return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
+        }
+
+        var mappingComp = {};
+        
+        mappingComp['TITRE_SLIDE_CONCURRENCE_EDITO'] = titreSlide || "";
+        
+        if (concurrenceDataEdito) {
+            if (concurrenceDataEdito.client) {
+                mappingComp['NOM_CLIENT_EDITO'] = concurrenceDataEdito.client.name;
+                mappingComp['VALEUR_TOP10_CLIENT_EDITO'] = safeNum(concurrenceDataEdito.client.top10);
+                mappingComp['VALEUR_PAGES_CLIENT_EDITO'] = safeNum(concurrenceDataEdito.client.pages);
+                mappingComp['BLOG_CLIENT_EDITO'] = donneesBlog.client || "Non";
+            }
+            if (concurrenceDataEdito.leader) {
+                mappingComp['NOM_LEADER_EDITO'] = concurrenceDataEdito.leader.name;
+                mappingComp['VALEUR_TOP10_LEADER_EDITO'] = safeNum(concurrenceDataEdito.leader.top10);
+                mappingComp['VALEUR_PAGES_LEADER_EDITO'] = safeNum(concurrenceDataEdito.leader.pages);
+                mappingComp['BLOG_LEADER_EDITO'] = donneesBlog.leader || "Non";
+            }
+            for (var c = 1; c <= 4; c++) {
+                var comp = concurrenceDataEdito.comps && concurrenceDataEdito.comps[c-1] ? concurrenceDataEdito.comps[c-1] : null;
+                if (comp) {
+                    mappingComp['NOM_COMP' + c + '_EDITO'] = comp.name;
+                    mappingComp['VALEUR_TOP10_COMP' + c + '_EDITO'] = safeNum(comp.top10);
+                    mappingComp['VALEUR_PAGES_COMP' + c + '_EDITO'] = safeNum(comp.pages);
+                    mappingComp['BLOG_COMP' + c + '_EDITO'] = donneesBlog['comp' + c] || "Non";
+                }
+            }
+        }
+
+        // Sauvegarde des propriétés
+        var propsToSave = {};
+        for (var k in mappingComp) { propsToSave[k] = String(mappingComp[k]); }
+
+        propsToSave["PLACEHOLDER_LOGO_CLIENT_EDITO"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_LEADER_EDITO"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP1_EDITO"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP2_EDITO"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP3_EDITO"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP4_EDITO"] = "IMAGE";
+
+        PropertiesService.getScriptProperties().setProperties(propsToSave);
+        syncPropertiesToConfigSheet();
+
+        Logger.log("Parcours minutieux des slides pour Performance Éditoriale");
+
+        slides.forEach(function(slide) {
+            var shapes = slide.getShapes();
+
+            shapes.forEach(function(shape) {
+                var descRaw = shape.getDescription() || "";
+
+                if (mappingComp[descRaw] !== undefined) {
+                    shape.getText().setText(mappingComp[descRaw].toString());
+                }
+
+                // Placeholders d'images concurrentes pour l'éditorial
+                if (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
+                    var imgUrl = null;
+                    if (descRaw === "PLACEHOLDER_LOGO_CLIENT_EDITO" && concurrenceDataEdito.client && concurrenceDataEdito.client.logoUrl) {
+                        imgUrl = concurrenceDataEdito.client.logoUrl;
+                    } else if (descRaw === "PLACEHOLDER_LOGO_LEADER_EDITO" && concurrenceDataEdito.leader && concurrenceDataEdito.leader.logoUrl) {
+                        imgUrl = concurrenceDataEdito.leader.logoUrl;
+                    } else {
+                        var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO/);
+                        if (m && m[1]) {
+                            var idxComp = parseInt(m[1]) - 1;
+                            if (concurrenceDataEdito.comps && concurrenceDataEdito.comps[idxComp] && concurrenceDataEdito.comps[idxComp].logoUrl) {
+                                imgUrl = concurrenceDataEdito.comps[idxComp].logoUrl;
+                            }
+                        }
+                    }
+
+                    if (imgUrl) {
+                        try {
+                            var response = UrlFetchApp.fetch(imgUrl, { muteHttpExceptions: true });
+                            if (response.getResponseCode() === 200) {
+                                var blob = response.getBlob();
+                                var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
+                                newImg.setDescription(descRaw);
+                            }
+                            shape.remove();
+                        } catch (errImg) {
+                            Logger.log("Erreur chargement image " + imgUrl + " : " + errImg.message);
+                            shape.remove();
+                        }
+                    } else {
+                        shape.remove();
+                    }
+                }
+            });
+        });
+
+        Logger.log("=== FIN : exporterEditorialSlides ===");
+        return { success: true, url: presentation.getUrl() };
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT EDITORIAL : " + e.message);
+        return { success: false, error: e.message };
+    }
+}

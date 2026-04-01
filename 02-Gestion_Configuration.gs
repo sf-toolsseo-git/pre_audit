@@ -1231,6 +1231,21 @@ function syncPropertiesToConfigSheet() {
                 ]
             },
             {
+                name: "📚 ÉDITORIAL",
+                keys: [
+                    "TITRE_SLIDE_CONCURRENCE_EDITO",
+                    "---BORDER---",
+                    "NOM_CLIENT_EDITO", "VALEUR_TOP10_CLIENT_EDITO", "VALEUR_PAGES_CLIENT_EDITO", "BLOG_CLIENT_EDITO", "PLACEHOLDER_LOGO_CLIENT_EDITO",
+                    "---BORDER---",
+                    "NOM_LEADER_EDITO", "VALEUR_TOP10_LEADER_EDITO", "VALEUR_PAGES_LEADER_EDITO", "BLOG_LEADER_EDITO", "PLACEHOLDER_LOGO_LEADER_EDITO",
+                    "---BORDER---",
+                    "NOM_COMP1_EDITO", "VALEUR_TOP10_COMP1_EDITO", "VALEUR_PAGES_COMP1_EDITO", "BLOG_COMP1_EDITO", "PLACEHOLDER_LOGO_COMP1_EDITO",
+                    "NOM_COMP2_EDITO", "VALEUR_TOP10_COMP2_EDITO", "VALEUR_PAGES_COMP2_EDITO", "BLOG_COMP2_EDITO", "PLACEHOLDER_LOGO_COMP2_EDITO",
+                    "NOM_COMP3_EDITO", "VALEUR_TOP10_COMP3_EDITO", "VALEUR_PAGES_COMP3_EDITO", "BLOG_COMP3_EDITO", "PLACEHOLDER_LOGO_COMP3_EDITO",
+                    "NOM_COMP4_EDITO", "VALEUR_TOP10_COMP4_EDITO", "VALEUR_PAGES_COMP4_EDITO", "BLOG_COMP4_EDITO", "PLACEHOLDER_LOGO_COMP4_EDITO"
+                ]
+            },
+            {
                 name: "📦 AUTRES",
                 keys: []
             }
