@@ -1104,8 +1104,8 @@ function exporterContenuSlides() {
         }
 
         function insererEtRognerImage(slide, shape, fileId, description, cropId) {
+            Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
             try {
-                Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
                 var finalFileId = fileId;
                 if (cropId && cropId !== "") {
                     finalFileId = cropId;
@@ -1120,34 +1120,23 @@ function exporterContenuSlides() {
                     throw new Error("Le fichier est vide ou corrompu.");
                 }
 
-                // 1. Sauvegarde des coordonnées exactes d'origine du placeholder
-                var targetW = shape.getWidth();
-                var targetH = shape.getHeight();
-                var targetL = shape.getLeft();
-                var targetT = shape.getTop();
-
-                Logger.log("  [Image] Remplacement natif avec crop=true (Fill Box)...");
-                // 2. Remplacement natif (préserve le Z-index, le groupe, les ombres et le ratio)
+                Logger.log("  [Image] Remplacement natif avec option crop=true (Fill Box)...");
+                // Le paramètre "true" force l'image à remplir totalement le placeholder sans le déformer.
+                // Il applique un "Center Crop" automatique. Cela préserve le Z-index, le groupe, et les styles.
                 var img = shape.replaceWithImage(blob, true);
                 
-                // 3. Récupération du rognage automatique (qui est centré par défaut)
-                var cTop = img.getCropTop();
-                var cBottom = img.getCropBottom();
-                var totalVerticalCrop = cTop + cBottom;
+                // On lit les valeurs de rognage calculées automatiquement par l'API
+                var currentCropTop = img.getCropTop();
+                var currentCropBottom = img.getCropBottom();
+                var totalVerticalCrop = currentCropTop + currentCropBottom;
                 
-                // 4. Décalage du rognage tout en haut (cropTop = 0)
-                // Attention : cette action déplace physiquement la boîte vers le haut sur la slide !
+                // On décale le "fenêtrage" vers le haut : on met le rognage haut à 0 
+                // et on reporte la totalité du rognage sur le bas.
                 img.setCropTop(0);
                 img.setCropBottom(totalVerticalCrop);
 
-                // 5. Annulation du décalage : on replace et redimensionne la boîte à son état d'origine
-                img.setLeft(targetL);
-                img.setTop(targetT);
-                img.setWidth(targetW);
-                img.setHeight(targetH);
-
                 img.setDescription(description);
-                Logger.log("  [Image] Rognage ajusté et repositionnement X/Y forcé avec succès.");
+                Logger.log("  [Image] Rognage ajusté vers le haut (Top: 0, Bottom: " + totalVerticalCrop.toFixed(4) + ").");
             } catch (e) {
                 Logger.log("  [Erreur Image] Échec pour " + description + " : " + e.message);
             }
