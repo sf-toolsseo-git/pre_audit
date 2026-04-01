@@ -1104,8 +1104,8 @@ function exporterContenuSlides() {
         }
 
         function insererEtRognerImage(slide, shape, fileId, description, cropId) {
-            Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
             try {
+                Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
                 var finalFileId = fileId;
                 if (cropId && cropId !== "") {
                     finalFileId = cropId;
@@ -1120,46 +1120,34 @@ function exporterContenuSlides() {
                     throw new Error("Le fichier est vide ou corrompu.");
                 }
 
-                // Sauvegarde des dimensions et position de la forme cible
+                // 1. Sauvegarde des coordonnées exactes d'origine du placeholder
                 var targetW = shape.getWidth();
                 var targetH = shape.getHeight();
                 var targetL = shape.getLeft();
                 var targetT = shape.getTop();
 
-                Logger.log("  [Image] Blob récupéré. Remplacement natif de la forme...");
-                var img = shape.replaceWithImage(blob);
+                Logger.log("  [Image] Remplacement natif avec crop=true (Fill Box)...");
+                // 2. Remplacement natif (préserve le Z-index, le groupe, les ombres et le ratio)
+                var img = shape.replaceWithImage(blob, true);
                 
-                var inhW = img.getInherentWidth();
-                var inhH = img.getInherentHeight();
+                // 3. Récupération du rognage automatique (qui est centré par défaut)
+                var cTop = img.getCropTop();
+                var cBottom = img.getCropBottom();
+                var totalVerticalCrop = cTop + cBottom;
                 
-                Logger.log("  [Image] Dimensions image brute : " + inhW + "x" + inhH + " | Cible (forme initiale) : " + targetW + "x" + targetH);
-
-                // Calcul de l'échelle strictly (Fit Width) pour remplir en largeur sans déformer
-                var scale = targetW / inhW;
-                
-                // Calcul de la hauteur visible en pixels bruts (la largeur visible = inhW car on fit en largeur)
-                var visibleH = targetH / scale;
-
-                // Calcul des fractions de rognage (entre 0 et 1)
-                var cropLeft = 0;
-                var cropRight = 0;
-                var cropTop = 0; // Alignement en haut
-                var cropBottom = (inhH - visibleH) / inhH;
-
-                // Application du rognage (on s'assure de ne pas avoir de valeurs négatives si l'image était trop courte)
-                img.setCropLeft(0);
-                img.setCropRight(0);
+                // 4. Décalage du rognage tout en haut (cropTop = 0)
+                // Attention : cette action déplace physiquement la boîte vers le haut sur la slide !
                 img.setCropTop(0);
-                img.setCropBottom(Math.max(0, cropBottom));
+                img.setCropBottom(totalVerticalCrop);
 
-                // Restauration explicite de la taille et position exactes de la forme initiale
-                img.setWidth(targetW);
-                img.setHeight(targetH);
+                // 5. Annulation du décalage : on replace et redimensionne la boîte à son état d'origine
                 img.setLeft(targetL);
                 img.setTop(targetT);
+                img.setWidth(targetW);
+                img.setHeight(targetH);
 
                 img.setDescription(description);
-                Logger.log("  [Image] Remplacement de la forme par l'image terminé. (CropBottom=" + Math.max(0, cropBottom).toFixed(4) + ")");
+                Logger.log("  [Image] Rognage ajusté et repositionnement X/Y forcé avec succès.");
             } catch (e) {
                 Logger.log("  [Erreur Image] Échec pour " + description + " : " + e.message);
             }
