@@ -691,6 +691,7 @@ function genererDiagnostic(selection) {
         kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set(), TEC: 0, TPM: 0, infoTop10: 0, infoUrls: new Set() };
     });
 
+    var urlProfiles = {};
     var themeStats = {};
     var intentStats = {
         transac: { kwCount: 0, top100: 0, top10: 0, TEC: 0, TPM: 0 },
@@ -732,6 +733,20 @@ function genererDiagnostic(selection) {
             if (kwMeta.isMain && isInfoInner && p <= 10) {
                 kpis[e.name].infoTop10++;
                 if (url && url !== "-") kpis[e.name].infoUrls.add(url);
+            }
+            
+            if (isInfoInner && url && url !== "-") {
+                var pKey = tsKey + "|" + e.name + "|" + url;
+                if (!urlProfiles[pKey]) {
+                    urlProfiles[pKey] = { tsKey: tsKey, entite: e.name, isClient: e.name === clientName, url: url, kwTop100: 0, kwTop10: 0, tec: 0, kws: [] };
+                }
+                if (p <= 100) urlProfiles[pKey].kwTop100++;
+                if (p <= 10) {
+                    urlProfiles[pKey].kwTop10++;
+                    var eTEC = computeTEC(vol, p);
+                    urlProfiles[pKey].tec += eTEC;
+                    urlProfiles[pKey].kws.push({ kw: kw, vol: vol, pos: p });
+                }
             }
 
             var eTEC = computeTEC(vol, p);
@@ -875,6 +890,25 @@ function genererDiagnostic(selection) {
     gains.sort(function(a, b) { return b.DDT - a.DDT; });
     pertes.sort(function(a, b) { return b.DDT - a.DDT; });
     territoires.sort(function(a, b) { return b.vol - a.vol; });
+    
+    var arrUrlProfiles = Object.keys(urlProfiles).map(function(k) { return urlProfiles[k]; });
+    var validUrlProfiles = arrUrlProfiles.filter(function(pr) { return !pr.isClient && pr.kwTop10 > 0; });
+    validUrlProfiles.sort(function(a, b) { return b.tec - a.tec; });
+    
+    var finalPistesEdito = [];
+    var usedTsKeys = new Set();
+    
+    for (var u = 0; u < validUrlProfiles.length; u++) {
+        var profile = validUrlProfiles[u];
+        if (!usedTsKeys.has(profile.tsKey)) {
+            usedTsKeys.add(profile.tsKey);
+            profile.kws.sort(function(ka, kb) { return kb.vol - ka.vol; });
+            profile.kws = profile.kws.slice(0, 3);
+            profile.tec = Math.round(profile.tec);
+            finalPistesEdito.push(profile);
+            if (finalPistesEdito.length === 3) break;
+        }
+    }
 
     return {
         kpis: kpisArray,
@@ -885,7 +919,8 @@ function genererDiagnostic(selection) {
         acquis:      acquis.slice(0, 10),
         gains:       gains.slice(0, 10),
         pertes:      pertes.slice(0, 10),
-        territoires: territoires.slice(0, 10)
+        territoires: territoires.slice(0, 10),
+        pistesEdito: finalPistesEdito
     };
 }
 

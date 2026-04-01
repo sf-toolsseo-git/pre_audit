@@ -156,6 +156,17 @@
             .ux-cb-limit { transform: scale(1.3); position: absolute; left: 15px; margin: 0; }
             .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; position: absolute; right: 15px; }
             .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
+            .edito-piste-card { display: flex; background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); overflow: hidden; }
+            .edito-piste-left { flex: 0 0 350px; padding: 15px; border-right: 1px solid #f1f3f4; background: #fcfcfc; display: flex; flex-direction: column; justify-content: center; }
+            .edito-piste-right { flex: 1; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center; }
+            .edito-tskey { font-size: 13px; font-weight: 700; color: #f67604; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+            .edito-url-box { display: flex; align-items: flex-start; gap: 10px; }
+            .edito-url-logo { width: 24px; height: 24px; border-radius: 50%; object-fit: contain; background: #fff; border: 1px solid #eee; padding: 2px; }
+            .edito-url-domain { font-size: 11px; color: #5f6368; line-height: 1.3; font-weight: 500; }
+            .edito-url-link { font-size: 13px; font-weight: 600; color: #1a73e8; margin-top: 4px; line-height: 1.4; word-break: break-all; }
+            .edito-stat-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; font-size: 13px; color: #3c4043; }
+            .edito-stat-icon { background: #f1f3f4; color: #5f6368; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+            .edito-kw-list { margin: 8px 0 0 0; padding-left: 20px; color: #5f6368; font-size: 12px; line-height: 1.6; }
         </style>
     </head>
     <body>
@@ -2506,6 +2517,46 @@
                     });
 
                     html += '</div></div>';
+                    
+                    if (data.pistesEdito && data.pistesEdito.length > 0) {
+                        html += '<hr class="section-separator" style="margin: 30px 0;">';
+                        html += '<h2 class="section-title">🎯 Exemples de contenus performants</h2>';
+                        html += '<div class="section-description" style="margin-bottom: 15px;">Les contenus informationnels concurrents générant le plus de trafic estimé.</div>';
+                        
+                        data.pistesEdito.forEach(function(piste) {
+                            var domain = "";
+                            try {
+                                domain = piste.url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                            } catch(e) {
+                                domain = "Capture";
+                            }
+                            var logoUrl = getFaviconUrl(domain);
+                            html += '<div class="edito-piste-card">';
+                            html += '<div class="edito-piste-left">';
+                            html += '<div class="edito-tskey">🔍 ' + piste.tsKey + '</div>';
+                            html += '<div class="edito-url-box">';
+                            html += '<img class="edito-url-logo" src="' + logoUrl + '" alt="Logo" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                            html += '<div>';
+                            html += '<div class="edito-url-domain">' + piste.entite + '</div>';
+                            html += '<div class="edito-url-link">' + piste.url + '</div>';
+                            html += '</div></div></div>';
+                            html += '<div class="edito-piste-right">';
+                            html += '<div class="edito-stat-row">';
+                            html += '<div class="edito-stat-icon">📊</div>';
+                            html += '<div><strong>' + piste.kwTop100 + ' mots-clés positionnés</strong> dans le top 100</div>';
+                            html += '</div>';
+                            html += '<div class="edito-stat-row">';
+                            html += '<div class="edito-stat-icon" style="background:#e6f4ea; color:#137333;">🔥</div>';
+                            html += '<div>';
+                            html += '<div><strong>' + piste.kwTop10 + ' mots-clés en top 10</strong> (Trafic estimé : ' + piste.tec.toLocaleString('fr-FR') + ') :</div>';
+                            html += '<ul class="edito-kw-list">';
+                            piste.kws.forEach(function(kwItem) {
+                                html += '<li>« ' + kwItem.kw + ' », recherché ' + kwItem.vol.toLocaleString('fr-FR') + ' fois par mois, en position ' + kwItem.pos + '</li>';
+                            });
+                            html += '</ul></div></div></div></div>';
+                        });
+                    }
+                    
                     container.innerHTML = html;
                     console.log("Interface éditoriale générée avec succès.");
                 } else {
