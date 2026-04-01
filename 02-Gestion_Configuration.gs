@@ -1205,6 +1205,7 @@ function syncPropertiesToConfigSheet() {
                 name: "🎨 UX",
                 keys: [
                     "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT",
+                    "UX_CLIENT_CROP_ID", "UX_COMP_CROP_ID",
                     "---BORDER---",
                     "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1",
                     "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2",

@@ -691,7 +691,6 @@ function exporterFocusMotCleSlides() {
     }
 }
 
-
 function exporterEtatLieuxTechniqueSlides() {
     try {
         Logger.log("=== DÉBUT : exporterEtatLieuxTechniqueSlides ===");
@@ -985,6 +984,276 @@ function exporterUXSlides() {
 
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT UX : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function exporterContenuSlides() {
+    Logger.log("=== DÉBUT : exporterContenuSlides ===");
+    try {
+        var props = PropertiesService.getScriptProperties().getProperties();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        
+        Logger.log("Ouverture de la présentation ID : " + slideId);
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        // ---------------------------------------------------------
+        // FONCTIONS UTILITAIRES ENCAPSULÉES
+        // ---------------------------------------------------------
+
+        function formatRichTextContenu(shape) {
+            Logger.log("  [Markdown] Traitement de la forme : " + shape.getDescription());
+            try {
+                var textRange = shape.getText();
+                var textStr = textRange.asString();
+                
+                // 1. Gras standard (**)
+                var regexGras = /\*\*([^*]+)\*\*/g;
+                var matchesGras = [];
+                var match;
+                while ((match = regexGras.exec(textStr)) !== null) {
+                    matchesGras.push({ start: match.index, text: match[1], length: match[0].length });
+                }
+                for (var i = matchesGras.length - 1; i >= 0; i--) {
+                    var m = matchesGras[i];
+                    textRange.getRange(m.start + m.text.length + 2, m.start + m.text.length + 4).clear();
+                    textRange.getRange(m.start, m.start + 2).clear();
+                    textRange.getRange(m.start, m.start + m.text.length).getTextStyle().setBold(true);
+                }
+                
+                // 2. Gras orange (*)
+                textStr = textRange.asString();
+                var regexOrange = /\*([^*]+)\*/g;
+                var matchesOrange = [];
+                while ((match = regexOrange.exec(textStr)) !== null) {
+                    matchesOrange.push({ start: match.index, text: match[1], length: match[0].length });
+                }
+                for (var j = matchesOrange.length - 1; j >= 0; j--) {
+                    var mo = matchesOrange[j];
+                    textRange.getRange(mo.start + mo.text.length + 1, mo.start + mo.text.length + 2).clear();
+                    textRange.getRange(mo.start, mo.start + 1).clear();
+                    textRange.getRange(mo.start, mo.start + mo.text.length).getTextStyle().setBold(true).setForegroundColor("#f67604");
+                }
+            } catch (e) {
+                Logger.log("  [Erreur Markdown] " + e.message);
+            }
+        }
+
+        function colorerScore1fr(shape, scoreStr) {
+            Logger.log("  [Couleur 1.fr] Évaluation du score : " + scoreStr);
+            try {
+                var val = parseInt(scoreStr.replace(/[^0-9]/g, ''), 10);
+                if (isNaN(val)) {
+                    Logger.log("  [Couleur 1.fr] Score invalide, ignoré.");
+                    return;
+                }
+                var color = "#ff0000"; // < 60%
+                if (val >= 80) color = "#00b050";
+                else if (val >= 60) color = "#f67604";
+                
+                Logger.log("  [Couleur 1.fr] Valeur extraite : " + val + " -> Couleur appliquée : " + color);
+                shape.getFill().setSolidFill(color);
+                shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
+            } catch (e) {
+                Logger.log("  [Erreur Couleur 1.fr] " + e.message);
+            }
+        }
+
+        function colorerScoreYTG(shape, scoreStr, cibleStr) {
+            Logger.log("  [Couleur YTG] Évaluation du score : " + scoreStr + " (Cible : " + cibleStr + ")");
+            try {
+                var score = parseInt(scoreStr.replace(/[^0-9]/g, ''), 10);
+                if (isNaN(score)) {
+                    Logger.log("  [Couleur YTG] Score invalide, ignoré.");
+                    return;
+                }
+
+                var min = 0, max = 999;
+                var parts = cibleStr.split('-');
+                if (parts.length === 2) {
+                    min = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
+                    max = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
+                } else {
+                    min = parseInt(cibleStr.replace(/[^0-9]/g, ''), 10);
+                    max = min;
+                }
+                if (isNaN(min)) min = 0;
+                if (isNaN(max)) max = 999;
+
+                Logger.log("  [Couleur YTG] Fourchette cible parsée : [" + min + " - " + max + "]");
+
+                var color = "#ff0000";
+                if (score >= min && score <= max) {
+                    color = "#00b050"; // Dans la fourchette
+                    Logger.log("  [Couleur YTG] Résultat : Dans la cible -> Vert");
+                } else if ((score >= min - 15 && score < min) || (score > max && score <= max + 15)) {
+                    color = "#f67604"; // Tolérance 15 pts
+                    Logger.log("  [Couleur YTG] Résultat : Dans la marge de tolérance (+/- 15) -> Orange");
+                } else {
+                    Logger.log("  [Couleur YTG] Résultat : Hors tolérance -> Rouge");
+                }
+                
+                shape.getFill().setSolidFill(color);
+                shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
+            } catch (e) {
+                Logger.log("  [Erreur Couleur YTG] " + e.message);
+            }
+        }
+
+        function insererEtRognerImage(slide, shape, fileId, description, cropId) {
+            Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
+            try {
+                var finalFileId = fileId;
+                if (cropId && cropId !== "") {
+                    finalFileId = cropId;
+                    Logger.log("  [Image] Utilisation du Crop de secours : " + cropId);
+                }
+                
+                if (!finalFileId) throw new Error("ID Drive manquant.");
+                var file = DriveApp.getFileById(finalFileId);
+                var blob = file.getBlob().getAs(MimeType.JPEG);
+                
+                if (blob.getBytes().length === 0) {
+                    throw new Error("Le fichier est vide ou corrompu.");
+                }
+
+                Logger.log("  [Image] Blob récupéré. Insertion dans la slide...");
+                var img = slide.insertImage(blob);
+                
+                var inhW = img.getInherentWidth();
+                var inhH = img.getInherentHeight();
+                var targetW = shape.getWidth();
+                var targetH = shape.getHeight();
+                
+                Logger.log("  [Image] Dimensions image brute : " + inhW + "x" + inhH + " | Cible : " + targetW + "x" + targetH);
+
+                var ratio = targetW / inhW;
+                var scaledH = inhH * ratio;
+                
+                Logger.log("  [Image] Mise à l'échelle -> Hauteur projetée : " + scaledH);
+
+                img.setWidth(targetW);
+                img.setHeight(scaledH);
+                img.setLeft(shape.getLeft());
+                img.setTop(shape.getTop());
+                
+                if (scaledH > targetH) {
+                    var cropRatio = (scaledH - targetH) / scaledH;
+                    Logger.log("  [Image] L'image est plus longue que la forme. Application d'un rognage (crop bottom) de : " + cropRatio);
+                    img.setCropBottom(cropRatio);
+                    img.setHeight(targetH);
+                } else {
+                    Logger.log("  [Image] Pas de rognage nécessaire.");
+                }
+
+                img.setDescription(description);
+                shape.remove();
+                Logger.log("  [Image] Remplacement de la forme par l'image terminé.");
+            } catch (e) {
+                Logger.log("  [Erreur Image] Échec pour " + description + " : " + e.message);
+            }
+        }
+
+        // ---------------------------------------------------------
+        // MAPPING ET BOUCLE PRINCIPALE
+        // ---------------------------------------------------------
+
+        var textMapping = {
+            'CONTENU_STRUCTURE_CLIENT': props['CONTENU_STRUCTURE_CLIENT'] || "",
+            'CONTENU_YTG_CLIENT': props['CONTENU_YTG_CLIENT'] || "",
+            'CONTENU_1FR_CLIENT': props['CONTENU_1FR_CLIENT'] || "",
+            'CONTENU_STRUCTURE_CONCURRENT': props['CONTENU_STRUCTURE_CONCURRENT'] || "",
+            'CONTENU_YTG_CONCURRENT': props['CONTENU_YTG_CONCURRENT'] || "",
+            'CONTENU_1FR_CONCURRENT': props['CONTENU_1FR_CONCURRENT'] || ""
+        };
+
+        var cibleYTG = props['CONTENU_YTG_CIBLE'] || "";
+        var clientFullId = props['UX_CLIENT_FULL_ID'];
+        var compFullId = props['UX_COMP_FULL_ID'];
+        var clientCropId = props['UX_CLIENT_CROP_ID'];
+        var compCropId = props['UX_COMP_CROP_ID'];
+
+        Logger.log("Début du parcours récursif des slides...");
+
+        slides.forEach(function(slide, slideIndex) {
+            
+            function processElement(element) {
+                var type = element.getPageElementType();
+                
+                if (type === SlidesApp.PageElementType.GROUP) {
+                    element.asGroup().getChildren().forEach(processElement);
+                } 
+                else if (type === SlidesApp.PageElementType.SHAPE) {
+                    var shape = element.asShape();
+                    var descRaw = shape.getDescription() || "";
+
+                    if (descRaw !== "") {
+                        // 1. Textes classiques avec Markdown
+                        if (textMapping[descRaw] !== undefined) {
+                            Logger.log("Remplacement du texte pour : " + descRaw);
+                            shape.getText().setText(String(textMapping[descRaw]));
+                            formatRichTextContenu(shape);
+                            return;
+                        }
+
+                        // 2. Cible YTG (texte simple)
+                        if (descRaw === 'CONTENU_YTG_CIBLE') {
+                            Logger.log("Remplacement de la cible YTG");
+                            shape.getText().setText(String(cibleYTG));
+                            return;
+                        }
+
+                        // 3. Scores 1.fr
+                        if (descRaw === 'CONTENU_1FR_SCORE_CLIENT') {
+                            var score = props['CONTENU_1FR_SCORE_CLIENT'] || "";
+                            shape.getText().setText(String(score));
+                            colorerScore1fr(shape, score);
+                            return;
+                        }
+                        if (descRaw === 'CONTENU_1FR_SCORE_CONCURRENT') {
+                            var scoreComp = props['CONTENU_1FR_SCORE_CONCURRENT'] || "";
+                            shape.getText().setText(String(scoreComp));
+                            colorerScore1fr(shape, scoreComp);
+                            return;
+                        }
+
+                        // 4. Scores YTG
+                        if (descRaw === 'CONTENU_YTG_SCORE_CLIENT') {
+                            var scoreYtgCli = props['CONTENU_YTG_SCORE_CLIENT'] || "";
+                            shape.getText().setText(String(scoreYtgCli));
+                            colorerScoreYTG(shape, scoreYtgCli, cibleYTG);
+                            return;
+                        }
+                        if (descRaw === 'CONTENU_YTG_SCORE_CONCURRENT') {
+                            var scoreYtgComp = props['CONTENU_YTG_SCORE_CONCURRENT'] || "";
+                            shape.getText().setText(String(scoreYtgComp));
+                            colorerScoreYTG(shape, scoreYtgComp, cibleYTG);
+                            return;
+                        }
+
+                        // 5. Images Full Page
+                        if (descRaw === 'PLACEHOLDER_CONTENU_CLIENT') {
+                            insererEtRognerImage(slide, shape, clientFullId, descRaw, clientCropId);
+                            return;
+                        }
+                        if (descRaw === 'PLACEHOLDER_CONTENU_CONCURRENT') {
+                            insererEtRognerImage(slide, shape, compFullId, descRaw, compCropId);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            slide.getPageElements().forEach(processElement);
+        });
+
+        Logger.log("=== FIN : exporterContenuSlides (Succès) ===");
+        return { success: true, url: presentation.getUrl() };
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT CONTENU : " + e.message);
         return { success: false, error: e.message };
     }
 }

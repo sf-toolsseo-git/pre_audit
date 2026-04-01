@@ -3,154 +3,154 @@
     <head>
         <base target="_top">
         <style>
-          body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f1f3f4; color: #202124; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-          .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0 10px; }
-          .tab { padding: 10px 20px; cursor: pointer; font-weight: 500; color: #5f6368; border-bottom: 2px solid transparent; font-size: 14px; }
-          .tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
-          .tab-content { display: none; flex: 1; overflow: hidden; }
-          .tab-content.active { display: flex; }
-          .sidebar { width: 320px; background: #fff; border-right: 1px solid #dadce0; display: flex; flex-direction: column; flex-shrink: 0; height: 100%; }
-          .sidebar-header { padding: 10px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 600; font-size: 15px; color: #1a73e8; }
-          .sidebar-content { flex: 1; overflow-y: auto; padding: 5px 0; }
-          .sidebar-footer { padding: 10px 20px; border-top: 1px solid #dadce0; background: #fff; }
-          .theme-group { border-bottom: 1px solid #f1f3f4; }
-          .theme-label { display: flex; align-items: center; padding: 8px 20px; font-weight: 600; font-size: 14px; cursor: pointer; }
-          .theme-label:hover { background: #f8f9fa; }
-          .sub-list { padding-left: 40px; padding-bottom: 0; }
-          .sub-label { display: flex; align-items: center; padding: 4px 0; font-size: 13px; color: #5f6368; cursor: pointer; }
-          .sub-label:hover { color: #202124; }
-          input[type="checkbox"] { margin-right: 8px; cursor: pointer; }
-          .main-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #fff; padding: 15px; height: 100%; box-sizing: border-box; }
-          .btn { background-color: #08133B; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; width: auto; transition: background 0.2s; }
-          .btn:hover { background-color: #152255; }
-          .btn:disabled { background: #dadce0; cursor: not-allowed; }
-          .btn-continuer { background-color: #137333; font-size: 15px; padding: 10px 25px; }
-          .btn-continuer:hover { background-color: #0d5226; }
-          .section-title { font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #202124; }
-          .kpi-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
-          .kpi-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; flex: 0 0 calc(33.333% - 10px); box-sizing: border-box; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-          .kpi-grid-4 { display:flex; gap:10px; margin-bottom:15px; flex-wrap:nowrap; justify-content:space-between; }
-          .kpi-grid-4 .kpi-card { flex:1; }
-          .kpi-card.client { border-top: 4px solid #1a73e8; }
-          .kpi-title { font-size: 14px; font-weight: bold; color: #3c4043; margin-bottom: 10px; text-transform: uppercase; }
-          .kpi-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #5f6368; }
-          .kpi-val { font-weight: bold; color: #202124; }
-          .swo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-          .swo-panel { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-          .swo-panel-full { grid-column: 1 / -1; }
-          .panel-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; }
-          .icon-force { color: #188038; }
-          .icon-faiblesse { color: #d93025; }
-          .icon-opp { color: #fbbc04; }
-          .icon-ocean { color: #1a73e8; }
-          .icon-intent { color: #673ab7; }
-          .icon-theme { color: #ff9800; }
-          .section-description { font-size: 13px; color: #5f6368; }
-          table { width: 100%; border-collapse: collapse; font-size: 13px; }
-          th { text-align: left; color: #5f6368; font-weight: 500; padding: 6px 4px; border-bottom: 1px solid #eee; }
-          td { padding: 6px 4px; border-bottom: 1px solid #f8f9fa; color: #3c4043; }
-          tr:last-child td { border-bottom: none; }
-          .vol-cell { text-align: right; font-family: 'Roboto Mono', monospace; color: #1a73e8; }
-          .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #eee; }
-          .pos-top3 { background: #e6f4ea; color: #137333; }
-          .pos-alert { background: #fce8e6; color: #c5221f; }
-          .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 999; }
-          .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
-          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          .empty-state { text-align: center; padding: 30px; color: #5f6368; font-size: 14px; font-style: italic; }
-          .progress-bar-bg { background: #f1f3f4; height: 6px; border-radius: 3px; width: 50px; display: inline-block; overflow: hidden; margin-left: 5px; vertical-align: middle; }
-          .progress-bar-fill { background: #1a73e8; height: 100%; }
-          .progress-bar-fill.good { background: #137333; }
-          .progress-bar-fill.bad { background: #d93025; }
-          .config-card { padding: 0; margin-bottom: 10px; }
-          .dropzone { border: 2px dashed #1a73e8; background: #f8f9fa; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 75px; }
-          .dropzone.dragover { background: #e8f0fe; border-color: #1557b0; border-width: 3px; }
-          .dropzone img { max-width: 100%; max-height: 100%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 1; }
-          .dropzone-text { z-index: 2; color: #5f6368; font-size: 13px; font-weight: 500; pointer-events: none; }
-          .input-label { display: block; font-size: 13px; font-weight: 600; color: #3c4043; margin-bottom: 4px; }
-          textarea, input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; margin-bottom: 5px; }
-          textarea { resize: vertical; min-height: 60px; }
-          textarea:focus, input[type="text"]:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
-          .row { display: flex; gap: 10px; margin-bottom: 5px; }
-          .col { flex: 1; display: flex; flex-direction: column; }
-          .ce-field { border: 1px solid #dadce0; border-radius: 4px; padding: 8px 10px; min-height: 60px; font-family: inherit; font-size: 14px; line-height: 1.5; box-sizing: border-box; margin-bottom: 5px; cursor: text; outline: none; white-space: pre-wrap; word-break: break-word; }
-          .ce-field:focus { border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
-          .ce-field:empty::before { content: attr(data-placeholder); color: #aaa; pointer-events: none; font-style: italic; }
-          .section-separator { border: 0; border-top: 1px solid #dadce0; margin: 15px 0; }
-          .continuer-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 10px 0 0; border-top: 1px solid #dadce0; margin-top: 5px; }
-          .header-inline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-          .glossaire-details { background:#fff; border:1px solid #dadce0; border-radius:8px; margin-bottom:15px; font-size:13px; color:#5f6368; }
-          .glossaire-summary { padding:12px 16px; cursor:pointer; font-weight:600; color:#202124; list-style:none; display:flex; justify-content:space-between; align-items:center; user-select:none; background:#f8f9fa; border-radius:8px; }
-          .glossaire-summary::-webkit-details-marker { display:none; }
-          .glossaire-summary:hover { background:#f1f3f4; }
-          .glossaire-summary::before { content: 'ℹ️ Comprendre les métriques (glossaire)'; display: block; font-size: 13px; color: #1a73e8; }
-          .glossaire-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color:#5f6368; }
-          .glossaire-details[open] .glossaire-summary { border-bottom:1px solid #dadce0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
-          .glossaire-details[open] .glossaire-summary::after { transform: rotate(180deg); }
-          .glossaire-content { padding:15px 16px; line-height:1.8; background:#fff; border-radius: 0 0 8px 8px; }
-          .acro { font-weight:700; color:#08133B; background:#e8f0fe; padding:1px 4px; border-radius:3px; font-size:11px; margin-right:4px; }
-          .tooltip { position:relative; cursor:help; border-bottom:1px dotted #5f6368; display:inline-block; }
-          .tooltip .tooltip-text { visibility:hidden; width:220px; background-color:#333; color:#fff; text-align:center; border-radius:6px; padding:8px; position:absolute; z-index:9999; top:125%; left:50%; transform:translateX(-50%); opacity:0; transition:opacity 0.3s; font-size:11px; font-weight:normal; line-height:1.4; pointer-events:none; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
-          .tooltip .tooltip-text::after { content:""; position:absolute; bottom:100%; left:50%; margin-left:-5px; border-width:5px; border-style:solid; border-color:transparent transparent #333 transparent; }
-          .tooltip:hover .tooltip-text { visibility:visible; opacity:1; }
-          .panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,.05); margin-bottom:12px; }
-          .kpi-card-big { text-align:center; min-width:120px; padding: 16px 12px; }
-          .kpi-big-label { font-size:14px; color:#5f6368; font-weight:600; margin-bottom:6px; }
-          .kpi-big-sub { font-size:12px; color:#9aa0a6; font-weight:normal; margin-left:4px; }
-          .kpi-big-val { font-size:28px; font-weight:700; line-height:1.2; color:#08133b; }
-          .pct-badge { display:inline-block; background:#e8f0fe; color:#1a73e8; border-radius:4px; padding:1px 5px; font-size:12px; font-weight:600; }
-          .ra { text-align:right; }
-          .num { font-family:'Roboto Mono',monospace; color:#1a73e8; }
-          .ddt-val { color:#d93025; font-weight:600; font-family:'Roboto Mono',monospace; }
-          .swo-4col { display:flex; flex-direction:column; gap:15px; margin-bottom:15px; }
-          .swo-col-panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:10px; }
-          .tag { display:inline-block; border-radius:3px; font-size:10px; font-weight:700; padding:1px 4px; margin-left:4px; vertical-align:middle; }
-          .tag-top { background:#e6f4ea; color:#137333; }
-          .tag-flop { background:#fce8e6; color:#c5221f; }
-          .row-top > td { background:#f6fef8; }
-          .row-flop > td { background:#fff8f8; }
-          .table-wrap { overflow:visible; }
-          .col-th { width:250px; min-width:250px; }
-          .col-ent { flex:1; min-width:100px; word-wrap:break-word; }
-          .col-cli { color:#1a73e8 !important; font-weight:700; }
-          .section-sep { border:0; border-top:2px solid #dadce0; margin:18px 0 15px; }
-          .comp-grid { display:flex; gap:10px; margin-top:25px; overflow:visible; padding-bottom:10px; }
-          .comp-card { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:15px; flex:1; min-width:140px; text-align:center; position:relative; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-top:10px; }
-          .comp-card.client { border:2px solid #1a73e8; background:#f8fbff; }
-          .comp-card.leader { border:2px solid #188038; background:#f6fef8; }
-          .comp-logo { width:40px; height:40px; border-radius:50%; margin:0 auto 10px; display:block; object-fit:contain; background:#f1f3f4; padding:5px; }
-          .comp-name { font-size:14px; font-weight:700; color:#202124; margin-bottom:10px; word-break:break-word; }
-          .comp-stat { display:flex; justify-content:space-between; font-size:12px; color:#5f6368; margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid #f1f3f4; }
-          .comp-stat:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
-          .comp-val { font-weight:700; color:#08133b; }
-          .badge-leader { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#188038; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
-          .badge-client { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#1a73e8; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
-          .stepper-container { display: flex; justify-content: space-between; margin: 20px 0; position: relative; }
-          .stepper-container::before { content: ""; position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: #dadce0; z-index: 1; }
-          .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 25%; }
-          .step-circle { width: 32px; height: 32px; border-radius: 50%; background: #dadce0; color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; transition: background 0.3s; }
-          .step.active .step-circle { background: #1a73e8; }
-          .step.completed .step-circle { background: #188038; }
-          .step.error .step-circle { background: #d93025; }
-          .step-label { font-size: 12px; color: #5f6368; margin-top: 8px; font-weight: 500; text-align: center; }
-          .step.active .step-label { color: #1a73e8; font-weight: bold; }
-          .step.completed .step-label { color: #188038; }
-        .step.error .step-label { color: #d93025; }
-        .analysis-results { display: none; margin-top: 20px; }
-        .serp-element-row{display:flex;align-items:center;gap:15px;margin-bottom:10px;background:#f8f9fa;padding:10px;border-radius:8px;border:1px solid #dadce0}
-        .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
-        .serp-icon-box svg{width:100%;height:100%}
-        .serp-inputs{flex:1;display:flex;gap:10px}
-        .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-        .ux-element-summary { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; gap: 15px; }
-        .ux-element-summary::-webkit-details-marker { display: none; }
-        .ux-element-summary:hover { background-color: #f8f9fa; }
-        .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
-        .ux-icon-status { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; }
-        .ux-element-title { color: #08133B; flex: 0 0 400px; width: 400px; text-align: center; }
-        .ux-cb-limit { transform: scale(1.3); position: absolute; left: 15px; margin: 0; }
-        .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; position: absolute; right: 15px; }
-        .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
+            body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f1f3f4; color: #202124; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+            .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0 10px; }
+            .tab { padding: 10px 20px; cursor: pointer; font-weight: 500; color: #5f6368; border-bottom: 2px solid transparent; font-size: 14px; }
+            .tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+            .tab-content { display: none; flex: 1; overflow: hidden; }
+            .tab-content.active { display: flex; }
+            .sidebar { width: 320px; background: #fff; border-right: 1px solid #dadce0; display: flex; flex-direction: column; flex-shrink: 0; height: 100%; }
+            .sidebar-header { padding: 10px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 600; font-size: 15px; color: #1a73e8; }
+            .sidebar-content { flex: 1; overflow-y: auto; padding: 5px 0; }
+            .sidebar-footer { padding: 10px 20px; border-top: 1px solid #dadce0; background: #fff; }
+            .theme-group { border-bottom: 1px solid #f1f3f4; }
+            .theme-label { display: flex; align-items: center; padding: 8px 20px; font-weight: 600; font-size: 14px; cursor: pointer; }
+            .theme-label:hover { background: #f8f9fa; }
+            .sub-list { padding-left: 40px; padding-bottom: 0; }
+            .sub-label { display: flex; align-items: center; padding: 4px 0; font-size: 13px; color: #5f6368; cursor: pointer; }
+            .sub-label:hover { color: #202124; }
+            input[type="checkbox"] { margin-right: 8px; cursor: pointer; }
+            .main-area { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #fff; padding: 15px; height: 100%; box-sizing: border-box; }
+            .btn { background-color: #08133B; color: #fff; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; width: auto; transition: background 0.2s; }
+            .btn:hover { background-color: #152255; }
+            .btn:disabled { background: #dadce0; cursor: not-allowed; }
+            .btn-continuer { background-color: #137333; font-size: 15px; padding: 10px 25px; }
+            .btn-continuer:hover { background-color: #0d5226; }
+            .section-title { font-size: 16px; font-weight: 600; margin: 0 0 4px 0; color: #202124; }
+            .kpi-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+            .kpi-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; flex: 0 0 calc(33.333% - 10px); box-sizing: border-box; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+            .kpi-grid-4 { display:flex; gap:10px; margin-bottom:15px; flex-wrap:nowrap; justify-content:space-between; }
+            .kpi-grid-4 .kpi-card { flex:1; }
+            .kpi-card.client { border-top: 4px solid #1a73e8; }
+            .kpi-title { font-size: 14px; font-weight: bold; color: #3c4043; margin-bottom: 10px; text-transform: uppercase; }
+            .kpi-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #5f6368; }
+            .kpi-val { font-weight: bold; color: #202124; }
+            .swo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .swo-panel { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+            .swo-panel-full { grid-column: 1 / -1; }
+            .panel-header { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #f1f3f4; }
+            .icon-force { color: #188038; }
+            .icon-faiblesse { color: #d93025; }
+            .icon-opp { color: #fbbc04; }
+            .icon-ocean { color: #1a73e8; }
+            .icon-intent { color: #673ab7; }
+            .icon-theme { color: #ff9800; }
+            .section-description { font-size: 13px; color: #5f6368; }
+            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            th { text-align: left; color: #5f6368; font-weight: 500; padding: 6px 4px; border-bottom: 1px solid #eee; }
+            td { padding: 6px 4px; border-bottom: 1px solid #f8f9fa; color: #3c4043; }
+            tr:last-child td { border-bottom: none; }
+            .vol-cell { text-align: right; font-family: 'Roboto Mono', monospace; color: #1a73e8; }
+            .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #eee; }
+            .pos-top3 { background: #e6f4ea; color: #137333; }
+            .pos-alert { background: #fce8e6; color: #c5221f; }
+            .loader { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(255,255,255,0.9) !important; display: none; justify-content: center !important; align-items: center !important; z-index: 999999 !important; transform: translateZ(0); -webkit-transform: translateZ(0); }
+            .spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            .empty-state { text-align: center; padding: 30px; color: #5f6368; font-size: 14px; font-style: italic; }
+            .progress-bar-bg { background: #f1f3f4; height: 6px; border-radius: 3px; width: 50px; display: inline-block; overflow: hidden; margin-left: 5px; vertical-align: middle; }
+            .progress-bar-fill { background: #1a73e8; height: 100%; }
+            .progress-bar-fill.good { background: #137333; }
+            .progress-bar-fill.bad { background: #d93025; }
+            .config-card { padding: 0; margin-bottom: 10px; }
+            .dropzone { border: 2px dashed #1a73e8; background: #f8f9fa; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 75px; }
+            .dropzone.dragover { background: #e8f0fe; border-color: #1557b0; border-width: 3px; }
+            .dropzone img { max-width: 100%; max-height: 100%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 1; }
+            .dropzone-text { z-index: 2; color: #5f6368; font-size: 13px; font-weight: 500; pointer-events: none; }
+            .input-label { display: block; font-size: 13px; font-weight: 600; color: #3c4043; margin-bottom: 4px; }
+            textarea, input[type="text"] { width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px; box-sizing: border-box; margin-bottom: 5px; }
+            textarea { resize: vertical; min-height: 60px; }
+            textarea:focus, input[type="text"]:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
+            .row { display: flex; gap: 10px; margin-bottom: 5px; }
+            .col { flex: 1; display: flex; flex-direction: column; }
+            .ce-field { border: 1px solid #dadce0; border-radius: 4px; padding: 8px 10px; min-height: 60px; font-family: inherit; font-size: 14px; line-height: 1.5; box-sizing: border-box; margin-bottom: 5px; cursor: text; outline: none; white-space: pre-wrap; word-break: break-word; }
+            .ce-field:focus { border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
+            .ce-field:empty::before { content: attr(data-placeholder); color: #aaa; pointer-events: none; font-style: italic; }
+            .section-separator { border: 0; border-top: 1px solid #dadce0; margin: 15px 0; }
+            .continuer-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; padding: 10px 0 0; border-top: 1px solid #dadce0; margin-top: 5px; }
+            .header-inline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+            .glossaire-details { background:#fff; border:1px solid #dadce0; border-radius:8px; margin-bottom:15px; font-size:13px; color:#5f6368; }
+            .glossaire-summary { padding:12px 16px; cursor:pointer; font-weight:600; color:#202124; list-style:none; display:flex; justify-content:space-between; align-items:center; user-select:none; background:#f8f9fa; border-radius:8px; }
+            .glossaire-summary::-webkit-details-marker { display:none; }
+            .glossaire-summary:hover { background:#f1f3f4; }
+            .glossaire-summary::before { content: 'ℹ️ Comprendre les métriques (glossaire)'; display: block; font-size: 13px; color: #1a73e8; }
+            .glossaire-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color:#5f6368; }
+            .glossaire-details[open] .glossaire-summary { border-bottom:1px solid #dadce0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; }
+            .glossaire-details[open] .glossaire-summary::after { transform: rotate(180deg); }
+            .glossaire-content { padding:15px 16px; line-height:1.8; background:#fff; border-radius: 0 0 8px 8px; }
+            .acro { font-weight:700; color:#08133B; background:#e8f0fe; padding:1px 4px; border-radius:3px; font-size:11px; margin-right:4px; }
+            .tooltip { position:relative; cursor:help; border-bottom:1px dotted #5f6368; display:inline-block; }
+            .tooltip .tooltip-text { visibility:hidden; width:220px; background-color:#333; color:#fff; text-align:center; border-radius:6px; padding:8px; position:absolute; z-index:9999; top:125%; left:50%; transform:translateX(-50%); opacity:0; transition:opacity 0.3s; font-size:11px; font-weight:normal; line-height:1.4; pointer-events:none; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+            .tooltip .tooltip-text::after { content:""; position:absolute; bottom:100%; left:50%; margin-left:-5px; border-width:5px; border-style:solid; border-color:transparent transparent #333 transparent; }
+            .tooltip:hover .tooltip-text { visibility:visible; opacity:1; }
+            .panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:12px; box-shadow:0 1px 2px rgba(0,0,0,.05); margin-bottom:12px; }
+            .kpi-card-big { text-align:center; min-width:120px; padding: 16px 12px; }
+            .kpi-big-label { font-size:14px; color:#5f6368; font-weight:600; margin-bottom:6px; }
+            .kpi-big-sub { font-size:12px; color:#9aa0a6; font-weight:normal; margin-left:4px; }
+            .kpi-big-val { font-size:28px; font-weight:700; line-height:1.2; color:#08133b; }
+            .pct-badge { display:inline-block; background:#e8f0fe; color:#1a73e8; border-radius:4px; padding:1px 5px; font-size:12px; font-weight:600; }
+            .ra { text-align:right; }
+            .num { font-family:'Roboto Mono',monospace; color:#1a73e8; }
+            .ddt-val { color:#d93025; font-weight:600; font-family:'Roboto Mono',monospace; }
+            .swo-4col { display:flex; flex-direction:column; gap:15px; margin-bottom:15px; }
+            .swo-col-panel { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:10px; }
+            .tag { display:inline-block; border-radius:3px; font-size:10px; font-weight:700; padding:1px 4px; margin-left:4px; vertical-align:middle; }
+            .tag-top { background:#e6f4ea; color:#137333; }
+            .tag-flop { background:#fce8e6; color:#c5221f; }
+            .row-top > td { background:#f6fef8; }
+            .row-flop > td { background:#fff8f8; }
+            .table-wrap { overflow:visible; }
+            .col-th { width:250px; min-width:250px; }
+            .col-ent { flex:1; min-width:100px; word-wrap:break-word; }
+            .col-cli { color:#1a73e8 !important; font-weight:700; }
+            .section-sep { border:0; border-top:2px solid #dadce0; margin:18px 0 15px; }
+            .comp-grid { display:flex; gap:10px; margin-top:25px; overflow:visible; padding-bottom:10px; }
+            .comp-card { background:#fff; border:1px solid #dadce0; border-radius:8px; padding:15px; flex:1; min-width:140px; text-align:center; position:relative; box-shadow:0 1px 2px rgba(0,0,0,0.05); margin-top:10px; }
+            .comp-card.client { border:2px solid #1a73e8; background:#f8fbff; }
+            .comp-card.leader { border:2px solid #188038; background:#f6fef8; }
+            .comp-logo { width:40px; height:40px; border-radius:50%; margin:0 auto 10px; display:block; object-fit:contain; background:#f1f3f4; padding:5px; }
+            .comp-name { font-size:14px; font-weight:700; color:#202124; margin-bottom:10px; word-break:break-word; }
+            .comp-stat { display:flex; justify-content:space-between; font-size:12px; color:#5f6368; margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid #f1f3f4; }
+            .comp-stat:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+            .comp-val { font-weight:700; color:#08133b; }
+            .badge-leader { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#188038; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
+            .badge-client { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#1a73e8; color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:10px; white-space:nowrap; z-index:10; }
+            .stepper-container { display: flex; justify-content: space-between; margin: 20px 0; position: relative; }
+            .stepper-container::before { content: ""; position: absolute; top: 15px; left: 0; right: 0; height: 2px; background: #dadce0; z-index: 1; }
+            .step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 25%; }
+            .step-circle { width: 32px; height: 32px; border-radius: 50%; background: #dadce0; color: #fff; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 14px; transition: background 0.3s; }
+            .step.active .step-circle { background: #1a73e8; }
+            .step.completed .step-circle { background: #188038; }
+            .step.error .step-circle { background: #d93025; }
+            .step-label { font-size: 12px; color: #5f6368; margin-top: 8px; font-weight: 500; text-align: center; }
+            .step.active .step-label { color: #1a73e8; font-weight: bold; }
+            .step.completed .step-label { color: #188038; }
+            .step.error .step-label { color: #d93025; }
+            .analysis-results { display: none; margin-top: 20px; }
+            .serp-element-row{display:flex;align-items:center;gap:15px;margin-bottom:10px;background:#f8f9fa;padding:10px;border-radius:8px;border:1px solid #dadce0}
+            .serp-icon-box{width:32px;height:32px;flex-shrink:0;display:flex;justify-content:center;align-items:center}
+            .serp-icon-box svg{width:100%;height:100%}
+            .serp-inputs{flex:1;display:flex;gap:10px}
+            .ux-element-row { background: #fff; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+            .ux-element-summary { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px; cursor: pointer; list-style: none; font-weight: 600; font-size: 14px; user-select: none; gap: 15px; }
+            .ux-element-summary::-webkit-details-marker { display: none; }
+            .ux-element-summary:hover { background-color: #f8f9fa; }
+            .ux-element-content { padding: 15px; border-top: 1px solid #f1f3f4; background: #fafafa; display: flex; flex-direction: column; gap: 10px; }
+            .ux-icon-status { width: 24px; height: 24px; object-fit: contain; flex: 0 0 24px; }
+            .ux-element-title { color: #08133B; flex: 0 0 400px; width: 400px; text-align: center; }
+            .ux-cb-limit { transform: scale(1.3); position: absolute; left: 15px; margin: 0; }
+            .ux-element-summary::after { content: '▼'; font-size: 12px; transition: transform 0.2s; color: #5f6368; position: absolute; right: 15px; }
+            .ux-element-row[open] .ux-element-summary::after { transform: rotate(180deg); }
         </style>
     </head>
     <body>
@@ -214,7 +214,7 @@
                         </div>
                         
                         <div style="text-align: center;">
-                            <button type="button" id="btn-gen-contexte" class="btn" style="width: auto;" onclick="lancerGenerationIAContexte()">🤖 Générer le contexte par IA</button>
+                            <button type="button" id="btn-gen-contexte" class="btn" style="width: auto;" onclick="lancerGenerationIAContexte()">🤖 Générer le contexte</button>
                         </div>
                         
                         <div>
@@ -276,7 +276,7 @@
                             <h2 class="section-title">Analyse de l'évolution (mots-clés et trafic)</h2>
                             <div class="section-description">Collez (Ctrl+V) ou glissez les captures d'écran depuis Semrush.</div>
                         </div>
-                        <button class="btn" id="btn-ia" onclick="lancerAnalyseIA()" disabled>🤖 Générer l'analyse IA</button>
+                        <button class="btn" id="btn-ia" onclick="lancerAnalyseIA()" disabled>🤖 Générer l'analyse</button>
                     </div>
 
                     <div style="display: flex; gap: 15px; margin-bottom: 8px;">
@@ -327,7 +327,7 @@
                     <div class="empty-state">Récupération de l'arborescence...</div>
                 </div>
                 <div class="sidebar-footer">
-                    <button class="btn" id="btnAnalyze" onclick="lancerAnalyse()">Générer le diagnostic 🚀</button>
+                    <button class="btn" id="btnAnalyze" onclick="lancerAnalyse()">Générer le diagnostic</button>
                 </div>
             </div>
 
@@ -367,6 +367,7 @@
                             <div class="section-description">Validez ou éditez le mot-clé stratégique, son volume et les URLs associées.</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
+                            <button type="button" class="btn" onclick="ouvrirTabsUX()">Ouvrir les pages ↗</button>
                             <span id="focus-msg" style="font-size: 12px; font-weight: bold;"></span>
                             <button class="btn btn-continuer" id="btn-save-focus" onclick="sauvegarderFocusMotCle()" style="padding: 8px 15px; font-size: 13px;">💾 Enregistrer le focus</button>
                         </div>
@@ -897,32 +898,32 @@
                 </div>
 
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="display: none; padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse IA</button>
+                    <button class="btn" id="btn-ia-contenu" onclick="lancerAnalyseContenuIA()" disabled style="display: none; padding: 10px 20px; font-size: 14px; background-color: #08133b;">🤖 Générer l'analyse</button>
                 </div>
 
                 <div id="contenu-results-container" style="display: none;">
-                    <div class="row" style="gap: 15px;">
-                        <div class="col">
-                            <label class="input-label">Structure du contenu (Client)</label>
-                            <div id="ce-contenu-structure-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Itération des termes (Client)</label>
-                            <div id="ce-contenu-ytg-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique (Client)</label>
-                            <div id="ce-contenu-1fr-client" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
+                        <div class="row" style="gap: 15px;">
+                            <div class="col">
+                                <label class="input-label">Structure du contenu (client)</label>
+                                <div id="ce-contenu-structure-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..." onblur="autoSaveAnalyseContenu()"></div>
+                                
+                                <label class="input-label" style="margin-top: 10px;">Itération des termes (client)</label>
+                                <div id="ce-contenu-ytg-client" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)" onblur="autoSaveAnalyseContenu()"></div>
+                                
+                                <label class="input-label" style="margin-top: 10px;">Analyse sémantique (client)</label>
+                                <div id="ce-contenu-1fr-client" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..." onblur="autoSaveAnalyseContenu()"></div>
+                            </div>
+                            <div class="col">
+                                <label class="input-label">Structure du contenu (concurrent)</label>
+                                <div id="ce-contenu-structure-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..." onblur="autoSaveAnalyseContenu()"></div>
+                                
+                                <label class="input-label" style="margin-top: 10px;">Itération des termes (concurrent)</label>
+                                <div id="ce-contenu-ytg-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)" onblur="autoSaveAnalyseContenu()"></div>
+                                
+                                <label class="input-label" style="margin-top: 10px;">Analyse sémantique (concurrent)</label>
+                                <div id="ce-contenu-1fr-comp" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..." onblur="autoSaveAnalyseContenu()"></div>
+                            </div>
                         </div>
-                        <div class="col">
-                            <label class="input-label">Structure du contenu (Concurrent)</label>
-                            <div id="ce-contenu-structure-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la structure Hn et mise en page..."></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Itération des termes (Concurrent)</label>
-                            <div id="ce-contenu-ytg-comp" contenteditable="true" class="ce-field" data-placeholder="Analyse de la courbe Yourtext.Guru (Dangers, suroptimisations...)"></div>
-                            
-                            <label class="input-label" style="margin-top: 10px;">Analyse sémantique (Concurrent)</label>
-                            <div id="ce-contenu-1fr-comp" contenteditable="true" class="ce-field" data-placeholder="Thématiques manquantes (1.fr), entités nommées..."></div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="continuer-bar" style="margin-top: 25px;">
@@ -989,371 +990,371 @@
             // ========================== INIT ==========================
 
             window.onload = function() {
-            initDropzones();
-            initSvgDropzones();
-            showLoader("Chargement de la configuration...");
+                initDropzones();
+                initSvgDropzones();
+                showLoader("Chargement de la configuration...");
 
-            google.script.run
-                .withSuccessHandler(function(config) {
-                    window.globalConfig = config || {}; 
-                    if (config) {
-                        // Onglet 1
-                        document.getElementById('conf-client-name').value = config.clientName;
-                        document.getElementById('conf-client-url').value = config.clientUrl;
-                        document.getElementById('conf-urls-contexte').value = config.urlsContexte;
-                        document.getElementById('conf-contexte-client').value = config.contexteClient;
-                        document.getElementById('conf-slide-id').value = config.slideId;
-                        document.getElementById('conf-brief').value = config.brief;
-                        document.getElementById('conf-url-reponses').value = config.urlReponses;
-                        document.getElementById('conf-contexte-preaudit').value = config.contextePreaudit;
+                google.script.run
+                    .withSuccessHandler(function(config) {
+                        window.globalConfig = config || {}; 
+                        if (config) {
+                            // Onglet 1
+                            document.getElementById('conf-client-name').value = config.clientName;
+                            document.getElementById('conf-client-url').value = config.clientUrl;
+                            document.getElementById('conf-urls-contexte').value = config.urlsContexte;
+                            document.getElementById('conf-contexte-client').value = config.contexteClient;
+                            document.getElementById('conf-slide-id').value = config.slideId;
+                            document.getElementById('conf-brief').value = config.brief;
+                            document.getElementById('conf-url-reponses').value = config.urlReponses;
+                            document.getElementById('conf-contexte-preaudit').value = config.contextePreaudit;
 
-                        // Onglet 2 — Besoin/Solution
-                        if (config.besoinHtml || config.solutionHtml) {
-                            var ceBesoin = document.getElementById('ce-besoin');
-                            var ceSolution = document.getElementById('ce-solution');
-                            ceBesoin.innerHTML = config.besoinHtml;
-                            ceBesoin.dataset.raw = config.besoinTexte;
-                            ceSolution.innerHTML = config.solutionHtml;
-                            ceSolution.dataset.raw = config.solutionTexte;
-                            document.getElementById('besoin-result-card').style.display = 'block';
-                        }
-
-                        // Onglet 2 — Semrush
-                        if (config.titreSemrush || config.analyseKwHtml || config.analyseTraficHtml) {
-                            document.getElementById('ia-titre').value = config.titreSemrush;
-                            var ceKw = document.getElementById('ce-kw');
-                            var ceTrafic = document.getElementById('ce-trafic');
-                            ceKw.innerHTML = config.analyseKwHtml;
-                            ceKw.dataset.raw = config.analyseKwTexte;
-                            ceTrafic.innerHTML = config.analyseTraficHtml;
-                            ceTrafic.dataset.raw = config.analyseTraficTexte;
-                            document.getElementById('ia-result-card').style.display = 'block';
-                        }
-
-                        // Restauration de l'onglet actif
-                        if (config.activeTab && config.activeTab !== 'config') {
-                            console.log("Restauration de l'onglet actif : " + config.activeTab);
-                            switchTab(config.activeTab, true); 
-                            if (config.activeTab === 'etat-lieux') {
-                                console.log("Étape clé : préparation de l'état des lieux au chargement");
-                                preparerOngletEtatLieux();
-                            }
-                            if (config.activeTab === 'focus-mot-cle') {
-                                preparerOngletFocusMotCle();
-                            }
-                        }
-
-                        // Restauration de l'onglet 5
-                        if (config.focusKw) document.getElementById('focus-kw').value = config.focusKw;
-                        if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
-                        if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
-                        if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
-                        if (config.focusLocalisation) {
-                            var locVal = config.focusLocalisation;
-                            document.getElementById('focus-localisation').value = (locVal.toLowerCase() === "france") ? "" : locVal;
-                        }
-                        if (config.focusClientPos) {
-                            var elPosCli = document.getElementById('focus-client-pos');
-                            if (elPosCli) elPosCli.value = config.focusClientPos;
-                        }
-                        if (config.focusCompPos) {
-                            var elPosComp = document.getElementById('focus-comp-pos');
-                            if (elPosComp) elPosComp.value = config.focusCompPos;
-                        }
-                        if (config.focusNoPage === "true") {
-                            var cb = document.getElementById('focus-no-page');
-                            if (cb) cb.checked = true;
-                            toggleFocusClientUrl();
-                        }
-                        
-                        // Restauration de l'onglet 5 (Analyses détaillées)
-                        if (config.intentionTitre || config.standard1 || config.serpTitre1) {
-                            document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
-                            document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
-                            document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
-                            if (config.serpSvg1) {
-                                google.script.run.withSuccessHandler(function(b64) {
-                                    if (b64) {
-                                        var iconRender = document.getElementById('serp-icon-render-1');
-                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                    }
-                                }).getDriveImageBase64(config.serpSvg1);
-                            }
-                            
-                            document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
-                            document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
-                            document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
-                            if (config.serpSvg2) {
-                                google.script.run.withSuccessHandler(function(b64) {
-                                    if (b64) {
-                                        var iconRender = document.getElementById('serp-icon-render-2');
-                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                    }
-                                }).getDriveImageBase64(config.serpSvg2);
-                            }
-                            
-                            document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
-                            document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
-                            document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
-                            if (config.serpSvg3) {
-                                google.script.run.withSuccessHandler(function(b64) {
-                                    if (b64) {
-                                        var iconRender = document.getElementById('serp-icon-render-3');
-                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                    }
-                                }).getDriveImageBase64(config.serpSvg3);
-                            }
-                            
-                            document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
-                            document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
-                            document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
-                            if (config.serpSvg4) {
-                                google.script.run.withSuccessHandler(function(b64) {
-                                    if (b64) {
-                                        var iconRender = document.getElementById('serp-icon-render-4');
-                                        if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
-                                    }
-                                }).getDriveImageBase64(config.serpSvg4);
+                            // Onglet 2 — Besoin/Solution
+                            if (config.besoinHtml || config.solutionHtml) {
+                                var ceBesoin = document.getElementById('ce-besoin');
+                                var ceSolution = document.getElementById('ce-solution');
+                                ceBesoin.innerHTML = config.besoinHtml;
+                                ceBesoin.dataset.raw = config.besoinTexte;
+                                ceSolution.innerHTML = config.solutionHtml;
+                                ceSolution.dataset.raw = config.solutionTexte;
+                                document.getElementById('besoin-result-card').style.display = 'block';
                             }
 
-                            document.getElementById('intention-titre').value = config.intentionTitre || "";
-                            if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
+                            // Onglet 2 — Semrush
+                            if (config.titreSemrush || config.analyseKwHtml || config.analyseTraficHtml) {
+                                document.getElementById('ia-titre').value = config.titreSemrush;
+                                var ceKw = document.getElementById('ce-kw');
+                                var ceTrafic = document.getElementById('ce-trafic');
+                                ceKw.innerHTML = config.analyseKwHtml;
+                                ceKw.dataset.raw = config.analyseKwTexte;
+                                ceTrafic.innerHTML = config.analyseTraficHtml;
+                                ceTrafic.dataset.raw = config.analyseTraficTexte;
+                                document.getElementById('ia-result-card').style.display = 'block';
+                            }
 
-                            if (config.standard1Html) setCeContent('standard-1', config.standard1);
-                            if (config.standard2Html) setCeContent('standard-2', config.standard2);
-                            if (config.standard3Html) setCeContent('standard-3', config.standard3);
-
-                            if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
-                            if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
-                            if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
-
-                            document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
-                            if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
-                            document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
-                            if (config.gapDesc2Html) setCeContent('gap-desc-2', config.gapDesc2);
-                            document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
-                            if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
-
-                            if (config.reco1Html) setCeContent('reco-1', config.reco1);
-                            if (config.reco2Html) setCeContent('reco-2', config.reco2);
-                            if (config.reco3Html) setCeContent('reco-3', config.reco3);
-                            if (config.reco4Html) setCeContent('reco-4', config.reco4);
-
-                            document.getElementById('analysis-results').style.display = 'block';
-                        }
-                        
-                        // Restauration de l'onglet 6
-                        var cibleVal = config.techUrlCible;
-                        if (!cibleVal || cibleVal === "-") cibleVal = config.focusClientUrl;
-                        if (!cibleVal || cibleVal === "-") cibleVal = config.clientUrl || "";
-                        document.getElementById('tech-url-cible').value = cibleVal;
-                        
-                        var robotsUrl = "";
-                        if (cibleVal) {
-                            try {
-                                var urlObj = new URL(cibleVal);
-                                robotsUrl = urlObj.origin + "/robots.txt";
-                            } catch(e) {
-                                if (cibleVal.indexOf("http") === -1) {
-                                    robotsUrl = "https://" + cibleVal.split('/')[0] + "/robots.txt";
+                            // Restauration de l'onglet actif
+                            if (config.activeTab && config.activeTab !== 'config') {
+                                console.log("Restauration de l'onglet actif : " + config.activeTab);
+                                switchTab(config.activeTab, true); 
+                                if (config.activeTab === 'etat-lieux') {
+                                    console.log("Étape clé : préparation de l'état des lieux au chargement");
+                                    preparerOngletEtatLieux();
+                                }
+                                if (config.activeTab === 'focus-mot-cle') {
+                                    preparerOngletFocusMotCle();
                                 }
                             }
-                        }
-                        document.getElementById('tech-robots-url').value = robotsUrl;
-                        if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
-                        if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
-                        if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
-                        if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
-                        if (config.techIsMultilingue) {
-                            document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
-                            toggleMultilingueFields();
-                        }
-                        if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
-                        if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
-                        if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
-                        
-                        if (config.DATA_TECH_IA_FULL_STATE) {
-                            try {
-                                var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
-                                document.getElementById('tech-ia-results-container').style.display = 'flex';
+
+                            // Restauration de l'onglet 5
+                            if (config.focusKw) document.getElementById('focus-kw').value = config.focusKw;
+                            if (config.focusVol) document.getElementById('focus-vol').value = config.focusVol;
+                            if (config.focusClientUrl) document.getElementById('focus-client-url').value = config.focusClientUrl;
+                            if (config.focusCompUrl) document.getElementById('focus-comp-url').value = config.focusCompUrl;
+                            if (config.focusLocalisation) {
+                                var locVal = config.focusLocalisation;
+                                document.getElementById('focus-localisation').value = (locVal.toLowerCase() === "france") ? "" : locVal;
+                            }
+                            if (config.focusClientPos) {
+                                var elPosCli = document.getElementById('focus-client-pos');
+                                if (elPosCli) elPosCli.value = config.focusClientPos;
+                            }
+                            if (config.focusCompPos) {
+                                var elPosComp = document.getElementById('focus-comp-pos');
+                                if (elPosComp) elPosComp.value = config.focusCompPos;
+                            }
+                            if (config.focusNoPage === "true") {
+                                var cb = document.getElementById('focus-no-page');
+                                if (cb) cb.checked = true;
+                                toggleFocusClientUrl();
+                            }
+                            
+                            // Restauration de l'onglet 5 (Analyses détaillées)
+                            if (config.intentionTitre || config.standard1 || config.serpTitre1) {
+                                document.getElementById('serp-titre-1').value = config.serpTitre1 || "";
+                                document.getElementById('serp-desc-1').value = config.serpDesc1 || "";
+                                document.getElementById('serp-svg-1').value = config.serpSvg1 || "";
+                                if (config.serpSvg1) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-1');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg1);
+                                }
                                 
-                                google.script.run.withSuccessHandler(function(icons) {
-                                    window.lastTechIaIcons = icons;
-                                    if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, icons, true);
-                                    if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, icons, true);
-                                    if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, icons, true);
-                                }).recupererIconesTechBase64();
-                            } catch(e) {
-                                console.log("Erreur de parsing JSON : " + e.message);
+                                document.getElementById('serp-titre-2').value = config.serpTitre2 || "";
+                                document.getElementById('serp-desc-2').value = config.serpDesc2 || "";
+                                document.getElementById('serp-svg-2').value = config.serpSvg2 || "";
+                                if (config.serpSvg2) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-2');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg2);
+                                }
+                                
+                                document.getElementById('serp-titre-3').value = config.serpTitre3 || "";
+                                document.getElementById('serp-desc-3').value = config.serpDesc3 || "";
+                                document.getElementById('serp-svg-3').value = config.serpSvg3 || "";
+                                if (config.serpSvg3) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-3');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg3);
+                                }
+                                
+                                document.getElementById('serp-titre-4').value = config.serpTitre4 || "";
+                                document.getElementById('serp-desc-4').value = config.serpDesc4 || "";
+                                document.getElementById('serp-svg-4').value = config.serpSvg4 || "";
+                                if (config.serpSvg4) {
+                                    google.script.run.withSuccessHandler(function(b64) {
+                                        if (b64) {
+                                            var iconRender = document.getElementById('serp-icon-render-4');
+                                            if (iconRender) iconRender.innerHTML = '<img src="data:image/png;base64,' + b64 + '" style="width:100%;height:100%;object-fit:contain;">';
+                                        }
+                                    }).getDriveImageBase64(config.serpSvg4);
+                                }
+
+                                document.getElementById('intention-titre').value = config.intentionTitre || "";
+                                if (config.intentionDescHtml) setCeContent('intention-desc', config.intentionDesc);
+
+                                if (config.standard1Html) setCeContent('standard-1', config.standard1);
+                                if (config.standard2Html) setCeContent('standard-2', config.standard2);
+                                if (config.standard3Html) setCeContent('standard-3', config.standard3);
+
+                                if (config.semantique1Html) setCeContent('semantique-1', config.semantique1);
+                                if (config.semantique2Html) setCeContent('semantique-2', config.semantique2);
+                                if (config.semantique3Html) setCeContent('semantique-3', config.semantique3);
+
+                                document.getElementById('gap-titre-1').value = config.gapTitre1 || "";
+                                if (config.gapDesc1Html) setCeContent('gap-desc-1', config.gapDesc1);
+                                document.getElementById('gap-titre-2').value = config.gapTitre2 || "";
+                                if (config.gapDesc2Html) setCeContent('gap-desc-2', config.gapDesc2);
+                                document.getElementById('gap-titre-3').value = config.gapTitre3 || "";
+                                if (config.gapDesc3Html) setCeContent('gap-desc-3', config.gapDesc3);
+
+                                if (config.reco1Html) setCeContent('reco-1', config.reco1);
+                                if (config.reco2Html) setCeContent('reco-2', config.reco2);
+                                if (config.reco3Html) setCeContent('reco-3', config.reco3);
+                                if (config.reco4Html) setCeContent('reco-4', config.reco4);
+
+                                document.getElementById('analysis-results').style.display = 'block';
                             }
-                        } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
-                            document.getElementById('tech-ia-results-container').style.display = 'flex';
-                            var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
                             
-                            for (var pf in prefixMap) {
-                                var restoredItems = [];
-                                for (var i = 1; i <= 4; i++) {
-                                    var checkVal = config[pf + '_CHECK_' + i];
-                                    var contentVal = config[pf + '_CONTENT_' + i];
-                                    if (contentVal) {
-                                        restoredItems.push({
-                                            icone: checkVal || "INCONNU",
-                                            texte: contentVal,
-                                            restoredChecked: true
-                                        });
+                            // Restauration de l'onglet 6
+                            var cibleVal = config.techUrlCible;
+                            if (!cibleVal || cibleVal === "-") cibleVal = config.focusClientUrl;
+                            if (!cibleVal || cibleVal === "-") cibleVal = config.clientUrl || "";
+                            document.getElementById('tech-url-cible').value = cibleVal;
+                            
+                            var robotsUrl = "";
+                            if (cibleVal) {
+                                try {
+                                    var urlObj = new URL(cibleVal);
+                                    robotsUrl = urlObj.origin + "/robots.txt";
+                                } catch(e) {
+                                    if (cibleVal.indexOf("http") === -1) {
+                                        robotsUrl = "https://" + cibleVal.split('/')[0] + "/robots.txt";
                                     }
                                 }
-                                if (restoredItems.length > 0) {
-                                    buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
-                                }
                             }
-                        }
-                        
-                        if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
-                            document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
-                            document.getElementById('tech-results-container').style.display = 'block';
-                        }
-                        if (config.techHtmlIndex && config.techHtmlIndex.trim() !== '') {
-                            document.getElementById('indexation-results-content').innerHTML = config.techHtmlIndex;
-                            document.getElementById('tech-results-container').style.display = 'block';
-                        }
-                        if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
-                            var posContainer = document.getElementById('positionnement-results-container');
-                            var posTitle = document.getElementById('positionnement-results-title');
-                            var posContent = document.getElementById('positionnement-results-content');
-                        
-                            posContent.innerHTML = config.techHtmlPos;
-                        
-                            posContainer.style.background = '#fff';
-                            posContainer.style.border = '1px solid #dadce0';
-                            posContainer.style.opacity = '1';
-                            posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                            posTitle.style.color = '#08133B';
-                            posTitle.style.borderBottom = '1px solid #f1f3f4';
-                            posContent.style.textAlign = 'left';
-                        
-                            document.getElementById('tech-results-container').style.display = 'block';
-                        }
-                        
-                        // Restauration de l'onglet 7 (UX)
-                        if (config.uxClientViewportId && config.uxCompViewportId) {
-                            idUxClientViewport = config.uxClientViewportId;
-                            idUxCompViewport = config.uxCompViewportId;
-                            idUxClientFull = config.uxClientFullId;
-                            idUxCompFull = config.uxCompFullId;
+                            document.getElementById('tech-robots-url').value = robotsUrl;
+                            if (config.techSitemap) document.getElementById('tech-sitemap').value = config.techSitemap;
+                            if (config.techTypePage) document.getElementById('tech-type-page').value = config.techTypePage;
+                            if (config.techUrlPaginees) document.getElementById('tech-url-paginees').value = config.techUrlPaginees;
+                            if (config.techUrlPageMere) document.getElementById('tech-url-page-mere').value = config.techUrlPageMere;
+                            if (config.techIsMultilingue) {
+                                document.getElementById('tech-is-multilingue').value = config.techIsMultilingue;
+                                toggleMultilingueFields();
+                            }
+                            if (config.techLangueCible) document.getElementById('tech-langue-cible').value = config.techLangueCible;
+                            if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
+                            if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                             
-                            var containerUx = document.getElementById('ux-results-container');
-                            if (containerUx) containerUx.style.display = 'block';
-                            
-                            var btnIaUx = document.getElementById('btn-gen-ux-ia');
-                            var btnExportUx = document.getElementById('btn-export-ux');
-                            if (btnIaUx) btnIaUx.disabled = false;
-                            if (btnExportUx) btnExportUx.disabled = false;
-
-                            google.script.run.withSuccessHandler(function(b64) {
-                                var imgClient = document.getElementById('img-ux-client');
-                                if (imgClient && b64) imgClient.src = "data:image/jpeg;base64," + b64;
-                            }).getDriveImageBase64ById(idUxClientViewport);
-
-                            google.script.run.withSuccessHandler(function(b64) {
-                                var imgComp = document.getElementById('img-ux-comp');
-                                if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
-                            }).getDriveImageBase64ById(idUxCompViewport);
-
-                            if (config.dataUxIaFullState) {
+                            if (config.DATA_TECH_IA_FULL_STATE) {
                                 try {
-                                    var parsedState = JSON.parse(config.dataUxIaFullState);
-                                    uxElementsData = parsedState.analyse_elements || [];
-                                    if (config.uxRecommandation1) setCeContent('ux-reco-globale-1', config.uxRecommandation1);
-                                    if (config.uxRecommandation2) setCeContent('ux-reco-globale-2', config.uxRecommandation2);
+                                    var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
+                                    document.getElementById('tech-ia-results-container').style.display = 'flex';
                                     
                                     google.script.run.withSuccessHandler(function(icons) {
-                                        renderUxList(icons);
-                                        var wrapper = document.getElementById('ux-analysis-wrapper');
-                                        if (wrapper) wrapper.style.display = 'flex';
-                                        var btnSave = document.getElementById('btn-save-ux-manual');
-                                        if (btnSave) btnSave.disabled = false;
+                                        window.lastTechIaIcons = icons;
+                                        if (fullState.crawl && fullState.crawl.length > 0) buildDynamicTechList('crawl', fullState.crawl, icons, true);
+                                        if (fullState.index && fullState.index.length > 0) buildDynamicTechList('index', fullState.index, icons, true);
+                                        if (fullState.pos && fullState.pos.length > 0) buildDynamicTechList('pos', fullState.pos, icons, true);
                                     }).recupererIconesTechBase64();
                                 } catch(e) {
-                                    console.log("Erreur parsing dataUxIaFullState : " + e.message);
+                                    console.log("Erreur de parsing JSON : " + e.message);
                                 }
+                            } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
+                                document.getElementById('tech-ia-results-container').style.display = 'flex';
+                                var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
+                                
+                                for (var pf in prefixMap) {
+                                    var restoredItems = [];
+                                    for (var i = 1; i <= 4; i++) {
+                                        var checkVal = config[pf + '_CHECK_' + i];
+                                        var contentVal = config[pf + '_CONTENT_' + i];
+                                        if (contentVal) {
+                                            restoredItems.push({
+                                                icone: checkVal || "INCONNU",
+                                                texte: contentVal,
+                                                restoredChecked: true
+                                            });
+                                        }
+                                    }
+                                    if (restoredItems.length > 0) {
+                                        buildDynamicTechList(prefixMap[pf], restoredItems, null, true);
+                                    }
+                                }
+                            }
+                            
+                            if (config.techHtmlCrawl && config.techHtmlCrawl.trim() !== '') {
+                                document.getElementById('crawl-results-content').innerHTML = config.techHtmlCrawl;
+                                document.getElementById('tech-results-container').style.display = 'block';
+                            }
+                            if (config.techHtmlIndex && config.techHtmlIndex.trim() !== '') {
+                                document.getElementById('indexation-results-content').innerHTML = config.techHtmlIndex;
+                                document.getElementById('tech-results-container').style.display = 'block';
+                            }
+                            if (config.techHtmlPos && config.techHtmlPos.trim() !== '') {
+                                var posContainer = document.getElementById('positionnement-results-container');
+                                var posTitle = document.getElementById('positionnement-results-title');
+                                var posContent = document.getElementById('positionnement-results-content');
+                            
+                                posContent.innerHTML = config.techHtmlPos;
+                            
+                                posContainer.style.background = '#fff';
+                                posContainer.style.border = '1px solid #dadce0';
+                                posContainer.style.opacity = '1';
+                                posContainer.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                posTitle.style.color = '#08133B';
+                                posTitle.style.borderBottom = '1px solid #f1f3f4';
+                                posContent.style.textAlign = 'left';
+                            
+                                document.getElementById('tech-results-container').style.display = 'block';
+                            }
+                            
+                            // Restauration de l'onglet 7 (UX)
+                            if (config.uxClientViewportId && config.uxCompViewportId) {
+                                idUxClientViewport = config.uxClientViewportId;
+                                idUxCompViewport = config.uxCompViewportId;
+                                idUxClientFull = config.uxClientFullId;
+                                idUxCompFull = config.uxCompFullId;
+                                
+                                var containerUx = document.getElementById('ux-results-container');
+                                if (containerUx) containerUx.style.display = 'block';
+                                
+                                var btnIaUx = document.getElementById('btn-gen-ux-ia');
+                                var btnExportUx = document.getElementById('btn-export-ux');
+                                if (btnIaUx) btnIaUx.disabled = false;
+                                if (btnExportUx) btnExportUx.disabled = false;
+
+                                google.script.run.withSuccessHandler(function(b64) {
+                                    var imgClient = document.getElementById('img-ux-client');
+                                    if (imgClient && b64) imgClient.src = "data:image/jpeg;base64," + b64;
+                                }).getDriveImageBase64ById(idUxClientViewport);
+
+                                google.script.run.withSuccessHandler(function(b64) {
+                                    var imgComp = document.getElementById('img-ux-comp');
+                                    if (imgComp && b64) imgComp.src = "data:image/jpeg;base64," + b64;
+                                }).getDriveImageBase64ById(idUxCompViewport);
+
+                                if (config.dataUxIaFullState) {
+                                    try {
+                                        var parsedState = JSON.parse(config.dataUxIaFullState);
+                                        uxElementsData = parsedState.analyse_elements || [];
+                                        if (config.uxRecommandation1) setCeContent('ux-reco-globale-1', config.uxRecommandation1);
+                                        if (config.uxRecommandation2) setCeContent('ux-reco-globale-2', config.uxRecommandation2);
+                                        
+                                        google.script.run.withSuccessHandler(function(icons) {
+                                            renderUxList(icons);
+                                            var wrapper = document.getElementById('ux-analysis-wrapper');
+                                            if (wrapper) wrapper.style.display = 'flex';
+                                            var btnSave = document.getElementById('btn-save-ux-manual');
+                                            if (btnSave) btnSave.disabled = false;
+                                        }).recupererIconesTechBase64();
+                                    } catch(e) {
+                                        console.log("Erreur parsing dataUxIaFullState : " + e.message);
+                                    }
+                                }
+                            }
+
+                            // Restauration de l'onglet 8 (Contenu)
+                            document.getElementById('contenu-kw').value = config.contenuKw || config.focusKw || "";
+                            document.getElementById('contenu-vol').value = config.focusVol || "";
+                            document.getElementById('contenu-ytg-cible').value = config.contenuYtgCible || "";
+                            document.getElementById('contenu-url-client').value = config.focusClientUrl || "";
+                            document.getElementById('contenu-pos-client').value = config.focusClientPos || "";
+                            document.getElementById('contenu-url-comp').value = config.focusCompUrl || "";
+                            document.getElementById('contenu-pos-comp').value = config.focusCompPos || "";
+
+                            if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
+                            if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
+                            if(config.contenuYtgScoreComp) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreComp;
+                            if(config.contenu1frUrlComp) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlComp;
+
+                            var hasExtractionData = false;
+
+                            if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Client"); } }
+                            if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Client"); } }
+                            if(config.contenuScrapedClient) { try { scrapedDataClient = JSON.parse(config.contenuScrapedClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Client"); } }
+                            renderExtractionData('client');
+
+                            if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Comp"); } }
+                            if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Comp"); } }
+                            if(config.contenuScrapedComp) { try { scrapedDataComp = JSON.parse(config.contenuScrapedComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Comp"); } }
+                            renderExtractionData('comp');
+
+                            if (hasExtractionData) {
+                                document.getElementById('extraction-results-wrapper').style.display = 'flex';
+                                var btnIa = document.getElementById('btn-ia-contenu');
+                                btnIa.disabled = false;
+                                btnIa.style.display = 'inline-block';
+                            }
+
+                            if (config.contenuStructureClientHtml) setCeContent('ce-contenu-structure-client', config.contenuStructureClient);
+                            if (config.contenuYtgClientHtml) setCeContent('ce-contenu-ytg-client', config.contenuYtgClient);
+                            if (config.contenu1frClientHtml) setCeContent('ce-contenu-1fr-client', config.contenu1frClient);
+
+                            if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
+                            if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
+                            if (config.contenu1frCompHtml) setCeContent('ce-contenu-1fr-comp', config.contenu1frComp);
+
+                            if (config.contenuStructureClientHtml || config.contenuStructureCompHtml) {
+                                document.getElementById('contenu-results-container').style.display = 'block';
                             }
                         }
 
-                        // Restauration de l'onglet 8 (Contenu)
-                        document.getElementById('contenu-kw').value = config.contenuKw || config.focusKw || "";
-                        document.getElementById('contenu-vol').value = config.focusVol || "";
-                        document.getElementById('contenu-ytg-cible').value = config.contenuYtgCible || "";
-                        document.getElementById('contenu-url-client').value = config.focusClientUrl || "";
-                        document.getElementById('contenu-pos-client').value = config.focusClientPos || "";
-                        document.getElementById('contenu-url-comp').value = config.focusCompUrl || "";
-                        document.getElementById('contenu-pos-comp').value = config.focusCompPos || "";
+                        google.script.run
+                            .withSuccessHandler(function(treeData) {
+                                renderTree(treeData);
+                                google.script.run
+                                    .withSuccessHandler(function(savedSelection) {
+                                        applySavedSelection(savedSelection);
+                                        if (savedSelection && savedSelection.length > 0) {
+                                            document.getElementById('dashboardArea').innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Restauration du diagnostic en cours...</div>';
+                                            google.script.run
+                                                .withSuccessHandler(function(data) {
+                                                    renderDashboard(data);
+                                                })
+                                                .withFailureHandler(function(err) {
+                                                    document.getElementById('dashboardArea').innerHTML = '<div class="empty-state" style="color:#d93025">Erreur lors de la restauration : ' + err.message + '</div>';
+                                                })
+                                                .genererDiagnostic(savedSelection);
+                                        }
+                                    })
+                                    .chargerSelectionAnalyse();
+                                hideLoader();
+                            })
+                            .withFailureHandler(handleError)
+                            .recupererArborescenceCluster();
+                    })
+                    .withFailureHandler(handleError)
+                    .chargerConfigurationPreAudit();
+            };
 
-                        if(config.contenuYtgScoreClient) document.getElementById('contenu-ytg-score-client').value = config.contenuYtgScoreClient;
-                        if(config.contenu1frUrlClient) document.getElementById('contenu-1fr-url-client').value = config.contenu1frUrlClient;
-                        if(config.contenuYtgScoreConcurrent) document.getElementById('contenu-ytg-score-comp').value = config.contenuYtgScoreConcurrent;
-                        if(config.contenu1frUrlConcurrent) document.getElementById('contenu-1fr-url-comp').value = config.contenu1frUrlConcurrent;
-
-                        var hasExtractionData = false;
-
-                        if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Client"); } }
-                        if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Client"); } }
-                        if(config.contenuScrapedClient) { try { scrapedDataClient = JSON.parse(config.contenuScrapedClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Client"); } }
-                        renderExtractionData('client');
-
-                        // Correction appliquée ici : config.contenuYtgDataComp & config.contenu1frDataComp
-                        if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Comp"); } }
-                        if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Comp"); } }
-                        if(config.contenuScrapedComp) { try { scrapedDataComp = JSON.parse(config.contenuScrapedComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Comp"); } }
-                        renderExtractionData('comp');
-
-                        if (hasExtractionData) {
-                            document.getElementById('extraction-results-wrapper').style.display = 'flex';
-                            var btnIa = document.getElementById('btn-ia-contenu');
-                            btnIa.disabled = false;
-                            btnIa.style.display = 'inline-block';
-                        }
-
-                        if (config.contenuStructureClientHtml) setCeContent('ce-contenu-structure-client', config.contenuStructureClient);
-                        if (config.contenuYtgClientHtml) setCeContent('ce-contenu-ytg-client', config.contenuYtgClient);
-                        if (config.contenu1frClientHtml) setCeContent('ce-contenu-1fr-client', config.contenu1frClient);
-
-                        if (config.contenuStructureCompHtml) setCeContent('ce-contenu-structure-comp', config.contenuStructureComp);
-                        if (config.contenuYtgCompHtml) setCeContent('ce-contenu-ytg-comp', config.contenuYtgComp);
-                        if (config.contenu1frCompHtml) setCeContent('ce-contenu-1fr-comp', config.contenu1frComp);
-
-                        if (config.contenuStructureClientHtml || config.contenuStructureCompHtml) {
-                            document.getElementById('contenu-results-container').style.display = 'block';
-                        }
-                    }
-
-                    google.script.run
-                        .withSuccessHandler(function(treeData) {
-                            renderTree(treeData);
-                            google.script.run
-                                .withSuccessHandler(function(savedSelection) {
-                                    applySavedSelection(savedSelection);
-                                    if (savedSelection && savedSelection.length > 0) {
-                                        document.getElementById('dashboardArea').innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Restauration du diagnostic en cours...</div>';
-                                        google.script.run
-                                            .withSuccessHandler(function(data) {
-                                                renderDashboard(data);
-                                            })
-                                            .withFailureHandler(function(err) {
-                                                document.getElementById('dashboardArea').innerHTML = '<div class="empty-state" style="color:#d93025">Erreur lors de la restauration : ' + err.message + '</div>';
-                                            })
-                                            .genererDiagnostic(savedSelection);
-                                    }
-                                })
-                                .chargerSelectionAnalyse();
-                            hideLoader();
-                        })
-                        .withFailureHandler(handleError)
-                        .recupererArborescenceCluster();
-                })
-                .withFailureHandler(handleError)
-                .chargerConfigurationPreAudit();
-        };
         // ========================== NAVIGATION ==========================
 
             function switchTab(tab, silently) {
@@ -1428,7 +1429,7 @@
                 google.script.run.withSuccessHandler(function(res) {
                     hideLoader();
                     btn.disabled = false;
-                    btn.innerText = "🤖 Générer le contexte par IA";
+                    btn.innerText = "🤖 Générer le contexte";
                     if (res.success) {
                         contexteField.value = res.texte;
                         console.log("=== FIN : lancerGenerationIAContexte (Succès) ===");
@@ -1439,7 +1440,7 @@
                 }).withFailureHandler(function(err) {
                     hideLoader();
                     btn.disabled = false;
-                    btn.innerText = "🤖 Générer le contexte par IA";
+                    btn.innerText = "🤖 Générer le contexte";
                     alert("Erreur critique : " + err.message);
                     console.error("=== FIN : lancerGenerationIAContexte (Erreur critique) ===");
                 }).genererContexteClientIA(urlsFormatees, briefTexte);
@@ -3895,9 +3896,14 @@
 
         function ouvrirTabsUX() {
                 console.log("=== DÉBUT : ouvrirTabsUX ===");
+                
+                // Priorité aux champs de l'interface en temps réel (utile avant sauvegarde)
+                var inputClient = document.getElementById('focus-client-url');
+                var inputComp = document.getElementById('focus-comp-url');
+                
                 var conf = window.globalConfig || {};
-                var urlClient = conf.focusClientUrl || conf.clientUrl || "";
-                var urlComp = conf.focusCompUrl || "";
+                var urlClient = (inputClient && inputClient.value.trim() !== "") ? inputClient.value.trim() : (conf.focusClientUrl || conf.clientUrl || "");
+                var urlComp = (inputComp && inputComp.value.trim() !== "") ? inputComp.value.trim() : (conf.focusCompUrl || "");
 
                 if (!urlClient || !urlComp || urlClient === "-" || urlComp === "-") {
                     alert("Veuillez d'abord définir l'URL cible du client et du concurrent (onglet 5. Focus mot-clé).");
@@ -4507,7 +4513,6 @@
             var btn = document.getElementById('btn-ia-contenu');
             btn.disabled = true;
             
-            // 1. Mise en place du loader évolutif
             var loader = document.getElementById('loader');
             loader.style.display = 'flex';
             var loaderMsg = document.getElementById('loaderMsg');
@@ -4523,11 +4528,13 @@
             loaderMsg.innerText = steps[0];
             
             var stepTimer = setInterval(function() {
+                // Filet de sécurité anti-masquage (bug iframes webkit)
+                if (loader.style.display !== 'flex') loader.style.display = 'flex';
+                
                 stepIndex++;
                 if (stepIndex < steps.length - 1) {
                     loaderMsg.innerText = steps[stepIndex];
                 } else {
-                    // Animation des points de suspension pour éviter l'effet "loader bloqué"
                     var currentText = loaderMsg.innerText;
                     if (currentText.endsWith("...")) {
                         loaderMsg.innerText = steps[steps.length - 1] + ".";
@@ -4541,7 +4548,6 @@
                 }
             }, 7000);
 
-            // 2. Récupération des URLs actuelles dans les champs
             var urlClient = document.getElementById('contenu-url-client').value.trim();
             var urlComp = document.getElementById('contenu-url-comp').value.trim();
             var ytgCible = document.getElementById('contenu-ytg-cible').value.trim();
@@ -4552,7 +4558,6 @@
                 ytgCible: ytgCible
             });
 
-            // Packaging des données YTG et 1.fr actuelles + Ajout manuel des scores saisis
             var ytgClientData = extractedYtgClient || {};
             ytgClientData.score_reel = document.getElementById('contenu-ytg-score-client').value;
             ytgClientData.cible = ytgCible;
@@ -4567,7 +4572,6 @@
             var unfrCompData = extracted1frComp || {};
             unfrCompData.score_saisi = document.getElementById('contenu-1fr-score-comp') ? document.getElementById('contenu-1fr-score-comp').value : "";
 
-            // 3. Lancement de l'analyse
             google.script.run
                 .withSuccessHandler(function(res) {
                     clearInterval(stepTimer);
@@ -4588,6 +4592,8 @@
                         
                         document.getElementById('contenu-results-container').style.display = 'block';
                         console.log("Analyse IA de contenu générée et injectée avec succès.");
+                        
+                        autoSaveAnalyseContenu();
                     } else {
                         console.error("Échec retourné par le serveur :", res ? res.error : "Inconnu");
                         alert("Erreur de l'IA : " + (res ? res.error : "Erreur inconnue"));
@@ -4869,6 +4875,42 @@
                 console.log("Erreur lors de l'extraction : " + e.message);
                 return resultats;
             }
+        }
+
+        function autoSaveAnalyseContenu() {
+            console.log("=== DÉBUT : autoSaveAnalyseContenu ===");
+            var data = {
+                structureClient: getRawMarkdownFromCE('ce-contenu-structure-client'),
+                structureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
+                ytgClient: getRawMarkdownFromCE('ce-contenu-ytg-client'),
+                ytgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
+                unfrClient: getRawMarkdownFromCE('ce-contenu-1fr-client'),
+                unfrClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
+                structureComp: getRawMarkdownFromCE('ce-contenu-structure-comp'),
+                structureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
+                ytgComp: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
+                ytgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
+                unfrComp: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
+                unfrCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
+            };
+            
+            google.script.run.sauvegarderAnalysesContenuTexte(data);
+            
+            if (window.globalConfig) {
+                window.globalConfig.contenuStructureClient = data.structureClient;
+                window.globalConfig.contenuStructureClientHtml = data.structureClientHtml;
+                window.globalConfig.contenuYtgClient = data.ytgClient;
+                window.globalConfig.contenuYtgClientHtml = data.ytgClientHtml;
+                window.globalConfig.contenu1frClient = data.unfrClient;
+                window.globalConfig.contenu1frClientHtml = data.unfrClientHtml;
+                window.globalConfig.contenuStructureComp = data.structureComp;
+                window.globalConfig.contenuStructureCompHtml = data.structureCompHtml;
+                window.globalConfig.contenuYtgComp = data.ytgComp;
+                window.globalConfig.contenuYtgCompHtml = data.ytgCompHtml;
+                window.globalConfig.contenu1frComp = data.unfrComp;
+                window.globalConfig.contenu1frCompHtml = data.unfrCompHtml;
+            }
+            console.log("=== FIN : autoSaveAnalyseContenu ===");
         }
 
         </script>

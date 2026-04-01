@@ -125,8 +125,10 @@ function chargerConfigurationPreAudit() {
         
         uxClientViewportId: props['UX_CLIENT_VIEWPORT_ID'] || "",
         uxClientFullId: props['UX_CLIENT_FULL_ID'] || "",
+        uxClientCropId: props['UX_CLIENT_CROP_ID'] || "",
         uxCompViewportId: props['UX_COMP_VIEWPORT_ID'] || "",
         uxCompFullId: props['UX_COMP_FULL_ID'] || "",
+        uxCompCropId: props['UX_COMP_CROP_ID'] || "",
         
         dataUxIaFullState: props['DATA_UX_IA_FULL_STATE'] || "",
         uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
@@ -147,16 +149,16 @@ function chargerConfigurationPreAudit() {
         contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
         contenuScrapedClient: props['CONTENU_SCRAPED_CLIENT'] || "",
         
-        contenuStructureConcurrent: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
-        contenuStructureConcurrentHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
-        contenuYtgConcurrent: props['CONTENU_YTG_CONCURRENT'] || "",
-        contenuYtgConcurrentHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
-        contenuYtgScoreConcurrent: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
+        contenuStructureComp: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
+        contenuStructureCompHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
+        contenuYtgComp: props['CONTENU_YTG_CONCURRENT'] || "",
+        contenuYtgCompHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
+        contenuYtgScoreComp: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
         contenuYtgDataComp: props['CONTENU_YTG_DATA_CONCURRENT'] || "",
-        contenu1frConcurrent: props['CONTENU_1FR_CONCURRENT'] || "",
-        contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
-        contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || "",
-        contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
+        contenu1frComp: props['CONTENU_1FR_CONCURRENT'] || "",
+        contenu1frCompHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
+        contenu1frUrlComp: props['CONTENU_1FR_URL_CONCURRENT'] || "",
+        contenu1frScoreComp: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
         contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || "",
         contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || ""
     };
@@ -2660,7 +2662,7 @@ function recupererIconesTechBase64() {
     }
 }
 
-function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
+function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys, isCrop) {
     Logger.log("=== DÉBUT : fetchCaptureApiFlash ===");
     
     if (!apiKeys || apiKeys.length === 0) {
@@ -2698,7 +2700,9 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
             "width=1920"
         ];
         
-        if (isFullPage) {
+        if (isCrop) {
+            queryParams.push("height=3000");
+        } else if (isFullPage) {
             queryParams.push("full_page=true");
         } else {
             queryParams.push("height=1080");
@@ -2713,10 +2717,11 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
             var code = response.getResponseCode();
             
             if (code === 200) {
-                var suffix = isFullPage ? "Full" : "Viewport";
+                var suffix = isCrop ? "Crop" : (isFullPage ? "Full" : "Viewport");
                 var fileName = domain + "-" + suffix + ".jpeg";
                 
                 var blob = response.getBlob().setName(fileName);
+                var blobSize = blob.getBytes().length;
                 
                 // Enregistrement dans le dossier Drive spécifique
                 var folderId = "1CXlwCajJ4LsYYgfdE2KolGI-1HDxVKW3";
@@ -2731,9 +2736,19 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys) {
                 }
                 
                 var fileId = file.getId();
-                Logger.log("Capture réussie et sauvegardée sur Drive (ID : " + fileId + " | Nom : " + fileName + ").");
+                var cropId = "";
+                
+                Logger.log("Capture réussie et sauvegardée sur Drive (ID : " + fileId + " | Nom : " + fileName + " | Poids : " + blobSize + " octets).");
+                
+                // Vérification du poids critique (1,5 Mo)
+                if (isFullPage && !isCrop && blobSize > 1572864) {
+                    Logger.log("⚠️ Poids de l'image supérieur à 1,5 Mo. Génération d'une version Crop de secours...");
+                    var fallbackRes = fetchCaptureApiFlash(urlToCapture, false, apiKeys, true);
+                    cropId = typeof fallbackRes === 'object' ? fallbackRes.fileId : fallbackRes;
+                }
+                
                 Logger.log("=== FIN : fetchCaptureApiFlash (Succès) ===");
-                return fileId;
+                return isFullPage && !isCrop ? { fileId: fileId, cropId: cropId || "" } : fileId;
             } else if (code === 401 || code === 402 || code === 429) {
                 Logger.log("Erreur quota ou auth (Code " + code + ") : rotation de clé.");
                 continue;
@@ -2932,12 +2947,14 @@ function lancerCapturesUX() {
         return { success: false, error: "Échec de la capture Client (Viewport)." };
     }
     
-    var clientFullId = fetchCaptureApiFlash(urlClient, true, apiKeys);
-    if (!clientFullId) {
+    var clientFullRes = fetchCaptureApiFlash(urlClient, true, apiKeys);
+    if (!clientFullRes) {
         Logger.log("Échec de la capture Client Full Page.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Client (Full Page)." };
     }
+    var clientFullId = typeof clientFullRes === 'object' ? clientFullRes.fileId : clientFullRes;
+    var clientCropId = typeof clientFullRes === 'object' ? clientFullRes.cropId : "";
     
     var compViewportId = fetchCaptureApiFlash(urlComp, false, apiKeys);
     if (!compViewportId) {
@@ -2946,19 +2963,23 @@ function lancerCapturesUX() {
         return { success: false, error: "Échec de la capture Concurrent (Viewport)." };
     }
     
-    var compFullId = fetchCaptureApiFlash(urlComp, true, apiKeys);
-    if (!compFullId) {
+    var compFullRes = fetchCaptureApiFlash(urlComp, true, apiKeys);
+    if (!compFullRes) {
         Logger.log("Échec de la capture Concurrent Full Page.");
         Logger.log("=== FIN : lancerCapturesUX (Échec) ===");
         return { success: false, error: "Échec de la capture Concurrent (Full Page)." };
     }
+    var compFullId = typeof compFullRes === 'object' ? compFullRes.fileId : compFullRes;
+    var compCropId = typeof compFullRes === 'object' ? compFullRes.cropId : "";
     
     Logger.log("Sauvegarde des IDs dans les propriétés du script...");
     PropertiesService.getScriptProperties().setProperties({
         'UX_CLIENT_VIEWPORT_ID': clientViewportId,
         'UX_CLIENT_FULL_ID': clientFullId,
+        'UX_CLIENT_CROP_ID': clientCropId,
         'UX_COMP_VIEWPORT_ID': compViewportId,
-        'UX_COMP_FULL_ID': compFullId
+        'UX_COMP_FULL_ID': compFullId,
+        'UX_COMP_CROP_ID': compCropId
     });
     
     Logger.log("Synchronisation vers l'onglet CONFIG...");
@@ -3216,5 +3237,32 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
     } catch(err) {
         Logger.log("ERREUR CRITIQUE dans genererAnalyseContenuDoubleIA : " + err.message);
         return { success: false, error: err.message };
+    }
+}
+
+function sauvegarderAnalysesContenuTexte(data) {
+    Logger.log("=== DÉBUT : sauvegarderAnalysesContenuTexte ===");
+    try {
+        var props = PropertiesService.getScriptProperties();
+        props.setProperties({
+            'CONTENU_STRUCTURE_CLIENT': data.structureClient || "",
+            'CONTENU_STRUCTURE_CLIENT_HTML': data.structureClientHtml || "",
+            'CONTENU_YTG_CLIENT': data.ytgClient || "",
+            'CONTENU_YTG_CLIENT_HTML': data.ytgClientHtml || "",
+            'CONTENU_1FR_CLIENT': data.unfrClient || "",
+            'CONTENU_1FR_CLIENT_HTML': data.unfrClientHtml || "",
+            'CONTENU_STRUCTURE_CONCURRENT': data.structureComp || "",
+            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.structureCompHtml || "",
+            'CONTENU_YTG_CONCURRENT': data.ytgComp || "",
+            'CONTENU_YTG_CONCURRENT_HTML': data.ytgCompHtml || "",
+            'CONTENU_1FR_CONCURRENT': data.unfrComp || "",
+            'CONTENU_1FR_CONCURRENT_HTML': data.unfrCompHtml || ""
+        });
+        syncPropertiesToConfigSheet();
+        Logger.log("=== FIN : sauvegarderAnalysesContenuTexte (Succès) ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderAnalysesContenuTexte : " + e.message);
+        return false;
     }
 }
