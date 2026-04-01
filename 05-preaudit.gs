@@ -2687,6 +2687,36 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys, isCrop) {
         domain = "Capture";
     }
 
+    var suffix = isCrop ? "Crop" : (isFullPage ? "Full" : "Viewport");
+    var fileName = domain + "-" + suffix + ".jpeg";
+    var folderId = "1CXlwCajJ4LsYYgfdE2KolGI-1HDxVKW3";
+    
+    try {
+        var folder = DriveApp.getFolderById(folderId);
+        var files = folder.getFilesByName(fileName);
+        
+        if (files.hasNext()) {
+            var file = files.next();
+            var cachedId = file.getId();
+            var size = file.getSize();
+            Logger.log("Cache HIT pour : " + fileName + " (ID : " + cachedId + " | Poids : " + size + " octets)");
+            
+            if (isFullPage && !isCrop && size > 1572864) {
+                Logger.log("⚠️ Poids de l'image en cache supérieur à 1,5 Mo. Fallback déclenché via Cache...");
+                var fallbackRes = fetchCaptureApiFlash(urlToCapture, false, apiKeys, true);
+                var fallbackId = typeof fallbackRes === 'object' ? fallbackRes.fileId : fallbackRes;
+                Logger.log("=== FIN : fetchCaptureApiFlash (Cache Hit avec Fallback) ===");
+                return { fileId: cachedId, cropId: fallbackId || "" };
+            }
+            Logger.log("=== FIN : fetchCaptureApiFlash (Cache Hit) ===");
+            return isFullPage && !isCrop ? { fileId: cachedId, cropId: "" } : cachedId;
+        } else {
+            Logger.log("Cache MISS pour : " + fileName);
+        }
+    } catch (e) {
+        Logger.log("Erreur lors de l'accès au cache Drive : " + e.message);
+    }
+
     for (var i = 0; i < apiKeys.length; i++) {
         var key = apiKeys[i];
         
@@ -2717,15 +2747,10 @@ function fetchCaptureApiFlash(urlToCapture, isFullPage, apiKeys, isCrop) {
             var code = response.getResponseCode();
             
             if (code === 200) {
-                var suffix = isCrop ? "Crop" : (isFullPage ? "Full" : "Viewport");
-                var fileName = domain + "-" + suffix + ".jpeg";
-                
                 var blob = response.getBlob().setName(fileName);
                 var blobSize = blob.getBytes().length;
                 
                 // Enregistrement dans le dossier Drive spécifique
-                var folderId = "1CXlwCajJ4LsYYgfdE2KolGI-1HDxVKW3";
-                var folder = DriveApp.getFolderById(folderId);
                 var file = folder.createFile(blob);
                 
                 // On isole la gestion des droits de partage pour éviter le crash (Access denied: DriveApp)
@@ -2779,30 +2804,58 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         }
 
         var props = PropertiesService.getScriptProperties().getProperties();
+        var clientViewportId = props['UX_CLIENT_VIEWPORT_ID'];
         var clientFullId = props['UX_CLIENT_FULL_ID'];
+        var clientCropId = props['UX_CLIENT_CROP_ID'];
+        
+        var compViewportId = props['UX_COMP_VIEWPORT_ID'];
         var compFullId = props['UX_COMP_FULL_ID'];
+        var compCropId = props['UX_COMP_CROP_ID'];
+        
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
 
-        if (!clientFullId || !compFullId) {
-            throw new Error("Les identifiants des captures Full Page (Client et Concurrent) sont manquants.");
+        if (!clientViewportId || !clientFullId || !compViewportId || !compFullId) {
+            throw new Error("Les identifiants des captures principales (Viewport/Full) sont manquants.");
         }
 
         Logger.log("Récupération des images depuis Google Drive...");
-        var imgClient = DriveApp.getFileById(clientFullId);
-        var b64Client = Utilities.base64Encode(imgClient.getBlob().getBytes());
 
-        var imgComp = DriveApp.getFileById(compFullId);
-        var b64Comp = Utilities.base64Encode(imgComp.getBlob().getBytes());
+        function safeGetBase64(fileId) {
+            if (!fileId || fileId === "-" || fileId.trim() === "") return null;
+            try {
+                var img = DriveApp.getFileById(fileId);
+                return Utilities.base64Encode(img.getBlob().getBytes());
+            } catch (e) {
+                Logger.log("Erreur lors de la récupération de l'image ID " + fileId + " : " + e.message);
+                return null;
+            }
+        }
+
+        var b64ClientViewport = safeGetBase64(clientViewportId);
+        var b64ClientFull = safeGetBase64(clientFullId);
+        var b64ClientCrop = safeGetBase64(clientCropId);
+
+        var b64CompViewport = safeGetBase64(compViewportId);
+        var b64CompFull = safeGetBase64(compFullId);
+        var b64CompCrop = safeGetBase64(compCropId);
+
+        var nbImagesClient = (b64ClientViewport ? 1 : 0) + (b64ClientFull ? 1 : 0) + (b64ClientCrop ? 1 : 0);
+        var nbImagesComp = (b64CompViewport ? 1 : 0) + (b64CompFull ? 1 : 0) + (b64CompCrop ? 1 : 0);
+        
+        Logger.log("Images client envoyées: " + nbImagesClient + ", Images concurrent envoyées: " + nbImagesComp);
 
         Logger.log("Construction du prompt système...");
-        var systemPrompt = "Tu es un expert en conversion (CRO) et UX en contexte d'avant-vente (pré-audit). Analyse ces deux captures d'écran (la première est la page du Client, la seconde la page du Concurrent) en tenant compte du [Type de page cible] et de [l'Intention de recherche] fournis par l'utilisateur pour adapter ton analyse.\n\n" +
+        var systemPrompt = "Tu es un expert en conversion (CRO) et UX en contexte d'avant-vente (pré-audit). Analyse ces deux sites (le premier est la page du Client, le second la page du Concurrent) en tenant compte du [Type de page cible] et de [l'Intention de recherche] fournis par l'utilisateur pour adapter ton analyse.\n\n" +
             "Ton et Posture Commerciale (TRÈS IMPORTANT) :\n" +
             "- Ton but est de donner envie au prospect d'être accompagné. Sois constructif, diplomate et encourageant pour vendre la prestation.\n" +
             "- Ne sois JAMAIS cassant, violent ou rabaissant. Bannis totalement les expressions radicales comme 'refondre intégralement', 'désastreux', 'nuisible', 'trop dense' ou 'mauvais'.\n" +
             "- Préfère un vocabulaire d'élévation et de solution : *optimiser*, *moderniser*, *aérer*, *structurer*, *mettre en valeur votre expertise*.\n" +
             "- Périmètre strict : Parle TOUJOURS au singulier de **cette page** spécifiquement. Ne généralise pas à tout le site ou à un groupe de pages (ex: dis 'cette page' et non 'les pages articles').\n\n" +
             "Tu peux t'appuyer sur la liste suivante (non exhaustive) d'éléments à analyser, piocher dedans ou en inventer de nouveaux spécifiques au type de page (ex: e-commerce, génération de leads) :\n" +
-            "- Images, Vidéos, Prix, Contenu descriptif du produit / service, Boutons de conversion (appel, devis, démo), Boutons de navigation (en savoir plus), Téléchargement (livre blanc, plaquette), Avis site, Avis produits, Personnalisation / Auteur (ex: photo, citation), Éléments de réassurance (ancienneté, livraison, sécurité...), Étude de cas.\n\n" +
+            "- Images, Vidéos, Prix, Contenu descriptif du produit / service, Boutons de conversion (appel, devis, démo), Boutons de navigation (en savoir plus), Téléchargement (livre blanc, plaquette), Avis site, Avis produits, Personnalisation / Auteur (ex: photo, citation), Éléments de réassurance (ancienneté, livraison, sécurité...), Partage social, Étude de cas.\n\n" +
+            "⚠️ DIRECTIVE D'ANALYSE VISUELLE :\n" +
+            "Je te fournis plusieurs captures d'écran pour le site Client et le site Concurrent. Pour chaque site, tu as une vue détaillée de la ligne de flottaison (Viewport) et une vue globale (Full Page).\n" +
+            "Fais 100% confiance à ta vision sur ces images. Sers-toi de la vue Viewport pour repérer les petits éléments (comme les icônes de partage social flottantes, les petits CTA, les menus). Si tu vois un élément, même petit, évalue-le comme BON (ou MOYEN s'il manque de contraste), mais ne dis jamais qu'il est absent. Ne cherche pas de code source, fie-toi uniquement au rendu visuel de ces captures.\n\n" +
             "Doctrine d'évaluation :\n" +
             "Pour chaque élément, évalue le client et le concurrent avec l'une de ces 3 valeurs strictes : 'BON', 'MOYEN', 'MAUVAIS'. Règle : présence/absence de l'élément (ne pas compter le nombre exact d'éléments).\n\n" +
             "BON : Élément présent et bien valorisé.\n" +
@@ -2835,31 +2888,33 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
                          "[Type de page cible] : " + typePage + "\n" +
                          "[Intention de recherche] : " + intention;
 
+        // --- LOG DU PROMPT UTILISATEUR ---
+        Logger.log("=== DEBUG UX PROMPT UTILISATEUR ===");
+        Logger.log(userPrompt);
+        // ---------------------------------
+
+        var partsArray = [{"text": userPrompt}];
+
+        if (b64ClientViewport) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientViewport}});
+        if (b64ClientFull) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientFull}});
+        if (b64ClientCrop) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientCrop}});
+
+        if (b64CompViewport) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompViewport}});
+        if (b64CompFull) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompFull}});
+        if (b64CompCrop) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompCrop}});
+
         var payload = {
             "system_instruction": {
                 "parts": [{"text": systemPrompt}]
             },
             "contents": [
                 {
-                    "parts": [
-                        {"text": userPrompt},
-                        {
-                            "inlineData": {
-                                "mimeType": "image/jpeg",
-                                "data": b64Client
-                            }
-                        },
-                        {
-                            "inlineData": {
-                                "mimeType": "image/jpeg",
-                                "data": b64Comp
-                            }
-                        }
-                    ]
+                    "parts": partsArray
                 }
             ],
             "generationConfig": {
-                "responseMimeType": "application/json"
+                "responseMimeType": "application/json",
+                "temperature": 0.2 // Réduit la créativité pour forcer le respect du HTML
             }
         };
 
@@ -2874,11 +2929,13 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             "muteHttpExceptions": true
         };
 
-        Logger.log("Appel de l'API Gemini...");
+        Logger.log("Appel de l'API Gemini 2.5 Pro...");
         var response = UrlFetchApp.fetch(apiUrl, options);
         var jsonResponse = JSON.parse(response.getContentText());
 
         if (response.getResponseCode() !== 200) {
+            Logger.log("=== DEBUG UX ERREUR API ===");
+            Logger.log(response.getContentText());
             throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
         }
 
@@ -2888,9 +2945,15 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
 
         var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
         responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        
+        // --- LOG DE LA RÉPONSE BRUTE ---
+        Logger.log("=== DEBUG UX REPONSE BRUTE IA ===");
+        Logger.log(responseText);
+        // ---------------------------------
+
         var parsedJson = JSON.parse(responseText);
 
-        Logger.log("Analyse IA générée avec succès.");
+        Logger.log("Analyse IA générée et parsée avec succès.");
         Logger.log("=== FIN : genererAnalyseComparativeUXIA ===");
         return { success: true, data: parsedJson };
 

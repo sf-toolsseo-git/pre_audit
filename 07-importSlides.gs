@@ -1120,38 +1120,46 @@ function exporterContenuSlides() {
                     throw new Error("Le fichier est vide ou corrompu.");
                 }
 
-                Logger.log("  [Image] Blob récupéré. Insertion dans la slide...");
-                var img = slide.insertImage(blob);
+                // Sauvegarde des dimensions et position de la forme cible
+                var targetW = shape.getWidth();
+                var targetH = shape.getHeight();
+                var targetL = shape.getLeft();
+                var targetT = shape.getTop();
+
+                Logger.log("  [Image] Blob récupéré. Remplacement natif de la forme...");
+                var img = shape.replaceWithImage(blob);
                 
                 var inhW = img.getInherentWidth();
                 var inhH = img.getInherentHeight();
-                var targetW = shape.getWidth();
-                var targetH = shape.getHeight();
                 
-                Logger.log("  [Image] Dimensions image brute : " + inhW + "x" + inhH + " | Cible : " + targetW + "x" + targetH);
+                Logger.log("  [Image] Dimensions image brute : " + inhW + "x" + inhH + " | Cible (forme initiale) : " + targetW + "x" + targetH);
 
-                var ratio = targetW / inhW;
-                var scaledH = inhH * ratio;
+                // Calcul de l'échelle strictly (Fit Width) pour remplir en largeur sans déformer
+                var scale = targetW / inhW;
                 
-                Logger.log("  [Image] Mise à l'échelle -> Hauteur projetée : " + scaledH);
+                // Calcul de la hauteur visible en pixels bruts (la largeur visible = inhW car on fit en largeur)
+                var visibleH = targetH / scale;
 
+                // Calcul des fractions de rognage (entre 0 et 1)
+                var cropLeft = 0;
+                var cropRight = 0;
+                var cropTop = 0; // Alignement en haut
+                var cropBottom = (inhH - visibleH) / inhH;
+
+                // Application du rognage (on s'assure de ne pas avoir de valeurs négatives si l'image était trop courte)
+                img.setCropLeft(0);
+                img.setCropRight(0);
+                img.setCropTop(0);
+                img.setCropBottom(Math.max(0, cropBottom));
+
+                // Restauration explicite de la taille et position exactes de la forme initiale
                 img.setWidth(targetW);
-                img.setHeight(scaledH);
-                img.setLeft(shape.getLeft());
-                img.setTop(shape.getTop());
-                
-                if (scaledH > targetH) {
-                    var cropRatio = (scaledH - targetH) / scaledH;
-                    Logger.log("  [Image] L'image est plus longue que la forme. Application d'un rognage (crop bottom) de : " + cropRatio);
-                    img.setCropBottom(cropRatio);
-                    img.setHeight(targetH);
-                } else {
-                    Logger.log("  [Image] Pas de rognage nécessaire.");
-                }
+                img.setHeight(targetH);
+                img.setLeft(targetL);
+                img.setTop(targetT);
 
                 img.setDescription(description);
-                shape.remove();
-                Logger.log("  [Image] Remplacement de la forme par l'image terminé.");
+                Logger.log("  [Image] Remplacement de la forme par l'image terminé. (CropBottom=" + Math.max(0, cropBottom).toFixed(4) + ")");
             } catch (e) {
                 Logger.log("  [Erreur Image] Échec pour " + description + " : " + e.message);
             }
