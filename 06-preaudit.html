@@ -4,8 +4,13 @@
         <base target="_top">
         <style>
             body { font-family: 'Google Sans', Roboto, Arial, sans-serif; background-color: #f1f3f4; color: #202124; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-            .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0 10px; }
-            .tab { padding: 10px 20px; cursor: pointer; font-weight: 500; color: #5f6368; border-bottom: 2px solid transparent; font-size: 14px; }
+            .tabs { display: flex; background: #fff; border-bottom: 1px solid #dadce0; flex-shrink: 0; padding: 0; }
+            .tab { padding: 10px 4px; cursor: pointer; color: #5f6368; border-bottom: 3px solid transparent; text-align: center; flex: 1; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+            .tab:hover { background-color: #f8f9fa; }
+            .tab.active { color: #1a73e8; border-bottom: 3px solid #1a73e8; background-color: #f8fbff; }
+            .tab-num { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #08133b; }
+            .tab.active .tab-num { color: #1a73e8; }
+            .tab-name { font-size: 11px; font-weight: 600; line-height: 1.3; height: 28px; display: flex; align-items: center; justify-content: center; }
             .tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
             .tab-content { display: none; flex: 1; overflow: hidden; }
             .tab-content.active { display: flex; }
@@ -119,7 +124,7 @@
             .comp-card.client { border:2px solid #1a73e8; background:#f8fbff; }
             .comp-card.leader { border:2px solid #188038; background:#f6fef8; }
             .comp-logo { width:40px; height:40px; border-radius:50%; margin:0 auto 10px; display:block; object-fit:contain; background:#f1f3f4; padding:5px; }
-            .comp-name { font-size:14px; font-weight:700; color:#202124; margin-bottom:10px; word-break:break-word; }
+            .comp-name { font-size: 13px; font-weight: 700; color: #202124; margin-bottom: 12px; word-break: break-word; height: 36px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 18px; }
             .comp-stat { display:flex; justify-content:space-between; font-size:12px; color:#5f6368; margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid #f1f3f4; }
             .comp-stat:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
             .comp-val { font-weight:700; color:#08133b; }
@@ -162,15 +167,15 @@
         </div>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('config')" id="tab-btn-config">1. Configuration</div>
-            <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush">2. Analyse globale</div>
-            <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic">3. Diagnostic sémantique</div>
-            <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux">4. État des lieux du référencement</div>
-            <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle">5. Focus mot-clé</div>
-            <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique">6. État des lieux technique</div>
-            <div class="tab" onclick="switchTab('ux')" id="tab-btn-ux">7. UX</div>
-            <div class="tab" onclick="switchTab('contenu')" id="tab-btn-contenu">8. Contenu</div>
-            <div class="tab" onclick="preparerOngletEditorial()" id="tab-btn-editorial">9. Éditorial</div>
+            <div class="tab active" onclick="switchTab('config')" id="tab-btn-config"><div class="tab-num">1</div><div class="tab-name">Configuration</div></div>
+            <div class="tab" onclick="switchTab('semrush')" id="tab-btn-semrush"><div class="tab-num">2</div><div class="tab-name">Analyse<br>globale</div></div>
+            <div class="tab" onclick="switchTab('diagnostic')" id="tab-btn-diagnostic"><div class="tab-num">3</div><div class="tab-name">Diagnostic<br>sémantique</div></div>
+            <div class="tab" onclick="preparerOngletEtatLieux()" id="tab-btn-etat-lieux"><div class="tab-num">4</div><div class="tab-name">État des lieux<br>référencement</div></div>
+            <div class="tab" onclick="preparerOngletFocusMotCle()" id="tab-btn-focus-mot-cle"><div class="tab-num">5</div><div class="tab-name">Focus<br>mot-clé</div></div>
+            <div class="tab" onclick="switchTab('etat-lieux-technique')" id="tab-btn-etat-lieux-technique"><div class="tab-num">6</div><div class="tab-name">État des lieux<br>technique</div></div>
+            <div class="tab" onclick="switchTab('ux')" id="tab-btn-ux"><div class="tab-num">7</div><div class="tab-name">Expérience<br>utilisateur</div></div>
+            <div class="tab" onclick="switchTab('contenu')" id="tab-btn-contenu"><div class="tab-num">8</div><div class="tab-name">Stratégie<br>de contenu</div></div>
+            <div class="tab" onclick="preparerOngletEditorial()" id="tab-btn-editorial"><div class="tab-num">9</div><div class="tab-name">Analyse<br>éditoriale</div></div>
         </div>
         <div class="tab-content active" id="content-config">
             <div class="main-area">
@@ -2124,6 +2129,12 @@
                     console.log("Mise à jour automatique de l'onglet : état des lieux");
                     preparerOngletEtatLieux();
                 }
+                
+                // Mise à jour de l'onglet 9 si l'utilisateur est déjà dessus (ou s'il l'attendait)
+                if (document.getElementById('content-editorial').classList.contains('active')) {
+                    console.log("Mise à jour automatique de l'onglet : éditorial");
+                    preparerOngletEditorial();
+                }
             }
 
             function preparerOngletEtatLieux() {
@@ -2390,39 +2401,35 @@
             function preparerOngletEditorial() {
                 console.log("=== DÉBUT : preparerOngletEditorial ===");
                 
-                // Forcer l'affichage de l'onglet
                 switchTab('editorial');
-
                 var container = document.getElementById('kpi-editorial-container');
 
                 if (!window.lastDiagnosticData) {
-                    console.log("Information : aucune donnée de diagnostic en mémoire.");
+                    console.log("Information : aucune donnée de diagnostic en mémoire pour l'éditorial.");
                     container.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto 10px; border-top-color:#5f6368;"></div>Analyse en cours de chargement...<br>Si l\'attente se prolonge, veuillez générer le diagnostic à l\'étape 3.</div>';
-                    console.log("=== FIN : preparerOngletEditorial (mise en attente) ===");
                     return;
                 }
 
-                console.log("Étape clé : données trouvées, début de la construction de l'interface éditoriale.");
                 var data = window.lastDiagnosticData;
                 
-                var allEntities = data.kpis.slice().sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
-                var leaderKpi = allEntities.length > 0 ? allEntities[0] : null;
-                var clientKpi = allEntities.find(function(k) { return k.isClient; });
+                // Séparation exacte pour garantir le bon affichage : Vous > Leader > Autres
+                var allComps = data.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
+                var leaderKpi = allComps.length > 0 ? allComps[0] : null;
+                var clientKpi = data.kpis.find(function(k) { return k.isClient; });
+                var otherComps = allComps.slice(1, 5);
 
-                if (allEntities.length > 0) {
+                if (allComps.length > 0 || clientKpi) {
                     var html = '<div class="panel" style="margin-top:20px;">';
                     html += '<div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span>🏆</span> Paysage concurrentiel (Informationnel)</div>';
                     html += '<div class="section-description">Analyse du client face au leader et aux principaux concurrents sur la sélection de mots-clés informationnels.</div>';
                     html += '<div class="comp-grid">';
 
-                    // Helper pour l'URL du favicon en utilisant le service historique (plus fiable)
                     function getFaviconUrl(domain) {
                         if (!domain) return '';
                         var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
                         return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
                     }
 
-                    // Helper pour trouver le domaine via la config
                     function findDomainByName(name) {
                         var conf = window.globalConfig || {};
                         if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
@@ -2433,20 +2440,37 @@
                     }
 
                     var fbImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><text x='50' y='55' font-family='Arial' font-size='40' font-weight='bold' fill='%239e9e9e' text-anchor='middle' dominant-baseline='middle'>?</text></svg>";
-                    
                     var conf = window.globalConfig || {};
-                    var maxComps = 5; // Client + 4 concurrents (ou Leader + 3 autres si client = leader)
 
-                    // Carte Leader (Toujours en premier)
+                    // 1. Carte Client (Toujours en premier)
+                    if (clientKpi) {
+                        var clientDomain = findDomainByName(clientKpi.name);
+                        var clientLogoUrl = getFaviconUrl(clientDomain);
+                        var blogVal = conf.blogClientEdito || "Non";
+                        
+                        html += '<div class="comp-card client">';
+                        html += '<div class="badge-client">Vous</div>';
+                        html += '<img class="comp-logo" src="' + clientLogoUrl + '" alt="Logo ' + clientKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
+                        html += '<div class="comp-name">' + clientKpi.name + '</div>';
+                        html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + clientKpi.infoTop10 + '</span></div>';
+                        html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + clientKpi.infoUrlsCount + '</span></div>';
+                        html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
+                        html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
+                        html += '<select class="select-blog" data-entity="client" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
+                        html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
+                        html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
+                        html += '</select></div>';
+                        html += '</div>';
+                    }
+
+                    // 2. Carte Leader
                     if (leaderKpi) {
                         var leaderDomain = findDomainByName(leaderKpi.name);
                         var leaderLogoUrl = getFaviconUrl(leaderDomain);
-                        var isClientLeader = leaderKpi.isClient;
-                        var blogVal = isClientLeader ? (conf.blogClientEdito || "Non") : (conf.blogLeaderEdito || "Non");
+                        var blogVal = conf.blogLeaderEdito || "Non";
                         
                         html += '<div class="comp-card leader">';
                         html += '<div class="badge-leader">Leader</div>';
-                        if (isClientLeader) html += '<div class="badge-client" style="top: -28px; background: #1a73e8;">Vous</div>';
                         html += '<img class="comp-logo" src="' + leaderLogoUrl + '" alt="Logo ' + leaderKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
                         html += '<div class="comp-name">' + leaderKpi.name + '</div>';
                         html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + leaderKpi.infoTop10 + '</span></div>';
@@ -2460,39 +2484,12 @@
                         html += '</div>';
                     }
 
-                    // Carte Client (Si non leader)
-                    if (clientKpi && !clientKpi.isClientLeader) {
-                        // On vérifie si le client n'est pas le leader
-                        if (!leaderKpi || leaderKpi.name !== clientKpi.name) {
-                            var clientDomain = findDomainByName(clientKpi.name);
-                            var clientLogoUrl = getFaviconUrl(clientDomain);
-                            var blogVal = conf.blogClientEdito || "Non";
-                            
-                            html += '<div class="comp-card client">';
-                            html += '<div class="badge-client">Vous</div>';
-                            html += '<img class="comp-logo" src="' + clientLogoUrl + '" alt="Logo ' + clientKpi.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
-                            html += '<div class="comp-name">' + clientKpi.name + '</div>';
-                            html += '<div class="comp-stat"><span>Top 10 Info :</span><span class="comp-val">' + clientKpi.infoTop10 + '</span></div>';
-                            html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + clientKpi.infoUrlsCount + '</span></div>';
-                            html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
-                            html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
-                            html += '<select class="select-blog" data-entity="client" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
-                            html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
-                            html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
-                            html += '</select></div>';
-                            html += '</div>';
-                        }
-                    }
-
-                    // Cartes autres concurrents
-                    var compCount = 1;
-                    allEntities.forEach(function(comp) {
-                        if (comp.name === (leaderKpi ? leaderKpi.name : "") || comp.isClient) return; // Déjà affiché
-                        if (compCount > 4) return; // Limite
-
+                    // 3. Cartes autres concurrents
+                    otherComps.forEach(function(comp, idx) {
                         var compDomain = findDomainByName(comp.name);
                         var compLogoUrl = getFaviconUrl(compDomain);
-                        var blogVal = conf['blogComp' + compCount + 'Edito'] || "Non";
+                        var compNum = idx + 1;
+                        var blogVal = conf['blogComp' + compNum + 'Edito'] || "Non";
                         
                         html += '<div class="comp-card">';
                         html += '<img class="comp-logo" src="' + compLogoUrl + '" alt="Logo ' + comp.name + '" onerror="this.onerror=null;this.src=\'' + fbImg + '\';">';
@@ -2501,13 +2498,11 @@
                         html += '<div class="comp-stat"><span>Pages Info :</span><span class="comp-val">' + comp.infoUrlsCount + '</span></div>';
                         html += '<div style="margin-top: 10px; font-size: 12px; text-align: left;">';
                         html += '<label class="input-label" style="font-size: 11px; margin-bottom: 2px;">Présence Blog</label>';
-                        html += '<select class="select-blog" data-entity="comp' + compCount + '" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
+                        html += '<select class="select-blog" data-entity="comp' + compNum + '" onchange="autoSaveEditorial()" style="width: 100%; padding: 4px; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px;">';
                         html += '<option value="Non"' + (blogVal === "Non" ? " selected" : "") + '>Non</option>';
                         html += '<option value="Oui"' + (blogVal === "Oui" ? " selected" : "") + '>Oui</option>';
                         html += '</select></div>';
                         html += '</div>';
-                        
-                        compCount++;
                     });
 
                     html += '</div></div>';
@@ -2519,7 +2514,7 @@
 
                 console.log("=== FIN : preparerOngletEditorial ===");
             }
-            
+
             function autoSaveEditorial() {
                 var titre = document.getElementById('ia-titre-editorial').value;
                 var selects = document.querySelectorAll('.select-blog');
@@ -2553,12 +2548,12 @@
                 btn.innerText = "⏳ Import en cours...";
                 msg.innerText = "";
                 
-                // Préparation des données du paysage concurrentiel (comme pour l'état des lieux mais pour Edito)
                 var concurrenceDataEdito = null;
                 if (window.lastDiagnosticData) {
-                    var allEntities = window.lastDiagnosticData.kpis.slice().sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
-                    var leaderKpi = allEntities.length > 0 ? allEntities[0] : null;
-                    var clientKpi = allEntities.find(function(k) { return k.isClient; });
+                    var allComps = window.lastDiagnosticData.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
+                    var leaderKpi = allComps.length > 0 ? allComps[0] : null;
+                    var clientKpi = window.lastDiagnosticData.kpis.find(function(k) { return k.isClient; });
+                    var otherComps = allComps.slice(1, 5);
 
                     function findDomainByNameForExport(name) {
                         var conf = window.globalConfig || {};
@@ -2574,14 +2569,6 @@
                         var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
                         return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
                     }
-
-                    var otherComps = [];
-                    allEntities.forEach(function(comp) {
-                        if (comp.name !== (leaderKpi ? leaderKpi.name : "") && !comp.isClient) {
-                            otherComps.push(comp);
-                        }
-                    });
-                    otherComps = otherComps.slice(0, 4);
 
                     if (clientKpi) {
                         concurrenceDataEdito = {
@@ -4947,29 +4934,29 @@
 
             google.script.run
                 .withSuccessHandler(function(res) {
-                        hideLoader();
-                        if(res && res.success) {
-                            btnExport.innerText = "✅ Terminé";
-                            msg.innerHTML = '<span style="color:#188038">Données exportées avec succès !</span>';
-                            setTimeout(function() {
-                                btnExport.disabled = false;
-                                btnExport.innerText = "📥 Importer dans Slides & continuer";
-                                msg.innerHTML = "";
-                                switchTab('editorial');
-                            }, 2000);
-                        } else {
+                    hideLoader();
+                    if(res && res.success) {
+                        btnExport.innerText = "✅ Terminé";
+                        msg.innerHTML = '<span style="color:#188038">Données exportées avec succès !</span>';
+                        setTimeout(function() {
                             btnExport.disabled = false;
                             btnExport.innerText = "📥 Importer dans Slides & continuer";
-                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : "Erreur inconnue") + '</span>';
-                        }
-                    })
-                    .withFailureHandler(function(err) {
-                        hideLoader();
+                            msg.innerHTML = "";
+                            preparerOngletEditorial();
+                        }, 2000);
+                    } else {
                         btnExport.disabled = false;
                         btnExport.innerText = "📥 Importer dans Slides & continuer";
-                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
-                    })
-                    .exporterContenuSlides();
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + (res ? res.error : "Erreur inconnue") + '</span>';
+                    }
+                })
+                .withFailureHandler(function(err) {
+                    hideLoader();
+                    btnExport.disabled = false;
+                    btnExport.innerText = "📥 Importer dans Slides & continuer";
+                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                })
+                .exporterContenuSlides();
         }
 
         function lancerExportSlidesUX() {
