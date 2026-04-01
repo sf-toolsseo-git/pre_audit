@@ -882,7 +882,7 @@
                 </div>
 
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">Analyse 1.fr et YTG</button>
+                    <button class="btn" id="btn-save-contenu" onclick="sauvegarderContenu()" style="padding: 10px 20px; font-size: 14px; margin-right: 10px;">Analyse</button>
                 </div>
 
                 <div class="row" id="extraction-results-wrapper" style="display:none; margin-bottom: 20px; gap: 15px;">
@@ -971,6 +971,8 @@
             var extractedYtgComp = null;
             var extracted1frClient = null;
             var extracted1frComp = null;
+            var scrapedDataClient = null;
+            var scrapedDataComp = null;
 
             var DRIVE_ICONS_MAPPING = {
                 "organique": "19Fj-qair25NxZYx34lfqzbGkM5iAjVXY",
@@ -1296,11 +1298,13 @@
 
                         if(config.contenuYtgDataClient) { try { extractedYtgClient = JSON.parse(config.contenuYtgDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Client"); } }
                         if(config.contenu1frDataClient) { try { extracted1frClient = JSON.parse(config.contenu1frDataClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Client"); } }
+                        if(config.contenuScrapedClient) { try { scrapedDataClient = JSON.parse(config.contenuScrapedClient); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Client"); } }
                         renderExtractionData('client');
 
                         // Correction appliquée ici : config.contenuYtgDataComp & config.contenu1frDataComp
                         if(config.contenuYtgDataComp) { try { extractedYtgComp = JSON.parse(config.contenuYtgDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON YTG Comp"); } }
                         if(config.contenu1frDataComp) { try { extracted1frComp = JSON.parse(config.contenu1frDataComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON 1fr Comp"); } }
+                        if(config.contenuScrapedComp) { try { scrapedDataComp = JSON.parse(config.contenuScrapedComp); hasExtractionData = true; } catch(e) { console.log("Erreur JSON Scraped Comp"); } }
                         renderExtractionData('comp');
 
                         if (hasExtractionData) {
@@ -4167,14 +4171,40 @@
 
             var ytg = cible === 'client' ? extractedYtgClient : extractedYtgComp;
             var unfr = cible === 'client' ? extracted1frClient : extracted1frComp;
+            var scraped = cible === 'client' ? scrapedDataClient : scrapedDataComp;
 
-            if (!ytg && !unfr) {
+            if (!ytg && !unfr && !scraped) {
                 el.innerHTML = '<div style="color:#5f6368; font-style:italic;">Aucune donnée extraite.</div>';
-                console.log("Aucune donnée YTG ou 1.fr pour : " + cible);
+                console.log("Aucune donnée pour : " + cible);
                 return;
             }
 
             var html = '';
+            
+            // --- BLOC SCRAPING (Hn + Mots comptés) ---
+            if (scraped && (scraped.mots_comptes || (scraped.structure_hn && scraped.structure_hn.length > 0))) {
+                html += '<div style="margin-bottom: 20px;">';
+                html += '<h4 style="margin: 0 0 10px 0; font-size: 14px; color: #08133B; border-left: 3px solid #1a73e8; padding-left: 8px;">Structure de la page</h4>';
+                
+                if (scraped.mots_comptes) {
+                    html += '<div style="margin-bottom:10px; font-size:13px;"><strong>Mots comptés :</strong> <span style="background:#f1f3f4; padding:2px 6px; border-radius:4px; font-family:\'Roboto Mono\',monospace;">' + scraped.mots_comptes.toLocaleString('fr-FR') + '</span></div>';
+                }
+                
+                if (scraped.structure_hn && scraped.structure_hn.length > 0) {
+                    html += '<details style="background: #fff; border: 1px solid #dadce0; border-radius: 4px;">';
+                    html += '<summary style="padding: 8px 10px; cursor: pointer; font-weight: 600; font-size: 12px; background: #f8f9fa;">Structure Hn (' + scraped.structure_hn.length + ' balises)</summary>';
+                    html += '<div style="padding: 10px; max-height: 200px; overflow-y: auto;">';
+                    scraped.structure_hn.forEach(function(hn) {
+                        var level = parseInt(hn.substring(1, 2));
+                        var margin = (level - 1) * 15;
+                        html += '<div style="margin-left: ' + margin + 'px; margin-bottom: 4px; font-size: 12px;">';
+                        html += '<span style="font-weight:bold; color:#1a73e8;">' + hn.substring(0, 2) + '</span> ' + hn.substring(4);
+                        html += '</div>';
+                    });
+                    html += '</div></details>';
+                }
+                html += '</div>';
+            }
 
             // Nouvelle vérification de présence des données YTG basée sur les nouveaux tableaux
             var hasYtgData = ytg && (
@@ -4310,19 +4340,13 @@
                             reader.onload = function(evt) {
                                 var txt = evt.target.result;
                                 var txtEl = dz.querySelector('.dropzone-text');
-                                
-                                var parsedYtg = extraireDonneesYtg(txt);
 
                                 if (type === 'client') {
                                     svgDataClient = txt;
-                                    extractedYtgClient = parsedYtg;
-                                    if(txtEl) txtEl.innerHTML = "✅ SVG Client parsé";
-                                    renderExtractionData('client');
+                                    if(txtEl) txtEl.innerHTML = "✅ Fichier SVG prêt";
                                 } else {
                                     svgDataComp = txt;
-                                    extractedYtgComp = parsedYtg;
-                                    if(txtEl) txtEl.innerHTML = "✅ SVG Concurrent parsé";
-                                    renderExtractionData('comp');
+                                    if(txtEl) txtEl.innerHTML = "✅ Fichier SVG prêt";
                                 }
                                 dz.style.borderColor = "#188038";
                                 dz.style.backgroundColor = "#e6f4ea";
@@ -4343,118 +4367,143 @@
             var btn = document.getElementById('btn-save-contenu');
             btn.disabled = true;
             var originalText = btn.innerText;
-            btn.innerText = "⏳ Enregistrement & Extraction...";
+            btn.innerText = "⏳ Analyse en cours...";
+            showLoader("Extraction des données en cours (Scraping, YTG, 1.fr)...");
+
+            // Extraction synchrone YTG
+            if (svgDataClient) {
+                extractedYtgClient = extraireDonneesYtg(svgDataClient);
+            }
+            if (svgDataComp) {
+                extractedYtgComp = extraireDonneesYtg(svgDataComp);
+            }
 
             var url1frClient = document.getElementById('contenu-1fr-url-client').value.trim();
             var url1frComp = document.getElementById('contenu-1fr-url-comp').value.trim();
+            var urlClient = document.getElementById('contenu-url-client').value.trim();
+            var urlComp = document.getElementById('contenu-url-comp').value.trim();
 
-            var appelsAttendus = 0;
-            var appelsTermines = 0;
-            var erreurs1fr = [];
+            var promises = [];
+            var erreurs = [];
 
-            if (url1frClient) appelsAttendus++;
-            if (url1frComp) appelsAttendus++;
-
-            function verifierSauvegardeFinale() {
-                if (appelsTermines === appelsAttendus) {
-                    renderExtractionData('client');
-                    renderExtractionData('comp');
-
-                    var data = {
-                        CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
-                        
-                        CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
-                        CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
-                        CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
-                        CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
-                        CONTENU_1FR_URL_CLIENT: url1frClient,
-                        CONTENU_1FR_SCORE_CLIENT: (extracted1frClient && extracted1frClient.score) ? extracted1frClient.score : "",
-                        CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
-                        CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
-
-                        CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
-                        CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
-                        CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
-                        CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
-                        CONTENU_1FR_URL_CONCURRENT: url1frComp,
-                        CONTENU_1FR_SCORE_CONCURRENT: (extracted1frComp && extracted1frComp.score) ? extracted1frComp.score : "",
-                        CONTENU_YTG_DATA_CONCURRENT: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
-                        CONTENU_1FR_DATA_CONCURRENT: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
-
-                        // Sauvegarde HTML pour le mode édition
-                        contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
-                        contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
-                        contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
-                        
-                        contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
-                        contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
-                        contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
-                    };
-
+            // Promesse 1.fr Client
+            if (url1frClient) {
+                promises.push(new Promise(function(resolve) {
                     google.script.run
-                        .withSuccessHandler(function() {
-                            btn.innerText = "✅ Enregistré";
-                            var btnIa = document.getElementById('btn-ia-contenu');
-                            btnIa.disabled = false;
-                            btnIa.style.display = 'inline-block';
-                            if (erreurs1fr.length > 0) {
-                                alert("Sauvegardé, mais attention :\n" + erreurs1fr.join("\n"));
+                        .withSuccessHandler(function(res) {
+                            if (res.success) {
+                                extracted1frClient = res.data;
+                            } else {
+                                erreurs.push("Client 1.fr : " + res.error);
                             }
-                            setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                            resolve();
                         })
                         .withFailureHandler(function(err) {
-                            btn.innerText = "❌ Erreur";
-                            alert("Erreur de sauvegarde : " + err.message);
-                            setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                            erreurs.push("Erreur critique 1.fr Client : " + err.message);
+                            resolve();
                         })
-                        .sauvegarderDonneesContenu(data);
-                }
+                        .analyser1frBackend(url1frClient);
+                }));
             }
 
-            if (url1frClient) {
-                google.script.run
-                    .withSuccessHandler(function(res) {
-                        if (res.success) {
-                            extracted1frClient = res.data;
-                        } else {
-                            erreurs1fr.push("Client 1.fr : " + res.error);
-                        }
-                        appelsTermines++;
-                        verifierSauvegardeFinale();
-                    })
-                    .withFailureHandler(function(err) {
-                        erreurs1fr.push("Erreur critique 1.fr Client : " + err.message);
-                        appelsTermines++;
-                        verifierSauvegardeFinale();
-                    })
-                    .analyser1frBackend(url1frClient);
-            }
-
+            // Promesse 1.fr Concurrent
             if (url1frComp) {
-                google.script.run
-                    .withSuccessHandler(function(res) {
-                        if (res.success) {
-                            extracted1frComp = res.data;
-                        } else {
-                            erreurs1fr.push("Concurrent 1.fr : " + res.error);
-                        }
-                        appelsTermines++;
-                        verifierSauvegardeFinale();
-                    })
-                    .withFailureHandler(function(err) {
-                        erreurs1fr.push("Erreur critique 1.fr Concurrent : " + err.message);
-                        appelsTermines++;
-                        verifierSauvegardeFinale();
-                    })
-                    .analyser1frBackend(url1frComp);
+                promises.push(new Promise(function(resolve) {
+                    google.script.run
+                        .withSuccessHandler(function(res) {
+                            if (res.success) {
+                                extracted1frComp = res.data;
+                            } else {
+                                erreurs.push("Concurrent 1.fr : " + res.error);
+                            }
+                            resolve();
+                        })
+                        .withFailureHandler(function(err) {
+                            erreurs.push("Erreur critique 1.fr Concurrent : " + err.message);
+                            resolve();
+                        })
+                        .analyser1frBackend(url1frComp);
+                }));
             }
 
-            if (appelsAttendus === 0) {
-                verifierSauvegardeFinale();
+            // Promesse Scraping
+            if (urlClient || urlComp) {
+                promises.push(new Promise(function(resolve) {
+                    google.script.run
+                        .withSuccessHandler(function(res) {
+                            if (res.client) scrapedDataClient = res.client;
+                            if (res.concurrent) scrapedDataComp = res.concurrent;
+                            resolve();
+                        })
+                        .withFailureHandler(function(err) {
+                            erreurs.push("Erreur Scraping : " + err.message);
+                            resolve();
+                        })
+                        .scraperPourAnalyseContenu(urlClient, urlComp);
+                }));
             }
+
+            Promise.all(promises).then(function() {
+                renderExtractionData('client');
+                renderExtractionData('comp');
+
+                var data = {
+                    CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
+                    
+                    CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
+                    CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
+                    CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
+                    CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
+                    CONTENU_1FR_URL_CLIENT: url1frClient,
+                    CONTENU_1FR_SCORE_CLIENT: (extracted1frClient && extracted1frClient.score) ? extracted1frClient.score : "",
+                    CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
+                    CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
+                    CONTENU_SCRAPED_CLIENT: scrapedDataClient ? JSON.stringify(scrapedDataClient) : "",
+
+                    CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
+                    CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
+                    CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
+                    CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
+                    CONTENU_1FR_URL_CONCURRENT: url1frComp,
+                    CONTENU_1FR_SCORE_CONCURRENT: (extracted1frComp && extracted1frComp.score) ? extracted1frComp.score : "",
+                    CONTENU_YTG_DATA_CONCURRENT: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
+                    CONTENU_1FR_DATA_CONCURRENT: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
+                    CONTENU_SCRAPED_CONCURRENT: scrapedDataComp ? JSON.stringify(scrapedDataComp) : "",
+
+                    // Sauvegarde HTML pour le mode édition
+                    contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
+                    contenuYtgClientHtml: document.getElementById('ce-contenu-ytg-client').innerHTML,
+                    contenu1frClientHtml: document.getElementById('ce-contenu-1fr-client').innerHTML,
+                    
+                    contenuStructureCompHtml: document.getElementById('ce-contenu-structure-comp').innerHTML,
+                    contenuYtgCompHtml: document.getElementById('ce-contenu-ytg-comp').innerHTML,
+                    contenu1frCompHtml: document.getElementById('ce-contenu-1fr-comp').innerHTML
+                };
+
+                google.script.run
+                    .withSuccessHandler(function() {
+                        hideLoader();
+                        btn.innerText = "✅ Analyse terminée";
+                        var btnIa = document.getElementById('btn-ia-contenu');
+                        btnIa.disabled = false;
+                        btnIa.style.display = 'inline-block';
+                        if (erreurs.length > 0) {
+                            alert("Sauvegardé, mais attention :\n" + erreurs.join("\n"));
+                        }
+                        setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                    })
+                    .withFailureHandler(function(err) {
+                        hideLoader();
+                        btn.innerText = "❌ Erreur";
+                        alert("Erreur de sauvegarde : " + err.message);
+                        setTimeout(function() { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                    })
+                    .sauvegarderDonneesContenu(data);
+            });
         }
 
         function lancerAnalyseContenuIA() {
+            console.log("=== DÉBUT : lancerAnalyseContenuIA ===");
             var btn = document.getElementById('btn-ia-contenu');
             btn.disabled = true;
             
@@ -4466,8 +4515,8 @@
             var steps = [
                 "1/3 : Scraping des pages client et concurrent...",
                 "2/3 : Compilation des données sémantiques (YTG & 1.fr)...",
-                "3/3 : Rédaction de l'analyse par l'IA (cela peut prendre quelques secondes)...",
-                "Finalisation en cours..."
+                "3/3 : Rédaction de l'analyse par l'IA (cela peut prendre jusqu'à 60s)...",
+                "Finalisation en cours"
             ];
             
             var stepIndex = 0;
@@ -4478,15 +4527,30 @@
                 if (stepIndex < steps.length - 1) {
                     loaderMsg.innerText = steps[stepIndex];
                 } else {
-                    loaderMsg.innerText = steps[steps.length - 1];
-                    clearInterval(stepTimer);
+                    // Animation des points de suspension pour éviter l'effet "loader bloqué"
+                    var currentText = loaderMsg.innerText;
+                    if (currentText.endsWith("...")) {
+                        loaderMsg.innerText = steps[steps.length - 1] + ".";
+                    } else if (currentText.endsWith("..")) {
+                        loaderMsg.innerText = steps[steps.length - 1] + "...";
+                    } else if (currentText.endsWith(".")) {
+                        loaderMsg.innerText = steps[steps.length - 1] + "..";
+                    } else {
+                        loaderMsg.innerText = steps[steps.length - 1] + ".";
+                    }
                 }
-            }, 7000); // Le message évolue toutes les 7 secondes
+            }, 7000);
 
-            // 2. Récupération des URLs actuelles dans les champs (en cas de modification manuelle)
+            // 2. Récupération des URLs actuelles dans les champs
             var urlClient = document.getElementById('contenu-url-client').value.trim();
             var urlComp = document.getElementById('contenu-url-comp').value.trim();
             var ytgCible = document.getElementById('contenu-ytg-cible').value.trim();
+
+            console.log("Paramètres envoyés :", {
+                urlClient: urlClient,
+                urlComp: urlComp,
+                ytgCible: ytgCible
+            });
 
             // Packaging des données YTG et 1.fr actuelles + Ajout manuel des scores saisis
             var ytgClientData = extractedYtgClient || {};
@@ -4511,7 +4575,6 @@
                     btn.disabled = false;
                     
                     if (res && res.success) {
-                        // Injection des réponses dans le HTML avec formatage gras orange (*mot*) via setCeContent
                         if (res.data.client) {
                             setCeContent('ce-contenu-structure-client', res.data.client.structure || "");
                             setCeContent('ce-contenu-ytg-client', res.data.client.ytg || "");
@@ -4526,6 +4589,7 @@
                         document.getElementById('contenu-results-container').style.display = 'block';
                         console.log("Analyse IA de contenu générée et injectée avec succès.");
                     } else {
+                        console.error("Échec retourné par le serveur :", res ? res.error : "Inconnu");
                         alert("Erreur de l'IA : " + (res ? res.error : "Erreur inconnue"));
                     }
                 })
@@ -4533,12 +4597,14 @@
                     clearInterval(stepTimer);
                     hideLoader();
                     btn.disabled = false;
-                    alert("Erreur critique serveur : " + err.message);
+                    console.error("Erreur d'exécution Apps Script :", err);
+                    alert("Erreur critique serveur : " + err.message + "\n\nConsultez les journaux d'exécution d'Apps Script pour lire le payload envoyé.");
                 })
                 .genererAnalyseContenuDoubleIA(
                     urlClient, urlComp, 
                     JSON.stringify(ytgClientData), JSON.stringify(unfrClientData),
-                    JSON.stringify(ytgCompData), JSON.stringify(unfrCompData)
+                    JSON.stringify(ytgCompData), JSON.stringify(unfrCompData),
+                    JSON.stringify(scrapedDataClient || {}), JSON.stringify(scrapedDataComp || {})
                 );
         }
 

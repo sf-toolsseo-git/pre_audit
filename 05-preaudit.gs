@@ -145,6 +145,7 @@ function chargerConfigurationPreAudit() {
         contenu1frUrlClient: props['CONTENU_1FR_URL_CLIENT'] || "",
         contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
         contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
+        contenuScrapedClient: props['CONTENU_SCRAPED_CLIENT'] || "",
         
         contenuStructureConcurrent: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
         contenuStructureConcurrentHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
@@ -156,7 +157,8 @@ function chargerConfigurationPreAudit() {
         contenu1frConcurrentHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
         contenu1frUrlConcurrent: props['CONTENU_1FR_URL_CONCURRENT'] || "",
         contenu1frScoreConcurrent: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
-        contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || ""
+        contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || "",
+        contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -179,6 +181,7 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
             'CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
             'CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
+            'CONTENU_SCRAPED_CLIENT': data.CONTENU_SCRAPED_CLIENT || "",
             
             'CONTENU_STRUCTURE_CONCURRENT': data.CONTENU_STRUCTURE_CONCURRENT || "",
             'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureCompHtml || "",
@@ -190,7 +193,8 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || "",
             'CONTENU_1FR_SCORE_CONCURRENT': data.CONTENU_1FR_SCORE_CONCURRENT || "",
             'CONTENU_YTG_DATA_CONCURRENT': data.CONTENU_YTG_DATA_CONCURRENT || "",
-            'CONTENU_1FR_DATA_CONCURRENT': data.CONTENU_1FR_DATA_CONCURRENT || ""
+            'CONTENU_1FR_DATA_CONCURRENT': data.CONTENU_1FR_DATA_CONCURRENT || "",
+            'CONTENU_SCRAPED_CONCURRENT': data.CONTENU_SCRAPED_CONCURRENT || ""
         };
         
         PropertiesService.getScriptProperties().setProperties(propsToSet);
@@ -2972,6 +2976,40 @@ function lancerCapturesUX() {
     };
 }
 
+function scraperPourAnalyseContenu(urlClient, urlComp) {
+    Logger.log("=== DÉBUT : scraperPourAnalyseContenu ===");
+    var urls = [];
+    var urlsMap = { client: urlClient, comp: urlComp };
+    if (urlClient && urlClient !== "-") urls.push(urlClient);
+    if (urlComp && urlComp !== "-") urls.push(urlComp);
+    
+    var res = {
+        client: { structure_hn: [], mots_comptes: 0 },
+        concurrent: { structure_hn: [], mots_comptes: 0 }
+    };
+    
+    if (urls.length === 0) {
+        Logger.log("Aucune URL à scraper.");
+        return res;
+    }
+    
+    var scrapedData = scrapeUrlsParallel(urls);
+    
+    scrapedData.forEach(function(page) {
+        var motsComptes = page.content_sample ? page.content_sample.split(/\s+/).length : 0;
+        if (page.url === urlClient) {
+            res.client.structure_hn = page.structure_hn || [];
+            res.client.mots_comptes = motsComptes;
+        } else if (page.url === urlComp) {
+            res.concurrent.structure_hn = page.structure_hn || [];
+            res.concurrent.mots_comptes = motsComptes;
+        }
+    });
+    
+    Logger.log("=== FIN : scraperPourAnalyseContenu ===");
+    return res;
+}
+
 function analyser1frBackend(url1fr) {
     Logger.log("=== DÉBUT : analyser1frBackend ===");
     try {
@@ -3053,7 +3091,7 @@ function analyser1frBackend(url1fr) {
     }
 }
 
-function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrClientStr, ytgCompStr, unfrCompStr) {
+function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrClientStr, ytgCompStr, unfrCompStr, scrapedClientStr, scrapedCompStr) {
     Logger.log("=== DÉBUT : genererAnalyseContenuDoubleIA ===");
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
@@ -3068,55 +3106,46 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         var intention = props['FOCUS_INTENTION_TITRE'] || "Non renseignée.";
         var motCle = props['TARGET_KW'] || "Non défini.";
 
-        Logger.log("Étape 1 : Scraping à la volée des URLs...");
-        var urlsToScrape = [];
-        if (urlClient && urlClient !== "-") urlsToScrape.push(urlClient);
-        if (urlComp && urlComp !== "-") urlsToScrape.push(urlComp);
+        Logger.log("Étape 1 : Préparation du Payload de données (récupération des données scrapées fournies en paramètres)...");
+        var clientScraped = scrapedClientStr ? JSON.parse(scrapedClientStr) : { structure_hn: [], mots_comptes: 0 };
+        var compScraped = scrapedCompStr ? JSON.parse(scrapedCompStr) : { structure_hn: [], mots_comptes: 0 };
 
-        var scrapedData = [];
-        if (urlsToScrape.length > 0) {
-            scrapedData = scrapeUrlsParallel(urlsToScrape);
-        }
-
-        var clientScraped = scrapedData.find(function(s) { return s.url === urlClient; }) || { structure_hn: [], content_sample: "" };
-        var compScraped = scrapedData.find(function(s) { return s.url === urlComp; }) || { structure_hn: [], content_sample: "" };
-
-        // Comptage des mots basé sur le texte brut nettoyé
-        var clientWordCount = clientScraped.content_sample ? clientScraped.content_sample.split(/\s+/).length : 0;
-        var compWordCount = compScraped.content_sample ? compScraped.content_sample.split(/\s+/).length : 0;
-
-        Logger.log("Étape 2 : Préparation du Payload de données...");
         var extractionData = {
             mot_cle_cible: motCle,
             intention_serp: intention,
             client: {
                 structure_hn: clientScraped.structure_hn,
-                mots_comptes: clientWordCount,
+                mots_comptes: clientScraped.mots_comptes,
                 ytg_data: ytgClientStr ? JSON.parse(ytgClientStr) : {},
                 unfr_data: unfrClientStr ? JSON.parse(unfrClientStr) : {}
             },
             concurrent: {
                 structure_hn: compScraped.structure_hn,
-                mots_comptes: compWordCount,
+                mots_comptes: compScraped.mots_comptes,
                 ytg_data: ytgCompStr ? JSON.parse(ytgCompStr) : {},
                 unfr_data: unfrCompStr ? JSON.parse(unfrCompStr) : {}
             }
         };
 
-        Logger.log("Étape 3 : Construction du Prompt Système...");
-        var systemPrompt = "Tu es un auditeur SEO ultra-analytique et un stratège en conversion. Ta mission est de générer 6 constats hyper-concis sur la stratégie de contenu d'une page client et d'une page concurrente.\n" +
-            "Tu dois croiser les données de la SERP (intention de recherche) avec les scores des outils YourTextGuru (YTG) et 1.fr, ainsi que la structure Hn.\n\n" +
-            "Règles d'évaluation strictes :\n" +
-            "1. Structure Hn : le mot-clé (ou champ lexical) doit être dans les titres. L'ordre doit faire sens (réponse à l'intention d'abord, détails ensuite).\n" +
-            "2. Itération (YTG) :\n" +
-            "- Si le nombre de mots est inférieur à 500 : signalez que le contenu n'est pas assez dense et détaillé.\n" +
-            "- Comparez le score réel à la cible : indiquez s'il est sur-optimisé ou sous-optimisé.\n" +
-            "- Justification : citez 1 ou 2 mots exacts tirés des listes d'absents prioritaires ou de suroptimisation.\n" +
-            "3. Sémantique (1.fr) : si le score est inférieur à 90 %, le champ lexical est perfectible. Vérifiez si l'audience et les thématiques correspondent à l'intention de la SERP.\n\n" +
+        // Supprimer toute référence à score_reel ou score_saisi pour éviter que l'IA ne les voit
+        delete extractionData.client.ytg_data.score_reel;
+        delete extractionData.concurrent.ytg_data.score_reel;
+        delete extractionData.client.unfr_data.score_saisi;
+        delete extractionData.concurrent.unfr_data.score_saisi;
+
+        Logger.log("Données d'extraction (Scraping + Outils) : " + JSON.stringify(extractionData));
+
+        Logger.log("Étape 2 : Construction du Prompt Système...");
+        var systemPrompt = "Tu es un auditeur SEO ultra-analytique et un stratège en conversion. Ta mission est de générer 6 constats pour la stratégie de contenu d'une page client et d'une page concurrente.\n" +
+            "Tu dois analyser la structure Hn et les données sémantiques (YourTextGuru et 1.fr) en croisant avec l'intention de recherche de la SERP.\n\n" +
+            "Règles d'évaluation strictes (GARDE-FOUS) :\n" +
+            "1. Structure Hn : Concentre-toi UNIQUEMENT sur l'éditorial et la logique du plan. Est-ce qu'en lisant seulement les titres (Hn), le contenu est logique, bien hiérarchisé et répond à l'intention ? Ne parle pas du nombre de mots ici.\n" +
+            "2. Itération (YTG) : LES SCORES CHIFFRÉS SONT DÉJÀ AFFICHÉS SUR LA SLIDE. NE LES ÉCRIS JAMAIS DANS TON TEXTE. Interdiction absolue d'écrire de scores. Décris uniquement le constat factuel (contenu très dense, forte suroptimisation, sous-optimisation marquée, etc.). INTERDICTION ABSOLUE de parler de 'risque de pénalité' ou de sanction algorithmique. Reste 100% clinique et factuel. Cite 1 ou 2 mots exacts tirés des listes (absents ou suroptimisés) pour justifier le constat.\n" +
+            "3. Sémantique (1.fr) : LÀ ENCORE, AUCUN SCORE CHIFFRÉ NE DOIT APPARAÎTRE. Constate simplement si le champ lexical est riche, pauvre, bien orienté vers la bonne audience, ou s'il manque des thématiques clés.\n\n" +
             "Contraintes de formatage et limites (critique) :\n" +
-            "- Concision extrême : maximum 20 mots et 100 caractères par champ. Soyez télégraphique.\n" +
-            "- Mise en forme : utilisez des astérisques simples (*mot*) pour mettre en gras orange les mots-clés, scores ou concepts clés de l'analyse.\n" +
-            "- Format : fournissez exactement 6 champs dans le JSON.\n\n" +
+            "- Longueur ciblée : Rédige des phrases claires et percutantes d'environ 20 à 30 mots (MAXIMUM 140 caractères par champ). Tu as de l'espace pour détailler ton analyse factuelle, mais élimine le blabla inutile.\n" +
+            "- Mise en forme : utilise des astérisques simples (*mot*) pour mettre en gras orange les concepts clés de l'analyse (ex: *forte suroptimisation*, *champ lexical pauvre*, *excellente hiérarchie*).\n" +
+            "- Format : fournis exactement 6 champs dans le JSON.\n\n" +
             "Règles typographiques obligatoires (français) :\n" +
             "- Titres et labels : majuscule uniquement au premier mot (sauf noms propres).\n" +
             "- Parenthèses : pas de majuscule au premier mot à l'intérieur (sauf nom propre).\n" +
@@ -3127,14 +3156,14 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             "Format de sortie JSON strict :\n" +
             "{\n" +
             "  \"client\": {\n" +
-            "    \"structure\": \"Analyse Hn hyper-concise...\",\n" +
-            "    \"ytg\": \"Analyse YTG hyper-concise...\",\n" +
-            "    \"unfr\": \"Analyse 1.fr hyper-concise...\"\n" +
+            "    \"structure\": \"Analyse Hn factuelle et concise...\",\n" +
+            "    \"ytg\": \"Analyse YTG factuelle et concise...\",\n" +
+            "    \"unfr\": \"Analyse 1.fr factuelle et concise...\"\n" +
             "  },\n" +
             "  \"concurrent\": {\n" +
-            "    \"structure\": \"Analyse Hn hyper-concise...\",\n" +
-            "    \"ytg\": \"Analyse YTG hyper-concise...\",\n" +
-            "    \"unfr\": \"Analyse 1.fr hyper-concise...\"\n" +
+            "    \"structure\": \"Analyse Hn factuelle et concise...\",\n" +
+            "    \"ytg\": \"Analyse YTG factuelle et concise...\",\n" +
+            "    \"unfr\": \"Analyse 1.fr factuelle et concise...\"\n" +
             "  }\n" +
             "}";
 
@@ -3155,11 +3184,21 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             "muteHttpExceptions": true
         };
 
+        Logger.log("=== PAYLOAD COMPLET ENVOYÉ À GEMINI ===");
+        Logger.log(JSON.stringify(payload));
+        Logger.log("=======================================");
+
         Logger.log("Étape 4 : Appel à l'API Gemini 2.5 Pro...");
         var response = UrlFetchApp.fetch(apiUrl, options);
-        var jsonResponse = JSON.parse(response.getContentText());
+        var responseCode = response.getResponseCode();
+        var responseTextBrut = response.getContentText();
+        
+        Logger.log("Code HTTP de la réponse : " + responseCode);
+        Logger.log("Réponse brute de Gemini : " + responseTextBrut);
 
-        if (response.getResponseCode() !== 200) {
+        var jsonResponse = JSON.parse(responseTextBrut);
+
+        if (responseCode !== 200) {
             throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
         }
 
@@ -3175,7 +3214,7 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         return { success: true, data: parsedJson };
 
     } catch(err) {
-        Logger.log("Erreur dans genererAnalyseContenuDoubleIA : " + err.message);
+        Logger.log("ERREUR CRITIQUE dans genererAnalyseContenuDoubleIA : " + err.message);
         return { success: false, error: err.message };
     }
 }
