@@ -122,6 +122,7 @@ function chargerConfigurationPreAudit() {
         techHtmlIndex: props['TECH_HTML_INDEX'] || "",
         techHtmlPos: props['TECH_HTML_POS'] || "",
         DATA_TECH_IA_FULL_STATE: props['DATA_TECH_IA_FULL_STATE'] || "",
+        TITRE_SLIDE_TECHNIQUE: props['TITRE_SLIDE_TECHNIQUE'] || "",
         
         uxClientViewportId: props['UX_CLIENT_VIEWPORT_ID'] || "",
         uxClientFullId: props['UX_CLIENT_FULL_ID'] || "",
@@ -133,6 +134,7 @@ function chargerConfigurationPreAudit() {
         dataUxIaFullState: props['DATA_UX_IA_FULL_STATE'] || "",
         uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
         uxRecommandation2: props['UX_RECOMMANDATION_2'] || "",
+        TITRE_SLIDE_UX: props['TITRE_SLIDE_UX'] || "",
         
         contenuYtgCible: props['CONTENU_YTG_CIBLE'] || "",
         
@@ -148,6 +150,7 @@ function chargerConfigurationPreAudit() {
         contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
         contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
         contenuScrapedClient: props['CONTENU_SCRAPED_CLIENT'] || "",
+        TITRE_SLIDE_CONTENU_CLIENT: props['TITRE_SLIDE_CONTENU_CLIENT'] || "",
         
         contenuStructureComp: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
         contenuStructureCompHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
@@ -160,7 +163,8 @@ function chargerConfigurationPreAudit() {
         contenu1frUrlComp: props['CONTENU_1FR_URL_CONCURRENT'] || "",
         contenu1frScoreComp: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
         contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || "",
-        contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || ""
+        contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || "",
+        TITRE_SLIDE_CONTENU_CONCURRENT: props['TITRE_SLIDE_CONTENU_CONCURRENT'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -171,6 +175,8 @@ function sauvegarderDonneesContenu(data) {
     try {
         var propsToSet = {
             'CONTENU_YTG_CIBLE': data.CONTENU_YTG_CIBLE || "",
+            'TITRE_SLIDE_CONTENU_CLIENT': data.TITRE_SLIDE_CONTENU_CLIENT || "",
+            'TITRE_SLIDE_CONTENU_CONCURRENT': data.TITRE_SLIDE_CONTENU_CONCURRENT || "",
             
             'CONTENU_STRUCTURE_CLIENT': data.CONTENU_STRUCTURE_CLIENT || "",
             'CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
@@ -2483,7 +2489,9 @@ function genererAnalyseTechniqueIA() {
 
         Logger.log("Étape 2 : Construction du dossier technique pour l'IA");
 
-        var techDataStr = "=== BLOC 1 : CRAWL ===\n" +
+        var techDataStr = "=== PROFILAGE COMMERCIAL ===\n" +
+            (props['PA_PROFILAGE_COMMERCIAL'] || "Non renseigné.") + "\n\n" +
+            "=== BLOC 1 : CRAWL ===\n" +
             "- Code HTTP : " + statusCode + " -> Évaluation stricte : " + evalStatus + "\n" +
             "- Temps de réponse (TTFB) : " + ttfb + " ms -> Évaluation stricte : " + evalTtfb + "\n" +
             "- Liens sortants morts : " + links4xx + " erreurs 4xx (introuvable) et " + links5xx + " erreurs 5xx (serveur).\n" +
@@ -2526,9 +2534,11 @@ function genererAnalyseTechniqueIA() {
             "INTERDICTIONS : Aucun ton alarmiste ('désastreux', 'inutilisable'). Ne parle jamais de 'budget de crawl' pour ces données.\n\n" +
             "SÉLECTION ET FORMAT (GÉNÉRATION EXHAUSTIVE ET CONCISE) :\n" +
             "- Concision extrême : STRICTEMENT 25 mots et 100 caractères MAXIMUM par puce. Rédige de façon chirurgicale. Élimine tout le blabla. Va droit au but : un constat, une recommandation.\n" +
-            "- Génère une liste exhaustive de puces (autant que nécessaire) pour couvrir tous les points soulevés par les données. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n\n" +
+            "- Génère une liste exhaustive de puces (autant que nécessaire) pour couvrir tous les points soulevés par les données. Renseigne la clé 'icone' ('BON', 'MOYEN', 'MAUVAIS') selon ton jugement final.\n" +
+            "- Fournis un \"titre_slide\" (max 6 mots) percutant, inspiré par les enjeux du profilage commercial, qui synthétise l'état technique.\n\n" +
             "Format JSON attendu :\n" +
             "{\n" +
+            "  \"titre_slide\": \"Un titre percutant de 6 mots max\",\n" +
             "  \"analyse_crawl\": [ { \"icone\": \"BON\", \"texte\": \"Le serveur répond...\" }, ... ],\n" +
             "  \"analyse_indexation\": [ { \"icone\": \"MAUVAIS\", \"texte\": \"L'URL est absente...\" }, ... ],\n" +
             "  \"analyse_positionnement\": [ { \"icone\": \"MOYEN\", \"texte\": \"La balise <h1> contient une...\" }, ... ]\n" +
@@ -2605,6 +2615,7 @@ function sauvegarderAnalysesTechniquesIA(data) {
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
+            'TITRE_SLIDE_TECHNIQUE': data.TITRE_SLIDE_TECHNIQUE || "",
             'CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
             'CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
             'CRAWL_CHECK_2': data.CRAWL_CHECK_2 || "",
@@ -2861,9 +2872,11 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             "BON : Élément présent et bien valorisé.\n" +
             "MOYEN : Élément présent mais peu visible, ou moins bien exploité que l'autre.\n" +
             "MAUVAIS : Élément absent.\n\n" +
-            "Génère à la fin exactement 2 recommandations globales (stratégie UX/CRO) bienveillantes mais persuasives. IMPORTANT : Encadre les concepts clés de ces recommandations globales avec des astérisques simples (ex: *optimiser le CTA*).\n\n" +
+            "Génère à la fin exactement 2 recommandations globales (stratégie UX/CRO) bienveillantes mais persuasives. IMPORTANT : Encadre les concepts clés de ces recommandations globales avec des astérisques simples (ex: *optimiser le CTA*).\n" +
+            "Fournis également un \"titre_slide\" percutant (max 6 mots) pour résumer le constat UX en s'appuyant sur le profilage commercial.\n\n" +
             "Génère ta réponse STRICTEMENT au format JSON :\n" +
             "{\n" +
+            "  \"titre_slide\": \"Titre percutant max 6 mots\",\n" +
             "  \"type_page_analyse\": \"Catégorie de la page (ex: E-commerce, Vitrine)\",\n" +
             "  \"analyse_elements\": [\n" +
             "    {\n" +
@@ -3236,15 +3249,18 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             "- Jours, mois et langues : toujours en minuscule.\n" +
             "- Deux-points (:) : un espace obligatoire avant le deux-points. Pas de majuscule après, sauf phrase complète indépendante.\n" +
             "- Listes à puces : majuscule au premier mot après la puce ou le tiret.\n" +
-            "- Acronymes : toujours en majuscules (ex : SEO, IA, ROI, YTG, SERP).\n\n" +
+            "- Acronymes : toujours en majuscules (ex : SEO, IA, ROI, YTG, SERP).\n" +
+            "- Ajoute un \"titre_slide\" (max 6 mots) pour le client et le concurrent, basés sur ton constat et les enjeux métiers (profilage commercial).\n\n" +
             "Format de sortie JSON strict :\n" +
             "{\n" +
             "  \"client\": {\n" +
+            "    \"titre_slide\": \"Titre percutant max 6 mots\",\n" +
             "    \"structure\": \"Analyse Hn factuelle et concise...\",\n" +
             "    \"ytg\": \"Analyse YTG factuelle et concise...\",\n" +
             "    \"unfr\": \"Analyse 1.fr factuelle et concise...\"\n" +
             "  },\n" +
             "  \"concurrent\": {\n" +
+            "    \"titre_slide\": \"Titre percutant max 6 mots\",\n" +
             "    \"structure\": \"Analyse Hn factuelle et concise...\",\n" +
             "    \"ytg\": \"Analyse YTG factuelle et concise...\",\n" +
             "    \"unfr\": \"Analyse 1.fr factuelle et concise...\"\n" +
@@ -3308,6 +3324,8 @@ function sauvegarderAnalysesContenuTexte(data) {
     try {
         var props = PropertiesService.getScriptProperties();
         props.setProperties({
+            'TITRE_SLIDE_CONTENU_CLIENT': data.titreClient || "",
+            'TITRE_SLIDE_CONTENU_CONCURRENT': data.titreComp || "",
             'CONTENU_STRUCTURE_CLIENT': data.structureClient || "",
             'CONTENU_STRUCTURE_CLIENT_HTML': data.structureClientHtml || "",
             'CONTENU_YTG_CLIENT': data.ytgClient || "",

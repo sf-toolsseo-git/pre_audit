@@ -740,6 +740,7 @@ function exporterEtatLieuxTechniqueSlides() {
         }
 
         var textMapping = {
+            'TITRE_SLIDE_TECHNIQUE': props['TITRE_SLIDE_TECHNIQUE'] || "",
             'CRAWL_CONTENT_1': props['CRAWL_CONTENT_1'] || "",
             'CRAWL_CONTENT_2': props['CRAWL_CONTENT_2'] || "",
             'CRAWL_CONTENT_3': props['CRAWL_CONTENT_3'] || "",
@@ -879,6 +880,7 @@ function exporterUXSlides() {
         }
         
         var recoMapping = {
+            'TITRE_SLIDE_UX': props['TITRE_SLIDE_UX'] || "",
             'UX_RECOMMANDATION_1': props['UX_RECOMMANDATION_1'] || "",
             'UX_RECOMMANDATION_2': props['UX_RECOMMANDATION_2'] || ""
         };
@@ -1147,6 +1149,8 @@ function exporterContenuSlides() {
         // ---------------------------------------------------------
 
         var textMapping = {
+            'TITRE_SLIDE_CONTENU_CLIENT': props['TITRE_SLIDE_CONTENU_CLIENT'] || "",
+            'TITRE_SLIDE_CONTENU_CONCURRENT': props['TITRE_SLIDE_CONTENU_CONCURRENT'] || "",
             'CONTENU_STRUCTURE_CLIENT': props['CONTENU_STRUCTURE_CLIENT'] || "",
             'CONTENU_YTG_CLIENT': props['CONTENU_YTG_CLIENT'] || "",
             'CONTENU_1FR_CLIENT': props['CONTENU_1FR_CLIENT'] || "",

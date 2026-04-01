@@ -1183,6 +1183,7 @@ function syncPropertiesToConfigSheet() {
             {
                 name: "🛠️ TECHNIQUE",
                 keys: [
+                    "TITRE_SLIDE_TECHNIQUE",
                     "TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE",
                     "---BORDER---",
                     "TECH_CRAWL_STATUS_CODE", "TECH_CRAWL_TTFB_MS", "TECH_CRAWL_TTFB_SCORE",
@@ -1204,6 +1205,7 @@ function syncPropertiesToConfigSheet() {
             {
                 name: "🎨 UX",
                 keys: [
+                    "TITRE_SLIDE_UX",
                     "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT",
                     "UX_CLIENT_CROP_ID", "UX_COMP_CROP_ID",
                     "---BORDER---",
@@ -1220,6 +1222,7 @@ function syncPropertiesToConfigSheet() {
             {
                 name: "📝 CONTENU",
                 keys: [
+                    "TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT",
                     "CONTENU_YTG_CIBLE",
                     "---BORDER---",
                     "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT", "CONTENU_SCRAPED_CLIENT",
