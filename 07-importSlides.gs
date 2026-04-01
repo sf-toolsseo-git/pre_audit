@@ -1263,7 +1263,9 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
 
         var mappingComp = {};
         
+        var titreThematique = props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "";
         mappingComp['TITRE_SLIDE_CONCURRENCE_EDITO'] = titreSlide || "";
+        mappingComp['TITRE_SLIDE_THEMATIQUE_EDITO'] = titreThematique;
         
         if (concurrenceDataEdito) {
             if (concurrenceDataEdito.client) {
@@ -1287,6 +1289,44 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                     mappingComp['BLOG_COMP' + c + '_EDITO'] = donneesBlog['comp' + c] || "Non";
                 }
             }
+            
+            // Traitement des pistes (Thématiques)
+            var selectionJson = props['ANALYSE_SELECTION'];
+            var selection = selectionJson ? JSON.parse(selectionJson) : [];
+            var pistesEdito = [];
+            try {
+                var diag = genererDiagnostic(selection);
+                if (diag && diag.pistesEdito) pistesEdito = diag.pistesEdito;
+            } catch (e) {
+                Logger.log("Erreur diagnostic dans exporterEditorialSlides : " + e.message);
+            }
+            
+            for (var i = 1; i <= 3; i++) {
+                var piste = pistesEdito[i - 1];
+                if (piste) {
+                    mappingComp['THEMATIQUE_EDITO_' + i] = piste.tsKey || "";
+                    mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = piste.entite || "";
+                    mappingComp['URL_EDITO_CONTENU_' + i] = piste.url || "";
+                    mappingComp['NOM_CONTENU_' + i] = props['NOM_CONTENU_' + i] || "";
+                    
+                    var kwStr = piste.kwTop100 + " mots-clés positionnés en top 100\n\n" + piste.kwTop10 + " mots-clés positionnés en top 10, exemples :\n";
+                    if (piste.kws && piste.kws.length > 0) {
+                        for (var k = 0; k < piste.kws.length; k++) {
+                            var kwItem = piste.kws[k];
+                            kwStr += "• « " + kwItem.kw + " », recherché " + safeNum(kwItem.vol) + " fois par mois, en position " + kwItem.pos + "\n";
+                        }
+                    }
+                    // Retirer le dernier saut de ligne
+                    kwStr = kwStr.replace(/\n$/, "");
+                    mappingComp['DATA_TOP10_CONTENU_' + i] = kwStr;
+                } else {
+                    mappingComp['THEMATIQUE_EDITO_' + i] = "-";
+                    mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = "-";
+                    mappingComp['URL_EDITO_CONTENU_' + i] = "-";
+                    mappingComp['NOM_CONTENU_' + i] = "-";
+                    mappingComp['DATA_TOP10_CONTENU_' + i] = "-";
+                }
+            }
         }
 
         // Sauvegarde des propriétés
@@ -1299,6 +1339,10 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
         propsToSave["PLACEHOLDER_LOGO_COMP2_EDITO"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_COMP3_EDITO"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_COMP4_EDITO"] = "IMAGE";
+        
+        propsToSave["PLACEHOLDER_LOGO_COMP1_EDITO_CONTENU"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP2_EDITO_CONTENU"] = "IMAGE";
+        propsToSave["PLACEHOLDER_LOGO_COMP3_EDITO_CONTENU"] = "IMAGE";
 
         PropertiesService.getScriptProperties().setProperties(propsToSave);
         syncPropertiesToConfigSheet();
@@ -1318,16 +1362,29 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                 // Placeholders d'images concurrentes pour l'éditorial
                 if (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
                     var imgUrl = null;
-                    if (descRaw === "PLACEHOLDER_LOGO_CLIENT_EDITO" && concurrenceDataEdito.client && concurrenceDataEdito.client.logoUrl) {
-                        imgUrl = concurrenceDataEdito.client.logoUrl;
-                    } else if (descRaw === "PLACEHOLDER_LOGO_LEADER_EDITO" && concurrenceDataEdito.leader && concurrenceDataEdito.leader.logoUrl) {
-                        imgUrl = concurrenceDataEdito.leader.logoUrl;
+                    
+                    if (descRaw.indexOf("_EDITO_CONTENU") !== -1) {
+                        var mc = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO_CONTENU/);
+                        if (mc && mc[1]) {
+                            var iContenu = parseInt(mc[1], 10);
+                            var domainUrl = mappingComp['URL_EDITO_CONTENU_' + iContenu];
+                            if (domainUrl && domainUrl !== "-") {
+                                var cleanDomain = domainUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                                imgUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                            }
+                        }
                     } else {
-                        var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO/);
-                        if (m && m[1]) {
-                            var idxComp = parseInt(m[1]) - 1;
-                            if (concurrenceDataEdito.comps && concurrenceDataEdito.comps[idxComp] && concurrenceDataEdito.comps[idxComp].logoUrl) {
-                                imgUrl = concurrenceDataEdito.comps[idxComp].logoUrl;
+                        if (descRaw === "PLACEHOLDER_LOGO_CLIENT_EDITO" && concurrenceDataEdito.client && concurrenceDataEdito.client.logoUrl) {
+                            imgUrl = concurrenceDataEdito.client.logoUrl;
+                        } else if (descRaw === "PLACEHOLDER_LOGO_LEADER_EDITO" && concurrenceDataEdito.leader && concurrenceDataEdito.leader.logoUrl) {
+                            imgUrl = concurrenceDataEdito.leader.logoUrl;
+                        } else {
+                            var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO/);
+                            if (m && m[1]) {
+                                var idxComp = parseInt(m[1]) - 1;
+                                if (concurrenceDataEdito.comps && concurrenceDataEdito.comps[idxComp] && concurrenceDataEdito.comps[idxComp].logoUrl) {
+                                    imgUrl = concurrenceDataEdito.comps[idxComp].logoUrl;
+                                }
                             }
                         }
                     }

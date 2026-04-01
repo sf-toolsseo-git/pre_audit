@@ -172,7 +172,11 @@ function chargerConfigurationPreAudit() {
         blogComp1Edito: props['BLOG_COMP1_EDITO'] || "Non",
         blogComp2Edito: props['BLOG_COMP2_EDITO'] || "Non",
         blogComp3Edito: props['BLOG_COMP3_EDITO'] || "Non",
-        blogComp4Edito: props['BLOG_COMP4_EDITO'] || "Non"
+        blogComp4Edito: props['BLOG_COMP4_EDITO'] || "Non",
+        titreSlideThematiqueEdito: props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "",
+        nomContenu1: props['NOM_CONTENU_1'] || "",
+        nomContenu2: props['NOM_CONTENU_2'] || "",
+        nomContenu3: props['NOM_CONTENU_3'] || ""
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -188,7 +192,11 @@ function sauvegarderDonneesEditorial(data) {
             'BLOG_COMP1_EDITO': data.blogComp1Edito || "Non",
             'BLOG_COMP2_EDITO': data.blogComp2Edito || "Non",
             'BLOG_COMP3_EDITO': data.blogComp3Edito || "Non",
-            'BLOG_COMP4_EDITO': data.blogComp4Edito || "Non"
+            'BLOG_COMP4_EDITO': data.blogComp4Edito || "Non",
+            'TITRE_SLIDE_THEMATIQUE_EDITO': data.titreSlideThematiqueEdito || "",
+            'NOM_CONTENU_1': data.nomContenu1 || "",
+            'NOM_CONTENU_2': data.nomContenu2 || "",
+            'NOM_CONTENU_3': data.nomContenu3 || ""
         };
         
         PropertiesService.getScriptProperties().setProperties(propsToSet);
@@ -198,6 +206,109 @@ function sauvegarderDonneesEditorial(data) {
         return { success: true };
     } catch (e) {
         Logger.log("Erreur dans sauvegarderDonneesEditorial : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+function genererAnalyseEditorialIA(pistesEdito, contexteClient) {
+    Logger.log("=== DÉBUT : genererAnalyseEditorialIA ===");
+    try {
+        var userProps = PropertiesService.getUserProperties().getProperties();
+        var apiKey = userProps['CONF_API_KEY_GEMINI'];
+        
+        if (!apiKey || apiKey.trim() === "") {
+            throw new Error("Clé API Gemini introuvable.");
+        }
+
+        if (!pistesEdito || pistesEdito.length === 0) {
+            throw new Error("Aucune piste éditoriale fournie.");
+        }
+
+        // 1. Extraction des URLs à scraper (max 3)
+        var urlsToScrape = [];
+        for (var i = 0; i < pistesEdito.length && i < 3; i++) {
+            if (pistesEdito[i].url) {
+                urlsToScrape.push(pistesEdito[i].url);
+            }
+        }
+
+        Logger.log("Scraping de " + urlsToScrape.length + " URLs...");
+        var scrapedData = scrapeUrlsParallel(urlsToScrape);
+
+        // 2. Construction du contexte pour l'IA
+        var contexteUrls = [];
+        for (var i = 0; i < scrapedData.length; i++) {
+            var sData = scrapedData[i];
+            if (!sData.error) {
+                contexteUrls.push({
+                    url: sData.url,
+                    titre: sData.title,
+                    structure_hn: sData.structure_hn
+                });
+            } else {
+                // En cas d'erreur de scraping, on transmet l'URL et les mots-clés disponibles
+                contexteUrls.push({
+                    url: sData.url,
+                    titre: "Erreur de récupération",
+                    structure_hn: []
+                });
+            }
+        }
+
+        var extractionData = {
+            contexte_client: contexteClient || "Non renseigné",
+            contenus_concurrents: contexteUrls
+        };
+
+        var systemPrompt = "Tu es un expert SEO spécialisé en stratégie éditoriale. Ton objectif est de générer les titres de slides et les noms courts pour 3 contenus concurrents identifiés.\n\n" +
+                           "RÈGLES DE GÉNÉRATION :\n" +
+                           "1. titre_slide_concurrence : Un titre percutant résumant l'environnement concurrentiel informationnel (ex: 'Votre visibilité informationnelle face au marché').\n" +
+                           "2. titre_slide_thematique : Un titre pour la slide des thématiques/contenus à créer (ex: '3 contenus stratégiques à créer en priorité').\n" +
+                           "3. contenus : Un tableau de 3 chaînes de caractères (correspondant exactement à l'ordre des 'contenus_concurrents' fournis). Chaque chaîne doit décrire de manière percutante le sujet du contenu concurrent en *6 mots maximum*. Ce texte remplacera le titre souvent trop long de la balise title.\n\n" +
+                           "Format JSON strict attendu :\n" +
+                           "{\n" +
+                           "  \"titre_slide_concurrence\": \"Titre slide 1\",\n" +
+                           "  \"titre_slide_thematique\": \"Titre slide 2\",\n" +
+                           "  \"contenus\": [\"Nom court contenu 1\", \"Nom court contenu 2\", \"Nom court contenu 3\"]\n" +
+                           "}";
+
+        var userPrompt = "Voici les données : \n" + JSON.stringify(extractionData);
+
+        var payload = {
+            "system_instruction": { "parts": [{"text": systemPrompt}] },
+            "contents": [ { "parts": [{"text": userPrompt}] } ],
+            "generationConfig": { "responseMimeType": "application/json" }
+        };
+
+        var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+        var options = {
+            "method": "post",
+            "contentType": "application/json",
+            "headers": { "x-goog-api-key": apiKey },
+            "payload": JSON.stringify(payload),
+            "muteHttpExceptions": true
+        };
+
+        var response = UrlFetchApp.fetch(apiUrl, options);
+        var jsonResponse = JSON.parse(response.getContentText());
+
+        if (response.getResponseCode() !== 200) {
+            throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur API Gemini.");
+        }
+
+        if (!jsonResponse.candidates || jsonResponse.candidates.length === 0 || !jsonResponse.candidates[0].content) {
+            throw new Error("Aucune réponse valide de Gemini.");
+        }
+
+        var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
+        responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
+        var parsedData = JSON.parse(responseText);
+
+        Logger.log("=== FIN : genererAnalyseEditorialIA (Succès) ===");
+        return { success: true, data: parsedData };
+
+    } catch (e) {
+        Logger.log("Erreur dans genererAnalyseEditorialIA : " + e.message);
         return { success: false, error: e.message };
     }
 }
@@ -618,6 +729,8 @@ function genererDiagnostic(selection) {
     if (!selection || selection.length === 0) throw new Error("Aucune thématique sélectionnée.");
 
     var props = PropertiesService.getScriptProperties().getProperties();
+    // NOUVEAU : Récupération du mot-clé fil rouge pour exclusion
+    var targetKwGlobal = (props['TARGET_KW'] || "").toLowerCase().trim();
 
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
@@ -636,7 +749,6 @@ function genererDiagnostic(selection) {
     selection.forEach(function(item) {
         selectedSubs[item.theme + "|" + item.sub] = true;
     });
-
     var clusterData = sheetCluster.getDataRange().getValues();
     var targetKeywords = new Map();
     for (var i = 1; i < clusterData.length; i++) {
@@ -645,7 +757,6 @@ function genererDiagnostic(selection) {
         if (!selectedSubs[theme + "|" + subTheme]) continue;
 
         var intent = String(clusterData[i][5] || "").trim().toLowerCase();
-        
         var mainKw = String(clusterData[i][3] || "").trim().toLowerCase();
         if (mainKw) {
             if (!targetKeywords.has(mainKw) || !targetKeywords.get(mainKw).isMain) {
@@ -666,7 +777,6 @@ function genererDiagnostic(selection) {
     }
 
     if (targetKeywords.size === 0) throw new Error("Aucun mot-clé trouvé pour cette sélection.");
-
     var matriceData = sheetMatrice.getDataRange().getValues();
     var headers = matriceData[0];
     var entities = [];
@@ -676,7 +786,8 @@ function genererDiagnostic(selection) {
             var name = h.substring(4).trim();
             var urlIdx = -1;
             for (var j = c + 1; j < headers.length; j++) {
-                if (String(headers[j]) === "URL " + name) { urlIdx = j; break; }
+                if (String(headers[j]) === "URL " + name) { urlIdx = j;
+                    break; }
             }
             entities.push({ name: name, posIdx: c, urlIdx: urlIdx });
         }
@@ -685,12 +796,10 @@ function genererDiagnostic(selection) {
     var clientName = props['CONF_CLIENT_NAME'] || "Client";
     if (clientName.trim() === "") clientName = "Client";
     var clientEntity = entities.find(function(e) { return e.name === clientName; });
-
     var kpis = {};
     entities.forEach(function(e) {
         kpis[e.name] = { posAll: 0, top3: 0, top10: 0, urls: new Set(), TEC: 0, TPM: 0, infoTop10: 0, infoUrls: new Set() };
     });
-
     var urlProfiles = {};
     var themeStats = {};
     var intentStats = {
@@ -698,7 +807,6 @@ function genererDiagnostic(selection) {
         info:    { kwCount: 0, top100: 0, top10: 0, TEC: 0, TPM: 0 }
     };
     var acquis = [], gains = [], pertes = [], territoires = [];
-
     for (var i = 1; i < matriceData.length; i++) {
         var row = matriceData[i];
         var kw = String(row[0]).trim().toLowerCase();
@@ -707,7 +815,6 @@ function genererDiagnostic(selection) {
 
         var kwMeta = targetKeywords.get(kw);
         var tsKey = kwMeta.theme + " > " + kwMeta.sub;
-
         if (!themeStats[tsKey]) {
             themeStats[tsKey] = { kwCount: 0, volTotal: 0, top100: 0, top10: 0, top3: 0, TEC: 0, TPM: 0, DDT: 0, entityStats: {} };
             entities.forEach(function(e) { themeStats[tsKey].entityStats[e.name] = { TEC: 0 }; });
@@ -718,7 +825,6 @@ function genererDiagnostic(selection) {
         var bestCompPos = 999;
         var bestCompName = "-";
         var compInTop10Count = 0;
-
         entities.forEach(function(e) {
             var pos = parseInt(row[e.posIdx]);
             var p = (!isNaN(pos) && pos > 0) ? pos : 999;
@@ -726,6 +832,7 @@ function genererDiagnostic(selection) {
 
             if (p <= 100) kpis[e.name].posAll++;
             if (p <= 3)   kpis[e.name].top3++;
+    
             if (p <= 10)  kpis[e.name].top10++;
             if (url && url !== "-") kpis[e.name].urls.add(url);
             
@@ -735,7 +842,8 @@ function genererDiagnostic(selection) {
                 if (url && url !== "-") kpis[e.name].infoUrls.add(url);
             }
             
-            if (isInfoInner && url && url !== "-") {
+            // NOUVEAU : On s'assure que le mot-clé analysé n'est pas le mot-clé fil rouge
+            if (isInfoInner && url && url !== "-" && kw !== targetKwGlobal) {
                 var pKey = tsKey + "|" + e.name + "|" + url;
                 if (!urlProfiles[pKey]) {
                     urlProfiles[pKey] = { tsKey: tsKey, entite: e.name, isClient: e.name === clientName, url: url, kwTop100: 0, kwTop10: 0, tec: 0, kws: [] };
@@ -758,10 +866,10 @@ function genererDiagnostic(selection) {
                 clientPos = p;
             } else {
                 if (p <= 10) compInTop10Count++;
-                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name; }
+                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name;
+                }
             }
         });
-
         var clientTEC = computeTEC(vol, clientPos);
         var kwDDT = kwTPM - clientTEC;
 
@@ -774,9 +882,9 @@ function genererDiagnostic(selection) {
         if (clientPos <= 10)  themeStats[tsKey].top10++;
         if (clientPos <= 3)   themeStats[tsKey].top3++;
 
-        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 || kwMeta.intent === "t" || kwMeta.intent === "c";
+        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 ||
+        kwMeta.intent === "t" || kwMeta.intent === "c";
         var isInfo    = kwMeta.intent.indexOf("information") > -1 || kwMeta.intent === "i";
-
         if (isTransac) {
             intentStats.transac.TPM += kwTPM;
             if (kwMeta.isMain) {
@@ -834,6 +942,7 @@ function genererDiagnostic(selection) {
             posAll: kpis[e.name].posAll,
             top3: kpis[e.name].top3,
             top10: kpis[e.name].top10,
+  
             infoTop10: kpis[e.name].infoTop10,
             urlsCount: kpis[e.name].urls.size,
             infoUrlsCount: kpis[e.name].infoUrls.size,
@@ -847,7 +956,6 @@ function genererDiagnostic(selection) {
         if (b.isClient) return 1;
         return b.top10 - a.top10;
     });
-
     // Construction du tableau des thématiques avec tous les ratios
     var themeArray = [];
     for (var k in themeStats) {
@@ -867,7 +975,6 @@ function genererDiagnostic(selection) {
         });
     }
     themeArray.sort(function(a, b) { return b.volTotal - a.volTotal; });
-
     // Identification top / flop thématique
     var topTheme = null, flopTheme = null;
     if (themeArray.length > 0) {
@@ -885,19 +992,16 @@ function genererDiagnostic(selection) {
         s.TEC = Math.round(s.TEC);
         s.TPM = Math.round(s.TPM);
     });
-
     acquis.sort(function(a, b) { return b.vol - a.vol; });
     gains.sort(function(a, b) { return b.DDT - a.DDT; });
     pertes.sort(function(a, b) { return b.DDT - a.DDT; });
     territoires.sort(function(a, b) { return b.vol - a.vol; });
-    
     var arrUrlProfiles = Object.keys(urlProfiles).map(function(k) { return urlProfiles[k]; });
     var validUrlProfiles = arrUrlProfiles.filter(function(pr) { return !pr.isClient && pr.kwTop10 > 0; });
     validUrlProfiles.sort(function(a, b) { return b.tec - a.tec; });
     
     var finalPistesEdito = [];
     var usedTsKeys = new Set();
-    
     for (var u = 0; u < validUrlProfiles.length; u++) {
         var profile = validUrlProfiles[u];
         if (!usedTsKeys.has(profile.tsKey)) {
@@ -918,7 +1022,8 @@ function genererDiagnostic(selection) {
         flopTheme: flopTheme,
         acquis:      acquis.slice(0, 10),
         gains:       gains.slice(0, 10),
-        pertes:      pertes.slice(0, 10),
+        pertes:  
+    pertes.slice(0, 10),
         territoires: territoires.slice(0, 10),
         pistesEdito: finalPistesEdito
     };
