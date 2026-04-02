@@ -1,7 +1,7 @@
 function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
     try {
         Logger.log("=== DÉBUT : exporterSlideBesoinSolution ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -59,7 +59,7 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
 function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgKwMime, imgTraficB64, imgTraficMime) {
     try {
         Logger.log("=== DÉBUT : exporterAnalyseSemrushSlide ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
         
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -152,7 +152,7 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
 function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData) {
     try {
         Logger.log("=== DÉBUT : exporterPerformanceGlobalSlides ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -474,7 +474,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 function exporterFocusMotCleSlides() {
     try {
         Logger.log("=== DÉBUT : exporterFocusMotCleSlides ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -693,7 +693,7 @@ function exporterFocusMotCleSlides() {
 function exporterEtatLieuxTechniqueSlides() {
     try {
         Logger.log("=== DÉBUT : exporterEtatLieuxTechniqueSlides ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -828,7 +828,7 @@ function exporterEtatLieuxTechniqueSlides() {
 function exporterUXSlides() {
     try {
         Logger.log("=== DÉBUT : exporterUXSlides ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -992,7 +992,7 @@ function exporterUXSlides() {
 function exporterContenuSlides() {
     Logger.log("=== DÉBUT : exporterContenuSlides ===");
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
@@ -1249,7 +1249,7 @@ function exporterContenuSlides() {
 function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) {
     try {
         Logger.log("=== DÉBUT : exporterEditorialSlides ===");
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var slideId = props['PA_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");

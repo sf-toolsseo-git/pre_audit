@@ -507,8 +507,12 @@ function setDatabaseData(dict) {
 }
 
 function getDatabaseData(keys) {
+    var getAllKeys = false;
     var singleKeyMode = false;
-    if (!Array.isArray(keys)) {
+    
+    if (keys === undefined || keys === null) {
+        getAllKeys = true;
+    } else if (!Array.isArray(keys)) {
         singleKeyMode = true;
         keys = [keys];
     }
@@ -537,6 +541,39 @@ function getDatabaseData(keys) {
     }
 
     var props = PropertiesService.getScriptProperties();
+    var allProps = props.getProperties();
+
+    if (getAllKeys) {
+        // Collect all unique keys from both sources
+        var allKeysSet = {};
+        
+        // From Sheet
+        for (var key in sheetDict) {
+            if (sheetDict.hasOwnProperty(key)) {
+                // If it's a chunk, add the base key
+                if (key.indexOf("_chunk_") !== -1) {
+                    var baseKey = key.substring(0, key.indexOf("_chunk_"));
+                    allKeysSet[baseKey] = true;
+                } else {
+                    allKeysSet[key] = true;
+                }
+            }
+        }
+        
+        // From PropertiesService
+        for (var key in allProps) {
+            if (allProps.hasOwnProperty(key)) {
+                if (key.indexOf("_chunk_") !== -1) {
+                    var baseKey = key.substring(0, key.indexOf("_chunk_"));
+                    allKeysSet[baseKey] = true;
+                } else {
+                    allKeysSet[key] = true;
+                }
+            }
+        }
+        
+        keys = Object.keys(allKeysSet);
+    }
 
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
@@ -577,5 +614,6 @@ function getDatabaseData(keys) {
         }
     }
 
+    if (getAllKeys) return result;
     return singleKeyMode ? result[keys[0]] : result;
 }
