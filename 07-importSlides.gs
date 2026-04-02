@@ -1,8 +1,3 @@
-/**
- * Fonction universelle pour appliquer le markdown sur une forme ou une cellule de tableau.
- * Règle 1 : **texte** -> Gras
- * Règle 2 : *texte* -> Gras + Orange (#f67604)
- */
 function appliquerMarkdownSurForme(element) {
     try {
         var textRange = element.getText();

@@ -254,6 +254,60 @@ function sauvegarderConfigurationPreAudit(form) {
     return true;
 }
 
+function sauvegarderDonneesAnalyseGlobale(data) {
+    Logger.log("=== DÉBUT : sauvegarderDonneesAnalyseGlobale ===");
+    try {
+        setDatabaseData({
+            'PA_GLOBALE_BESOIN':              data.besoinTexte || "",
+            'PA_GLOBALE_BESOIN_HTML':         data.besoinHtml || "",
+            'PA_GLOBALE_SOLUTION':            data.solutionTexte || "",
+            'PA_GLOBALE_SOLUTION_HTML':       data.solutionHtml || "",
+            
+            'PA_GLOBALE_TITRE_SEMRUSH':       data.titreSemrush || "",
+            'PA_GLOBALE_SEMRUSH_MOTCLE':      data.analyseKwTexte || "",
+            'PA_GLOBALE_SEMRUSH_MOTCLE_HTML': data.analyseKwHtml || "",
+            'PA_GLOBALE_SEMRUSH_TRAFIC':      data.analyseTraficTexte || "",
+            'PA_GLOBALE_SEMRUSH_TRAFIC_HTML': data.analyseTraficHtml || "",
+            
+            'PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE': "IMAGE",
+            'PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC': "IMAGE"
+        });
+        Logger.log("Propriétés enregistrées vers CONFIG...");
+        Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderDonneesAnalyseGlobale : " + e.message);
+        throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
+    }
+}
+
+function sauvegarderSelectionAnalyse(selection) {
+    Logger.log("=== DÉBUT : sauvegarderSelectionAnalyse ===");
+    try {
+        // Stockage exclusif en Propriétés du script (n'ira pas dans CONFIG)
+        PropertiesService.getScriptProperties().setProperty('PA_DIAGNOSTIC_SELECTION', JSON.stringify(selection));
+        Logger.log("Sélection enregistrée en propriétés : " + selection.length + " éléments");
+        Logger.log("=== FIN : sauvegarderSelectionAnalyse ===");
+        return true;
+    } catch (e) {
+        Logger.log("Erreur dans sauvegarderSelectionAnalyse : " + e.message);
+        return false;
+    }
+}
+
+function chargerSelectionAnalyse() {
+    Logger.log("=== DÉBUT : chargerSelectionAnalyse ===");
+    try {
+        // Lecture directe depuis les propriétés
+        var data = PropertiesService.getScriptProperties().getProperty('PA_DIAGNOSTIC_SELECTION');
+        Logger.log("=== FIN : chargerSelectionAnalyse ===");
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        Logger.log("Erreur dans chargerSelectionAnalyse : " + e.message);
+        return [];
+    }
+}
+
 function sauvegarderDonneesEditorial(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesEditorial ===");
     try {
@@ -722,30 +776,6 @@ function recupererArborescenceCluster() {
     return result;
 }
 
-function sauvegarderSelectionAnalyse(selection) {
-    Logger.log("=== DÉBUT : sauvegarderSelectionAnalyse ===");
-    try {
-        setDatabaseData({'ANALYSE_SELECTION': JSON.stringify(selection)});
-        Logger.log("=== FIN : sauvegarderSelectionAnalyse ===");
-        return true;
-    } catch (e) {
-        Logger.log("Erreur dans sauvegarderSelectionAnalyse : " + e.message);
-        return false;
-    }
-}
-
-function chargerSelectionAnalyse() {
-    Logger.log("=== DÉBUT : chargerSelectionAnalyse ===");
-    try {
-        var data = getDatabaseData('ANALYSE_SELECTION');
-        Logger.log("=== FIN : chargerSelectionAnalyse ===");
-        return data ? JSON.parse(data) : [];
-    } catch (e) {
-        Logger.log("Erreur dans chargerSelectionAnalyse : " + e.message);
-        return [];
-    }
-}
-
 function sauvegarderAnalysesEtatLieux(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesEtatLieux ===");
     try {
@@ -1186,33 +1216,6 @@ function sauvegarderOngletActif(tabName) {
         return true;
     } catch (e) {
         return false;
-    }
-}
-
-function sauvegarderDonneesAnalyseGlobale(data) {
-    Logger.log("=== DÉBUT : sauvegarderDonneesAnalyseGlobale ===");
-    try {
-        setDatabaseData({
-            'TAG_SLIDE_BESOIN_HTML':         data.besoinHtml || "",
-            'TAG_SLIDE_BESOIN':              data.besoinTexte || "",
-            'TAG_SLIDE_SOLUTION_HTML':       data.solutionHtml || "",
-            'TAG_SLIDE_SOLUTION':            data.solutionTexte || "",
-            'TITRE_SLIDE_SEMRUSH':           data.titreSemrush || "",
-            'ANALYSE_SEMRUSH_MOT_CLE_HTML':  data.analyseKwHtml || "",
-            'ANALYSE_SEMRUSH_MOT_CLE':       data.analyseKwTexte || "",
-            'ANALYSE_SEMRUSH_TRAFIC_HTML':   data.analyseTraficHtml || "",
-            'ANALYSE_SEMRUSH_TRAFIC':        data.analyseTraficTexte || "",
-            'PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE': "IMAGE",
-            'PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC': "IMAGE"
-        });
-        
-        Logger.log("Propriétés enregistrées vers CONFIG...");
-        
-        Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
-        return true;
-    } catch (e) {
-        Logger.log("Erreur dans sauvegarderDonneesAnalyseGlobale : " + e.message);
-        throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
     }
 }
 
