@@ -2551,7 +2551,7 @@
                             var valNom = conf['nomContenu' + nomContenuIdx] || "";
                             
                             // FORMATAGE POUR GOOGLE SLIDES (avec astérisques et sans "exemples")
-                            var kwStr = piste.kwTop10 + " mots-clés positionnés en top 10 *(Trafic estimé : " + Math.round(piste.tec).toLocaleString('fr-FR') + ")* :\n";
+                            var kwStr = piste.kwTop10 + " mots-clés positionnés en top 10 *(Trafic estimé mensuel : " + Math.round(piste.tec).toLocaleString('fr-FR') + ")* :\n";
                             piste.kws.forEach(function(kwItem) {
                                 kwStr += "    • « " + kwItem.kw + " », recherché " + kwItem.vol.toLocaleString('fr-FR') + " fois par mois, en position " + kwItem.pos + "\n";
                             });
@@ -2585,7 +2585,7 @@
                             html += '<div class="edito-stat-row">';
                             html += '<div class="edito-stat-icon" style="background:#e6f4ea; color:#137333;">🔥</div>';
                             html += '<div>';
-                            html += '<div style="margin-bottom: 5px;">' + piste.kwTop10 + ' mots-clés positionnés en top 10 <strong style="color:#f67604;">(Trafic estimé : ' + Math.round(piste.tec).toLocaleString('fr-FR') + ')</strong> :</div>';
+                            html += '<div style="margin-bottom: 5px;">' + piste.kwTop10 + ' mots-clés positionnés en top 10 <strong style="color:#f67604;">(Trafic estimé mensuel : ' + Math.round(piste.tec).toLocaleString('fr-FR') + ')</strong> :</div>';
                             html += '<ul class="edito-kw-list">';
                             piste.kws.forEach(function(kwItem) {
                                 html += '<li>« ' + kwItem.kw + ' », recherché ' + kwItem.vol.toLocaleString('fr-FR') + ' fois par mois, en position ' + kwItem.pos + '</li>';
