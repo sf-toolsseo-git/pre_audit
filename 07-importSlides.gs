@@ -989,378 +989,6 @@ function exporterUXSlides() {
     }
 }
 
-var ANNUAIRE_CONTACTS = {
-    "Commerciaux": {
-        "Achille": { nom: "Achille Catel", poste: "Fondateur et Président", email: "achille.catel@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Quentin": { nom: "Quentin Pareyn", poste: "DG Adjoint Associé", email: "quentin.pareyn@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Sylvain": { nom: "Sylvain Peran", poste: "Chargé de Clientèle Digitale", email: "sylvain.peran@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Guillaume": { nom: "Guillaume Pivaut", poste: "Chargé de Clientèle Digitale", email: "guillaume.pivaut@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" }
-    },
-    "Consultants": {
-        "Benjamin": { nom: "Benjamin Gennequin", poste: "Team Lead SEO", email: "benjamin.gennequin@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Robin": { nom: "Robin Ansaldi", poste: "Expert SEO Confirmé", email: "robin.ansaldi@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Léa": { nom: "Léa Deshayes", poste: "Experte SEO Confirmée", email: "lea.deshayes@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Claire": { nom: "Claire Chamaillard", poste: "Experte SEO Confirmée", email: "claire.chamaillard@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
-        "Philippe": { nom: "Philippe Vesin", poste: "Team Lead SEO", email: "philippe.vesin@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" }
-    }
-};
-
-function exporterContactsSlides() {
-    try {
-        Logger.log("=== DÉBUT : exporterContactsSlides ===");
-        var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
-
-        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
-        var presentation = SlidesApp.openById(slideId);
-        var slides = presentation.getSlides();
-
-        var confCom = props['CONF_CONTACT_COM'] || "Achille";
-        var confCons1 = props['CONF_CONTACT_CONS1'] || "Benjamin";
-        var confCons2 = props['CONF_CONTACT_CONS2'] || "Aucun";
-
-        var dataCom = ANNUAIRE_CONTACTS["Commerciaux"][confCom];
-        var dataCons1 = ANNUAIRE_CONTACTS["Consultants"][confCons1];
-        var dataCons2 = (confCons2 !== "Aucun") ? ANNUAIRE_CONTACTS["Consultants"][confCons2] : null;
-
-        var textReplaceMapping = {};
-        if (dataCom) {
-            textReplaceMapping['{{NOM_COM}}'] = dataCom.nom;
-            textReplaceMapping['{{POSTE_COM}}'] = dataCom.poste;
-            textReplaceMapping['{{EMAIL_COM}}'] = dataCom.email;
-        }
-        if (dataCons1) {
-            textReplaceMapping['{{NOM_CONS1}}'] = dataCons1.nom;
-            textReplaceMapping['{{POSTE_CONS1}}'] = dataCons1.poste;
-            textReplaceMapping['{{EMAIL_CONS1}}'] = dataCons1.email;
-        }
-        if (dataCons2) {
-            textReplaceMapping['{{NOM_CONS2}}'] = dataCons2.nom;
-            textReplaceMapping['{{POSTE_CONS2}}'] = dataCons2.poste;
-            textReplaceMapping['{{EMAIL_CONS2}}'] = dataCons2.email;
-        } else {
-            textReplaceMapping['{{NOM_CONS2}}'] = "";
-            textReplaceMapping['{{POSTE_CONS2}}'] = "";
-            textReplaceMapping['{{EMAIL_CONS2}}'] = "";
-        }
-
-        slides.forEach(function(slide) {
-            // Replace texts
-            var shapesText = slide.getShapes();
-            shapesText.forEach(function(shape) {
-                var shapeText = "";
-                try {
-                    shapeText = shape.getText().asString();
-                } catch(e) {}
-
-                if (shapeText && shapeText.indexOf("{{") !== -1) {
-                    for (var key in textReplaceMapping) {
-                        if (shapeText.indexOf(key) !== -1) {
-                            shape.getText().replaceText(key, textReplaceMapping[key]);
-                        }
-                    }
-                }
-            });
-
-            // Replace images based on description
-            var shapesImg = slide.getShapes();
-            shapesImg.forEach(function(shape) {
-                var descRaw = shape.getDescription() || "";
-
-                var targetDriveId = null;
-                var shouldRemove = false;
-
-                if (descRaw === "PLACEHOLDER_CONTACT_COM" && dataCom) {
-                    targetDriveId = dataCom.driveId;
-                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS1" && dataCons1) {
-                    targetDriveId = dataCons1.driveId;
-                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS2") {
-                    if (dataCons2) {
-                        targetDriveId = dataCons2.driveId;
-                    } else {
-                        shouldRemove = true;
-                    }
-                }
-
-                if (shouldRemove) {
-                    shape.remove();
-                } else if (targetDriveId && targetDriveId !== "ID_DRIVE_A_REMPLIR") {
-                    try {
-                        var file = DriveApp.getFileById(targetDriveId);
-                        var blob = file.getBlob();
-                        shape.replaceWithImage(blob, true);
-                    } catch (e) {
-                        Logger.log("Erreur remplacement image contact pour " + descRaw + " : " + e.message);
-                    }
-                }
-            });
-        });
-
-        Logger.log("=== FIN : exporterContactsSlides ===");
-        return { success: true, url: presentation.getUrl() };
-    } catch (e) {
-        Logger.log("ERREUR CRITIQUE EXPORT CONTACTS : " + e.message);
-        return { success: false, error: e.message };
-    }
-}
-
-function exporterContenuSlides() {
-    Logger.log("=== DÉBUT : exporterContenuSlides ===");
-    try {
-        var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
-
-        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
-        
-        Logger.log("Ouverture de la présentation ID : " + slideId);
-        var presentation = SlidesApp.openById(slideId);
-        var slides = presentation.getSlides();
-
-        // ---------------------------------------------------------
-        // FONCTIONS UTILITAIRES ENCAPSULÉES
-        // ---------------------------------------------------------
-
-        function formatRichTextContenu(shape) {
-            Logger.log("  [Markdown] Traitement de la forme : " + shape.getDescription());
-            try {
-                var textRange = shape.getText();
-                var textStr = textRange.asString();
-                
-                // 1. Gras standard (**)
-                var regexGras = /\*\*([^*]+)\*\*/g;
-                var matchesGras = [];
-                var match;
-                while ((match = regexGras.exec(textStr)) !== null) {
-                    matchesGras.push({ start: match.index, text: match[1], length: match[0].length });
-                }
-                for (var i = matchesGras.length - 1; i >= 0; i--) {
-                    var m = matchesGras[i];
-                    textRange.getRange(m.start + m.text.length + 2, m.start + m.text.length + 4).clear();
-                    textRange.getRange(m.start, m.start + 2).clear();
-                    textRange.getRange(m.start, m.start + m.text.length).getTextStyle().setBold(true);
-                }
-                
-                // 2. Gras orange (*)
-                textStr = textRange.asString();
-                var regexOrange = /\*([^*]+)\*/g;
-                var matchesOrange = [];
-                while ((match = regexOrange.exec(textStr)) !== null) {
-                    matchesOrange.push({ start: match.index, text: match[1], length: match[0].length });
-                }
-                for (var j = matchesOrange.length - 1; j >= 0; j--) {
-                    var mo = matchesOrange[j];
-                    textRange.getRange(mo.start + mo.text.length + 1, mo.start + mo.text.length + 2).clear();
-                    textRange.getRange(mo.start, mo.start + 1).clear();
-                    textRange.getRange(mo.start, mo.start + mo.text.length).getTextStyle().setBold(true).setForegroundColor("#f67604");
-                }
-            } catch (e) {
-                Logger.log("  [Erreur Markdown] " + e.message);
-            }
-        }
-
-        function colorerScore1fr(shape, scoreStr) {
-            Logger.log("  [Couleur 1.fr] Évaluation du score : " + scoreStr);
-            try {
-                var val = parseInt(scoreStr.replace(/[^0-9]/g, ''), 10);
-                if (isNaN(val)) {
-                    Logger.log("  [Couleur 1.fr] Score invalide, ignoré.");
-                    return;
-                }
-                var color = "#ff0000"; // < 60%
-                if (val >= 80) color = "#00b050";
-                else if (val >= 60) color = "#f67604";
-                
-                Logger.log("  [Couleur 1.fr] Valeur extraite : " + val + " -> Couleur appliquée : " + color);
-                shape.getFill().setSolidFill(color);
-                shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
-            } catch (e) {
-                Logger.log("  [Erreur Couleur 1.fr] " + e.message);
-            }
-        }
-
-        function colorerScoreYTG(shape, scoreStr, cibleStr) {
-            Logger.log("  [Couleur YTG] Évaluation du score : " + scoreStr + " (Cible : " + cibleStr + ")");
-            try {
-                var score = parseInt(scoreStr.replace(/[^0-9]/g, ''), 10);
-                if (isNaN(score)) {
-                    Logger.log("  [Couleur YTG] Score invalide, ignoré.");
-                    return;
-                }
-
-                var min = 0, max = 999;
-                var parts = cibleStr.split('-');
-                if (parts.length === 2) {
-                    min = parseInt(parts[0].replace(/[^0-9]/g, ''), 10);
-                    max = parseInt(parts[1].replace(/[^0-9]/g, ''), 10);
-                } else {
-                    min = parseInt(cibleStr.replace(/[^0-9]/g, ''), 10);
-                    max = min;
-                }
-                if (isNaN(min)) min = 0;
-                if (isNaN(max)) max = 999;
-
-                Logger.log("  [Couleur YTG] Fourchette cible parsée : [" + min + " - " + max + "]");
-
-                var color = "#ff0000";
-                if (score >= min && score <= max) {
-                    color = "#00b050"; // Dans la fourchette
-                    Logger.log("  [Couleur YTG] Résultat : Dans la cible -> Vert");
-                } else if ((score >= min - 15 && score < min) || (score > max && score <= max + 15)) {
-                    color = "#f67604"; // Tolérance 15 pts
-                    Logger.log("  [Couleur YTG] Résultat : Dans la marge de tolérance (+/- 15) -> Orange");
-                } else {
-                    Logger.log("  [Couleur YTG] Résultat : Hors tolérance -> Rouge");
-                }
-                
-                shape.getFill().setSolidFill(color);
-                shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
-            } catch (e) {
-                Logger.log("  [Erreur Couleur YTG] " + e.message);
-            }
-        }
-
-        function insererEtRognerImage(slide, shape, fileId, description, cropId) {
-            Logger.log("  [Image] Début traitement pour : " + description + " (ID Drive : " + fileId + ")");
-            try {
-                var finalFileId = fileId;
-                if (cropId && cropId !== "") {
-                    finalFileId = cropId;
-                    Logger.log("  [Image] Utilisation du Crop de secours : " + cropId);
-                }
-                
-                if (!finalFileId) throw new Error("ID Drive manquant.");
-                var file = DriveApp.getFileById(finalFileId);
-                var blob = file.getBlob().getAs(MimeType.JPEG);
-                
-                if (blob.getBytes().length === 0) {
-                    throw new Error("Le fichier est vide ou corrompu.");
-                }
-
-                Logger.log("  [Image] Remplacement natif avec option crop=true (Fill Box)...");
-                // Le paramètre "true" force l'image à remplir totalement le placeholder sans le déformer.
-                // Il applique un "Center Crop" automatique. Cela préserve le Z-index, le groupe, et les styles.
-                var img = shape.replaceWithImage(blob, true);
-                
-                // On lit les valeurs de rognage calculées automatiquement par l'API
-                var currentCropTop = img.getCropTop();
-                var currentCropBottom = img.getCropBottom();
-                var totalVerticalCrop = currentCropTop + currentCropBottom;
-                
-                // On décale le "fenêtrage" vers le haut : on met le rognage haut à 0 
-                // et on reporte la totalité du rognage sur le bas.
-                img.setCropTop(0);
-                img.setCropBottom(totalVerticalCrop);
-
-                img.setDescription(description);
-                Logger.log("  [Image] Rognage ajusté vers le haut (Top: 0, Bottom: " + totalVerticalCrop.toFixed(4) + ").");
-            } catch (e) {
-                Logger.log("  [Erreur Image] Échec pour " + description + " : " + e.message);
-            }
-        }
-
-        // ---------------------------------------------------------
-        // MAPPING ET BOUCLE PRINCIPALE
-        // ---------------------------------------------------------
-
-        var textMapping = {
-            'TITRE_SLIDE_CONTENU_CLIENT': props['TITRE_SLIDE_CONTENU_CLIENT'] || "",
-            'TITRE_SLIDE_CONTENU_CONCURRENT': props['TITRE_SLIDE_CONTENU_CONCURRENT'] || "",
-            'CONTENU_STRUCTURE_CLIENT': props['CONTENU_STRUCTURE_CLIENT'] || "",
-            'CONTENU_YTG_CLIENT': props['CONTENU_YTG_CLIENT'] || "",
-            'CONTENU_1FR_CLIENT': props['CONTENU_1FR_CLIENT'] || "",
-            'CONTENU_STRUCTURE_CONCURRENT': props['CONTENU_STRUCTURE_CONCURRENT'] || "",
-            'CONTENU_YTG_CONCURRENT': props['CONTENU_YTG_CONCURRENT'] || "",
-            'CONTENU_1FR_CONCURRENT': props['CONTENU_1FR_CONCURRENT'] || ""
-        };
-
-        var cibleYTG = props['CONTENU_YTG_CIBLE'] || "";
-        var clientFullId = props['UX_CLIENT_FULL_ID'];
-        var compFullId = props['UX_COMP_FULL_ID'];
-        var clientCropId = props['UX_CLIENT_CROP_ID'];
-        var compCropId = props['UX_COMP_CROP_ID'];
-
-        Logger.log("Début du parcours récursif des slides...");
-
-        slides.forEach(function(slide, slideIndex) {
-            
-            function processElement(element) {
-                var type = element.getPageElementType();
-                
-                if (type === SlidesApp.PageElementType.GROUP) {
-                    element.asGroup().getChildren().forEach(processElement);
-                } 
-                else if (type === SlidesApp.PageElementType.SHAPE) {
-                    var shape = element.asShape();
-                    var descRaw = shape.getDescription() || "";
-
-                    if (descRaw !== "") {
-                        // 1. Textes classiques avec Markdown
-                        if (textMapping[descRaw] !== undefined) {
-                            Logger.log("Remplacement du texte pour : " + descRaw);
-                            shape.getText().setText(String(textMapping[descRaw]));
-                            formatRichTextContenu(shape);
-                            return;
-                        }
-
-                        // 2. Cible YTG (texte simple)
-                        if (descRaw === 'CONTENU_YTG_CIBLE') {
-                            Logger.log("Remplacement de la cible YTG");
-                            shape.getText().setText(String(cibleYTG));
-                            return;
-                        }
-
-                        // 3. Scores 1.fr
-                        if (descRaw === 'CONTENU_1FR_SCORE_CLIENT') {
-                            var score = props['CONTENU_1FR_SCORE_CLIENT'] || "";
-                            shape.getText().setText(String(score));
-                            colorerScore1fr(shape, score);
-                            return;
-                        }
-                        if (descRaw === 'CONTENU_1FR_SCORE_CONCURRENT') {
-                            var scoreComp = props['CONTENU_1FR_SCORE_CONCURRENT'] || "";
-                            shape.getText().setText(String(scoreComp));
-                            colorerScore1fr(shape, scoreComp);
-                            return;
-                        }
-
-                        // 4. Scores YTG
-                        if (descRaw === 'CONTENU_YTG_SCORE_CLIENT') {
-                            var scoreYtgCli = props['CONTENU_YTG_SCORE_CLIENT'] || "";
-                            shape.getText().setText(String(scoreYtgCli));
-                            colorerScoreYTG(shape, scoreYtgCli, cibleYTG);
-                            return;
-                        }
-                        if (descRaw === 'CONTENU_YTG_SCORE_CONCURRENT') {
-                            var scoreYtgComp = props['CONTENU_YTG_SCORE_CONCURRENT'] || "";
-                            shape.getText().setText(String(scoreYtgComp));
-                            colorerScoreYTG(shape, scoreYtgComp, cibleYTG);
-                            return;
-                        }
-
-                        // 5. Images Full Page
-                        if (descRaw === 'PLACEHOLDER_CONTENU_CLIENT') {
-                            insererEtRognerImage(slide, shape, clientFullId, descRaw, clientCropId);
-                            return;
-                        }
-                        if (descRaw === 'PLACEHOLDER_CONTENU_CONCURRENT') {
-                            insererEtRognerImage(slide, shape, compFullId, descRaw, compCropId);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            slide.getPageElements().forEach(processElement);
-        });
-
-        Logger.log("=== FIN : exporterContenuSlides (Succès) ===");
-        return { success: true, url: presentation.getUrl() };
-    } catch (e) {
-        Logger.log("ERREUR CRITIQUE EXPORT CONTENU : " + e.message);
-        return { success: false, error: e.message };
-    }
-}
-
 function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) {
     try {
         Logger.log("=== DÉBUT : exporterEditorialSlides ===");
@@ -1577,6 +1205,136 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
         return { success: true, url: presentation.getUrl() };
     } catch (e) {
         Logger.log("ERREUR CRITIQUE EXPORT EDITORIAL : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
+var ANNUAIRE_CONTACTS = {
+    "Commerciaux": {
+        "Achille": { nom: "Achille Catel", poste: "Fondateur et Président", email: "achille.catel@search-factory.fr", driveId: "1QxX01BfLW5-oGHVdGnYHjB15BYDx1B8Q" },
+        "Quentin": { nom: "Quentin Pareyn", poste: "DG Adjoint Associé", email: "quentin.pareyn@search-factory.fr", driveId: "1o_uePHn_VcbSTW3va8o56cvzIAhAjB5N" },
+        "Sylvain": { nom: "Sylvain Peran", poste: "Chargé de Clientèle Digitale", email: "sylvain.peran@search-factory.fr", driveId: "1B2BohTw0jZDJUE_DENMz4eKoaJLI4cql" }
+    },
+    "Consultants": {
+        "Benjamin": { nom: "Benjamin Gennequin", poste: "Team Lead SEO", email: "benjamin.gennequin@search-factory.fr", driveId: "16uLGck2QSJTrduHYnM-1JPjH2PiWaes8" },
+        "Robin": { nom: "Robin Ansaldi", poste: "Expert SEO Confirmé", email: "robin.ansaldi@search-factory.fr", driveId: "1Z8MWV5bF6WIKWvdUKPsHmluoVn8wZlN8" },
+        "Léa": { nom: "Léa Deshayes", poste: "Experte SEO Confirmée", email: "lea.deshayes@search-factory.fr", driveId: "15M-xda-jDSVD0N9Wx0km-bZ4LkWEWdyN" },
+        "Claire": { nom: "Claire Chamaillard", poste: "Experte SEO Confirmée", email: "claire.chamaillard@search-factory.fr", driveId: "1ARiBcwRkf1bICZMSgoLktkDyHqXh8_rn" },
+        "Philippe": { nom: "Philippe Vesin", poste: "Team Lead SEO", email: "philippe.vesin@search-factory.fr", driveId: "1xw6tdoYYaN-utsqU60Q95EUD_O99AqWg" }
+    }
+};
+
+function exporterContactsSlides() {
+    try {
+        Logger.log("=== DÉBUT : exporterContactsSlides ===");
+        var props = getDatabaseData();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        var confCom = props['CONF_CONTACT_COM'] || "Achille";
+        var confCons1 = props['CONF_CONTACT_CONS1'] || "Benjamin";
+        var confCons2 = props['CONF_CONTACT_CONS2'] || "Aucun";
+
+        var dataCom = ANNUAIRE_CONTACTS["Commerciaux"][confCom];
+        var dataCons1 = ANNUAIRE_CONTACTS["Consultants"][confCons1];
+        var dataCons2 = (confCons2 !== "Aucun") ? ANNUAIRE_CONTACTS["Consultants"][confCons2] : null;
+
+        var textReplaceMapping = {};
+        if (dataCom) {
+            textReplaceMapping['{{NOM_COM}}'] = dataCom.nom;
+            textReplaceMapping['{{POSTE_COM}}'] = dataCom.poste;
+            textReplaceMapping['{{EMAIL_COM}}'] = dataCom.email;
+        }
+        if (dataCons1) {
+            textReplaceMapping['{{NOM_CONS1}}'] = dataCons1.nom;
+            textReplaceMapping['{{POSTE_CONS1}}'] = dataCons1.poste;
+            textReplaceMapping['{{EMAIL_CONS1}}'] = dataCons1.email;
+        }
+        if (dataCons2) {
+            textReplaceMapping['{{NOM_CONS2}}'] = dataCons2.nom;
+            textReplaceMapping['{{POSTE_CONS2}}'] = dataCons2.poste;
+            textReplaceMapping['{{EMAIL_CONS2}}'] = dataCons2.email;
+        } else {
+            textReplaceMapping['{{NOM_CONS2}}'] = "";
+            textReplaceMapping['{{POSTE_CONS2}}'] = "";
+            textReplaceMapping['{{EMAIL_CONS2}}'] = "";
+        }
+
+        slides.forEach(function(slide) {
+            var shapesText = slide.getShapes();
+            shapesText.forEach(function(shape) {
+                var shapeText = "";
+                try {
+                    shapeText = shape.getText().asString();
+                } catch(e) {}
+
+                if (shapeText && shapeText.indexOf("{{") !== -1) {
+                    for (var key in textReplaceMapping) {
+                        if (shapeText.indexOf(key) !== -1) {
+                            var value = textReplaceMapping[key];
+                            var textRange = shape.getText();
+                            
+                            // Remplacement global du tag par la valeur
+                            textRange.replaceAllText(key, value);
+                            
+                            // Si c'est un email, on repère ses nouvelles coordonnées textuelles pour appliquer le lien
+                            if (key.indexOf('EMAIL') !== -1 && value !== "") {
+                                var newTextStr = textRange.asString();
+                                var searchIndex = 0;
+                                while ((searchIndex = newTextStr.indexOf(value, searchIndex)) !== -1) {
+                                    var emailRange = textRange.getRange(searchIndex, searchIndex + value.length);
+                                    emailRange.getTextStyle().setLinkUrl("mailto:" + value);
+                                    searchIndex += value.length;
+                                }
+                            }
+                            
+                            // Actualisation de shapeText pour l'itération des variables suivantes
+                            shapeText = textRange.asString();
+                        }
+                    }
+                }
+            });
+
+            var shapesImg = slide.getShapes();
+            shapesImg.forEach(function(shape) {
+                var descRaw = shape.getDescription() || "";
+
+                var targetDriveId = null;
+                var shouldRemove = false;
+
+                if (descRaw === "PLACEHOLDER_CONTACT_COM" && dataCom) {
+                    targetDriveId = dataCom.driveId;
+                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS1" && dataCons1) {
+                    targetDriveId = dataCons1.driveId;
+                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS2") {
+                    if (dataCons2) {
+                        targetDriveId = dataCons2.driveId;
+                    } else {
+                        shouldRemove = true;
+                    }
+                }
+
+                if (shouldRemove) {
+                    shape.remove();
+                } else if (targetDriveId && targetDriveId !== "ID_DRIVE_A_REMPLIR") {
+                    try {
+                        var file = DriveApp.getFileById(targetDriveId);
+                        var blob = file.getBlob();
+                        shape.replaceWithImage(blob, true);
+                    } catch (e) {
+                        Logger.log("Erreur remplacement image contact pour " + descRaw + " : " + e.message);
+                    }
+                }
+            });
+        });
+
+        Logger.log("=== FIN : exporterContactsSlides ===");
+        return { success: true, url: presentation.getUrl() };
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT CONTACTS : " + e.message);
         return { success: false, error: e.message };
     }
 }
