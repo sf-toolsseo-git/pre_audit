@@ -42,7 +42,8 @@ function chargerConfigurationPreAudit() {
         'CONTENU_1FR_DATA_CONCURRENT', 'CONTENU_SCRAPED_CONCURRENT', 'TITRE_SLIDE_CONTENU_CONCURRENT',
         'TITRE_SLIDE_CONCURRENCE_EDITO', 'BLOG_CLIENT_EDITO', 'BLOG_LEADER_EDITO', 'BLOG_COMP1_EDITO',
         'BLOG_COMP2_EDITO', 'BLOG_COMP3_EDITO', 'BLOG_COMP4_EDITO', 'TITRE_SLIDE_THEMATIQUE_EDITO',
-        'NOM_CONTENU_1', 'NOM_CONTENU_2', 'NOM_CONTENU_3'
+        'NOM_CONTENU_1', 'NOM_CONTENU_2', 'NOM_CONTENU_3',
+        'CONF_CONTACT_COM', 'CONF_CONTACT_CONS1', 'CONF_CONTACT_CONS2'
     ];
     
     var props = getDatabaseData(keys);
@@ -214,7 +215,11 @@ function chargerConfigurationPreAudit() {
         titreSlideThematiqueEdito: props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "",
         nomContenu1: props['NOM_CONTENU_1'] || "",
         nomContenu2: props['NOM_CONTENU_2'] || "",
-        nomContenu3: props['NOM_CONTENU_3'] || ""
+        nomContenu3: props['NOM_CONTENU_3'] || "",
+        
+        contactCom: props['CONF_CONTACT_COM'] || "Achille",
+        contactCons1: props['CONF_CONTACT_CONS1'] || "Benjamin",
+        contactCons2: props['CONF_CONTACT_CONS2'] || "Aucun"
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -676,7 +681,10 @@ function sauvegarderConfigurationPreAudit(form) {
         'PA_SLIDE_ID': form.slideId || "",
         'PA_BRIEF_CONSULTANT': form.brief || "",
         'PA_URL_FORM_REPONSES': form.urlReponses || "",
-        'PA_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
+        'PA_PROFILAGE_COMMERCIAL': form.contextePreaudit || "",
+        'CONF_CONTACT_COM': form.contactCom || "",
+        'CONF_CONTACT_CONS1': form.contactCons1 || "",
+        'CONF_CONTACT_CONS2': form.contactCons2 || ""
     });
     
     Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");

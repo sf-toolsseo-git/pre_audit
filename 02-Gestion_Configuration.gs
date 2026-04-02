@@ -97,7 +97,8 @@ function chargerDonneesInitiales() {
         'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_STRENGTH_4', 'CONF_COMP_BRAND_4',
         'CONF_COMP_NAME_5', 'CONF_COMP_URL_5', 'CONF_COMP_STRENGTH_5', 'CONF_COMP_BRAND_5',
         'CTR_POS_1', 'CTR_POS_2', 'CTR_POS_3', 'CTR_POS_4', 'CTR_POS_5',
-        'CTR_POS_6', 'CTR_POS_7', 'CTR_POS_8', 'CTR_POS_9', 'CTR_POS_10'
+        'CTR_POS_6', 'CTR_POS_7', 'CTR_POS_8', 'CTR_POS_9', 'CTR_POS_10',
+        'CONF_CONTACT_COM', 'CONF_CONTACT_CONS1', 'CONF_CONTACT_CONS2'
     ];
     
     var props = getDatabaseData(keys);
@@ -131,7 +132,10 @@ function chargerDonneesInitiales() {
         competitorName5: props['CONF_COMP_NAME_5'] || "",
         competitor5: props['CONF_COMP_URL_5'] || "",
         competitorStrength5: props['CONF_COMP_STRENGTH_5'] || "moyenne",
-        competitorBrand5: props['CONF_COMP_BRAND_5'] || ""
+        competitorBrand5: props['CONF_COMP_BRAND_5'] || "",
+        contactCom: props['CONF_CONTACT_COM'] || "Achille",
+        contactCons1: props['CONF_CONTACT_CONS1'] || "Benjamin",
+        contactCons2: props['CONF_CONTACT_CONS2'] || "Aucun"
     };
     function parseAndMigrateCTR(val, defaultVal) {
         if (val === undefined || val === null || String(val).trim() === "") return defaultVal;
@@ -198,7 +202,10 @@ function enregistrerConfiguration(formulaire) {
         'CTR_POS_7': formulaire.ctrPos7,
         'CTR_POS_8': formulaire.ctrPos8,
         'CTR_POS_9': formulaire.ctrPos9,
-        'CTR_POS_10': formulaire.ctrPos10
+        'CTR_POS_10': formulaire.ctrPos10,
+        'CONF_CONTACT_COM': formulaire.contactCom,
+        'CONF_CONTACT_CONS1': formulaire.contactCons1,
+        'CONF_CONTACT_CONS2': formulaire.contactCons2
     });
     
     Logger.log("=== FIN : enregistrerConfiguration ===");
@@ -1134,7 +1141,7 @@ function initFormatConfigSheet() {
 
     // Définition des clés par groupe (sans les fausses clés BORDER)
     var keysByGroup = {
-        0: ["CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID", "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5", "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10", "PA_URLS_CONTEXTE", "PA_CONTEXTE_CLIENT", "PA_BRIEF_CONSULTANT", "PA_URL_FORM_REPONSES", "PA_PROFILAGE_COMMERCIAL"],
+        0: ["CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID", "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5", "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10", "PA_URLS_CONTEXTE", "PA_CONTEXTE_CLIENT", "PA_BRIEF_CONSULTANT", "PA_URL_FORM_REPONSES", "PA_PROFILAGE_COMMERCIAL", "CONF_CONTACT_COM", "CONF_CONTACT_CONS1", "CONF_CONTACT_CONS2"],
         3: ["TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_BESOIN", "TAG_SLIDE_SOLUTION_HTML", "TAG_SLIDE_SOLUTION", "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"],
         6: ["TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_SELECTION"],
         9: ["TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION", "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_standard_texte_2", "focus_standard_texte_3", "focus_semantique_texte_1", "focus_semantique_texte_2", "focus_semantique_texte_3", "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"],

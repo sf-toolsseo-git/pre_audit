@@ -191,6 +191,48 @@
         <div class="tab-content active" id="content-config">
             <div class="main-area">
                 <div class="config-card">
+                    <h2 class="section-title">Choix des intervenants</h2>
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Commercial (obligatoire)</label>
+                            <select id="conf-contact-com" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px;">
+                                <option value="Achille">Achille</option>
+                                <option value="Quentin">Quentin</option>
+                                <option value="Sylvain">Sylvain</option>
+                                <option value="Guillaume">Guillaume</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="input-label">Consultant SEO principal (obligatoire)</label>
+                            <select id="conf-contact-cons1" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px;">
+                                <option value="Benjamin">Benjamin</option>
+                                <option value="Robin">Robin</option>
+                                <option value="Léa">Léa</option>
+                                <option value="Claire">Claire</option>
+                                <option value="Philippe">Philippe</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="input-label">Consultant SEO secondaire (optionnel)</label>
+                            <select id="conf-contact-cons2" style="width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-family: inherit; font-size: 14px;">
+                                <option value="Aucun" selected>Aucun</option>
+                                <option value="Benjamin">Benjamin</option>
+                                <option value="Robin">Robin</option>
+                                <option value="Léa">Léa</option>
+                                <option value="Claire">Claire</option>
+                                <option value="Philippe">Philippe</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="text-align:center; margin-top: 15px;">
+                        <button type="button" class="btn" onclick="lancerExportContacts(this)">Générer la slide Contacts</button>
+                    </div>
+                    <div id="msgExportContacts" style="text-align:center; margin-top: 10px; font-size: 13px; font-weight: bold;"></div>
+                </div>
+
+                <hr class="section-separator">
+
+                <div class="config-card">
                     <h2 class="section-title">Projet</h2>
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col">
@@ -1076,6 +1118,10 @@
                         window.globalConfig = config || {}; 
                         if (config) {
                             // Onglet 1
+                            if (config.contactCom) document.getElementById('conf-contact-com').value = config.contactCom;
+                            if (config.contactCons1) document.getElementById('conf-contact-cons1').value = config.contactCons1;
+                            if (config.contactCons2) document.getElementById('conf-contact-cons2').value = config.contactCons2;
+
                             document.getElementById('conf-client-name').value = config.clientName;
                             document.getElementById('conf-client-url').value = config.clientUrl;
                             document.getElementById('conf-urls-contexte').value = config.urlsContexte;
@@ -1463,6 +1509,43 @@
 
             // ========================== ONGLET 1 ==========================
 
+            function lancerExportContacts(btn) {
+                btn.disabled = true;
+                var originalText = btn.innerText;
+                btn.innerText = "⏳ Génération en cours...";
+                var msgDiv = document.getElementById('msgExportContacts');
+                msgDiv.innerText = "";
+                msgDiv.style.color = "";
+
+                // On sauvegarde d'abord la config pour être sûr d'avoir les choix en base
+                sauvegarderConfiguration();
+
+                // Lancement de l'export
+                google.script.run
+                    .withSuccessHandler(function(res) {
+                        if (res.success) {
+                            msgDiv.innerHTML = '✅ Slide générée ! <a href="' + res.url + '" target="_blank" style="color:#1a73e8; text-decoration:underline;">Ouvrir la présentation</a>';
+                            msgDiv.style.color = "#137333";
+                        } else {
+                            msgDiv.innerText = "❌ Erreur : " + res.error;
+                            msgDiv.style.color = "#d93025";
+                        }
+                        setTimeout(function() {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 3000);
+                    })
+                    .withFailureHandler(function(err) {
+                        msgDiv.innerText = "❌ Erreur critique : " + err.message;
+                        msgDiv.style.color = "#d93025";
+                        setTimeout(function() {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }, 3000);
+                    })
+                    .exporterContactsSlides();
+            }
+
             function sauvegarderConfiguration() {
                 var btn = document.getElementById('btn-save-config');
                 var msg = document.getElementById('save-config-msg');
@@ -1475,7 +1558,10 @@
                     slideId: document.getElementById('conf-slide-id').value,
                     brief: document.getElementById('conf-brief').value,
                     urlReponses: document.getElementById('conf-url-reponses').value,
-                    contextePreaudit: document.getElementById('conf-contexte-preaudit').value
+                    contextePreaudit: document.getElementById('conf-contexte-preaudit').value,
+                    contactCom: document.getElementById('conf-contact-com').value,
+                    contactCons1: document.getElementById('conf-contact-cons1').value,
+                    contactCons2: document.getElementById('conf-contact-cons2').value
                 };
 
                 btn.disabled = true;
@@ -2551,7 +2637,7 @@
                             var valNom = conf['nomContenu' + nomContenuIdx] || "";
                             
                             // FORMATAGE POUR GOOGLE SLIDES (avec astérisques et sans "exemples")
-                            var kwStr = piste.kwTop10 + " mots-clés positionnés en top 10 *(Trafic estimé mensuel : " + Math.round(piste.tec).toLocaleString('fr-FR') + ")* :\n";
+                            var kwStr = piste.kwTop10 + " mots-clés positionnés en top 10 *(Trafic mensuel estimé : " + Math.round(piste.tec).toLocaleString('fr-FR') + ")* :\n";
                             piste.kws.forEach(function(kwItem) {
                                 kwStr += "    • « " + kwItem.kw + " », recherché " + kwItem.vol.toLocaleString('fr-FR') + " fois par mois, en position " + kwItem.pos + "\n";
                             });
@@ -2585,7 +2671,7 @@
                             html += '<div class="edito-stat-row">';
                             html += '<div class="edito-stat-icon" style="background:#e6f4ea; color:#137333;">🔥</div>';
                             html += '<div>';
-                            html += '<div style="margin-bottom: 5px;">' + piste.kwTop10 + ' mots-clés positionnés en top 10 <strong style="color:#f67604;">(Trafic estimé mensuel : ' + Math.round(piste.tec).toLocaleString('fr-FR') + ')</strong> :</div>';
+                            html += '<div style="margin-bottom: 5px;">' + piste.kwTop10 + ' mots-clés positionnés en top 10 <strong style="color:#f67604;">(Trafic mensuel estimé : ' + Math.round(piste.tec).toLocaleString('fr-FR') + ')</strong> :</div>';
                             html += '<ul class="edito-kw-list">';
                             piste.kws.forEach(function(kwItem) {
                                 html += '<li>« ' + kwItem.kw + ' », recherché ' + kwItem.vol.toLocaleString('fr-FR') + ' fois par mois, en position ' + kwItem.pos + '</li>';

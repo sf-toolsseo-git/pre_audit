@@ -989,6 +989,121 @@ function exporterUXSlides() {
     }
 }
 
+var ANNUAIRE_CONTACTS = {
+    "Commerciaux": {
+        "Achille": { nom: "Achille Catel", poste: "Fondateur et Président", email: "achille.catel@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Quentin": { nom: "Quentin Pareyn", poste: "DG Adjoint Associé", email: "quentin.pareyn@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Sylvain": { nom: "Sylvain Peran", poste: "Chargé de Clientèle Digitale", email: "sylvain.peran@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Guillaume": { nom: "Guillaume Pivaut", poste: "Chargé de Clientèle Digitale", email: "guillaume.pivaut@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" }
+    },
+    "Consultants": {
+        "Benjamin": { nom: "Benjamin Gennequin", poste: "Team Lead SEO", email: "benjamin.gennequin@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Robin": { nom: "Robin Ansaldi", poste: "Expert SEO Confirmé", email: "robin.ansaldi@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Léa": { nom: "Léa Deshayes", poste: "Experte SEO Confirmée", email: "lea.deshayes@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Claire": { nom: "Claire Chamaillard", poste: "Experte SEO Confirmée", email: "claire.chamaillard@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" },
+        "Philippe": { nom: "Philippe Vesin", poste: "Team Lead SEO", email: "philippe.vesin@search-factory.fr", driveId: "ID_DRIVE_A_REMPLIR" }
+    }
+};
+
+function exporterContactsSlides() {
+    try {
+        Logger.log("=== DÉBUT : exporterContactsSlides ===");
+        var props = getDatabaseData();
+        var slideId = props['PA_SLIDE_ID'];
+
+        if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
+        var presentation = SlidesApp.openById(slideId);
+        var slides = presentation.getSlides();
+
+        var confCom = props['CONF_CONTACT_COM'] || "Achille";
+        var confCons1 = props['CONF_CONTACT_CONS1'] || "Benjamin";
+        var confCons2 = props['CONF_CONTACT_CONS2'] || "Aucun";
+
+        var dataCom = ANNUAIRE_CONTACTS["Commerciaux"][confCom];
+        var dataCons1 = ANNUAIRE_CONTACTS["Consultants"][confCons1];
+        var dataCons2 = (confCons2 !== "Aucun") ? ANNUAIRE_CONTACTS["Consultants"][confCons2] : null;
+
+        var textReplaceMapping = {};
+        if (dataCom) {
+            textReplaceMapping['{{NOM_COM}}'] = dataCom.nom;
+            textReplaceMapping['{{POSTE_COM}}'] = dataCom.poste;
+            textReplaceMapping['{{EMAIL_COM}}'] = dataCom.email;
+        }
+        if (dataCons1) {
+            textReplaceMapping['{{NOM_CONS1}}'] = dataCons1.nom;
+            textReplaceMapping['{{POSTE_CONS1}}'] = dataCons1.poste;
+            textReplaceMapping['{{EMAIL_CONS1}}'] = dataCons1.email;
+        }
+        if (dataCons2) {
+            textReplaceMapping['{{NOM_CONS2}}'] = dataCons2.nom;
+            textReplaceMapping['{{POSTE_CONS2}}'] = dataCons2.poste;
+            textReplaceMapping['{{EMAIL_CONS2}}'] = dataCons2.email;
+        } else {
+            textReplaceMapping['{{NOM_CONS2}}'] = "";
+            textReplaceMapping['{{POSTE_CONS2}}'] = "";
+            textReplaceMapping['{{EMAIL_CONS2}}'] = "";
+        }
+
+        slides.forEach(function(slide) {
+            // Replace texts
+            var shapesText = slide.getShapes();
+            shapesText.forEach(function(shape) {
+                var shapeText = "";
+                try {
+                    shapeText = shape.getText().asString();
+                } catch(e) {}
+
+                if (shapeText && shapeText.indexOf("{{") !== -1) {
+                    for (var key in textReplaceMapping) {
+                        if (shapeText.indexOf(key) !== -1) {
+                            shape.getText().replaceText(key, textReplaceMapping[key]);
+                        }
+                    }
+                }
+            });
+
+            // Replace images based on description
+            var shapesImg = slide.getShapes();
+            shapesImg.forEach(function(shape) {
+                var descRaw = shape.getDescription() || "";
+
+                var targetDriveId = null;
+                var shouldRemove = false;
+
+                if (descRaw === "PLACEHOLDER_CONTACT_COM" && dataCom) {
+                    targetDriveId = dataCom.driveId;
+                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS1" && dataCons1) {
+                    targetDriveId = dataCons1.driveId;
+                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS2") {
+                    if (dataCons2) {
+                        targetDriveId = dataCons2.driveId;
+                    } else {
+                        shouldRemove = true;
+                    }
+                }
+
+                if (shouldRemove) {
+                    shape.remove();
+                } else if (targetDriveId && targetDriveId !== "ID_DRIVE_A_REMPLIR") {
+                    try {
+                        var file = DriveApp.getFileById(targetDriveId);
+                        var blob = file.getBlob();
+                        shape.replaceWithImage(blob, true);
+                    } catch (e) {
+                        Logger.log("Erreur remplacement image contact pour " + descRaw + " : " + e.message);
+                    }
+                }
+            });
+        });
+
+        Logger.log("=== FIN : exporterContactsSlides ===");
+        return { success: true, url: presentation.getUrl() };
+    } catch (e) {
+        Logger.log("ERREUR CRITIQUE EXPORT CONTACTS : " + e.message);
+        return { success: false, error: e.message };
+    }
+}
+
 function exporterContenuSlides() {
     Logger.log("=== DÉBUT : exporterContenuSlides ===");
     try {
