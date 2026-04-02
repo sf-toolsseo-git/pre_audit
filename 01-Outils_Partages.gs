@@ -12,6 +12,7 @@ function onOpen() {
         .addItem('💾 Sauvegarder pré-audit', 'sauvegarderPreAudit')
         .addItem('🔄 Restaurer', 'restaurerProprietesDepuisConfig')
         .addItem('🔑 Clés API', 'afficherFenetreClesAPI')
+        .addItem('🩺 Diagnostic stockage', 'diagnostiquerStockage')
         .addToUi();
     Logger.log("Fin de la fonction onOpen");
 }
@@ -363,13 +364,67 @@ function getColumnForConfigKey(key) {
     return 25;
 }
 
+function applyConfigStyle(sheet) {
+    Logger.log("=== APPLICATION DU STYLE ET DES BORDURES ===");
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var values = sheet.getDataRange().getValues();
+    var maxRows = sheet.getMaxRows();
+    var maxCols = 26;
+
+    // 1. En-têtes (Lignes 1 et 2)
+    sheet.getRange(1, 1, 1, maxCols).setBackground("#08133B").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
+    sheet.getRange(2, 1, 1, maxCols).setBackground("#d9d9d9").setFontWeight("bold").setHorizontalAlignment("center");
+
+    // 2. Formatage des données et détection des bordures
+    sheet.setHiddenGridlines(true);
+    for (var i = 1; i <= maxCols; i++) {
+        sheet.setColumnWidth(i, (i % 3 === 0) ? 30 : 350);
+    }
+
+    if (maxRows > 2) {
+        var dataRange = sheet.getRange(3, 1, maxRows - 2, maxCols);
+        dataRange.setVerticalAlignment("top").setHorizontalAlignment("left").setWrap(true).setFontFamily("Google Sans");
+    }
+
+    // 3. Tracé des bordures sur les marqueurs
+    for (var r = 0; r < values.length; r++) {
+        for (var c = 0; c < values[r].length; c++) {
+            if (values[r][c] === "---BORDER---") {
+                var range = sheet.getRange(r + 1, c + 1, 1, 2);
+                range.setBorder(true, null, null, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+                range.setValue(""); // On vide le texte
+            }
+        }
+    }
+
+    // 4. Hauteur de ligne 21px via API v4 (La méthode complexe)
+    SpreadsheetApp.flush();
+    try {
+        var token = ScriptApp.getOAuthToken();
+        var requests = [{
+            updateDimensionProperties: {
+                range: { sheetId: sheet.getSheetId(), dimension: "ROWS", startIndex: 0, endIndex: maxRows },
+                properties: { pixelSize: 21 },
+                fields: "pixelSize"
+            }
+        }];
+        UrlFetchApp.fetch("https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            contentType: "application/json",
+            payload: JSON.stringify({ requests: requests }),
+            muteHttpExceptions: true
+        });
+    } catch(e) { Logger.log("Erreur API v4 : " + e.message); }
+}
+
 function setDatabaseData(dict) {
     var lock = LockService.getScriptLock();
     try {
         lock.waitLock(15000);
     } catch (e) {
         Logger.log("Erreur de verrouillage : " + e.message);
-        throw new Error("Impossible de verrouiller le script pour la mise à jour de la configuration.");
+        throw new Error("Impossible de verrouiller le script pour la mise à jour.");
     }
 
     try {
@@ -380,52 +435,38 @@ function setDatabaseData(dict) {
             configSheet = ss.getSheetByName("CONFIG");
         }
 
-        var dataRange = configSheet.getDataRange();
-        var values = dataRange.getValues();
-        var numRows = values.length;
-        var maxCols = values[0] ? values[0].length : 26;
-        if (maxCols < 26) maxCols = 26;
-        if (numRows < 2) numRows = 2;
-
+        var values = configSheet.getDataRange().getValues();
+        var maxCols = 26; 
         var columnsData = [];
         for (var c = 0; c < maxCols; c++) {
             var col = [];
-            for (var r = 2; r < numRows; r++) {
-                col.push(values[r] && values[r][c] !== undefined ? String(values[r][c]) : "");
+            for (var r = 2; r < values.length; r++) {
+                col.push(values[r][c] !== undefined ? String(values[r][c]) : "");
             }
             columnsData.push(col);
         }
 
         var keysToPurge = [];
-
         for (var key in dict) {
             if (!dict.hasOwnProperty(key)) continue;
-            var val = dict[key] !== null && dict[key] !== undefined ? String(dict[key]) : "";
+            if (key.trim() === "" || key === 'CONF_API_KEY_GEMINI' || key === 'LISTE_CLES_API') continue;
             
-            // Ne pas traiter les UserProperties
-            if (key === 'CONF_API_KEY_GEMINI' || key === 'LISTE_CLES_API') continue;
-
             keysToPurge.push(key);
-
+            var val = dict[key] !== null && dict[key] !== undefined ? String(dict[key]) : "";
             var colIdx = getColumnForConfigKey(key) - 1;
             var keyCol = columnsData[colIdx];
             var valCol = columnsData[colIdx + 1];
 
-            // Chunking de la valeur (> 45 000 chars)
             var chunks = [];
             if (val.length > 45000) {
                 var chunkCount = Math.ceil(val.length / 45000);
                 for (var i = 0; i < chunkCount; i++) {
-                    chunks.push({
-                        k: key + "_chunk_" + i,
-                        v: val.substring(i * 45000, (i + 1) * 45000)
-                    });
+                    chunks.push({ k: key + "_chunk_" + i, v: val.substring(i * 45000, (i + 1) * 45000) });
                 }
             } else {
                 chunks.push({ k: key, v: val });
             }
 
-            // Trouver l'index de la clé
             var firstIdx = -1;
             for (var i = 0; i < keyCol.length; i++) {
                 if (keyCol[i] === key || keyCol[i].indexOf(key + "_chunk_") === 0) {
@@ -434,7 +475,6 @@ function setDatabaseData(dict) {
                 }
             }
 
-            // Purger les anciens chunks
             if (firstIdx !== -1) {
                 while (firstIdx < keyCol.length && (keyCol[firstIdx] === key || keyCol[firstIdx].indexOf(key + "_chunk_") === 0)) {
                     keyCol.splice(firstIdx, 1);
@@ -442,34 +482,19 @@ function setDatabaseData(dict) {
                 }
             } else {
                 firstIdx = keyCol.length;
-                while (firstIdx > 0 && keyCol[firstIdx - 1] === "") {
-                    firstIdx--;
-                }
+                while (firstIdx > 0 && keyCol[firstIdx - 1] === "") firstIdx--;
             }
 
-            // Insérer les nouveaux chunks
             for (var i = 0; i < chunks.length; i++) {
                 keyCol.splice(firstIdx + i, 0, chunks[i].k);
                 valCol.splice(firstIdx + i, 0, chunks[i].v);
             }
         }
 
-        // Reconstruire le tableau 2D
         var maxRowsData = 0;
-        for (var c = 0; c < maxCols; c++) {
-            var col = columnsData[c];
-            while (col.length > 0 && col[col.length - 1] === "") {
-                col.pop();
-            }
-            if (col.length > maxRowsData) {
-                maxRowsData = col.length;
-            }
-        }
+        columnsData.forEach(function(col) { if (col.length > maxRowsData) maxRowsData = col.length; });
 
-        var newValues = [];
-        newValues.push(values[0] || new Array(maxCols).fill(""));
-        newValues.push(values[1] || new Array(maxCols).fill(""));
-
+        var newValues = [values[0] || new Array(maxCols).fill(""), values[1] || new Array(maxCols).fill("")];
         for (var r = 0; r < maxRowsData; r++) {
             var row = [];
             for (var c = 0; c < maxCols; c++) {
@@ -478,45 +503,39 @@ function setDatabaseData(dict) {
             newValues.push(row);
         }
 
+        configSheet.clear(); // Clear total pour repartir sur des bordures propres
         if (newValues.length > 0) {
-            configSheet.clearContents();
             configSheet.getRange(1, 1, newValues.length, maxCols).setValues(newValues);
         }
 
-        // Purger les clés du PropertiesService
-        var props = PropertiesService.getScriptProperties();
-        for (var i = 0; i < keysToPurge.length; i++) {
-            props.deleteProperty(keysToPurge[i]);
-            var count = 0;
-            while(true) {
-                var chunkKey = keysToPurge[i] + "_chunk_" + count;
-                var propVal = props.getProperty(chunkKey);
-                if (propVal !== null) {
-                    props.deleteProperty(chunkKey);
-                    count++;
-                } else {
-                    break;
-                }
-            }
-        }
-        SpreadsheetApp.flush();
+        // Appel du moteur de style pour les bordures et la hauteur
+        applyConfigStyle(configSheet);
 
+        var props = PropertiesService.getScriptProperties();
+        keysToPurge.forEach(function(k) {
+            props.deleteProperty(k);
+            var c = 0;
+            while(props.getProperty(k + "_chunk_" + c) !== null) {
+                props.deleteProperty(k + "_chunk_" + c);
+                c++;
+            }
+        });
+        SpreadsheetApp.flush();
     } finally {
         lock.releaseLock();
     }
 }
 
 function getDatabaseData(keys) {
+    Logger.log("=== DÉBUT : getDatabaseData (Version Optimisée RAM) ===");
     var getAllKeys = false;
     var singleKeyMode = false;
-    
     if (keys === undefined || keys === null) {
         getAllKeys = true;
     } else if (!Array.isArray(keys)) {
         singleKeyMode = true;
         keys = [keys];
     }
-
     var result = {};
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var configSheet = ss.getSheetByName("CONFIG");
@@ -524,7 +543,6 @@ function getDatabaseData(keys) {
     if (configSheet) {
         values = configSheet.getDataRange().getValues();
     }
-
     var sheetDict = {};
     if (values.length > 2) {
         for (var r = 2; r < values.length; r++) {
@@ -539,18 +557,13 @@ function getDatabaseData(keys) {
             }
         }
     }
-
+    // Chargement unique de toutes les propriétés en RAM pour éviter le DEADLINE_EXCEEDED
     var props = PropertiesService.getScriptProperties();
     var allProps = props.getProperties();
-
     if (getAllKeys) {
-        // Collect all unique keys from both sources
         var allKeysSet = {};
-        
-        // From Sheet
         for (var key in sheetDict) {
             if (sheetDict.hasOwnProperty(key)) {
-                // If it's a chunk, add the base key
                 if (key.indexOf("_chunk_") !== -1) {
                     var baseKey = key.substring(0, key.indexOf("_chunk_"));
                     allKeysSet[baseKey] = true;
@@ -559,8 +572,6 @@ function getDatabaseData(keys) {
                 }
             }
         }
-        
-        // From PropertiesService
         for (var key in allProps) {
             if (allProps.hasOwnProperty(key)) {
                 if (key.indexOf("_chunk_") !== -1) {
@@ -571,13 +582,10 @@ function getDatabaseData(keys) {
                 }
             }
         }
-        
         keys = Object.keys(allKeysSet);
     }
-
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        
         if (sheetDict.hasOwnProperty(key)) {
             result[key] = sheetDict[key];
         } 
@@ -591,29 +599,61 @@ function getDatabaseData(keys) {
             result[key] = fullVal;
         } 
         else {
-            var propVal = props.getProperty(key);
-            if (propVal !== null) {
-                result[key] = propVal;
-            } else {
-                var chunk0 = props.getProperty(key + "_chunk_0");
-                if (chunk0 !== null) {
-                    var fullValProp = "";
-                    var cIdx = 0;
-                    while (true) {
-                        var chunkVal = props.getProperty(key + "_chunk_" + cIdx);
-                        if (chunkVal !== null) {
-                            fullValProp += chunkVal;
-                            cIdx++;
-                        } else {
-                            break;
-                        }
-                    }
-                    result[key] = fullValProp;
+            // FALLBACK SANS APPEL API (Lecture via objet RAM allProps)
+            if (allProps[key] !== undefined) {
+                result[key] = allProps[key];
+            } else if (allProps[key + "_chunk_0"] !== undefined) {
+                var fullValProp = "";
+                var cIdx = 0;
+                while (allProps[key + "_chunk_" + cIdx] !== undefined) {
+                    fullValProp += allProps[key + "_chunk_" + cIdx];
+                    cIdx++;
+                }
+                result[key] = fullValProp;
+            }
+        }
+    }
+    Logger.log("=== FIN : getDatabaseData (Succès) ===");
+    return singleKeyMode ? result[keys[0]] : result;
+}
+
+function diagnostiquerStockage() {
+    Logger.log("=== DÉBUT : diagnostiquerStockage ===");
+    var props = PropertiesService.getScriptProperties().getProperties();
+    var propCount = Object.keys(props).length;
+    var propSize = JSON.stringify(props).length;
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("CONFIG");
+    var sheetCount = 0;
+    var sheetSize = 0;
+    if(sheet) {
+        var data = sheet.getDataRange().getValues();
+        for(var r = 2; r < data.length; r++) {
+            for(var c = 0; c < data[r].length; c += 3) {
+                if(data[r][c] && data[r][c] !== "" && data[r][c] !== "---BORDER---") {
+                    sheetCount++;
+                    sheetSize += String(data[r][c+1] || "").length;
                 }
             }
         }
     }
-
-    if (getAllKeys) return result;
-    return singleKeyMode ? result[keys[0]] : result;
+    var pctRAM = Math.round((propSize / 500000) * 100);
+    var colorRAM = pctRAM > 80 ? "#d93025" : (pctRAM > 50 ? "#fbbc04" : "#188038");
+    var html = "<div style='font-family: Arial, sans-serif; padding: 20px; color: #202124;'>" +
+               "<h2 style='color: #1a73e8; margin-top: 0;'>🩺 Diagnostic du stockage</h2>" +
+               "<div style='background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 20px;'>" +
+               "<h3 style='margin-top: 0; font-size: 14px;'>🧠 Mémoire RAM (PropertiesService)</h3>" +
+               "<p style='font-size: 13px; margin: 5px 0;'>Clés actives : <b>" + propCount + "</b></p>" +
+               "<p style='font-size: 13px; margin: 5px 0;'>Poids estimé : <b>" + Math.round(propSize/1024) + " Ko</b> / 500 Ko</p>" +
+               "<div style='width: 100%; background: #e0e0e0; border-radius: 4px; margin-top: 10px;'>" +
+               "<div style='width: " + Math.min(pctRAM, 100) + "%; background: " + colorRAM + "; height: 12px; border-radius: 4px;'></div></div>" +
+               "</div>" +
+               "<div style='background: #e6f4ea; padding: 15px; border-radius: 8px; border: 1px solid #ceead6;'>" +
+               "<h3 style='margin-top: 0; font-size: 14px; color: #137333;'>💾 Disque dur (Onglet CONFIG)</h3>" +
+               "<p style='font-size: 13px; margin: 5px 0;'>Lignes (Clés & Chunks) : <b>" + sheetCount + "</b></p>" +
+               "<p style='font-size: 13px; margin: 5px 0;'>Poids total stocké : <b>" + Math.round(sheetSize/1024) + " Ko</b></p>" +
+               "<p style='font-size: 11px; color: #137333; margin-top: 10px;'><i>Espace virtuellement illimité. Le fractionnement automatique (chunking) est actif.</i></p>" +
+               "</div>" +
+               "</div>";
+    var htmlOutput = HtmlService.createHtmlOutput(html).setWidth(450).setHeight(380);
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'État du système');
 }

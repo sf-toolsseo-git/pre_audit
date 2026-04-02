@@ -216,7 +216,7 @@ function traiterConcurrence(projectType, headersRaw, allRows) {
     try {
         if (!allRows || allRows.length === 0) throw new Error("Aucune donnée CSV trouvée.");
         
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var isInstall = (projectType === 'installe');
         
         var clientDomain = isInstall ? extractDomainForMatrix(props['CONF_CLIENT_URL'] || "") : "";
@@ -367,7 +367,7 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         ss.setSpreadsheetLocale('fr_FR');
         
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
         
         var feuilleSource = ss.getSheetByName("Matrice");
@@ -633,7 +633,7 @@ function recupererDonneesBrutesClustering(contexteClient) {
     Logger.log("=== DÉBUT : recupererDonneesBrutesClustering ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         
         // Récupération correcte du paramètre conservé en base (coché ou non)
         var isMultiTheme = (props['CONF_IS_MULTI_THEME'] === 'true');
@@ -699,7 +699,7 @@ function preparerDonneesClustering(jsonMotsCles) {
     Logger.log("=== DÉBUT : preparerDonneesClustering ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
 
         var sheetSource = ss.getSheetByName("Concurrence filtrée");
@@ -912,7 +912,7 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini introuvable.");
@@ -1094,20 +1094,19 @@ function sauvegarderSelectionUX(data) {
 }
 
 function initFormatConfigSheet() {
-    Logger.log("=== DÉBUT : initFormatConfigSheet ===");
+    Logger.log("=== DÉBUT : initFormatConfigSheet (Template avec bordures) ===");
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetName = "CONFIG";
     var sheet = ss.getSheetByName(sheetName);
-    
     if (sheet) {
+        // Alerte de sécurité : cette fonction est destructive.
+        // Utiliser reparerFormatageConfig pour les audits en cours.
         ss.deleteSheet(sheet);
     }
     sheet = ss.insertSheet(sheetName);
     sheet.hideSheet();
-
     var headersLine1 = new Array(26).fill("");
     var headersLine2 = new Array(26).fill("");
-
     headersLine1[0] = "⚙️ GÉNÉRAL";
     headersLine1[3] = "📊 SEMRUSH & BESOIN";
     headersLine1[6] = "🔍 DIAGNOSTIC";
@@ -1117,146 +1116,74 @@ function initFormatConfigSheet() {
     headersLine1[18] = "✍️ CONTENU";
     headersLine1[21] = "📰 ÉDITORIAL";
     headersLine1[24] = "📦 AUTRES (FALLBACK)";
-
     var sections = [0, 3, 6, 9, 12, 15, 18, 21, 24];
     sections.forEach(function(colIdx) {
         headersLine2[colIdx] = "Clé";
         headersLine2[colIdx + 1] = "Valeur";
     });
-
     sheet.getRange(1, 1, 1, 26).setValues([headersLine1]).setBackground("#08133B").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
     sheet.getRange(2, 1, 1, 26).setValues([headersLine2]).setBackground("#d9d9d9").setFontWeight("bold").setHorizontalAlignment("center");
-
     sections.forEach(function(colIdx) {
         sheet.getRange(1, colIdx + 1, 1, 2).mergeAcross();
     });
-
     for (var i = 1; i <= 26; i++) {
-        sheet.setColumnWidth(i, (i % 3 === 0) ? 20 : 200);
+        sheet.setColumnWidth(i, (i % 3 === 0) ? 30 : 350);
     }
     sheet.setFrozenRows(2);
-
-    // Initialiser les clés vides dans l'ordre pour qu'elles soient pré-générées
     var keysByGroup = {
-        0: [ // Général
-            "CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID",
-            "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND",
-            "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1",
-            "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2",
-            "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_STRENGTH_3", "CONF_COMP_BRAND_3",
-            "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4",
-            "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
-            "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
-            "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10",
-            "PA_URLS_CONTEXTE", "PA_CONTEXTE_CLIENT", "PA_BRIEF_CONSULTANT", 
-            "PA_URL_FORM_REPONSES", "PA_PROFILAGE_COMMERCIAL"
-        ],
-        3: [ // Semrush
-            "TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_BESOIN", "TAG_SLIDE_SOLUTION_HTML", "TAG_SLIDE_SOLUTION",
-            "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_MOT_CLE",
-            "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"
-        ],
-        6: [ // Diagnostic
-            "TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1",
-            "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1",
-            "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1",
-            "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_SELECTION"
-        ],
-        9: [ // Focus
-            "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS",
-            "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION",
-            "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1",
-            "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2",
-            "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3",
-            "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4",
-            "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC",
-            "focus_standard_texte_1", "focus_standard_texte_2", "focus_standard_texte_3",
-            "focus_semantique_texte_1", "focus_semantique_texte_2", "focus_semantique_texte_3",
-            "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2",
-            "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3",
-            "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"
-        ],
-        12: [ // Technique
-            "TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE",
-            "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE",
-            "TITRE_SLIDE_TECHNIQUE", "TECH_HTML_CRAWL", "TECH_HTML_INDEX", "TECH_HTML_POS",
-            "DATA_TECH_IA_FULL_STATE", "CRAWL_1", "CRAWL_2", "CRAWL_3", "CRAWL_4",
-            "INDEX_1", "INDEX_2", "INDEX_3", "INDEX_4", "POS_1", "POS_2", "POS_3", "POS_4"
-        ],
-        15: [ // UX
-            "TITRE_SLIDE_UX", "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2",
-            "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT",
-            "UX_CLIENT_VIEWPORT_ID", "UX_CLIENT_FULL_ID", "UX_CLIENT_CROP_ID",
-            "UX_COMP_VIEWPORT_ID", "UX_COMP_FULL_ID", "UX_COMP_CROP_ID",
-            "DATA_UX_IA_FULL_STATE",
-            "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1",
-            "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2",
-            "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3",
-            "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4",
-            "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5",
-            "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6"
-        ],
-        18: [ // Contenu
-            "TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT",
-            "CONTENU_YTG_CIBLE",
-            "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML",
-            "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT",
-            "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT",
-            "CONTENU_SCRAPED_CLIENT",
-            "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML",
-            "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT",
-            "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT",
-            "CONTENU_SCRAPED_CONCURRENT"
-        ],
-        21: [ // Éditorial
-            "TITRE_SLIDE_CONCURRENCE_EDITO", "TITRE_SLIDE_THEMATIQUE_EDITO",
-            "BLOG_CLIENT_EDITO", "BLOG_LEADER_EDITO", "BLOG_COMP1_EDITO",
-            "BLOG_COMP2_EDITO", "BLOG_COMP3_EDITO", "BLOG_COMP4_EDITO",
-            "NOM_CONTENU_1", "NOM_CONTENU_2", "NOM_CONTENU_3",
-            "DATA_TOP10_CONTENU_1", "DATA_TOP10_CONTENU_2", "DATA_TOP10_CONTENU_3"
-        ],
-        24: [ // Fallback
-            "ACTIVE_TAB", "PREAUDIT_ACTIVE_TAB"
-        ]
+        0: ["CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID", "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", "---BORDER---", "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "---BORDER---", "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5", "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10", "---BORDER---", "PA_URLS_CONTEXTE", "PA_CONTEXTE_CLIENT", "PA_BRIEF_CONSULTANT", "PA_URL_FORM_REPONSES", "PA_PROFILAGE_COMMERCIAL"],
+        3: ["TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_BESOIN", "TAG_SLIDE_SOLUTION_HTML", "TAG_SLIDE_SOLUTION", "---BORDER---", "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC", "---BORDER---"],
+        6: ["TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "---BORDER---", "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "---BORDER---", "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "---BORDER---", "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "---BORDER---", "ANALYSE_SELECTION"],
+        9: ["TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION", "---BORDER---", "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "---BORDER---", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "---BORDER---", "focus_standard_texte_1", "focus_standard_texte_2", "focus_standard_texte_3", "---BORDER---", "focus_semantique_texte_1", "focus_semantique_texte_2", "focus_semantique_texte_3", "---BORDER---", "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "---BORDER---", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"],
+        12: ["TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE", "---BORDER---", "TITRE_SLIDE_TECHNIQUE", "TECH_HTML_CRAWL", "TECH_HTML_INDEX", "TECH_HTML_POS", "---BORDER---", "DATA_TECH_IA_FULL_STATE", "CRAWL_1", "CRAWL_2", "CRAWL_3", "CRAWL_4", "INDEX_1", "INDEX_2", "INDEX_3", "INDEX_4", "POS_1", "POS_2", "POS_3", "POS_4"],
+        15: ["TITRE_SLIDE_UX", "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2", "---BORDER---", "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT", "UX_CLIENT_VIEWPORT_ID", "UX_CLIENT_FULL_ID", "UX_CLIENT_CROP_ID", "UX_COMP_VIEWPORT_ID", "UX_COMP_FULL_ID", "UX_COMP_CROP_ID", "---BORDER---", "DATA_UX_IA_FULL_STATE", "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1", "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2", "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3", "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4", "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5", "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6"],
+        18: ["TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT", "CONTENU_YTG_CIBLE", "---BORDER---", "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT", "CONTENU_SCRAPED_CLIENT", "---BORDER---", "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT", "CONTENU_SCRAPED_CONCURRENT"],
+        21: ["TITRE_SLIDE_CONCURRENCE_EDITO", "TITRE_SLIDE_THEMATIQUE_EDITO", "---BORDER---", "BLOG_CLIENT_EDITO", "BLOG_LEADER_EDITO", "BLOG_COMP1_EDITO", "BLOG_COMP2_EDITO", "BLOG_COMP3_EDITO", "BLOG_COMP4_EDITO", "---BORDER---", "NOM_CONTENU_1", "NOM_CONTENU_2", "NOM_CONTENU_3", "---BORDER---", "DATA_TOP10_CONTENU_1", "DATA_TOP10_CONTENU_2", "DATA_TOP10_CONTENU_3"]
     };
-
     var maxRowsData = 0;
     for (var k in keysByGroup) {
         if (keysByGroup[k].length > maxRowsData) {
             maxRowsData = keysByGroup[k].length;
         }
     }
-
     var newValues = [];
     for (var r = 0; r < maxRowsData; r++) {
         var row = new Array(26).fill("");
         sections.forEach(function(colIdx) {
-            var keysArray = keysByGroup[colIdx];
+            var keysArray = keysByGroup[colIdx] || [];
             if (r < keysArray.length) {
                 row[colIdx] = keysArray[r];
             }
         });
         newValues.push(row);
     }
-
     if (newValues.length > 0) {
         sheet.getRange(3, 1, newValues.length, 26).setValues(newValues);
     }
-    
-    // On appelle setDatabaseData pour que le moteur traite toutes les properties existantes, les place dans ces clés et purge !
-    var props = PropertiesService.getScriptProperties().getProperties();
-    var hasValidData = false;
-    for (var p in props) {
-        if (p !== 'CONF_API_KEY_GEMINI' && p !== 'LISTE_CLES_API') {
-            hasValidData = true;
-            break;
+    // Dessiner les bordures et vider les marqueurs
+    var finalValues = sheet.getDataRange().getValues();
+    for (var r = 2; r < finalValues.length; r++) {
+        for (var c = 0; c < finalValues[r].length; c++) {
+            if (finalValues[r][c] === "---BORDER---") {
+                var cellKey = sheet.getRange(r + 1, c + 1);
+                var cellVal = sheet.getRange(r + 1, c + 2);
+                cellKey.setBorder(true, null, null, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+                cellVal.setBorder(true, null, null, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+                cellKey.setValue("");
+                cellVal.setValue("");
+            }
         }
     }
-    
-    if (hasValidData) {
-        Logger.log("Migration des données depuis PropertiesService vers CONFIG...");
-        setDatabaseData(props);
-    }
-
+    // Formatage global
+    sheet.setHiddenGridlines(true);
+    var dataRange = sheet.getRange(3, 1, sheet.getMaxRows() - 2, 26);
+    dataRange.setVerticalAlignment("top").setHorizontalAlignment("left").setWrap(true);
+    // Hauteur de ligne 21 px via API v4
+    SpreadsheetApp.flush();
+    try {
+        var token = ScriptApp.getOAuthToken();
+        var requests = [{ updateDimensionProperties: { range: { sheetId: sheet.getSheetId(), dimension: "ROWS", startIndex: 0, endIndex: sheet.getMaxRows() }, properties: { pixelSize: 21 }, fields: "pixelSize" } }];
+        UrlFetchApp.fetch("https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate", { method: "POST", headers: { "Authorization": "Bearer " + token }, contentType: "application/json", payload: JSON.stringify({ requests: requests }), muteHttpExceptions: true });
+    } catch(e) { Logger.log("Erreur API v4 (Hauteur) : " + e.message); }
     Logger.log("=== FIN : initFormatConfigSheet ===");
 }

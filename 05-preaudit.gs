@@ -418,7 +418,7 @@ function recupererDetailsMotCle(motCle) {
     var urlCompIndices = [];
     var posCompIndices = [];
     
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var props = getDatabaseData();
     var clientName = props['CONF_CLIENT_NAME'] || "Client";
 
     for (var j = 0; j < headers.length; j++) {
@@ -583,7 +583,7 @@ function recupererReponseFormulaire(urlForm) {
     }
 
     try {
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var clientName = (props['CONF_CLIENT_NAME'] || "").toLowerCase().trim();
         var clientUrl = (props['CONF_CLIENT_URL'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
         
@@ -755,7 +755,7 @@ function genererDiagnostic(selection) {
     if (!sheetMatrice) throw new Error("Onglet 'Matrice' introuvable.");
     if (!selection || selection.length === 0) throw new Error("Aucune thématique sélectionnée.");
 
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var props = getDatabaseData();
     // NOUVEAU : Récupération du mot-clé fil rouge pour exclusion
     var targetKwGlobal = (props['TARGET_KW'] || "").toLowerCase().trim();
 
@@ -1296,7 +1296,7 @@ function lancerWorkflowSERP(data) {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var geminiApiKey = userProps['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = userProps['LISTE_CLES_API'];
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
 
         if (!geminiApiKey || geminiApiKey.trim() === "") {
@@ -2245,7 +2245,7 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre, urlPageMere, urlPa
         var $ = Cheerio.load(html);
 
         // --- 0. POSITIONNEMENT ON-PAGE (Title, Hn, Schema) ---
-        var propsGlobal = PropertiesService.getScriptProperties().getProperties();
+        var propsGlobal = getDatabaseData();
         var targetKw = propsGlobal['TARGET_KW'] || "";
         
         function verifierMotCle(texte, keyword) {
@@ -2592,7 +2592,7 @@ function genererAnalyseTechniqueIA() {
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
         var urlCible = props['TECH_URL_CIBLE'] || "";
         var motCleCible = props['TARGET_KW'] || "Non défini";
@@ -3007,7 +3007,7 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             throw new Error("Clé API Gemini introuvable.");
         }
 
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var clientViewportId = props['UX_CLIENT_VIEWPORT_ID'];
         var clientFullId = props['UX_CLIENT_FULL_ID'];
         var clientCropId = props['UX_CLIENT_CROP_ID'];
@@ -3173,7 +3173,7 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
 function lancerCapturesUX() {
     Logger.log("=== DÉBUT : lancerCapturesUX ===");
     
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var props = getDatabaseData();
     var urlClient = props['TARGET_URL_CLIENT'];
     var urlComp = props['TARGET_URL_CONCURRENT'];
     
@@ -3387,7 +3387,7 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             throw new Error("Clé API Gemini introuvable.");
         }
 
-        var props = PropertiesService.getScriptProperties().getProperties();
+        var props = getDatabaseData();
         var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
         var profilage = props['PA_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
         var intention = props['FOCUS_INTENTION_TITRE'] || "Non renseignée.";
