@@ -298,8 +298,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
         propsToSave["PLACEHOLDER_LOGO_COMP3"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_COMP4"] = "IMAGE";
 
-        PropertiesService.getScriptProperties().setProperties(propsToSave);
-        syncPropertiesToConfigSheet();
+        setDatabaseData(propsToSave);
 
         // Fonction utilitaire non destructive pour *mot* (gras orange)
         function formatRichTextGlobal(shape) {
@@ -1344,8 +1343,7 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
         propsToSave["PLACEHOLDER_LOGO_COMP2_EDITO_CONTENU"] = "IMAGE";
         propsToSave["PLACEHOLDER_LOGO_COMP3_EDITO_CONTENU"] = "IMAGE";
 
-        PropertiesService.getScriptProperties().setProperties(propsToSave);
-        syncPropertiesToConfigSheet();
+        setDatabaseData(propsToSave);
 
         Logger.log("Parcours minutieux des slides pour Performance Éditoriale");
 

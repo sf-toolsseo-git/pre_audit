@@ -350,3 +350,232 @@ function sauvegarderPreAudit() {
         ui.alert("Une erreur est survenue : " + e.toString());
     }
 }
+
+function getColumnForConfigKey(key) {
+    if (key.indexOf('CONF_') === 0 || key.indexOf('PA_') === 0 || key.indexOf('CTR_') === 0) return 1;
+    if (key.indexOf('TAG_') === 0 || key.indexOf('TITRE_SLIDE_SEMRUSH') === 0 || key.indexOf('ANALYSE_SEMRUSH_') === 0) return 4;
+    if (key.indexOf('TITRE_SLIDE_THEMATIQUE') === 0 || key.indexOf('ANALYSE_THEMATIQUE') === 0 || key.indexOf('TITRE_SLIDE_MC') === 0 || key.indexOf('ANALYSE_MC') === 0 || key === 'ANALYSE_SELECTION') return 7;
+    if (key.indexOf('TARGET_') === 0 || key.indexOf('SERP_') === 0 || key.indexOf('FOCUS_') === 0 || key.indexOf('focus_') === 0) return 10;
+    if (key.indexOf('TECH_') === 0 || key.indexOf('CRAWL_') === 0 || key.indexOf('INDEX_') === 0 || key.indexOf('POS_') === 0 || key === 'TITRE_SLIDE_TECHNIQUE' || key.indexOf('DATA_TECH_') === 0) return 13;
+    if (key.indexOf('UX_') === 0 || key === 'TITRE_SLIDE_UX' || key.indexOf('PLACEHOLDER_UX_') === 0 || key.indexOf('DATA_UX_') === 0) return 16;
+    if (key.indexOf('CONTENU_') === 0 || key.indexOf('TITRE_SLIDE_CONTENU_') === 0) return 19;
+    if (key.slice(-6) === '_EDITO' || key.indexOf('_EDITO_') !== -1 || key.indexOf('THEMATIQUE_EDITO_') === 0 || key.indexOf('NOM_CONTENU_') === 0 || key.indexOf('DATA_TOP10_CONTENU_') === 0) return 22;
+    return 25;
+}
+
+function setDatabaseData(dict) {
+    var lock = LockService.getScriptLock();
+    try {
+        lock.waitLock(15000);
+    } catch (e) {
+        Logger.log("Erreur de verrouillage : " + e.message);
+        throw new Error("Impossible de verrouiller le script pour la mise à jour de la configuration.");
+    }
+
+    try {
+        var ss = SpreadsheetApp.getActiveSpreadsheet();
+        var configSheet = ss.getSheetByName("CONFIG");
+        if (!configSheet) {
+            initFormatConfigSheet();
+            configSheet = ss.getSheetByName("CONFIG");
+        }
+
+        var dataRange = configSheet.getDataRange();
+        var values = dataRange.getValues();
+        var numRows = values.length;
+        var maxCols = values[0] ? values[0].length : 26;
+        if (maxCols < 26) maxCols = 26;
+        if (numRows < 2) numRows = 2;
+
+        var columnsData = [];
+        for (var c = 0; c < maxCols; c++) {
+            var col = [];
+            for (var r = 2; r < numRows; r++) {
+                col.push(values[r] && values[r][c] !== undefined ? String(values[r][c]) : "");
+            }
+            columnsData.push(col);
+        }
+
+        var keysToPurge = [];
+
+        for (var key in dict) {
+            if (!dict.hasOwnProperty(key)) continue;
+            var val = dict[key] !== null && dict[key] !== undefined ? String(dict[key]) : "";
+            
+            // Ne pas traiter les UserProperties
+            if (key === 'CONF_API_KEY_GEMINI' || key === 'LISTE_CLES_API') continue;
+
+            keysToPurge.push(key);
+
+            var colIdx = getColumnForConfigKey(key) - 1;
+            var keyCol = columnsData[colIdx];
+            var valCol = columnsData[colIdx + 1];
+
+            // Chunking de la valeur (> 45 000 chars)
+            var chunks = [];
+            if (val.length > 45000) {
+                var chunkCount = Math.ceil(val.length / 45000);
+                for (var i = 0; i < chunkCount; i++) {
+                    chunks.push({
+                        k: key + "_chunk_" + i,
+                        v: val.substring(i * 45000, (i + 1) * 45000)
+                    });
+                }
+            } else {
+                chunks.push({ k: key, v: val });
+            }
+
+            // Trouver l'index de la clé
+            var firstIdx = -1;
+            for (var i = 0; i < keyCol.length; i++) {
+                if (keyCol[i] === key || keyCol[i].indexOf(key + "_chunk_") === 0) {
+                    firstIdx = i;
+                    break;
+                }
+            }
+
+            // Purger les anciens chunks
+            if (firstIdx !== -1) {
+                while (firstIdx < keyCol.length && (keyCol[firstIdx] === key || keyCol[firstIdx].indexOf(key + "_chunk_") === 0)) {
+                    keyCol.splice(firstIdx, 1);
+                    valCol.splice(firstIdx, 1);
+                }
+            } else {
+                firstIdx = keyCol.length;
+                while (firstIdx > 0 && keyCol[firstIdx - 1] === "") {
+                    firstIdx--;
+                }
+            }
+
+            // Insérer les nouveaux chunks
+            for (var i = 0; i < chunks.length; i++) {
+                keyCol.splice(firstIdx + i, 0, chunks[i].k);
+                valCol.splice(firstIdx + i, 0, chunks[i].v);
+            }
+        }
+
+        // Reconstruire le tableau 2D
+        var maxRowsData = 0;
+        for (var c = 0; c < maxCols; c++) {
+            var col = columnsData[c];
+            while (col.length > 0 && col[col.length - 1] === "") {
+                col.pop();
+            }
+            if (col.length > maxRowsData) {
+                maxRowsData = col.length;
+            }
+        }
+
+        var newValues = [];
+        newValues.push(values[0] || new Array(maxCols).fill(""));
+        newValues.push(values[1] || new Array(maxCols).fill(""));
+
+        for (var r = 0; r < maxRowsData; r++) {
+            var row = [];
+            for (var c = 0; c < maxCols; c++) {
+                row.push(columnsData[c][r] !== undefined ? columnsData[c][r] : "");
+            }
+            newValues.push(row);
+        }
+
+        if (newValues.length > 0) {
+            configSheet.clearContents();
+            configSheet.getRange(1, 1, newValues.length, maxCols).setValues(newValues);
+        }
+
+        // Purger les clés du PropertiesService
+        var props = PropertiesService.getScriptProperties();
+        for (var i = 0; i < keysToPurge.length; i++) {
+            props.deleteProperty(keysToPurge[i]);
+            var count = 0;
+            while(true) {
+                var chunkKey = keysToPurge[i] + "_chunk_" + count;
+                var propVal = props.getProperty(chunkKey);
+                if (propVal !== null) {
+                    props.deleteProperty(chunkKey);
+                    count++;
+                } else {
+                    break;
+                }
+            }
+        }
+        SpreadsheetApp.flush();
+
+    } finally {
+        lock.releaseLock();
+    }
+}
+
+function getDatabaseData(keys) {
+    var singleKeyMode = false;
+    if (!Array.isArray(keys)) {
+        singleKeyMode = true;
+        keys = [keys];
+    }
+
+    var result = {};
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var configSheet = ss.getSheetByName("CONFIG");
+    var values = [];
+    if (configSheet) {
+        values = configSheet.getDataRange().getValues();
+    }
+
+    var sheetDict = {};
+    if (values.length > 2) {
+        for (var r = 2; r < values.length; r++) {
+            var row = values[r];
+            for (var c = 0; c < row.length; c += 3) {
+                if (c + 1 < row.length) {
+                    var k = String(row[c]).trim();
+                    if (k !== "") {
+                        sheetDict[k] = String(row[c + 1] !== undefined ? row[c + 1] : "");
+                    }
+                }
+            }
+        }
+    }
+
+    var props = PropertiesService.getScriptProperties();
+
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        
+        if (sheetDict.hasOwnProperty(key)) {
+            result[key] = sheetDict[key];
+        } 
+        else if (sheetDict.hasOwnProperty(key + "_chunk_0")) {
+            var fullVal = "";
+            var chunkIdx = 0;
+            while (sheetDict.hasOwnProperty(key + "_chunk_" + chunkIdx)) {
+                fullVal += sheetDict[key + "_chunk_" + chunkIdx];
+                chunkIdx++;
+            }
+            result[key] = fullVal;
+        } 
+        else {
+            var propVal = props.getProperty(key);
+            if (propVal !== null) {
+                result[key] = propVal;
+            } else {
+                var chunk0 = props.getProperty(key + "_chunk_0");
+                if (chunk0 !== null) {
+                    var fullValProp = "";
+                    var cIdx = 0;
+                    while (true) {
+                        var chunkVal = props.getProperty(key + "_chunk_" + cIdx);
+                        if (chunkVal !== null) {
+                            fullValProp += chunkVal;
+                            cIdx++;
+                        } else {
+                            break;
+                        }
+                    }
+                    result[key] = fullValProp;
+                }
+            }
+        }
+    }
+
+    return singleKeyMode ? result[keys[0]] : result;
+}

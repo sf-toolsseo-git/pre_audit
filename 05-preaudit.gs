@@ -8,8 +8,46 @@ function ouvrirFenetrePreAudit() {
 
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var keys = [
+        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT',
+        'PA_SLIDE_ID', 'PA_BRIEF_CONSULTANT', 'PA_URL_FORM_REPONSES', 'PA_PROFILAGE_COMMERCIAL',
+        'TAG_SLIDE_BESOIN_HTML', 'TAG_SLIDE_BESOIN', 'TAG_SLIDE_SOLUTION_HTML', 'TAG_SLIDE_SOLUTION',
+        'TITRE_SLIDE_SEMRUSH', 'ANALYSE_SEMRUSH_MOT_CLE_HTML', 'ANALYSE_SEMRUSH_MOT_CLE',
+        'ANALYSE_SEMRUSH_TRAFIC_HTML', 'ANALYSE_SEMRUSH_TRAFIC', 'TITRE_SLIDE_THEMATIQUETOP_CLIENT',
+        'ANALYSE_THEMATIQUETOP_CLIENT_1', 'TITRE_SLIDE_THEMATIQUEFLOP_CLIENT', 'ANALYSE_THEMATIQUEFLOP_CLIENT_1',
+        'TITRE_SLIDE_MCTOP_CLIENT', 'ANALYSE_MCTOP_CLIENT_1', 'TITRE_SLIDE_MCFLOP_CLIENT', 'ANALYSE_MCFLOP_CLIENT_1',
+        'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_NAME_3',
+        'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
+        'TARGET_KW', 'TARGET_KW_SV', 'TARGET_URL_CLIENT', 'TARGET_KW_CLIENT_POS', 'TARGET_URL_CONCURRENT',
+        'TARGET_KW_CONCURRENT_POS', 'TARGET_LOCALISATION', 'SERP_ELEMENT_TITRE_1', 'SERP_ELEMENT_DESC_1',
+        'PLACEHOLDER_SERPELEMENT_1', 'SERP_ELEMENT_TITRE_2', 'SERP_ELEMENT_DESC_2', 'PLACEHOLDER_SERPELEMENT_2',
+        'SERP_ELEMENT_TITRE_3', 'SERP_ELEMENT_DESC_3', 'PLACEHOLDER_SERPELEMENT_3', 'SERP_ELEMENT_TITRE_4',
+        'SERP_ELEMENT_DESC_4', 'PLACEHOLDER_SERPELEMENT_4', 'FOCUS_INTENTION_TITRE', 'FOCUS_INTENTION_DESC',
+        'focus_standard_texte_1', 'focus_standard_texte_2', 'focus_standard_texte_3',
+        'focus_semantique_texte_1', 'focus_semantique_texte_2', 'focus_semantique_texte_3',
+        'FOCUS_GAP_TITRE_1', 'FOCUS_GAP_DESC_1', 'FOCUS_GAP_TITRE_2', 'FOCUS_GAP_DESC_2', 'FOCUS_GAP_TITRE_3', 'FOCUS_GAP_DESC_3',
+        'FOCUS_RECO_1', 'FOCUS_RECO_2', 'FOCUS_RECO_3', 'FOCUS_RECO_4',
+        'TECH_URL_CIBLE', 'TECH_SITEMAP', 'TECH_TYPE_PAGE', 'TECH_URL_PAGE_MERE', 'TECH_URL_PAGINEES', 'TECH_URL_FILTRE',
+        'TECH_IS_MULTILINGUE', 'TECH_LANGUE_CIBLE', 'TECH_PAYS_CIBLE', 'TECH_HTML_CRAWL', 'TECH_HTML_INDEX',
+        'TECH_HTML_POS', 'DATA_TECH_IA_FULL_STATE', 'TITRE_SLIDE_TECHNIQUE',
+        'UX_CLIENT_VIEWPORT_ID', 'UX_CLIENT_FULL_ID', 'UX_CLIENT_CROP_ID', 'UX_COMP_VIEWPORT_ID',
+        'UX_COMP_FULL_ID', 'UX_COMP_CROP_ID', 'DATA_UX_IA_FULL_STATE', 'UX_RECOMMANDATION_1', 'UX_RECOMMANDATION_2',
+        'TITRE_SLIDE_UX', 'CONTENU_YTG_CIBLE', 'CONTENU_STRUCTURE_CLIENT', 'CONTENU_STRUCTURE_CLIENT_HTML',
+        'CONTENU_YTG_CLIENT', 'CONTENU_YTG_CLIENT_HTML', 'CONTENU_YTG_SCORE_CLIENT', 'CONTENU_YTG_DATA_CLIENT',
+        'CONTENU_1FR_CLIENT', 'CONTENU_1FR_CLIENT_HTML', 'CONTENU_1FR_URL_CLIENT', 'CONTENU_1FR_SCORE_CLIENT',
+        'CONTENU_1FR_DATA_CLIENT', 'CONTENU_SCRAPED_CLIENT', 'TITRE_SLIDE_CONTENU_CLIENT', 'CONTENU_STRUCTURE_CONCURRENT',
+        'CONTENU_STRUCTURE_CONCURRENT_HTML', 'CONTENU_YTG_CONCURRENT', 'CONTENU_YTG_CONCURRENT_HTML',
+        'CONTENU_YTG_SCORE_CONCURRENT', 'CONTENU_YTG_DATA_CONCURRENT', 'CONTENU_1FR_CONCURRENT',
+        'CONTENU_1FR_CONCURRENT_HTML', 'CONTENU_1FR_URL_CONCURRENT', 'CONTENU_1FR_SCORE_CONCURRENT',
+        'CONTENU_1FR_DATA_CONCURRENT', 'CONTENU_SCRAPED_CONCURRENT', 'TITRE_SLIDE_CONTENU_CONCURRENT',
+        'TITRE_SLIDE_CONCURRENCE_EDITO', 'BLOG_CLIENT_EDITO', 'BLOG_LEADER_EDITO', 'BLOG_COMP1_EDITO',
+        'BLOG_COMP2_EDITO', 'BLOG_COMP3_EDITO', 'BLOG_COMP4_EDITO', 'TITRE_SLIDE_THEMATIQUE_EDITO',
+        'NOM_CONTENU_1', 'NOM_CONTENU_2', 'NOM_CONTENU_3'
+    ];
+    
+    var props = getDatabaseData(keys);
     var userProps = PropertiesService.getUserProperties().getProperties();
+    
     var config = {
         clientName: props['CONF_CLIENT_NAME'] || "",
         clientUrl: props['CONF_CLIENT_URL'] || "",
@@ -199,8 +237,7 @@ function sauvegarderDonneesEditorial(data) {
             'NOM_CONTENU_3': data.nomContenu3 || ""
         };
         
-        PropertiesService.getScriptProperties().setProperties(propsToSet);
-        syncPropertiesToConfigSheet();
+        setDatabaseData(propsToSet);
         
         Logger.log("=== FIN : sauvegarderDonneesEditorial ===");
         return { success: true };
@@ -348,8 +385,7 @@ function sauvegarderDonneesContenu(data) {
             'CONTENU_SCRAPED_CONCURRENT': data.CONTENU_SCRAPED_CONCURRENT || ""
         };
         
-        PropertiesService.getScriptProperties().setProperties(propsToSet);
-        syncPropertiesToConfigSheet();
+        setDatabaseData(propsToSet);
         
         Logger.log("=== FIN : sauvegarderDonneesContenu ===");
         return { success: true };
@@ -520,8 +556,7 @@ function sauvegarderConfigFocusMotCle(data) {
             clientPos = "-";
         }
 
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TARGET_KW': data.kw || "",
             'TARGET_KW_SV': data.vol || "",
             'TARGET_URL_CLIENT': data.clientUrl || "",
@@ -530,8 +565,6 @@ function sauvegarderConfigFocusMotCle(data) {
             'TARGET_KW_CONCURRENT_POS': String(compPos),
             'TARGET_LOCALISATION': localisation
         });
-        
-        syncPropertiesToConfigSheet();
         
         Logger.log("Sauvegarde réussie. Pos Client: " + clientPos + " | Pos Concurrent: " + compPos);
         Logger.log("=== FIN : sauvegarderConfigFocusMotCle ===");
@@ -632,8 +665,7 @@ function recupererReponseFormulaire(urlForm) {
 
 function sauvegarderConfigurationPreAudit(form) {
     Logger.log("=== DÉBUT : sauvegarderConfigurationPreAudit ===");
-    var props = PropertiesService.getScriptProperties();
-    props.setProperties({
+    setDatabaseData({
         'CONF_CLIENT_NAME': form.clientName || "",
         'CONF_CLIENT_URL': form.clientUrl || "",
         'PA_URLS_CONTEXTE': form.urlsContexte || "",
@@ -643,7 +675,6 @@ function sauvegarderConfigurationPreAudit(form) {
         'PA_URL_FORM_REPONSES': form.urlReponses || "",
         'PA_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
     });
-    syncPropertiesToConfigSheet();
     
     Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");
     return true;
@@ -674,8 +705,7 @@ function recupererArborescenceCluster() {
 function sauvegarderSelectionAnalyse(selection) {
     Logger.log("=== DÉBUT : sauvegarderSelectionAnalyse ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperty('ANALYSE_SELECTION', JSON.stringify(selection));
+        setDatabaseData({'ANALYSE_SELECTION': JSON.stringify(selection)});
         Logger.log("=== FIN : sauvegarderSelectionAnalyse ===");
         return true;
     } catch (e) {
@@ -687,8 +717,7 @@ function sauvegarderSelectionAnalyse(selection) {
 function chargerSelectionAnalyse() {
     Logger.log("=== DÉBUT : chargerSelectionAnalyse ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        var data = props.getProperty('ANALYSE_SELECTION');
+        var data = getDatabaseData('ANALYSE_SELECTION');
         Logger.log("=== FIN : chargerSelectionAnalyse ===");
         return data ? JSON.parse(data) : [];
     } catch (e) {
@@ -700,8 +729,7 @@ function chargerSelectionAnalyse() {
 function sauvegarderAnalysesEtatLieux(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesEtatLieux ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TITRE_SLIDE_THEMATIQUETOP_CLIENT': data.titreTopThematiques || "",
             'ANALYSE_THEMATIQUETOP_CLIENT_1': data.analyseTopThematiques || "",
             'TITRE_SLIDE_THEMATIQUEFLOP_CLIENT': data.titreFlopThematiques || "",
@@ -711,7 +739,6 @@ function sauvegarderAnalysesEtatLieux(data) {
             'TITRE_SLIDE_MCFLOP_CLIENT': data.titreFlopSegments || "",
             'ANALYSE_MCFLOP_CLIENT_1': data.analyseFlopSegments || ""
         });
-        syncPropertiesToConfigSheet();
         Logger.log("=== FIN : sauvegarderAnalysesEtatLieux ===");
         return true;
     } catch (e) {
@@ -1120,10 +1147,11 @@ function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, 
 function sauvegarderAnalyseEvolution(titre, texteKw, texteTrafic) {
     Logger.log("=== DÉBUT : sauvegarderAnalyseEvolution ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperty('TITRE_SLIDE_SEMRUSH', titre || "");
-        props.setProperty('ANALYSE_SEMRUSH_MOT_CLE', texteKw || "");
-        props.setProperty('ANALYSE_SEMRUSH_TRAFIC', texteTrafic || "");
+        setDatabaseData({
+            'TITRE_SLIDE_SEMRUSH': titre || "",
+            'ANALYSE_SEMRUSH_MOT_CLE': texteKw || "",
+            'ANALYSE_SEMRUSH_TRAFIC': texteTrafic || ""
+        });
         Logger.log("=== FIN : sauvegarderAnalyseEvolution ===");
         return true;
     } catch (e) {
@@ -1143,8 +1171,7 @@ function sauvegarderOngletActif(tabName) {
 function sauvegarderDonneesAnalyseGlobale(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesAnalyseGlobale ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TAG_SLIDE_BESOIN_HTML':         data.besoinHtml || "",
             'TAG_SLIDE_BESOIN':              data.besoinTexte || "",
             'TAG_SLIDE_SOLUTION_HTML':       data.solutionHtml || "",
@@ -1158,8 +1185,7 @@ function sauvegarderDonneesAnalyseGlobale(data) {
             'PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC': "IMAGE"
         });
         
-        Logger.log("Propriétés enregistrées, synchronisation en cours vers CONFIG...");
-        syncPropertiesToConfigSheet();
+        Logger.log("Propriétés enregistrées vers CONFIG...");
         
         Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
         return true;
@@ -1172,8 +1198,7 @@ function sauvegarderDonneesAnalyseGlobale(data) {
 function sauvegarderAnalysesFocus(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesFocus ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'SERP_ELEMENT_TITRE_1': data.serpTitre1 || "",
             'SERP_ELEMENT_DESC_1': data.serpDesc1 || "",
             'PLACEHOLDER_SERPELEMENT_1': data.serpSvg1 || "",
@@ -1211,7 +1236,6 @@ function sauvegarderAnalysesFocus(data) {
             'FOCUS_RECO_4': data.reco4 || ""
         });
         
-        syncPropertiesToConfigSheet();
         Logger.log("Analyses Focus sauvegardées avec la nouvelle granularité.");
         Logger.log("=== FIN : sauvegarderAnalysesFocus ===");
         return true;
@@ -2107,8 +2131,7 @@ function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
 function sauvegarderHtmlTechnique(htmlCrawl, htmlIndex, htmlPos) {
     Logger.log("=== DÉBUT : sauvegarderHtmlTechnique ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TECH_HTML_CRAWL': htmlCrawl || "",
             'TECH_HTML_INDEX': htmlIndex || "",
             'TECH_HTML_POS': htmlPos || ""
@@ -2126,8 +2149,7 @@ function sauvegarderHtmlTechnique(htmlCrawl, htmlIndex, htmlPos) {
 function sauvegarderEtatLieuxTechnique(data) {
     Logger.log("=== DÉBUT : sauvegarderEtatLieuxTechnique ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TECH_URL_CIBLE': data.techUrlCible || "",
             'TECH_SITEMAP': data.techSitemap || "",
             'TECH_TYPE_PAGE': data.techTypePage || "",
@@ -2138,7 +2160,6 @@ function sauvegarderEtatLieuxTechnique(data) {
             'TECH_LANGUE_CIBLE': data.techLangueCible || "",
             'TECH_PAYS_CIBLE': data.techPaysCible || ""
         });
-        syncPropertiesToConfigSheet();
         Logger.log("Données techniques sauvegardées avec succès.");
         Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
         return { success: true };
@@ -2416,8 +2437,7 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre, urlPageMere, urlPa
 function sauvegarderResultatsCrawl(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsCrawl ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TECH_CRAWL_STATUS_CODE': String(data.statusCode || ""),
             'TECH_CRAWL_TTFB_MS': String(data.ttfb || ""),
             'TECH_CRAWL_TTFB_SCORE': String(data.scoreTtfb || ""),
@@ -2439,7 +2459,6 @@ function sauvegarderResultatsCrawl(data) {
             'TECH_CRAWL_PAGI_ERREUR_LIEN': String(data.pagiErreurLien || ""),
             'TECH_CRAWL_HREFLANGS': String(data.hreflangs || "")
         });
-        syncPropertiesToConfigSheet();
         Logger.log("Résultats Crawl sauvegardés.");
         return { success: true };
     } catch (e) {
@@ -2531,8 +2550,7 @@ function analyserSitemapBackend(sitemapUrl, urlCible) {
 function sauvegarderResultatsIndexation(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsIndexation ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TECH_INDEX_SITEMAP_PRESENT': String(data.sitemapPresent || "Non"),
             'TECH_INDEX_URL_IN_SITEMAP': String(data.urlInSitemap || "Absente"),
             'TECH_INDEX_META_ROBOTS': String(data.metaRobots || ""),
@@ -2540,7 +2558,6 @@ function sauvegarderResultatsIndexation(data) {
             'TECH_INDEX_PAGI_META_ROBOTS': String(data.pagiMetaRobots || ""),
             'TECH_INDEX_PAGI_CANONICAL': String(data.pagiCanonical || "")
         });
-        syncPropertiesToConfigSheet();
         Logger.log("Résultats Indexation sauvegardés.");
         Logger.log("=== FIN : sauvegarderResultatsIndexation ===");
         return { success: true };
@@ -2553,8 +2570,7 @@ function sauvegarderResultatsIndexation(data) {
 function sauvegarderResultatsPositionnement(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsPositionnement ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TECH_POS_TITLE': String(data.title || ""),
             'TECH_POS_TITLE_HAS_KW': String(data.titleHasKw),
             'TECH_POS_H1': String(data.h1 || ""),
@@ -2562,7 +2578,6 @@ function sauvegarderResultatsPositionnement(data) {
             'TECH_POS_HN': JSON.stringify(data.structureHn || []),
             'TECH_POS_SCHEMA': JSON.stringify(data.structuredDataTypes || [])
         });
-        syncPropertiesToConfigSheet();
         Logger.log("Résultats Positionnement sauvegardés.");
         Logger.log("=== FIN : sauvegarderResultatsPositionnement ===");
         return { success: true };
@@ -2793,8 +2808,7 @@ function genererAnalyseTechniqueIA() {
 function sauvegarderAnalysesTechniquesIA(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesTechniquesIA ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TITRE_SLIDE_TECHNIQUE': data.TITRE_SLIDE_TECHNIQUE || "",
             'CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
             'CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
@@ -2816,7 +2830,6 @@ function sauvegarderAnalysesTechniquesIA(data) {
             'POS_CONTENT_3': data.POS_CONTENT_3 || "",
             'DATA_TECH_IA_FULL_STATE': data.fullStateStr || ""
         });
-        syncPropertiesToConfigSheet();
         Logger.log("Analyses Techniques IA sauvegardées.");
         Logger.log("=== FIN : sauvegarderAnalysesTechniquesIA ===");
         return true;
@@ -3229,7 +3242,7 @@ function lancerCapturesUX() {
     var compCropId = typeof compFullRes === 'object' ? compFullRes.cropId : "";
     
     Logger.log("Sauvegarde des IDs dans les propriétés du script...");
-    PropertiesService.getScriptProperties().setProperties({
+    setDatabaseData({
         'UX_CLIENT_VIEWPORT_ID': clientViewportId,
         'UX_CLIENT_FULL_ID': clientFullId,
         'UX_CLIENT_CROP_ID': clientCropId,
@@ -3237,9 +3250,6 @@ function lancerCapturesUX() {
         'UX_COMP_FULL_ID': compFullId,
         'UX_COMP_CROP_ID': compCropId
     });
-    
-    Logger.log("Synchronisation vers l'onglet CONFIG...");
-    syncPropertiesToConfigSheet();
     
     Logger.log("Toutes les captures ont été réalisées avec succès.");
     Logger.log("=== FIN : lancerCapturesUX (Succès) ===");
@@ -3502,8 +3512,7 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
 function sauvegarderAnalysesContenuTexte(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesContenuTexte ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperties({
+        setDatabaseData({
             'TITRE_SLIDE_CONTENU_CLIENT': data.titreClient || "",
             'TITRE_SLIDE_CONTENU_CONCURRENT': data.titreComp || "",
             'CONTENU_STRUCTURE_CLIENT': data.structureClient || "",
@@ -3519,7 +3528,6 @@ function sauvegarderAnalysesContenuTexte(data) {
             'CONTENU_1FR_CONCURRENT': data.unfrComp || "",
             'CONTENU_1FR_CONCURRENT_HTML': data.unfrCompHtml || ""
         });
-        syncPropertiesToConfigSheet();
         Logger.log("=== FIN : sauvegarderAnalysesContenuTexte (Succès) ===");
         return true;
     } catch (e) {

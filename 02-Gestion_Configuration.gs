@@ -88,37 +88,19 @@ function chargerDonneesInitiales() {
         ss.deleteSheet(oldTempSheet);
     }
 
-    var configSheet = ss.getSheetByName("CONFIG");
-    if (configSheet) {
-        try {
-            var data = configSheet.getDataRange().getValues();
-            var propsToRestore = {};
-            var hasData = false;
-            
-            // Correction : la clé doit commencer par une lettre ou un underscore pour éviter les chiffres purs
-            var keyRegex = /^[A-Z_][A-Z0-9_]{2,}$/;
-            for (var r = 1; r < data.length; r++) {
-                var row = data[r];
-                for (var c = 0; c < row.length; c++) {
-                    var cellValue = String(row[c]).trim();
-                    if (keyRegex.test(cellValue) && (c + 1) < row.length) {
-                        var val = row[c + 1] !== null ? String(row[c + 1]) : "";
-                        propsToRestore[cellValue] = val;
-                        hasData = true;
-                        c++;
-                    }
-                }
-            }
-            
-            if (hasData) {
-                PropertiesService.getScriptProperties().setProperties(propsToRestore);
-            }
-        } catch (e) {
-            Logger.log("Erreur lors de la lecture de l'onglet CONFIG : " + e.toString());
-        }
-    }
-
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var keys = [
+        'PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT', 'CONF_IS_MULTI_THEME', 'CONF_PROJECT_TYPE',
+        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'CONF_CLIENT_STRENGTH', 'CONF_CLIENT_BRAND',
+        'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_STRENGTH_1', 'CONF_COMP_BRAND_1',
+        'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_STRENGTH_2', 'CONF_COMP_BRAND_2',
+        'CONF_COMP_NAME_3', 'CONF_COMP_URL_3', 'CONF_COMP_STRENGTH_3', 'CONF_COMP_BRAND_3',
+        'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_STRENGTH_4', 'CONF_COMP_BRAND_4',
+        'CONF_COMP_NAME_5', 'CONF_COMP_URL_5', 'CONF_COMP_STRENGTH_5', 'CONF_COMP_BRAND_5',
+        'CTR_POS_1', 'CTR_POS_2', 'CTR_POS_3', 'CTR_POS_4', 'CTR_POS_5',
+        'CTR_POS_6', 'CTR_POS_7', 'CTR_POS_8', 'CTR_POS_9', 'CTR_POS_10'
+    ];
+    
+    var props = getDatabaseData(keys);
     var hasMatrix = (ss.getSheetByName("Matrice") !== null);
     var donnees = {
         hasMatrix: hasMatrix,
@@ -177,9 +159,8 @@ function chargerDonneesInitiales() {
 
 function enregistrerConfiguration(formulaire) {
     Logger.log("=== DÉBUT : enregistrerConfiguration ===");
-    var props = PropertiesService.getScriptProperties();
     
-    props.setProperties({
+    setDatabaseData({
         'PA_URLS_CONTEXTE': formulaire.urlsContexte || "",
         'PA_CONTEXTE_CLIENT': formulaire.contexteClient || "",
         'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
@@ -219,7 +200,6 @@ function enregistrerConfiguration(formulaire) {
         'CTR_POS_9': formulaire.ctrPos9,
         'CTR_POS_10': formulaire.ctrPos10
     });
-    syncPropertiesToConfigSheet();
     
     Logger.log("=== FIN : enregistrerConfiguration ===");
     return { success: true };
@@ -1052,7 +1032,8 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
 
 function chargerContexteIA() {
     Logger.log("=== DÉBUT : chargerContexteIA ===");
-    var props = PropertiesService.getScriptProperties().getProperties();
+    var keys = ['PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT'];
+    var props = getDatabaseData(keys);
     Logger.log("=== FIN : chargerContexteIA ===");
     return {
         urlsContexte: props['PA_URLS_CONTEXTE'] || "",
@@ -1062,13 +1043,10 @@ function chargerContexteIA() {
 
 function sauvegarderContexteIA(urls, contexte) {
     Logger.log("=== DÉBUT : sauvegarderContexteIA ===");
-    PropertiesService.getScriptProperties().setProperties({
+    setDatabaseData({
         'PA_URLS_CONTEXTE': urls || "",
         'PA_CONTEXTE_CLIENT': contexte || ""
     });
-    
-    // On synchronise vers l'onglet
-    syncPropertiesToConfigSheet();
     
     Logger.log("=== FIN : sauvegarderContexteIA ===");
     return true;
@@ -1077,9 +1055,7 @@ function sauvegarderContexteIA(urls, contexte) {
 function sauvegarderAnalyseUXIA(fullStateStr) {
     Logger.log("=== DÉBUT : sauvegarderAnalyseUXIA ===");
     try {
-        var props = PropertiesService.getScriptProperties();
-        props.setProperty('DATA_UX_IA_FULL_STATE', fullStateStr || "");
-        syncPropertiesToConfigSheet();
+        setDatabaseData({'DATA_UX_IA_FULL_STATE': fullStateStr || ""});
         Logger.log("=== FIN : sauvegarderAnalyseUXIA (Succès) ===");
         return true;
     } catch (e) {
@@ -1092,7 +1068,6 @@ function sauvegarderAnalyseUXIA(fullStateStr) {
 function sauvegarderSelectionUX(data) {
     Logger.log("=== DÉBUT : sauvegarderSelectionUX ===");
     try {
-        var props = PropertiesService.getScriptProperties();
         var propsToSet = {
             'PLACEHOLDER_UX_CLIENT': data.uxClientViewportId || "",
             'PLACEHOLDER_UX_CONCURRENT': data.uxCompViewportId || "",
@@ -1107,8 +1082,7 @@ function sauvegarderSelectionUX(data) {
             propsToSet['UX_CONCURRENT_CHECK_' + i] = data['UX_CONCURRENT_CHECK_' + i] || "";
         }
 
-        props.setProperties(propsToSet);
-        syncPropertiesToConfigSheet();
+        setDatabaseData(propsToSet);
         
         Logger.log("=== FIN : sauvegarderSelectionUX (Succès) ===");
         return { success: true };
@@ -1119,274 +1093,3 @@ function sauvegarderSelectionUX(data) {
     }
 }
 
-function syncPropertiesToConfigSheet() {
-    Logger.log("=== DÉBUT : syncPropertiesToConfigSheet ===");
-    Logger.log("Étape 1 : Initialisation et nettoyage de l'onglet CONFIG.");
-    try {
-        var ss = SpreadsheetApp.getActiveSpreadsheet();
-        var sheetName = "CONFIG";
-        var sheet = ss.getSheetByName(sheetName);
-        
-        if (!sheet) {
-            sheet = ss.insertSheet(sheetName);
-        }
-        
-        sheet.clear();
-        sheet.hideSheet();
-        var props = PropertiesService.getScriptProperties().getProperties();
-        
-        Logger.log("Étape 2 : Définition des groupes de variables (API exclues).");
-        var groups = [
-            {
-                name: "⚙️ CONFIG GLOBALE & CONTEXTE",
-                keys: [
-                    "CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID",
-                    "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND",
-                    "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1",
-                    "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2",
-                    "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_STRENGTH_3", "CONF_COMP_BRAND_3",
-                    "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4",
-                    "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
-                    "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5",
-                    "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10",
-                    "PA_URL_FORM_REPONSES", "PA_URLS_CONTEXTE", "PA_BRIEF_CONSULTANT", "PA_CONTEXTE_CLIENT", "PA_PROFILAGE_COMMERCIAL",
-                    "TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION"
-                ]
-            },
-            {
-                name: "🖼️ EXPORT SLIDES",
-                keys: [
-                    "TAG_SLIDE_BESOIN", "TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_SOLUTION", "TAG_SLIDE_SOLUTION_HTML",
-                    "---BORDER---",
-                    "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_TRAFIC", "ANALYSE_SEMRUSH_TRAFIC_HTML", "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE", "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC",
-                    "---BORDER---",
-                    "MOTCLE_CLIENT_GLOBAL", "MOTCLE_CLIENT_TOP10", "MOTCLE_CLIENT_TOP3", "MOTCLE_CLIENT_URL", 
-                    "MOTCLE_CLIENT_TRANSAC", "MOTCLE_CLIENT_TRANSAC_TOP10", "MOTCLE_CLIENT_TRANSAC_PCT", "JAUGE_TRANSAC_TOP10", "MOTCLE_CLIENT_INFO", "MOTCLE_CLIENT_INFO_TOP10", "MOTCLE_CLIENT_INFO_PCT", "JAUGE_INFO_TOP10",
-                    "---BORDER---",
-                    "TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "ANALYSE_THEMATIQUETOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_2", "ANALYSE_THEMATIQUETOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUETOP_CLIENT_3", "ANALYSE_THEMATIQUETOP_CLIENT_3_HTML", "top_thm_client_1", "top_thm_client_top10_1", "top_thm_client_tec_1", "top_thm_client_tpm_1", "top_thm_client_ddt_1", "top_thm_client_2", "top_thm_client_top10_2", "top_thm_client_tec_2", "top_thm_client_tpm_2", "top_thm_client_ddt_2", "top_thm_client_3", "top_thm_client_top10_3", "top_thm_client_tec_3", "top_thm_client_tpm_3", "top_thm_client_ddt_3",
-                    "---BORDER---",
-                    "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "ANALYSE_THEMATIQUEFLOP_CLIENT_1_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_2", "ANALYSE_THEMATIQUEFLOP_CLIENT_2_HTML", "ANALYSE_THEMATIQUEFLOP_CLIENT_3", "ANALYSE_THEMATIQUEFLOP_CLIENT_3_HTML", "flop_thm_client_1", "flop_thm_client_flop10_1", "flop_thm_client_tec_1", "flop_thm_client_tpm_1", "flop_thm_client_ddt_1", "flop_thm_client_2", "flop_thm_client_flop10_2", "flop_thm_client_tec_2", "flop_thm_client_tpm_2", "flop_thm_client_ddt_2", "flop_thm_client_3", "flop_thm_client_flop10_3", "flop_thm_client_tec_3", "flop_thm_client_tpm_3", "flop_thm_client_ddt_3",
-                    "---BORDER---",
-                    "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1_HTML", "ANALYSE_MCTOP_CLIENT_2", "ANALYSE_MCTOP_CLIENT_2_HTML", "ANALYSE_MCTOP_CLIENT_3", "ANALYSE_MCTOP_CLIENT_3_HTML", "top_mc_client_1", "top_mc_client_vol_1", "top_mc_client_ddt_1", "top_mc_client_pos_1", "qw_mc_client_1", "qw_mc_client_vol_1", "qw_mc_client_ddt_1", "qw_mc_client_pos_1", "top_mc_client_2", "top_mc_client_vol_2", "top_mc_client_ddt_2", "top_mc_client_pos_2", "qw_mc_client_2", "qw_mc_client_vol_2", "qw_mc_client_ddt_2", "qw_mc_client_pos_2", "top_mc_client_3", "top_mc_client_vol_3", "top_mc_client_ddt_3", "top_mc_client_pos_3", "qw_mc_client_3", "qw_mc_client_vol_3", "qw_mc_client_ddt_3", "qw_mc_client_pos_3", 
-                    "top_mc_client_4", "top_mc_client_vol_4", "top_mc_client_ddt_4", "top_mc_client_pos_4", "qw_mc_client_4", "qw_mc_client_vol_4", "qw_mc_client_ddt_4", "qw_mc_client_pos_4", "top_mc_client_5", "top_mc_client_vol_5", "top_mc_client_ddt_5", "top_mc_client_pos_5", "qw_mc_client_5", "qw_mc_client_vol_5", "qw_mc_client_ddt_5", "qw_mc_client_pos_5",
-                    "---BORDER---",
-                    "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1_HTML", "ANALYSE_MCFLOP_CLIENT_2", "ANALYSE_MCFLOP_CLIENT_2_HTML", "ANALYSE_MCFLOP_CLIENT_3", "ANALYSE_MCFLOP_CLIENT_3_HTML", "pc_mc_client_1", "pc_mc_client_vol_1", "pc_mc_client_ddt_1", "pc_mc_conc_pos_1", "tap_mc_client_1", "tap_mc_client_vol_1", "tap_mc_client_ddt_1", "tap_mc_conc_pos_1", "pc_mc_client_2", "pc_mc_client_vol_2", "pc_mc_client_ddt_2", "pc_mc_conc_pos_2", "tap_mc_client_2", "tap_mc_client_vol_2", "tap_mc_client_ddt_2", "tap_mc_conc_pos_2", "pc_mc_client_3", "pc_mc_client_vol_3", "pc_mc_client_ddt_3", "pc_mc_conc_pos_3", "tap_mc_client_3", "tap_mc_client_vol_3", "tap_mc_client_ddt_3", "tap_mc_conc_pos_3", "pc_mc_client_4", "pc_mc_client_vol_4", "pc_mc_client_ddt_4", "pc_mc_conc_pos_4", "tap_mc_client_4", "tap_mc_client_vol_4", "tap_mc_client_ddt_4", "tap_mc_conc_pos_4", "pc_mc_client_5", "pc_mc_client_vol_5", "pc_mc_client_ddt_5", "pc_mc_conc_pos_5", "tap_mc_client_5", "tap_mc_client_vol_5", 
-                    "tap_mc_client_ddt_5", "tap_mc_conc_pos_5",
-                    "---BORDER---",
-                    "TITRE_SLIDE_CONCURRENCE", "NOM_CLIENT", "VALEUR_TOP10_CLIENT", "VALEUR_PAGES_CLIENT", "PLACEHOLDER_LOGO_CLIENT", "NOM_LEADER", "VALEUR_TOP10_LEADER", "VALEUR_PAGES_LEADER", "PLACEHOLDER_LOGO_LEADER", "NOM_COMP1", "VALEUR_TOP10_COMP1", "VALEUR_PAGES_COMP1", "PLACEHOLDER_LOGO_COMP1", "NOM_COMP2", "VALEUR_TOP10_COMP2", "VALEUR_PAGES_COMP2", "PLACEHOLDER_LOGO_COMP2", "NOM_COMP3", "VALEUR_TOP10_COMP3", "VALEUR_PAGES_COMP3", "PLACEHOLDER_LOGO_COMP3", "NOM_COMP4", "VALEUR_TOP10_COMP4", "VALEUR_PAGES_COMP4", "PLACEHOLDER_LOGO_COMP4",
-                    "---BORDER---",
-                    "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_semantique_texte_1", "focus_standard_texte_2", "focus_semantique_texte_2", "focus_standard_texte_3", "focus_semantique_texte_3",
-                    "---BORDER---",
-                    "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"
-                ]
-            },
-            {
-                name: "🛠️ TECHNIQUE",
-                keys: [
-                    "TITRE_SLIDE_TECHNIQUE",
-                    "TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE",
-                    "---BORDER---",
-                    "TECH_CRAWL_STATUS_CODE", "TECH_CRAWL_TTFB_MS", "TECH_CRAWL_TTFB_SCORE",
-                    "TECH_CRAWL_ROBOTS_BLOCKED", "TECH_CRAWL_ROBOTS", "TECH_CRAWL_HREFLANGS",
-                    "TECH_CRAWL_FIRST_LINK_URL", "TECH_CRAWL_FIRST_LINK_ANCHOR",
-                    "TECH_CRAWL_LINKS_TOTAL", "TECH_CRAWL_LINKS_INTERNAL", "TECH_CRAWL_LINKS_EXTERNAL",
-                    "TECH_CRAWL_LINKS_200", "TECH_CRAWL_LINKS_3XX", "TECH_CRAWL_LINKS_4XX", "TECH_CRAWL_LINKS_5XX",
-                    "TECH_CRAWL_PAGI_MERE_BODY", "TECH_CRAWL_PAGI_MERE_HEAD", "TECH_CRAWL_PAGI_P2_BODY", "TECH_CRAWL_PAGI_P2_HEAD", "TECH_CRAWL_PAGI_ERREUR_LIEN",
-                    "---BORDER---",
-                    "TECH_INDEX_SITEMAP_PRESENT", "TECH_INDEX_URL_IN_SITEMAP", "TECH_INDEX_META_ROBOTS", "TECH_INDEX_CANONICAL", "TECH_INDEX_PAGI_META_ROBOTS", "TECH_INDEX_PAGI_CANONICAL",
-                    "---BORDER---",
-                    "TECH_POS_TITLE", "TECH_POS_TITLE_HAS_KW", "TECH_POS_H1", "TECH_POS_H1_HAS_KW", "TECH_POS_HN", "TECH_POS_SCHEMA",
-                    "---BORDER---",
-                    "CRAWL_CHECK_1", "CRAWL_CONTENT_1", "CRAWL_CHECK_2", "CRAWL_CONTENT_2", "CRAWL_CHECK_3", "CRAWL_CONTENT_3",
-                    "INDEX_CHECK_1", "INDEX_CONTENT_1", "INDEX_CHECK_2", "INDEX_CONTENT_2", "INDEX_CHECK_3", "INDEX_CONTENT_3",
-                    "POS_CHECK_1", "POS_CONTENT_1", "POS_CHECK_2", "POS_CONTENT_2", "POS_CHECK_3", "POS_CONTENT_3"
-                ]
-            },
-            {
-                name: "🎨 UX",
-                keys: [
-                    "TITRE_SLIDE_UX",
-                    "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT",
-                    "UX_CLIENT_CROP_ID", "UX_COMP_CROP_ID",
-                    "---BORDER---",
-                    "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1",
-                    "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2",
-                    "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3",
-                    "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4",
-                    "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5",
-                    "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6",
-                    "---BORDER---",
-                    "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2"
-                ]
-            },
-            {
-                name: "📝 CONTENU",
-                keys: [
-                    "TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT",
-                    "CONTENU_YTG_CIBLE",
-                    "---BORDER---",
-                    "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT", "CONTENU_SCRAPED_CLIENT",
-                    "---BORDER---",
-                    "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT", "CONTENU_SCRAPED_CONCURRENT"
-                ]
-            },
-            {
-                name: "📚 ÉDITORIAL",
-                keys: [
-                    "TITRE_SLIDE_CONCURRENCE_EDITO",
-                    "TITRE_SLIDE_THEMATIQUE_EDITO",
-                    "---BORDER---",
-                    "NOM_CLIENT_EDITO", "VALEUR_TOP10_CLIENT_EDITO", "VALEUR_PAGES_CLIENT_EDITO", "BLOG_CLIENT_EDITO", "PLACEHOLDER_LOGO_CLIENT_EDITO",
-                    "---BORDER---",
-                    "NOM_LEADER_EDITO", "VALEUR_TOP10_LEADER_EDITO", "VALEUR_PAGES_LEADER_EDITO", "BLOG_LEADER_EDITO", "PLACEHOLDER_LOGO_LEADER_EDITO",
-                    "---BORDER---",
-                    "NOM_COMP1_EDITO", "VALEUR_TOP10_COMP1_EDITO", "VALEUR_PAGES_COMP1_EDITO", "BLOG_COMP1_EDITO", "PLACEHOLDER_LOGO_COMP1_EDITO",
-                    "NOM_COMP2_EDITO", "VALEUR_TOP10_COMP2_EDITO", "VALEUR_PAGES_COMP2_EDITO", "BLOG_COMP2_EDITO", "PLACEHOLDER_LOGO_COMP2_EDITO",
-                    "NOM_COMP3_EDITO", "VALEUR_TOP10_COMP3_EDITO", "VALEUR_PAGES_COMP3_EDITO", "BLOG_COMP3_EDITO", "PLACEHOLDER_LOGO_COMP3_EDITO",
-                    "NOM_COMP4_EDITO", "VALEUR_TOP10_COMP4_EDITO", "VALEUR_PAGES_COMP4_EDITO", "BLOG_COMP4_EDITO", "PLACEHOLDER_LOGO_COMP4_EDITO",
-                    "---BORDER---",
-                    "THEMATIQUE_EDITO_1", "NOM_COMP1_EDITO_CONTENU", "URL_EDITO_CONTENU_1", "NOM_CONTENU_1", "DATA_TOP10_CONTENU_1", "PLACEHOLDER_LOGO_COMP1_EDITO_CONTENU",
-                    "THEMATIQUE_EDITO_2", "NOM_COMP2_EDITO_CONTENU", "URL_EDITO_CONTENU_2", "NOM_CONTENU_2", "DATA_TOP10_CONTENU_2", "PLACEHOLDER_LOGO_COMP2_EDITO_CONTENU",
-                    "THEMATIQUE_EDITO_3", "NOM_COMP3_EDITO_CONTENU", "URL_EDITO_CONTENU_3", "NOM_CONTENU_3", "DATA_TOP10_CONTENU_3", "PLACEHOLDER_LOGO_COMP3_EDITO_CONTENU"
-                ]
-            },
-            {
-                name: "📦 AUTRES",
-                keys: []
-            }
-        ];
-        var knownKeys = [];
-        for (var i = 0; i < groups.length; i++) {
-            for (var j = 0; j < groups[i].keys.length; j++) {
-                if (groups[i].keys[j] !== "---BORDER---") {
-                    knownKeys.push(groups[i].keys[j]);
-                }
-            }
-        }
-        
-        Logger.log("Étape 3 : Détection des clés inconnues et exclusion stricte des clés API.");
-        for (var key in props) {
-            // Exclusions explicites pour les clés API sécurisées (elles ne doivent pas fuiter dans CONFIG)
-            if (key === 'CONF_API_KEY_GEMINI' || key === 'LISTE_CLES_API') {
-                continue;
-            }
-            
-            if (key.indexOf('DATA_') === 0 || key.indexOf('_CACHE') === 0 || (props[key] && props[key].length > 40000)) {
-                continue;
-            }
-            // Correction : exclusion stricte des clés purement numériques
-            if (!isNaN(key)) {
-                continue;
-            }
-            if (knownKeys.indexOf(key) === -1) {
-                groups[groups.length - 1].keys.push(key);
-            }
-        }
-        
-        var maxRows = 0;
-        for (var i = 0; i < groups.length; i++) {
-            if (groups[i].keys.length + 1 > maxRows) {
-                maxRows = groups[i].keys.length + 1;
-            }
-        }
-        
-        var numGroups = groups.length;
-        var grid = [];
-        for (var r = 0; r < maxRows; r++) {
-            grid[r] = new Array(numGroups * 3).fill("");
-        }
-        
-        var borderRanges = [];
-        for (var gIdx = 0; gIdx < numGroups; gIdx++) {
-            var g = groups[gIdx];
-            var cBase = gIdx * 3;
-            grid[0][cBase] = g.name;
-            grid[0][cBase + 1] = "Valeur";
-            
-            var rowOffset = 1;
-            for (var i = 0; i < g.keys.length; i++) {
-                var k = g.keys[i];
-                if (k === "---BORDER---") {
-                    borderRanges.push({row: rowOffset, colBase: cBase});
-                } else {
-                    grid[rowOffset][cBase] = k;
-                    grid[rowOffset][cBase + 1] = props[k] || "";
-                    rowOffset++;
-                }
-            }
-        }
-        
-        if (maxRows > 0) {
-            Logger.log("Étape 4 : Formatage et injection des données dans l'onglet.");
-            var range = sheet.getRange(1, 1, maxRows, numGroups * 3);
-            range.setValues(grid);
-
-            sheet.setFrozenRows(1);
-            sheet.setHiddenGridlines(true);
-            for (var i = 0; i < numGroups; i++) {
-                var cBase = (i * 3) + 1;
-                // En-têtes centrés
-                sheet.getRange(1, cBase, 1, 2)
-                    .setBackground("#08133B").setFontColor("#FFFFFF").setFontWeight("bold")
-                    .setHorizontalAlignment("center").setFontSize(10)
-                    .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-                // Alignement à gauche pour les clés
-                sheet.getRange(2, cBase, maxRows - 1, 1)
-                    .setFontFamily("Courier New").setFontWeight("bold").setFontColor("#5f6368")
-                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP)
-                    .setHorizontalAlignment("left");
-                // Alignement à gauche pour les valeurs
-                sheet.getRange(2, cBase + 1, maxRows - 1, 1)
-                    .setFontSize(10).setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP).setVerticalAlignment("top")
-                    .setHorizontalAlignment("left");
-                sheet.setColumnWidth(cBase, 350);
-                sheet.setColumnWidth(cBase + 1, 350);
-                if (cBase + 2 <= numGroups * 3) {
-                    sheet.setColumnWidth(cBase + 2, 30);
-                }
-            }
-
-            // Appliquer les bordures pour le groupe Slides
-            for (var b = 0; b < borderRanges.length; b++) {
-                var br = borderRanges[b];
-                var cell1 = sheet.getRange(br.row, br.colBase + 1);
-                var cell2 = sheet.getRange(br.row, br.colBase + 2);
-                cell1.setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-                cell2.setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-            }
-
-            SpreadsheetApp.flush();
-            try {
-                Logger.log("Étape 5 : Appel API Sheets v4 pour redimensionner les lignes.");
-                var token = ScriptApp.getOAuthToken();
-                var requests = [{
-                    updateDimensionProperties: {
-                        range: {
-                            sheetId: sheet.getSheetId(),
-                            dimension: "ROWS",
-                            startIndex: 0,
-                            endIndex: maxRows
-                        },
-                        properties: { pixelSize: 21 },
-                        fields: "pixelSize"
-                    }
-                }];
-                var response = UrlFetchApp.fetch(
-                    "https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate",
-                    {
-                        method: "POST",
-                        headers: { "Authorization": "Bearer " + token },
-                        contentType: "application/json",
-                        payload: JSON.stringify({ requests: requests }),
-                        muteHttpExceptions: true
-                    }
-                );
-            } catch (eV4) {
-                Logger.log("Sheets API v4 — exception : " + eV4.message);
-            }
-        }
-    } catch (e) {
-        Logger.log("Erreur lors de la synchronisation vers l'onglet CONFIG : " + e.toString());
-    }
-    Logger.log("=== FIN : syncPropertiesToConfigSheet ===");
-}
