@@ -748,6 +748,7 @@ function sauvegarderAnalysesEtatLieux(data) {
 }
 
 function genererDiagnostic(selection) {
+    Logger.log("=== DÉBUT : genererDiagnostic ===");
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetCluster = ss.getSheetByName("Cluster");
     var sheetMatrice = ss.getSheetByName("Matrice");
@@ -758,7 +759,6 @@ function genererDiagnostic(selection) {
     var props = getDatabaseData();
     // NOUVEAU : Récupération du mot-clé fil rouge pour exclusion
     var targetKwGlobal = (props['TARGET_KW'] || "").toLowerCase().trim();
-
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
     for (var ci = 1; ci <= 10; ci++) {
@@ -813,8 +813,7 @@ function genererDiagnostic(selection) {
             var name = h.substring(4).trim();
             var urlIdx = -1;
             for (var j = c + 1; j < headers.length; j++) {
-                if (String(headers[j]) === "URL " + name) { urlIdx = j;
-                    break; }
+                if (String(headers[j]) === "URL " + name) { urlIdx = j; break; }
             }
             entities.push({ name: name, posIdx: c, urlIdx: urlIdx });
         }
@@ -859,7 +858,6 @@ function genererDiagnostic(selection) {
 
             if (p <= 100) kpis[e.name].posAll++;
             if (p <= 3)   kpis[e.name].top3++;
-    
             if (p <= 10)  kpis[e.name].top10++;
             if (url && url !== "-") kpis[e.name].urls.add(url);
             
@@ -893,8 +891,7 @@ function genererDiagnostic(selection) {
                 clientPos = p;
             } else {
                 if (p <= 10) compInTop10Count++;
-                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name;
-                }
+                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name; }
             }
         });
         var clientTEC = computeTEC(vol, clientPos);
@@ -909,8 +906,7 @@ function genererDiagnostic(selection) {
         if (clientPos <= 10)  themeStats[tsKey].top10++;
         if (clientPos <= 3)   themeStats[tsKey].top3++;
 
-        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 ||
-        kwMeta.intent === "t" || kwMeta.intent === "c";
+        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 || kwMeta.intent === "t" || kwMeta.intent === "c";
         var isInfo    = kwMeta.intent.indexOf("information") > -1 || kwMeta.intent === "i";
         if (isTransac) {
             intentStats.transac.TPM += kwTPM;
@@ -969,7 +965,6 @@ function genererDiagnostic(selection) {
             posAll: kpis[e.name].posAll,
             top3: kpis[e.name].top3,
             top10: kpis[e.name].top10,
-  
             infoTop10: kpis[e.name].infoTop10,
             urlsCount: kpis[e.name].urls.size,
             infoUrlsCount: kpis[e.name].infoUrls.size,
@@ -983,6 +978,7 @@ function genererDiagnostic(selection) {
         if (b.isClient) return 1;
         return b.top10 - a.top10;
     });
+    
     // Construction du tableau des thématiques avec tous les ratios
     var themeArray = [];
     for (var k in themeStats) {
@@ -1002,6 +998,7 @@ function genererDiagnostic(selection) {
         });
     }
     themeArray.sort(function(a, b) { return b.volTotal - a.volTotal; });
+    
     // Identification top / flop thématique
     var topTheme = null, flopTheme = null;
     if (themeArray.length > 0) {
@@ -1019,20 +1016,26 @@ function genererDiagnostic(selection) {
         s.TEC = Math.round(s.TEC);
         s.TPM = Math.round(s.TPM);
     });
+    
     acquis.sort(function(a, b) { return b.vol - a.vol; });
     gains.sort(function(a, b) { return b.DDT - a.DDT; });
     pertes.sort(function(a, b) { return b.DDT - a.DDT; });
     territoires.sort(function(a, b) { return b.vol - a.vol; });
+    
     var arrUrlProfiles = Object.keys(urlProfiles).map(function(k) { return urlProfiles[k]; });
     var validUrlProfiles = arrUrlProfiles.filter(function(pr) { return !pr.isClient && pr.kwTop10 > 0; });
     validUrlProfiles.sort(function(a, b) { return b.tec - a.tec; });
     
     var finalPistesEdito = [];
     var usedTsKeys = new Set();
+    var usedUrls = new Set();
+    
     for (var u = 0; u < validUrlProfiles.length; u++) {
         var profile = validUrlProfiles[u];
-        if (!usedTsKeys.has(profile.tsKey)) {
+        // Ajout du contrôle strict sur l'URL pour ne pas sélectionner deux fois le même contenu
+        if (!usedTsKeys.has(profile.tsKey) && !usedUrls.has(profile.url)) {
             usedTsKeys.add(profile.tsKey);
+            usedUrls.add(profile.url);
             profile.kws.sort(function(ka, kb) { return kb.vol - ka.vol; });
             profile.kws = profile.kws.slice(0, 3);
             profile.tec = Math.round(profile.tec);
@@ -1041,6 +1044,7 @@ function genererDiagnostic(selection) {
         }
     }
 
+    Logger.log("=== FIN : genererDiagnostic ===");
     return {
         kpis: kpisArray,
         themeStats: themeArray,
@@ -1049,8 +1053,7 @@ function genererDiagnostic(selection) {
         flopTheme: flopTheme,
         acquis:      acquis.slice(0, 10),
         gains:       gains.slice(0, 10),
-        pertes:  
-    pertes.slice(0, 10),
+        pertes:      pertes.slice(0, 10),
         territoires: territoires.slice(0, 10),
         pistesEdito: finalPistesEdito
     };

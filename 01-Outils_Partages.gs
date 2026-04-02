@@ -365,17 +365,30 @@ function getColumnForConfigKey(key) {
 }
 
 function applyConfigStyle(sheet) {
-    Logger.log("=== APPLICATION DU STYLE ET DES BORDURES ===");
+    Logger.log("=== DÉBUT : applyConfigStyle ===");
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var values = sheet.getDataRange().getValues();
     var maxRows = sheet.getMaxRows();
     var maxCols = 26;
 
+    // Liste des clés réelles qui doivent déclencher une bordure de séparation en dessous
+    var TRIGGER_KEYS = [
+        "CONF_CLIENT_BRAND", "CONF_COMP_URL_5", "CTR_POS_10",
+        "TAG_SLIDE_SOLUTION", "ANALYSE_SEMRUSH_TRAFIC",
+        "ANALYSE_THEMATIQUETOP_CLIENT_1", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1",
+        "TARGET_LOCALISATION", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_DESC", "focus_standard_texte_3", "focus_semantique_texte_3", "FOCUS_GAP_DESC_3",
+        "TECH_PAYS_CIBLE", "TECH_HTML_POS",
+        "UX_RECOMMANDATION_2", "UX_COMP_CROP_ID",
+        "CONTENU_YTG_CIBLE", "CONTENU_SCRAPED_CLIENT",
+        "TITRE_SLIDE_THEMATIQUE_EDITO", "PLACEHOLDER_LOGO_LEADER_EDITO", "PLACEHOLDER_LOGO_COMP4_EDITO", "NOM_CONTENU_3"
+    ];
+
+    Logger.log("Application du formatage global (couleurs, polices, alignements)");
     // 1. En-têtes (Lignes 1 et 2)
     sheet.getRange(1, 1, 1, maxCols).setBackground("#08133B").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
     sheet.getRange(2, 1, 1, maxCols).setBackground("#d9d9d9").setFontWeight("bold").setHorizontalAlignment("center");
 
-    // 2. Formatage des données et détection des bordures
+    // 2. Formatage des colonnes (Largeurs et alignements)
     sheet.setHiddenGridlines(true);
     for (var i = 1; i <= maxCols; i++) {
         sheet.setColumnWidth(i, (i % 3 === 0) ? 30 : 350);
@@ -386,18 +399,19 @@ function applyConfigStyle(sheet) {
         dataRange.setVerticalAlignment("top").setHorizontalAlignment("left").setWrap(true).setFontFamily("Google Sans");
     }
 
-    // 3. Tracé des bordures sur les marqueurs
+    Logger.log("Recherche des clés déclencheuses pour le tracé des bordures...");
+    // 3. Tracé dynamique des bordures basé sur les vraies clés
     for (var r = 0; r < values.length; r++) {
-        for (var c = 0; c < values[r].length; c++) {
-            if (values[r][c] === "---BORDER---") {
-                var range = sheet.getRange(r + 1, c + 1, 1, 2);
-                range.setBorder(true, null, null, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-                range.setValue(""); // On vide le texte
+        for (var c = 0; c < values[r].length; c += 3) {
+            var cellKey = String(values[r][c]).trim();
+            if (TRIGGER_KEYS.indexOf(cellKey) !== -1) {
+                // On applique une bordure inférieure épaisse sur la clé et sa valeur
+                sheet.getRange(r + 1, c + 1, 1, 2).setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
             }
         }
     }
 
-    // 4. Hauteur de ligne 21px via API v4 (La méthode complexe)
+    Logger.log("Appel API v4 pour ajuster la hauteur des lignes à 21 px");
     SpreadsheetApp.flush();
     try {
         var token = ScriptApp.getOAuthToken();
@@ -415,7 +429,9 @@ function applyConfigStyle(sheet) {
             payload: JSON.stringify({ requests: requests }),
             muteHttpExceptions: true
         });
-    } catch(e) { Logger.log("Erreur API v4 : " + e.message); }
+    } catch(e) { Logger.log("Erreur API v4 (Hauteur) : " + e.message); }
+    
+    Logger.log("=== FIN : applyConfigStyle ===");
 }
 
 function setDatabaseData(dict) {
