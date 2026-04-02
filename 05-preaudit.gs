@@ -9,7 +9,7 @@ function ouvrirFenetrePreAudit() {
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
     var keys = [
-        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT',
+        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT',
         'PA_SLIDE_ID', 'PA_BRIEF_CONSULTANT', 'PA_URL_FORM_REPONSES', 'PA_PROFILAGE_COMMERCIAL',
         'TAG_SLIDE_BESOIN_HTML', 'TAG_SLIDE_BESOIN', 'TAG_SLIDE_SOLUTION_HTML', 'TAG_SLIDE_SOLUTION',
         'TITRE_SLIDE_SEMRUSH', 'ANALYSE_SEMRUSH_MOT_CLE_HTML', 'ANALYSE_SEMRUSH_MOT_CLE',
@@ -45,15 +45,14 @@ function chargerConfigurationPreAudit() {
         'NOM_CONTENU_1', 'NOM_CONTENU_2', 'NOM_CONTENU_3',
         'CONF_CONTACT_COM', 'CONF_CONTACT_CONS1', 'CONF_CONTACT_CONS2'
     ];
-    
     var props = getDatabaseData(keys);
     var userProps = PropertiesService.getUserProperties().getProperties();
     
     var config = {
         clientName: props['CONF_CLIENT_NAME'] || "",
         clientUrl: props['CONF_CLIENT_URL'] || "",
-        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
-        contexteClient: props['PA_CONTEXTE_CLIENT'] || "",
+        urlsContexte: props['CLUSTERING_URL_SUPPLEMENTAIRE'] || "",
+        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
         slideId: props['PA_SLIDE_ID'] || "",
         brief: props['PA_BRIEF_CONSULTANT'] || "",
         urlReponses: props['PA_URL_FORM_REPONSES'] || "",
@@ -223,6 +222,36 @@ function chargerConfigurationPreAudit() {
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
+}
+
+function sauvegarderConfigurationPreAudit(form) {
+    Logger.log("=== DÉBUT : sauvegarderConfigurationPreAudit ===");
+    setDatabaseData({
+        // Bloc Contacts
+        'PA_CONF_CONTACT_COM': form.contactCom || "",
+        'PA_CONF_CONTACT_CONS1': form.contactCons1 || "",
+        'PA_CONF_CONTACT_CONS2': form.contactCons2 || "",
+        
+        // Bloc Projet
+        'PA_CONF_ID_CLIENT': form.clientName || "",
+        'PA_CONF_URL_CLIENT': form.clientUrl || "",
+        'PA_CONF_SLIDE_ID': form.slideId || "",
+
+        // Bloc Contexte & Brief
+        'PA_CONF_BRIEF': form.brief || "",
+        'PA_CONF_URL_FORM_REPONSES': form.urlReponses || "",
+        
+        // Synchronisation des clés (Pré-audit / Clustering)
+        'PA_CONF_URLS_CONTEXTE': form.urlsContexte || "",
+        'CLUSTERING_URL_SUPPLEMENTAIRE': form.urlsContexte || "",
+        
+        'PA_CONF_CONTEXTE_CLIENT': form.contexteClient || "",
+        'CLUSTERING_CONTEXTE_CLIENT': form.contexteClient || "",
+        
+        'PA_CONF_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
+    });
+    Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");
+    return true;
 }
 
 function sauvegarderDonneesEditorial(data) {
@@ -671,26 +700,6 @@ function recupererReponseFormulaire(urlForm) {
     }
 }
 
-function sauvegarderConfigurationPreAudit(form) {
-    Logger.log("=== DÉBUT : sauvegarderConfigurationPreAudit ===");
-    setDatabaseData({
-        'CONF_CLIENT_NAME': form.clientName || "",
-        'CONF_CLIENT_URL': form.clientUrl || "",
-        'PA_URLS_CONTEXTE': form.urlsContexte || "",
-        'PA_CONTEXTE_CLIENT': form.contexteClient || "",
-        'PA_SLIDE_ID': form.slideId || "",
-        'PA_BRIEF_CONSULTANT': form.brief || "",
-        'PA_URL_FORM_REPONSES': form.urlReponses || "",
-        'PA_PROFILAGE_COMMERCIAL': form.contextePreaudit || "",
-        'CONF_CONTACT_COM': form.contactCom || "",
-        'CONF_CONTACT_CONS1': form.contactCons1 || "",
-        'CONF_CONTACT_CONS2': form.contactCons2 || ""
-    });
-    
-    Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");
-    return true;
-}
-
 function recupererArborescenceCluster() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Cluster");
@@ -766,14 +775,13 @@ function genererDiagnostic(selection) {
     if (!sheetCluster) throw new Error("Onglet 'Cluster' introuvable.");
     if (!sheetMatrice) throw new Error("Onglet 'Matrice' introuvable.");
     if (!selection || selection.length === 0) throw new Error("Aucune thématique sélectionnée.");
-
     var props = getDatabaseData();
     // NOUVEAU : Récupération du mot-clé fil rouge pour exclusion
     var targetKwGlobal = (props['TARGET_KW'] || "").toLowerCase().trim();
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
     for (var ci = 1; ci <= 10; ci++) {
-        ctrTable.push((parseFloat(props['CTR_POS_' + ci]) || 0) / 100);
+        ctrTable.push((parseFloat(props['CONF_CTR_POS_' + ci]) || 0) / 100);
     }
     function computeTEC(vol, pos) {
         if (isNaN(pos) || pos <= 0 || pos > 10) return 0;
@@ -824,7 +832,8 @@ function genererDiagnostic(selection) {
             var name = h.substring(4).trim();
             var urlIdx = -1;
             for (var j = c + 1; j < headers.length; j++) {
-                if (String(headers[j]) === "URL " + name) { urlIdx = j; break; }
+                if (String(headers[j]) === "URL " + name) { urlIdx = j;
+                break; }
             }
             entities.push({ name: name, posIdx: c, urlIdx: urlIdx });
         }
@@ -902,7 +911,8 @@ function genererDiagnostic(selection) {
                 clientPos = p;
             } else {
                 if (p <= 10) compInTop10Count++;
-                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name; }
+                if (p < bestCompPos) { bestCompPos = p; bestCompName = e.name;
+                }
             }
         });
         var clientTEC = computeTEC(vol, clientPos);
@@ -917,7 +927,8 @@ function genererDiagnostic(selection) {
         if (clientPos <= 10)  themeStats[tsKey].top10++;
         if (clientPos <= 3)   themeStats[tsKey].top3++;
 
-        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 || kwMeta.intent === "t" || kwMeta.intent === "c";
+        var isTransac = kwMeta.intent.indexOf("transaction") > -1 || kwMeta.intent.indexOf("commercial") > -1 ||
+        kwMeta.intent === "t" || kwMeta.intent === "c";
         var isInfo    = kwMeta.intent.indexOf("information") > -1 || kwMeta.intent === "i";
         if (isTransac) {
             intentStats.transac.TPM += kwTPM;
@@ -989,7 +1000,6 @@ function genererDiagnostic(selection) {
         if (b.isClient) return 1;
         return b.top10 - a.top10;
     });
-    
     // Construction du tableau des thématiques avec tous les ratios
     var themeArray = [];
     for (var k in themeStats) {
@@ -1009,7 +1019,6 @@ function genererDiagnostic(selection) {
         });
     }
     themeArray.sort(function(a, b) { return b.volTotal - a.volTotal; });
-    
     // Identification top / flop thématique
     var topTheme = null, flopTheme = null;
     if (themeArray.length > 0) {
@@ -1027,12 +1036,10 @@ function genererDiagnostic(selection) {
         s.TEC = Math.round(s.TEC);
         s.TPM = Math.round(s.TPM);
     });
-    
     acquis.sort(function(a, b) { return b.vol - a.vol; });
     gains.sort(function(a, b) { return b.DDT - a.DDT; });
     pertes.sort(function(a, b) { return b.DDT - a.DDT; });
     territoires.sort(function(a, b) { return b.vol - a.vol; });
-    
     var arrUrlProfiles = Object.keys(urlProfiles).map(function(k) { return urlProfiles[k]; });
     var validUrlProfiles = arrUrlProfiles.filter(function(pr) { return !pr.isClient && pr.kwTop10 > 0; });
     validUrlProfiles.sort(function(a, b) { return b.tec - a.tec; });

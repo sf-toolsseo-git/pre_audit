@@ -1,3 +1,59 @@
+/**
+ * Fonction universelle pour appliquer le markdown sur une forme ou une cellule de tableau.
+ * Règle 1 : **texte** -> Gras
+ * Règle 2 : *texte* -> Gras + Orange (#f67604)
+ */
+function appliquerMarkdownSurForme(element) {
+    try {
+        var textRange = element.getText();
+        var textStr = textRange.asString();
+        
+        var regex = /\*\*([^*]+)\*\*|\*([^*]+)\*/g;
+        var matches = [];
+        var match;
+        
+        while ((match = regex.exec(textStr)) !== null) {
+            if (match[1]) {
+                // **texte**
+                matches.push({
+                    start: match.index,
+                    textLength: match[1].length,
+                    type: 'bold'
+                });
+            } else if (match[2]) {
+                // *texte*
+                matches.push({
+                    start: match.index,
+                    textLength: match[2].length,
+                    type: 'orange'
+                });
+            }
+        }
+        
+        for (var i = matches.length - 1; i >= 0; i--) {
+            var m = matches[i];
+            
+            if (m.type === 'bold') {
+                var endMarker = m.start + m.textLength + 2;
+                textRange.getRange(endMarker, endMarker + 2).clear();
+                textRange.getRange(m.start, m.start + 2).clear();
+                
+                var styledRange = textRange.getRange(m.start, m.start + m.textLength);
+                styledRange.getTextStyle().setBold(true);
+            } else if (m.type === 'orange') {
+                var endMarker = m.start + m.textLength + 1;
+                textRange.getRange(endMarker, endMarker + 1).clear();
+                textRange.getRange(m.start, m.start + 1).clear();
+                
+                var styledRange = textRange.getRange(m.start, m.start + m.textLength);
+                styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+            }
+        }
+    } catch(e) {
+        // Ignorer silencieusement si la forme n'a pas de texte ou si getText() n'est pas supporté
+    }
+}
+
 function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
     try {
         Logger.log("=== DÉBUT : exporterSlideBesoinSolution ===");
@@ -33,10 +89,12 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 if (targetKey === "besoin") {
                     Logger.log("Forme cible 'besoin' trouvée, écrasement du texte");
                     shape.getText().setText(slideTexteBesoin);
+                    appliquerMarkdownSurForme(shape);
                     tagsTrouves++;
                 } else if (targetKey === "solution") {
                     Logger.log("Forme cible 'solution' trouvée, écrasement du texte");
                     shape.getText().setText(slideTexteSolution);
+                    appliquerMarkdownSurForme(shape);
                     tagsTrouves++;
                 }
             });
@@ -66,37 +124,6 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        // Fonction utilitaire non destructive pour *mot* (gras orange)
-        function formatRichTextSemrush(shape) {
-            var textRange = shape.getText();
-            var textStr = textRange.asString();
-            var regex = /\*([^*]+)\*/g;
-            var matches = [];
-            var match;
-            
-            while ((match = regex.exec(textStr)) !== null) {
-                matches.push({
-                    start: match.index,
-                    text: match[1],
-                    length: match[0].length
-                });
-            }
-            
-            for (var i = matches.length - 1; i >= 0; i--) {
-                var m = matches[i];
-                var endAsteriskIndex = m.start + m.text.length + 1;
-                
-                // Effacer l'astérisque final
-                textRange.getRange(endAsteriskIndex, endAsteriskIndex + 1).clear();
-                // Effacer l'astérisque initial
-                textRange.getRange(m.start, m.start + 1).clear();
-                
-                // Appliquer le style sur le texte restant
-                var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-            }
-        }
-
         Logger.log("Parcours des slides pour l'analyse Semrush en cours");
 
         slides.forEach(function(slide) {
@@ -114,13 +141,13 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 if (descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
                     Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_MOT_CLE");
                     shape.getText().setText(texteKw);
-                    formatRichTextSemrush(shape);
+                    appliquerMarkdownSurForme(shape);
                 }
                 
                 if (descRaw === "ANALYSE_SEMRUSH_TRAFIC") {
                     Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_TRAFIC");
                     shape.getText().setText(texteTrafic);
-                    formatRichTextSemrush(shape);
+                    appliquerMarkdownSurForme(shape);
                 }
 
                 // Cas 1 sur Image (Placeholders)
@@ -300,34 +327,6 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
         setDatabaseData(propsToSave);
 
-        // Fonction utilitaire non destructive pour *mot* (gras orange)
-        function formatRichTextGlobal(shape) {
-            var textRange = shape.getText();
-            var textStr = textRange.asString();
-            var regex = /\*([^*]+)\*/g;
-            var matches = [];
-            var match;
-            
-            while ((match = regex.exec(textStr)) !== null) {
-                matches.push({
-                    start: match.index,
-                    text: match[1],
-                    length: match[0].length
-                });
-            }
-            
-            for (var i = matches.length - 1; i >= 0; i--) {
-                var m = matches[i];
-                var endAsteriskIndex = m.start + m.text.length + 1;
-                
-                textRange.getRange(endAsteriskIndex, endAsteriskIndex + 1).clear();
-                textRange.getRange(m.start, m.start + 1).clear();
-                
-                var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-            }
-        }
-
         Logger.log("Parcours minutieux des slides pour Performance Globale");
 
         slides.forEach(function(slide) {
@@ -366,19 +365,19 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 for (var idx = 1; idx <= 3; idx++) {
                     if (descRaw === "ANALYSE_THEMATIQUETOP_CLIENT_" + idx) {
                         shape.getText().setText(topThemParts[idx-1]);
-                        formatRichTextGlobal(shape);
+                        appliquerMarkdownSurForme(shape);
                     }
                     if (descRaw === "ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx) {
                         shape.getText().setText(flopThemParts[idx-1]);
-                        formatRichTextGlobal(shape);
+                        appliquerMarkdownSurForme(shape);
                     }
                     if (descRaw === "ANALYSE_MCTOP_CLIENT_" + idx) {
                         shape.getText().setText(topSegParts[idx-1]);
-                        formatRichTextGlobal(shape);
+                        appliquerMarkdownSurForme(shape);
                     }
                     if (descRaw === "ANALYSE_MCFLOP_CLIENT_" + idx) {
                         shape.getText().setText(flopSegParts[idx-1]);
-                        formatRichTextGlobal(shape);
+                        appliquerMarkdownSurForme(shape);
                     }
                 }
 
@@ -424,7 +423,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                             shape.getText().replaceText(key, String(replaceDict[key]));
                         }
                     }
-                    formatRichTextGlobal(shape); // S'il y a du markdown résiduel
+                    appliquerMarkdownSurForme(shape); // S'il y a du markdown résiduel
                 }
 
             });
@@ -543,35 +542,6 @@ function exporterFocusMotCleSlides() {
             '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
         };
 
-        function formatRichTextFocus(element) {
-            try {
-                var textRange = element.getText();
-                var textStr = textRange.asString();
-                var regex = /\*\*([^*]+)\*\*/g;
-                var matches = [];
-                var match;
-
-                while ((match = regex.exec(textStr)) !== null) {
-                    matches.push({
-                        start: match.index,
-                        text: match[1],
-                        length: match[0].length
-                    });
-                }
-                
-                for (var i = matches.length - 1; i >= 0; i--) {
-                    var m = matches[i];
-                    var endDoubleAst = m.start + m.text.length + 2;
-                    
-                    textRange.getRange(endDoubleAst, endDoubleAst + 2).clear();
-                    textRange.getRange(m.start, m.start + 2).clear();
-
-                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                    styledRange.getTextStyle().setBold(true);
-                }
-            } catch(e) {}
-        }
-
         Logger.log("Parcours récursif des slides pour le Focus Mot-Clé (Groupes et Tableaux inclus)");
 
         slides.forEach(function(slide) {
@@ -614,7 +584,7 @@ function exporterFocusMotCleSlides() {
                     
                     if (altTextMapping[descRaw] !== undefined) {
                         element.getText().setText(String(altTextMapping[descRaw]));
-                        formatRichTextFocus(element);
+                        appliquerMarkdownSurForme(element);
                         return; 
                     }
 
@@ -673,7 +643,7 @@ function exporterFocusMotCleSlides() {
                         }
                     }
                     if (hasReplaced) {
-                        formatRichTextFocus(element);
+                        appliquerMarkdownSurForme(element);
                     }
                 }
             }
@@ -706,37 +676,6 @@ function exporterEtatLieuxTechniqueSlides() {
             "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
             "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
         };
-
-        function formatRichTextTech(shape) {
-            try {
-                var textRange = shape.getText();
-                var textStr = textRange.asString();
-                var regex = /\*\*([^*]+)\*\*/g;
-                var matches = [];
-                var match;
-
-                while ((match = regex.exec(textStr)) !== null) {
-                    matches.push({
-                        start: match.index,
-                        text: match[1],
-                        length: match[0].length
-                    });
-                }
-                
-                for (var i = matches.length - 1; i >= 0; i--) {
-                    var m = matches[i];
-                    var endDoubleAst = m.start + m.text.length + 2;
-                    
-                    textRange.getRange(endDoubleAst, endDoubleAst + 2).clear();
-                    textRange.getRange(m.start, m.start + 2).clear();
-
-                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                }
-            } catch(e) {
-                Logger.log("Erreur dans formatRichTextTech : " + e.message);
-            }
-        }
 
         var textMapping = {
             'TITRE_SLIDE_TECHNIQUE': props['TITRE_SLIDE_TECHNIQUE'] || "",
@@ -782,7 +721,7 @@ function exporterEtatLieuxTechniqueSlides() {
                     // Remplacement des textes d'analyse
                     if (textMapping[descRaw] !== undefined) {
                         element.getText().setText(String(textMapping[descRaw]));
-                        formatRichTextTech(element);
+                        appliquerMarkdownSurForme(element);
                         return;
                     }
 
@@ -842,37 +781,6 @@ function exporterUXSlides() {
             "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
         };
 
-        function formatRichTextUX(shape) {
-            try {
-                var textRange = shape.getText();
-                var textStr = textRange.asString();
-                var regex = /\*([^*]+)\*/g;
-                var matches = [];
-                var match;
-
-                while ((match = regex.exec(textStr)) !== null) {
-                    matches.push({
-                        start: match.index,
-                        text: match[1],
-                        length: match[0].length
-                    });
-                }
-                
-                for (var i = matches.length - 1; i >= 0; i--) {
-                    var m = matches[i];
-                    var endAst = m.start + m.text.length + 1;
-                    
-                    textRange.getRange(endAst, endAst + 1).clear();
-                    textRange.getRange(m.start, m.start + 1).clear();
-
-                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                }
-            } catch(e) {
-                Logger.log("Erreur dans formatRichTextUX : " + e.message);
-            }
-        }
-
         var elementsMapping = {};
         for (var i = 1; i <= 6; i++) {
             elementsMapping['UX_ELEMENT_' + i] = props['UX_ELEMENT_' + i] || "";
@@ -924,7 +832,7 @@ function exporterUXSlides() {
                     // Recommandations UX
                     if (recoMapping[descRaw] !== undefined) {
                         element.getText().setText(String(recoMapping[descRaw]));
-                        formatRichTextUX(element);
+                        appliquerMarkdownSurForme(element);
                         return;
                     }
 
@@ -1010,37 +918,6 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                 shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
             } catch (e) {
                 Logger.log("Erreur couleur blog : " + e.message);
-            }
-        }
-
-        // --- NOUVEAU : Fonction de formatage Markdown (*gras orange*) ---
-        function formatRichTextEdito(shape) {
-            try {
-                var textRange = shape.getText();
-                var textStr = textRange.asString();
-                var regex = /\*([^*]+)\*/g;
-                var matches = [];
-                var match;
-                while ((match = regex.exec(textStr)) !== null) {
-                    matches.push({
-                        start: match.index,
-                        text: match[1],
-                        length: match[0].length
-                    });
-                }
-                
-                for (var i = matches.length - 1; i >= 0; i--) {
-                    var m = matches[i];
-                    var endAst = m.start + m.text.length + 1;
-                    
-                    textRange.getRange(endAst, endAst + 1).clear(); // effacer l'astérisque de fin
-                    textRange.getRange(m.start, m.start + 1).clear(); // effacer l'astérisque de début
-                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
-                    // On applique le gras et la couleur tout en conservant la police par défaut (Open Sans 18px)
-                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
-                }
-            } catch(e) {
-                Logger.log("Erreur dans formatRichTextEdito : " + e.message);
             }
         }
 
@@ -1158,7 +1035,7 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                         }
                         
                         // Application systématique de la transformation Markdown sur le texte final
-                        formatRichTextEdito(element);
+                        appliquerMarkdownSurForme(element);
                         
                         return; // On stoppe ici pour cette forme
                     }

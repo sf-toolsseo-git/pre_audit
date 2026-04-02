@@ -89,25 +89,20 @@ function chargerDonneesInitiales() {
     }
 
     var keys = [
-        'PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT', 'CONF_IS_MULTI_THEME', 'CONF_PROJECT_TYPE',
-        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'CONF_CLIENT_STRENGTH', 'CONF_CLIENT_BRAND',
+        'CONF_PROJECT_TYPE', 'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'CONF_CLIENT_STRENGTH', 'CONF_CLIENT_BRAND',
         'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_STRENGTH_1', 'CONF_COMP_BRAND_1',
         'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_STRENGTH_2', 'CONF_COMP_BRAND_2',
         'CONF_COMP_NAME_3', 'CONF_COMP_URL_3', 'CONF_COMP_STRENGTH_3', 'CONF_COMP_BRAND_3',
         'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_STRENGTH_4', 'CONF_COMP_BRAND_4',
         'CONF_COMP_NAME_5', 'CONF_COMP_URL_5', 'CONF_COMP_STRENGTH_5', 'CONF_COMP_BRAND_5',
-        'CTR_POS_1', 'CTR_POS_2', 'CTR_POS_3', 'CTR_POS_4', 'CTR_POS_5',
-        'CTR_POS_6', 'CTR_POS_7', 'CTR_POS_8', 'CTR_POS_9', 'CTR_POS_10',
-        'CONF_CONTACT_COM', 'CONF_CONTACT_CONS1', 'CONF_CONTACT_CONS2'
+        'CONF_SEUIL_POSITION', 'CONF_EXCLUSION_GLOBALE', 'CONF_IS_MULTI_THEME',
+        'CONF_CTR_POS_1', 'CONF_CTR_POS_2', 'CONF_CTR_POS_3', 'CONF_CTR_POS_4', 'CONF_CTR_POS_5',
+        'CONF_CTR_POS_6', 'CONF_CTR_POS_7', 'CONF_CTR_POS_8', 'CONF_CTR_POS_9', 'CONF_CTR_POS_10'
     ];
-    
     var props = getDatabaseData(keys);
     var hasMatrix = (ss.getSheetByName("Matrice") !== null);
     var donnees = {
         hasMatrix: hasMatrix,
-        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
-        contexteClient: props['PA_CONTEXTE_CLIENT'] || "",
-        isMultiTheme: props['CONF_IS_MULTI_THEME'] === 'true',
         projectType: props['CONF_PROJECT_TYPE'] || "installe",
         clientName: props['CONF_CLIENT_NAME'] || "",
         clientUrl: props['CONF_CLIENT_URL'] || "",
@@ -133,9 +128,9 @@ function chargerDonneesInitiales() {
         competitor5: props['CONF_COMP_URL_5'] || "",
         competitorStrength5: props['CONF_COMP_STRENGTH_5'] || "moyenne",
         competitorBrand5: props['CONF_COMP_BRAND_5'] || "",
-        contactCom: props['CONF_CONTACT_COM'] || "Achille",
-        contactCons1: props['CONF_CONTACT_CONS1'] || "Benjamin",
-        contactCons2: props['CONF_CONTACT_CONS2'] || "Aucun"
+        seuilPos: props['CONF_SEUIL_POSITION'] || "20",
+        exclusionTxt: props['CONF_EXCLUSION_GLOBALE'] || "",
+        isMultiTheme: props['CONF_IS_MULTI_THEME'] === 'true'
     };
     function parseAndMigrateCTR(val, defaultVal) {
         if (val === undefined || val === null || String(val).trim() === "") return defaultVal;
@@ -147,16 +142,16 @@ function chargerDonneesInitiales() {
         return num.toString();
     }
 
-    donnees.ctrPos1 = parseAndMigrateCTR(props['CTR_POS_1'], "28");
-    donnees.ctrPos2 = parseAndMigrateCTR(props['CTR_POS_2'], "20");
-    donnees.ctrPos3 = parseAndMigrateCTR(props['CTR_POS_3'], "12");
-    donnees.ctrPos4 = parseAndMigrateCTR(props['CTR_POS_4'], "8");
-    donnees.ctrPos5 = parseAndMigrateCTR(props['CTR_POS_5'], "7");
-    donnees.ctrPos6 = parseAndMigrateCTR(props['CTR_POS_6'], "6");
-    donnees.ctrPos7 = parseAndMigrateCTR(props['CTR_POS_7'], "5");
-    donnees.ctrPos8 = parseAndMigrateCTR(props['CTR_POS_8'], "5");
-    donnees.ctrPos9 = parseAndMigrateCTR(props['CTR_POS_9'], "4");
-    donnees.ctrPos10 = parseAndMigrateCTR(props['CTR_POS_10'], "3");
+    donnees.ctrPos1 = parseAndMigrateCTR(props['CONF_CTR_POS_1'], "28");
+    donnees.ctrPos2 = parseAndMigrateCTR(props['CONF_CTR_POS_2'], "20");
+    donnees.ctrPos3 = parseAndMigrateCTR(props['CONF_CTR_POS_3'], "12");
+    donnees.ctrPos4 = parseAndMigrateCTR(props['CONF_CTR_POS_4'], "8");
+    donnees.ctrPos5 = parseAndMigrateCTR(props['CONF_CTR_POS_5'], "7");
+    donnees.ctrPos6 = parseAndMigrateCTR(props['CONF_CTR_POS_6'], "6");
+    donnees.ctrPos7 = parseAndMigrateCTR(props['CONF_CTR_POS_7'], "5");
+    donnees.ctrPos8 = parseAndMigrateCTR(props['CONF_CTR_POS_8'], "5");
+    donnees.ctrPos9 = parseAndMigrateCTR(props['CONF_CTR_POS_9'], "4");
+    donnees.ctrPos10 = parseAndMigrateCTR(props['CONF_CTR_POS_10'], "3");
 
     return donnees;
 }
@@ -636,26 +631,22 @@ function calculerLevenshtein(a, b) {
     return matrix[b.length][a.length];
 }
 
-function recupererDonneesBrutesClustering(contexteClient) {
+function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) {
     Logger.log("=== DÉBUT : recupererDonneesBrutesClustering ===");
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = getDatabaseData();
-        
-        // Récupération correcte du paramètre conservé en base (coché ou non)
         var isMultiTheme = (props['CONF_IS_MULTI_THEME'] === 'true');
         
-        // Priorité au contexte envoyé depuis l'interface, sinon on prend celui en base
-        var ctxFinal = contexteClient || props['PA_CONTEXTE_CLIENT'] || "";
+        var ctxFinal = contexteClient || props['CLUSTERING_CONTEXTE_CLIENT'] || "";
+        var dirFinal = directivePrioritaire || props['CLUSTERING_DIRECTIVE'] || "";
 
         var sheet = ss.getSheetByName("Concurrence filtrée");
         if (!sheet) throw new Error("L'onglet 'Concurrence filtrée' est introuvable. Veuillez d'abord générer la vue filtrée.");
-        
         var data = sheet.getDataRange().getValues();
         if (data.length < 2) throw new Error("Aucune donnée à exporter dans 'Concurrence filtrée'.");
-        
         var headers = data[0];
-        // Structure de "Concurrence filtrée" : Segment(0), KW(1), Vol(2), Pos...(3 à 3+nb-1), URLs...(3+nb à fin)
+        
         var nbEntites = (headers.length - 3) / 2;
         var urlStartIdx = 3 + nbEntites;
 
@@ -672,7 +663,6 @@ function recupererDonneesBrutesClustering(contexteClient) {
                 var pos = parseInt(row[3 + c], 10);
                 var url = String(row[urlStartIdx + c]);
 
-                // On ne récupère l'URL que si le concurrent est dans le top 20
                 if (!isNaN(pos) && pos > 0 && pos <= 20 && url && url !== "-" && url.trim() !== "") {
                     var cleanUrl = url.trim();
                     if (urlsFound.indexOf(cleanUrl) === -1) {
@@ -694,6 +684,7 @@ function recupererDonneesBrutesClustering(contexteClient) {
             count: exportList.length,
             mode_multi_thematique: isMultiTheme,
             contexte_client: ctxFinal,
+            directive_prioritaire: dirFinal,
             keywords: exportList
         };
     } catch (e) {
@@ -1039,22 +1030,28 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
 
 function chargerContexteIA() {
     Logger.log("=== DÉBUT : chargerContexteIA ===");
-    var keys = ['PA_URLS_CONTEXTE', 'PA_CONTEXTE_CLIENT'];
+    var keys = ['CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT', 'CLUSTERING_DIRECTIVE'];
     var props = getDatabaseData(keys);
     Logger.log("=== FIN : chargerContexteIA ===");
     return {
-        urlsContexte: props['PA_URLS_CONTEXTE'] || "",
-        contexteClient: props['PA_CONTEXTE_CLIENT'] || ""
+        urlsContexte: props['CLUSTERING_URL_SUPPLEMENTAIRE'] || "",
+        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
+        directivePrioritaire: props['CLUSTERING_DIRECTIVE'] || ""
     };
 }
 
-function sauvegarderContexteIA(urls, contexte) {
+function sauvegarderContexteIA(urls, contexte, directive) {
     Logger.log("=== DÉBUT : sauvegarderContexteIA ===");
     setDatabaseData({
-        'PA_URLS_CONTEXTE': urls || "",
-        'PA_CONTEXTE_CLIENT': contexte || ""
+        // Synchronisation des clés (Clustering / Pré-audit)
+        'CLUSTERING_URL_SUPPLEMENTAIRE': urls || "",
+        'PA_CONF_URLS_CONTEXTE': urls || "",
+        
+        'CLUSTERING_CONTEXTE_CLIENT': contexte || "",
+        'PA_CONF_CONTEXTE_CLIENT': contexte || "",
+        
+        'CLUSTERING_DIRECTIVE': directive || ""
     });
-    
     Logger.log("=== FIN : sauvegarderContexteIA ===");
     return true;
 }
@@ -1113,44 +1110,64 @@ function initFormatConfigSheet() {
     sheet = ss.insertSheet(sheetName);
     sheet.hideSheet();
 
-    var sections = [0, 3, 6, 9, 12, 15, 18, 21, 24];
-    var headersLine1 = new Array(26).fill("");
-    var headersLine2 = new Array(26).fill("");
+    var sections = [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30];
+    var maxCols = 32;
+    var headersLine1 = new Array(maxCols).fill("");
+    var headersLine2 = new Array(maxCols).fill("");
     
-    headersLine1[0] = "⚙️ GÉNÉRAL";
-    headersLine1[3] = "📊 SEMRUSH & BESOIN";
-    headersLine1[6] = "🔍 DIAGNOSTIC";
-    headersLine1[9] = "🎯 FOCUS";
-    headersLine1[12] = "🛠️ TECHNIQUE";
-    headersLine1[15] = "📱 UX / UI";
-    headersLine1[18] = "✍️ CONTENU";
-    headersLine1[21] = "📰 ÉDITORIAL";
-    headersLine1[24] = "📦 AUTRES (FALLBACK)";
-
+    headersLine1[0] = "⚙️ CONFIGURATION";
+    headersLine1[3] = "🧩 CLUSTERING";
+    headersLine1[6] = "📈 PRÉ-AUDIT - CONF";
+    headersLine1[9] = "📊 SEMRUSH & BESOIN";
+    headersLine1[12] = "🔍 DIAGNOSTIC";
+    headersLine1[15] = "🎯 FOCUS";
+    headersLine1[18] = "🛠️ TECHNIQUE";
+    headersLine1[21] = "📱 UX / UI";
+    headersLine1[24] = "✍️ CONTENU";
+    headersLine1[27] = "📰 ÉDITORIAL";
+    headersLine1[30] = "📦 AUTRES (FALLBACK)";
+    
     sections.forEach(function(colIdx) {
         headersLine2[colIdx] = "Clé";
         headersLine2[colIdx + 1] = "Valeur";
     });
-
-    sheet.getRange(1, 1, 1, 26).setValues([headersLine1]);
-    sheet.getRange(2, 1, 1, 26).setValues([headersLine2]);
+    
+    sheet.getRange(1, 1, 1, maxCols).setValues([headersLine1]);
+    sheet.getRange(2, 1, 1, maxCols).setValues([headersLine2]);
     
     sections.forEach(function(colIdx) {
         sheet.getRange(1, colIdx + 1, 1, 2).mergeAcross();
     });
 
-    // Définition des clés par groupe (sans les fausses clés BORDER)
+    // Définition des clés par groupe
     var keysByGroup = {
-        0: ["CONF_PROJECT_TYPE", "CONF_IS_MULTI_THEME", "PA_SLIDE_ID", "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CTR_POS_1", "CTR_POS_2", "CTR_POS_3", "CTR_POS_4", "CTR_POS_5", "CTR_POS_6", "CTR_POS_7", "CTR_POS_8", "CTR_POS_9", "CTR_POS_10", "PA_URLS_CONTEXTE", "PA_CONTEXTE_CLIENT", "PA_BRIEF_CONSULTANT", "PA_URL_FORM_REPONSES", "PA_PROFILAGE_COMMERCIAL", "CONF_CONTACT_COM", "CONF_CONTACT_CONS1", "CONF_CONTACT_CONS2"],
-        3: ["TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_BESOIN", "TAG_SLIDE_SOLUTION_HTML", "TAG_SLIDE_SOLUTION", "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"],
-        6: ["TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_SELECTION"],
-        9: ["TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION", "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_standard_texte_2", "focus_standard_texte_3", "focus_semantique_texte_1", "focus_semantique_texte_2", "focus_semantique_texte_3", "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"],
-        12: ["TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE", "TITRE_SLIDE_TECHNIQUE", "TECH_HTML_CRAWL", "TECH_HTML_INDEX", "TECH_HTML_POS", "DATA_TECH_IA_FULL_STATE", "CRAWL_1", "CRAWL_2", "CRAWL_3", "CRAWL_4", "INDEX_1", "INDEX_2", "INDEX_3", "INDEX_4", "POS_1", "POS_2", "POS_3", "POS_4"],
-        15: ["TITRE_SLIDE_UX", "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2", "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT", "UX_CLIENT_VIEWPORT_ID", "UX_CLIENT_FULL_ID", "UX_CLIENT_CROP_ID", "UX_COMP_VIEWPORT_ID", "UX_COMP_FULL_ID", "UX_COMP_CROP_ID", "DATA_UX_IA_FULL_STATE", "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1", "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2", "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3", "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4", "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5", "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6"],
-        18: ["TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT", "CONTENU_YTG_CIBLE", "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT", "CONTENU_SCRAPED_CLIENT", "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT", "CONTENU_SCRAPED_CONCURRENT"],
-        21: ["TITRE_SLIDE_CONCURRENCE_EDITO", "TITRE_SLIDE_THEMATIQUE_EDITO", "BLOG_CLIENT_EDITO", "BLOG_LEADER_EDITO", "BLOG_COMP1_EDITO", "BLOG_COMP2_EDITO", "BLOG_COMP3_EDITO", "BLOG_COMP4_EDITO", "NOM_CONTENU_1", "NOM_CONTENU_2", "NOM_CONTENU_3", "DATA_TOP10_CONTENU_1", "DATA_TOP10_CONTENU_2", "DATA_TOP10_CONTENU_3"]
+        0: [
+            "CONF_PROJECT_TYPE", "CONF_CLIENT_NAME", "CONF_CLIENT_URL", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", 
+            "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", 
+            "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2", 
+            "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_STRENGTH_3", "CONF_COMP_BRAND_3", 
+            "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4", 
+            "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
+            "CONF_SEUIL_POSITION", "CONF_EXCLUSION_GLOBALE", "CONF_IS_MULTI_THEME",
+            "CONF_CTR_POS_1", "CONF_CTR_POS_2", "CONF_CTR_POS_3", "CONF_CTR_POS_4", "CONF_CTR_POS_5", "CONF_CTR_POS_6", "CONF_CTR_POS_7", "CONF_CTR_POS_8", "CONF_CTR_POS_9", "CONF_CTR_POS_10"
+        ],
+        3: ["CLUSTERING_URL_SUPPLEMENTAIRE", "CLUSTERING_CONTEXTE_CLIENT", "CLUSTERING_DIRECTIVE"],
+        6: [
+            "PA_CONF_CONTACT_COM", "PA_CONF_CONTACT_CONS1", "PA_CONF_CONTACT_CONS2", 
+            "PLACEHOLDER_CONTACT_COM", "PLACEHOLDER_CONTACT_CONS1", "PLACEHOLDER_CONTACT_CONS2", 
+            "nom_com", "poste_com", "email_com", "nom_cons1", "poste_cons1", "email_cons1", "nom_cons2", "poste_cons2", "email_cons2",
+            "PA_CONF_ID_CLIENT", "PA_CONF_URL_CLIENT", "PA_CONF_SLIDE_ID",
+            "PA_CONF_BRIEF", "PA_CONF_URL_FORM_REPONSES", "PA_CONF_URLS_CONTEXTE", "PA_CONF_CONTEXTE_CLIENT", "PA_CONF_PROFILAGE_COMMERCIAL"
+        ],
+        9: ["TAG_SLIDE_BESOIN_HTML", "TAG_SLIDE_BESOIN", "TAG_SLIDE_SOLUTION_HTML", "TAG_SLIDE_SOLUTION", "TITRE_SLIDE_SEMRUSH", "ANALYSE_SEMRUSH_MOT_CLE_HTML", "ANALYSE_SEMRUSH_MOT_CLE", "ANALYSE_SEMRUSH_TRAFIC_HTML", "ANALYSE_SEMRUSH_TRAFIC"],
+        12: ["TITRE_SLIDE_THEMATIQUETOP_CLIENT", "ANALYSE_THEMATIQUETOP_CLIENT_1", "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "TITRE_SLIDE_MCTOP_CLIENT", "ANALYSE_MCTOP_CLIENT_1", "TITRE_SLIDE_MCFLOP_CLIENT", "ANALYSE_MCFLOP_CLIENT_1", "ANALYSE_SELECTION"],
+        15: ["TARGET_KW", "TARGET_KW_SV", "TARGET_URL_CLIENT", "TARGET_KW_CLIENT_POS", "TARGET_URL_CONCURRENT", "TARGET_KW_CONCURRENT_POS", "TARGET_LOCALISATION", "SERP_ELEMENT_TITRE_1", "SERP_ELEMENT_DESC_1", "PLACEHOLDER_SERPELEMENT_1", "SERP_ELEMENT_TITRE_2", "SERP_ELEMENT_DESC_2", "PLACEHOLDER_SERPELEMENT_2", "SERP_ELEMENT_TITRE_3", "SERP_ELEMENT_DESC_3", "PLACEHOLDER_SERPELEMENT_3", "SERP_ELEMENT_TITRE_4", "SERP_ELEMENT_DESC_4", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_TITRE", "FOCUS_INTENTION_DESC", "focus_standard_texte_1", "focus_standard_texte_2", "focus_standard_texte_3", "focus_semantique_texte_1", "focus_semantique_texte_2", "focus_semantique_texte_3", "FOCUS_GAP_TITRE_1", "FOCUS_GAP_DESC_1", "FOCUS_GAP_TITRE_2", "FOCUS_GAP_DESC_2", "FOCUS_GAP_TITRE_3", "FOCUS_GAP_DESC_3", "FOCUS_RECO_1", "FOCUS_RECO_2", "FOCUS_RECO_3", "FOCUS_RECO_4"],
+        18: ["TECH_URL_CIBLE", "TECH_SITEMAP", "TECH_TYPE_PAGE", "TECH_URL_PAGE_MERE", "TECH_URL_PAGINEES", "TECH_URL_FILTRE", "TECH_IS_MULTILINGUE", "TECH_LANGUE_CIBLE", "TECH_PAYS_CIBLE", "TITRE_SLIDE_TECHNIQUE", "TECH_HTML_CRAWL", "TECH_HTML_INDEX", "TECH_HTML_POS", "DATA_TECH_IA_FULL_STATE", "CRAWL_1", "CRAWL_2", "CRAWL_3", "CRAWL_4", "INDEX_1", "INDEX_2", "INDEX_3", "INDEX_4", "POS_1", "POS_2", "POS_3", "POS_4"],
+        21: ["TITRE_SLIDE_UX", "UX_RECOMMANDATION_1", "UX_RECOMMANDATION_2", "PLACEHOLDER_UX_CLIENT", "PLACEHOLDER_UX_CONCURRENT", "UX_CLIENT_VIEWPORT_ID", "UX_CLIENT_FULL_ID", "UX_CLIENT_CROP_ID", "UX_COMP_VIEWPORT_ID", "UX_COMP_FULL_ID", "UX_COMP_CROP_ID", "DATA_UX_IA_FULL_STATE", "UX_ELEMENT_1", "UX_CLIENT_CHECK_1", "UX_CONCURRENT_CHECK_1", "UX_ELEMENT_2", "UX_CLIENT_CHECK_2", "UX_CONCURRENT_CHECK_2", "UX_ELEMENT_3", "UX_CLIENT_CHECK_3", "UX_CONCURRENT_CHECK_3", "UX_ELEMENT_4", "UX_CLIENT_CHECK_4", "UX_CONCURRENT_CHECK_4", "UX_ELEMENT_5", "UX_CLIENT_CHECK_5", "UX_CONCURRENT_CHECK_5", "UX_ELEMENT_6", "UX_CLIENT_CHECK_6", "UX_CONCURRENT_CHECK_6"],
+        24: ["TITRE_SLIDE_CONTENU_CLIENT", "TITRE_SLIDE_CONTENU_CONCURRENT", "CONTENU_YTG_CIBLE", "CONTENU_STRUCTURE_CLIENT", "CONTENU_STRUCTURE_CLIENT_HTML", "CONTENU_YTG_CLIENT", "CONTENU_YTG_CLIENT_HTML", "CONTENU_YTG_SCORE_CLIENT", "CONTENU_YTG_DATA_CLIENT", "CONTENU_1FR_CLIENT", "CONTENU_1FR_CLIENT_HTML", "CONTENU_1FR_URL_CLIENT", "CONTENU_1FR_SCORE_CLIENT", "CONTENU_1FR_DATA_CLIENT", "CONTENU_SCRAPED_CLIENT", "CONTENU_STRUCTURE_CONCURRENT", "CONTENU_STRUCTURE_CONCURRENT_HTML", "CONTENU_YTG_CONCURRENT", "CONTENU_YTG_CONCURRENT_HTML", "CONTENU_YTG_SCORE_CONCURRENT", "CONTENU_YTG_DATA_CONCURRENT", "CONTENU_1FR_CONCURRENT", "CONTENU_1FR_CONCURRENT_HTML", "CONTENU_1FR_URL_CONCURRENT", "CONTENU_1FR_SCORE_CONCURRENT", "CONTENU_1FR_DATA_CONCURRENT", "CONTENU_SCRAPED_CONCURRENT"],
+        27: ["TITRE_SLIDE_CONCURRENCE_EDITO", "TITRE_SLIDE_THEMATIQUE_EDITO", "BLOG_CLIENT_EDITO", "BLOG_LEADER_EDITO", "BLOG_COMP1_EDITO", "BLOG_COMP2_EDITO", "BLOG_COMP3_EDITO", "BLOG_COMP4_EDITO", "NOM_CONTENU_1", "NOM_CONTENU_2", "NOM_CONTENU_3", "DATA_TOP10_CONTENU_1", "DATA_TOP10_CONTENU_2", "DATA_TOP10_CONTENU_3"]
     };
-
+    
     var maxRowsData = 0;
     for (var k in keysByGroup) {
         if (keysByGroup[k].length > maxRowsData) { maxRowsData = keysByGroup[k].length; }
@@ -1158,7 +1175,7 @@ function initFormatConfigSheet() {
 
     var newValues = [];
     for (var r = 0; r < maxRowsData; r++) {
-        var row = new Array(26).fill("");
+        var row = new Array(maxCols).fill("");
         sections.forEach(function(colIdx) {
             var keysArray = keysByGroup[colIdx] || [];
             if (r < keysArray.length) { row[colIdx] = keysArray[r]; }
@@ -1167,11 +1184,134 @@ function initFormatConfigSheet() {
     }
 
     if (newValues.length > 0) {
-        sheet.getRange(3, 1, newValues.length, 26).setValues(newValues);
+        sheet.getRange(3, 1, newValues.length, maxCols).setValues(newValues);
     }
 
     Logger.log("Application du style visuel (lignes de séparation)");
     applyConfigStyle(sheet);
     
     Logger.log("=== FIN : initFormatConfigSheet ===");
+}
+
+function applyConfigStyle(sheet) {
+    Logger.log("=== DÉBUT : applyConfigStyle ===");
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var values = sheet.getDataRange().getValues();
+    var maxRows = sheet.getMaxRows();
+    var maxCols = 32;
+
+    // Liste des clés réelles qui doivent déclencher une bordure de séparation en dessous
+    var TRIGGER_KEYS = [
+        "CONF_COMP_BRAND_5", "CONF_IS_MULTI_THEME", "CONF_CTR_POS_10", 
+        "CLUSTERING_DIRECTIVE",
+        "email_cons2", "PA_CONF_SLIDE_ID", "PA_CONF_PROFILAGE_COMMERCIAL",
+        "TAG_SLIDE_SOLUTION", "ANALYSE_SEMRUSH_TRAFIC",
+        "ANALYSE_THEMATIQUETOP_CLIENT_1", "ANALYSE_THEMATIQUEFLOP_CLIENT_1", "ANALYSE_MCTOP_CLIENT_1", "ANALYSE_MCFLOP_CLIENT_1",
+        "TARGET_LOCALISATION", "PLACEHOLDER_SERPELEMENT_4", "FOCUS_INTENTION_DESC", "focus_standard_texte_3", "focus_semantique_texte_3", "FOCUS_GAP_DESC_3",
+        "TECH_PAYS_CIBLE", "TECH_HTML_POS",
+        "UX_RECOMMANDATION_2", "UX_COMP_CROP_ID",
+        "CONTENU_YTG_CIBLE", "CONTENU_SCRAPED_CLIENT",
+        "TITRE_SLIDE_THEMATIQUE_EDITO", "PLACEHOLDER_LOGO_LEADER_EDITO", "PLACEHOLDER_LOGO_COMP4_EDITO", "NOM_CONTENU_3"
+    ];
+
+    Logger.log("Application du formatage global (couleurs, polices, alignements)");
+    // 1. En-têtes (Lignes 1 et 2)
+    sheet.getRange(1, 1, 1, maxCols).setBackground("#08133B").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
+    sheet.getRange(2, 1, 1, maxCols).setBackground("#d9d9d9").setFontWeight("bold").setHorizontalAlignment("center");
+
+    // 2. Formatage des colonnes (Largeurs et alignements)
+    sheet.setHiddenGridlines(true);
+    for (var i = 1; i <= maxCols; i++) {
+        sheet.setColumnWidth(i, (i % 3 === 0) ? 30 : 350);
+    }
+
+    if (maxRows > 2) {
+        var dataRange = sheet.getRange(3, 1, maxRows - 2, maxCols);
+        dataRange.setVerticalAlignment("top").setHorizontalAlignment("left").setWrap(true).setFontFamily("Google Sans");
+    }
+
+    Logger.log("Recherche des clés déclencheuses pour le tracé des bordures...");
+    // 3. Tracé dynamique des bordures et coloration des clés Slides (#fce5cd)
+    for (var r = 0; r < values.length; r++) {
+        for (var c = 0; c < values[r].length; c += 3) {
+            var cellKey = String(values[r][c]).trim();
+            if (!cellKey) continue;
+
+            // Bordure inférieure
+            if (TRIGGER_KEYS.indexOf(cellKey) !== -1) {
+                sheet.getRange(r + 1, c + 1, 1, 2).setBorder(null, null, true, null, null, null, "#000000", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+            }
+
+            // Identification visuelle des clés de Google Slides (fond #fce5cd)
+            var isSlideKey = cellKey.indexOf('TAG_SLIDE_') === 0 || 
+                             cellKey.indexOf('TITRE_SLIDE_') === 0 || 
+                             cellKey.indexOf('ANALYSE_') === 0 || 
+                             cellKey.indexOf('PLACEHOLDER_') === 0 || 
+                             cellKey.indexOf('TARGET_') === 0 || 
+                             cellKey.indexOf('FOCUS_') === 0 || 
+                             cellKey.indexOf('focus_') === 0 || 
+                             cellKey.indexOf('SERP_') === 0 || 
+                             cellKey.indexOf('TECH_HTML_') === 0 || 
+                             cellKey.indexOf('CRAWL_CONTENT_') === 0 || 
+                             cellKey.indexOf('INDEX_CONTENT_') === 0 || 
+                             cellKey.indexOf('POS_CONTENT_') === 0 || 
+                             cellKey.indexOf('UX_RECOMMANDATION_') === 0 || 
+                             cellKey.indexOf('UX_ELEMENT_') === 0 || 
+                             cellKey.indexOf('CONTENU_STRUCTURE_') === 0 || 
+                             cellKey.indexOf('CONTENU_YTG_') === 0 || 
+                             cellKey.indexOf('CONTENU_1FR_') === 0 || 
+                             cellKey.indexOf('NOM_CONTENU_') === 0 || 
+                             cellKey.indexOf('DATA_TOP10_CONTENU_') === 0 ||
+                             cellKey === 'nom_com' || cellKey === 'poste_com' || cellKey === 'email_com' ||
+                             cellKey === 'nom_cons1' || cellKey === 'poste_cons1' || cellKey === 'email_cons1' ||
+                             cellKey === 'nom_cons2' || cellKey === 'poste_cons2' || cellKey === 'email_cons2';
+
+            var cellValue = (c + 1 < values[r].length) ? String(values[r][c + 1]).trim() : "";
+            
+            // Colorer la paire Clé/Valeur si exporté (valeur non vide)
+            if (isSlideKey && cellValue !== "") {
+                sheet.getRange(r + 1, c + 1, 1, 2).setBackground("#fce5cd");
+            }
+        }
+    }
+
+    Logger.log("Appel API v4 pour ajuster la hauteur des lignes à 21 px");
+    SpreadsheetApp.flush();
+    try {
+        var token = ScriptApp.getOAuthToken();
+        var requests = [{
+            updateDimensionProperties: {
+                range: { sheetId: sheet.getSheetId(), dimension: "ROWS", startIndex: 0, endIndex: maxRows },
+                properties: { pixelSize: 21 },
+                fields: "pixelSize"
+            }
+        }];
+        UrlFetchApp.fetch("https://sheets.googleapis.com/v4/spreadsheets/" + ss.getId() + ":batchUpdate", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token },
+            contentType: "application/json",
+            payload: JSON.stringify({ requests: requests }),
+            muteHttpExceptions: true
+        });
+    } catch(e) { Logger.log("Erreur API v4 (Hauteur) : " + e.message); }
+    
+    Logger.log("=== FIN : applyConfigStyle ===");
+}
+
+function getColumnForConfigKey(key) {
+    // 27 = EDITORIAL (Colonne 28)
+    if (key.slice(-6) === '_EDITO' || key.indexOf('_EDITO_') !== -1 || key.indexOf('THEMATIQUE_EDITO_') === 0 || key.indexOf('NOM_CONTENU_') === 0 || key.indexOf('DATA_TOP10_CONTENU_') === 0) return 28;
+    
+    // Autres catégories
+    if (key.indexOf('CONF_') === 0) return 1; // Configuration
+    if (key.indexOf('CLUSTERING_') === 0) return 4; // Clustering
+    if (key.indexOf('PA_CONF_') === 0 || key.indexOf('PLACEHOLDER_CONTACT_') === 0 || key.indexOf('_com') !== -1 || key.indexOf('_cons1') !== -1 || key.indexOf('_cons2') !== -1) return 7; // Pré-audit
+    if (key.indexOf('TAG_') === 0 || key.indexOf('TITRE_SLIDE_SEMRUSH') === 0 || key.indexOf('ANALYSE_SEMRUSH_') === 0) return 10; // Semrush & Besoin
+    if (key.indexOf('TITRE_SLIDE_THEMATIQUE') === 0 || key.indexOf('ANALYSE_THEMATIQUE') === 0 || key.indexOf('TITRE_SLIDE_MC') === 0 || key.indexOf('ANALYSE_MC') === 0 || key === 'ANALYSE_SELECTION') return 13; // Diagnostic
+    if (key.indexOf('TARGET_') === 0 || key.indexOf('SERP_') === 0 || key.indexOf('FOCUS_') === 0 || key.indexOf('focus_') === 0) return 16; // Focus
+    if (key.indexOf('TECH_') === 0 || key.indexOf('CRAWL_') === 0 || key.indexOf('INDEX_') === 0 || key.indexOf('POS_') === 0 || key === 'TITRE_SLIDE_TECHNIQUE' || key.indexOf('DATA_TECH_') === 0) return 19; // Technique
+    if (key.indexOf('UX_') === 0 || key === 'TITRE_SLIDE_UX' || key.indexOf('PLACEHOLDER_UX_') === 0 || key.indexOf('DATA_UX_') === 0) return 22; // UX
+    if (key.indexOf('CONTENU_') === 0 || key.indexOf('TITRE_SLIDE_CONTENU_') === 0) return 25; // Contenu
+    
+    return 31; // Fallback
 }
