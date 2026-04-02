@@ -353,6 +353,10 @@ function sauvegarderPreAudit() {
 }
 
 function getColumnForConfigKey(key) {
+    // PRIORITÉ : ÉDITORIAL (Colonne 22)
+    if (key.slice(-6) === '_EDITO' || key.indexOf('_EDITO_') !== -1 || key.indexOf('THEMATIQUE_EDITO_') === 0 || key.indexOf('NOM_CONTENU_') === 0 || key.indexOf('DATA_TOP10_CONTENU_') === 0) return 22;
+    
+    // Autres catégories
     if (key.indexOf('CONF_') === 0 || key.indexOf('PA_') === 0 || key.indexOf('CTR_') === 0) return 1;
     if (key.indexOf('TAG_') === 0 || key.indexOf('TITRE_SLIDE_SEMRUSH') === 0 || key.indexOf('ANALYSE_SEMRUSH_') === 0) return 4;
     if (key.indexOf('TITRE_SLIDE_THEMATIQUE') === 0 || key.indexOf('ANALYSE_THEMATIQUE') === 0 || key.indexOf('TITRE_SLIDE_MC') === 0 || key.indexOf('ANALYSE_MC') === 0 || key === 'ANALYSE_SELECTION') return 7;
@@ -360,7 +364,7 @@ function getColumnForConfigKey(key) {
     if (key.indexOf('TECH_') === 0 || key.indexOf('CRAWL_') === 0 || key.indexOf('INDEX_') === 0 || key.indexOf('POS_') === 0 || key === 'TITRE_SLIDE_TECHNIQUE' || key.indexOf('DATA_TECH_') === 0) return 13;
     if (key.indexOf('UX_') === 0 || key === 'TITRE_SLIDE_UX' || key.indexOf('PLACEHOLDER_UX_') === 0 || key.indexOf('DATA_UX_') === 0) return 16;
     if (key.indexOf('CONTENU_') === 0 || key.indexOf('TITRE_SLIDE_CONTENU_') === 0) return 19;
-    if (key.slice(-6) === '_EDITO' || key.indexOf('_EDITO_') !== -1 || key.indexOf('THEMATIQUE_EDITO_') === 0 || key.indexOf('NOM_CONTENU_') === 0 || key.indexOf('DATA_TOP10_CONTENU_') === 0) return 22;
+    
     return 25;
 }
 

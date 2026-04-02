@@ -1260,13 +1260,55 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
             return (val !== null && val !== undefined && !isNaN(val)) ? Math.round(val).toLocaleString('fr-FR') : "-";
         }
 
+        function colorerBlogEdito(shape, valeur) {
+            try {
+                var color = (valeur && valeur.toString().toLowerCase() === "oui") ? "#02b050" : "#ff0000";
+                shape.getFill().setSolidFill(color);
+                shape.getText().getTextStyle().setForegroundColor("#ffffff").setBold(true);
+            } catch (e) {
+                Logger.log("Erreur couleur blog : " + e.message);
+            }
+        }
+
+        // --- NOUVEAU : Fonction de formatage Markdown (*gras orange*) ---
+        function formatRichTextEdito(shape) {
+            try {
+                var textRange = shape.getText();
+                var textStr = textRange.asString();
+                var regex = /\*([^*]+)\*/g;
+                var matches = [];
+                var match;
+                while ((match = regex.exec(textStr)) !== null) {
+                    matches.push({
+                        start: match.index,
+                        text: match[1],
+                        length: match[0].length
+                    });
+                }
+                
+                for (var i = matches.length - 1; i >= 0; i--) {
+                    var m = matches[i];
+                    var endAst = m.start + m.text.length + 1;
+                    
+                    textRange.getRange(endAst, endAst + 1).clear(); // effacer l'astérisque de fin
+                    textRange.getRange(m.start, m.start + 1).clear(); // effacer l'astérisque de début
+                    var styledRange = textRange.getRange(m.start, m.start + m.text.length);
+                    // On applique le gras et la couleur tout en conservant la police par défaut (Open Sans 18px)
+                    styledRange.getTextStyle().setBold(true).setForegroundColor("#f67604");
+                }
+            } catch(e) {
+                Logger.log("Erreur dans formatRichTextEdito : " + e.message);
+            }
+        }
+
         var mappingComp = {};
         
-        var titreThematique = props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "";
-        mappingComp['TITRE_SLIDE_CONCURRENCE_EDITO'] = titreSlide || "";
-        mappingComp['TITRE_SLIDE_THEMATIQUE_EDITO'] = titreThematique;
+        // Titres
+        mappingComp['TITRE_SLIDE_CONCURRENCE_EDITO'] = titreSlide || props['TITRE_SLIDE_CONCURRENCE_EDITO'] || "";
+        mappingComp['TITRE_SLIDE_THEMATIQUE_EDITO'] = props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "";
         
         if (concurrenceDataEdito) {
+            // Paysage concurrentiel
             if (concurrenceDataEdito.client) {
                 mappingComp['NOM_CLIENT_EDITO'] = concurrenceDataEdito.client.name;
                 mappingComp['VALEUR_TOP10_CLIENT_EDITO'] = safeNum(concurrenceDataEdito.client.top10);
@@ -1289,35 +1331,27 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                 }
             }
             
-            // Traitement des pistes (Thématiques)
+            // Pistes Éditoriales (Thématiques)
             var selectionJson = props['ANALYSE_SELECTION'];
             var selection = selectionJson ? JSON.parse(selectionJson) : [];
             var pistesEdito = [];
             try {
                 var diag = genererDiagnostic(selection);
                 if (diag && diag.pistesEdito) pistesEdito = diag.pistesEdito;
-            } catch (e) {
-                Logger.log("Erreur diagnostic dans exporterEditorialSlides : " + e.message);
-            }
+            } catch (e) { Logger.log("Erreur diagnostic : " + e.message); }
             
             for (var i = 1; i <= 3; i++) {
                 var piste = pistesEdito[i - 1];
                 if (piste) {
-                    mappingComp['THEMATIQUE_EDITO_' + i] = piste.tsKey || "";
+                    // Thématique avec retour à la ligne
+                    mappingComp['THEMATIQUE_EDITO_' + i] = piste.tsKey ? piste.tsKey.replace(" > ", "\n> ") : "";
                     mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = piste.entite || "";
                     mappingComp['URL_EDITO_CONTENU_' + i] = piste.url || "";
                     mappingComp['NOM_CONTENU_' + i] = props['NOM_CONTENU_' + i] || "";
                     
-                    var kwStr = piste.kwTop100 + " mots-clés positionnés en top 100\n\n" + piste.kwTop10 + " mots-clés positionnés en top 10, exemples :\n";
-                    if (piste.kws && piste.kws.length > 0) {
-                        for (var k = 0; k < piste.kws.length; k++) {
-                            var kwItem = piste.kws[k];
-                            kwStr += "• « " + kwItem.kw + " », recherché " + safeNum(kwItem.vol) + " fois par mois, en position " + kwItem.pos + "\n";
-                        }
-                    }
-                    // Retirer le dernier saut de ligne
-                    kwStr = kwStr.replace(/\n$/, "");
-                    mappingComp['DATA_TOP10_CONTENU_' + i] = kwStr;
+                    // Récupération directe du bloc Top 10 formaté par le front-end
+                    var dataTop10 = props['DATA_TOP10_CONTENU_' + i];
+                    mappingComp['DATA_TOP10_CONTENU_' + i] = dataTop10 ? dataTop10.replace(/&#10;/g, "\n") : "-";
                 } else {
                     mappingComp['THEMATIQUE_EDITO_' + i] = "-";
                     mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = "-";
@@ -1328,7 +1362,6 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
             }
         }
 
-        // Sauvegarde des propriétés
         var propsToSave = {};
         for (var k in mappingComp) { propsToSave[k] = String(mappingComp[k]); }
 
@@ -1345,66 +1378,84 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
 
         setDatabaseData(propsToSave);
 
-        Logger.log("Parcours minutieux des slides pour Performance Éditoriale");
-
+        Logger.log("Parcours récursif des slides pour Performance Éditoriale (Cas 1 Uniquement, avec Groupes)");
         slides.forEach(function(slide) {
-            var shapes = slide.getShapes();
-
-            shapes.forEach(function(shape) {
-                var descRaw = shape.getDescription() || "";
-
-                if (mappingComp[descRaw] !== undefined) {
-                    shape.getText().setText(mappingComp[descRaw].toString());
-                }
-
-                // Placeholders d'images concurrentes pour l'éditorial
-                if (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
-                    var imgUrl = null;
-                    
-                    if (descRaw.indexOf("_EDITO_CONTENU") !== -1) {
-                        var mc = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO_CONTENU/);
-                        if (mc && mc[1]) {
-                            var iContenu = parseInt(mc[1], 10);
-                            var domainUrl = mappingComp['URL_EDITO_CONTENU_' + iContenu];
-                            if (domainUrl && domainUrl !== "-") {
-                                var cleanDomain = domainUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-                                imgUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
-                            }
+            
+            function processElement(element) {
+                var type = element.getPageElementType();
+                
+                if (type === SlidesApp.PageElementType.GROUP) {
+                    element.asGroup().getChildren().forEach(processElement);
+                } else if (type === SlidesApp.PageElementType.TABLE) {
+                    var table = element.asTable();
+                    for (var r = 0; r < table.getNumRows(); r++) {
+                        for (var c = 0; c < table.getNumColumns(); c++) {
+                            processTextContainer(table.getCell(r, c), slide);
                         }
-                    } else {
-                        if (descRaw === "PLACEHOLDER_LOGO_CLIENT_EDITO" && concurrenceDataEdito.client && concurrenceDataEdito.client.logoUrl) {
-                            imgUrl = concurrenceDataEdito.client.logoUrl;
-                        } else if (descRaw === "PLACEHOLDER_LOGO_LEADER_EDITO" && concurrenceDataEdito.leader && concurrenceDataEdito.leader.logoUrl) {
-                            imgUrl = concurrenceDataEdito.leader.logoUrl;
-                        } else {
-                            var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO/);
-                            if (m && m[1]) {
-                                var idxComp = parseInt(m[1]) - 1;
-                                if (concurrenceDataEdito.comps && concurrenceDataEdito.comps[idxComp] && concurrenceDataEdito.comps[idxComp].logoUrl) {
-                                    imgUrl = concurrenceDataEdito.comps[idxComp].logoUrl;
+                    }
+                } else if (type === SlidesApp.PageElementType.SHAPE) {
+                    processTextContainer(element.asShape(), slide);
+                } else if (type === SlidesApp.PageElementType.IMAGE) {
+                    processTextContainer(element.asImage(), slide);
+                }
+            }
+
+            function processTextContainer(element, currentSlide) {
+                var isShape = (typeof element.getDescription === 'function');
+                var descRaw = isShape ? (element.getDescription() || "") : "";
+
+                if (isShape && descRaw !== "") {
+                    
+                    // 1. Remplacement des textes (Titres, Thématiques, Données, Tags Blog)
+                    if (mappingComp[descRaw] !== undefined) {
+                        element.getText().setText(mappingComp[descRaw].toString());
+
+                        if (descRaw.indexOf("BLOG_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
+                            colorerBlogEdito(element, mappingComp[descRaw]);
+                        }
+                        
+                        // Application systématique de la transformation Markdown sur le texte final
+                        formatRichTextEdito(element);
+                        
+                        return; // On stoppe ici pour cette forme
+                    }
+
+                    // 2. Remplacement des images (Logos/Favicons)
+                    if (descRaw.indexOf("PLACEHOLDER_LOGO_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
+                        var imgUrl = null;
+                        if (descRaw.indexOf("_EDITO_CONTENU") !== -1) {
+                            var mc = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO_CONTENU/);
+                            if (mc && mc[1]) {
+                                var domainUrl = mappingComp['URL_EDITO_CONTENU_' + parseInt(mc[1])];
+                                if (domainUrl && domainUrl !== "-") {
+                                    var cleanDomain = domainUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                                    imgUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
                                 }
                             }
-                        }
-                    }
-
-                    if (imgUrl) {
-                        try {
-                            var response = UrlFetchApp.fetch(imgUrl, { muteHttpExceptions: true });
-                            if (response.getResponseCode() === 200) {
-                                var blob = response.getBlob();
-                                var newImg = slide.insertImage(blob, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
-                                newImg.setDescription(descRaw);
+                        } else {
+                            if (descRaw === "PLACEHOLDER_LOGO_CLIENT_EDITO" && concurrenceDataEdito.client && concurrenceDataEdito.client.logoUrl) imgUrl = concurrenceDataEdito.client.logoUrl;
+                            else if (descRaw === "PLACEHOLDER_LOGO_LEADER_EDITO" && concurrenceDataEdito.leader && concurrenceDataEdito.leader.logoUrl) imgUrl = concurrenceDataEdito.leader.logoUrl;
+                            else {
+                                var m = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO/);
+                                if (m && m[1] && concurrenceDataEdito.comps && concurrenceDataEdito.comps[parseInt(m[1]) - 1]) imgUrl = concurrenceDataEdito.comps[parseInt(m[1]) - 1].logoUrl;
                             }
-                            shape.remove();
-                        } catch (errImg) {
-                            Logger.log("Erreur chargement image " + imgUrl + " : " + errImg.message);
-                            shape.remove();
                         }
-                    } else {
-                        shape.remove();
+
+                        if (imgUrl) {
+                            try {
+                                var response = UrlFetchApp.fetch(imgUrl, { muteHttpExceptions: true });
+                                if (response.getResponseCode() === 200) {
+                                    currentSlide.insertImage(response.getBlob(), element.getLeft(), element.getTop(), element.getWidth(), element.getHeight()).setDescription(descRaw);
+                                }
+                                element.remove();
+                            } catch (e) { element.remove(); }
+                        } else { element.remove(); }
+                        return; // On stoppe ici pour cette forme
                     }
                 }
-            });
+            }
+
+            slide.getPageElements().forEach(processElement);
         });
 
         Logger.log("=== FIN : exporterEditorialSlides ===");

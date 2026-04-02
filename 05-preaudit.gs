@@ -234,7 +234,10 @@ function sauvegarderDonneesEditorial(data) {
             'TITRE_SLIDE_THEMATIQUE_EDITO': data.titreSlideThematiqueEdito || "",
             'NOM_CONTENU_1': data.nomContenu1 || "",
             'NOM_CONTENU_2': data.nomContenu2 || "",
-            'NOM_CONTENU_3': data.nomContenu3 || ""
+            'NOM_CONTENU_3': data.nomContenu3 || "",
+            'DATA_TOP10_CONTENU_1': data.dataTop10_1 || "",
+            'DATA_TOP10_CONTENU_2': data.dataTop10_2 || "",
+            'DATA_TOP10_CONTENU_3': data.dataTop10_3 || ""
         };
         
         setDatabaseData(propsToSet);

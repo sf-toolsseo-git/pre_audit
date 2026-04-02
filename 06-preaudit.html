@@ -973,20 +973,29 @@
 
         <div class="tab-content" id="content-editorial">
             <div class="main-area">
-                <div class="config-card">
-                    <h2 class="section-title">Analyse Éditoriale (Informationnelle)</h2>
-                    <div class="section-description">Vue d'ensemble des performances du client sur la sélection de mots-clés informationnels.</div>
-                    
-                    <div class="header-inline" style="margin-top: 15px;">
-                        <div style="flex: 1; margin-right: 15px;">
-                            <label class="input-label" style="display:inline-block;">Titre de la slide concurrence</label>
-                            <input type="text" id="ia-titre-editorial" placeholder="Titre de la slide..." onblur="autoSaveEditorial()" style="width: 100%; display: block;">
-                        </div>
-                        <button type="button" class="btn" id="btn-gen-edito-ia" onclick="lancerAnalyseEditorialIA()">🤖 Générer l'analyse</button>
+                <div class="header-inline">
+                    <div>
+                        <h2 class="section-title">Analyse Éditoriale (Informationnelle)</h2>
+                        <div class="section-description" style="margin-bottom: 15px;">Vue d'ensemble des performances du client sur la sélection de mots-clés informationnels.</div>
                     </div>
-                    <div style="margin-top: 10px;">
-                        <label class="input-label">Titre de la slide thématiques</label>
-                        <input type="text" id="ia-titre-thematique-edito" placeholder="Titre slide thématiques" onblur="autoSaveEditorial()" style="width: 100%;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <button type="button" class="btn" onclick="ouvrirURLsEdito()" style="width: auto;">Ouvrir les contenus ↗</button>
+                        <button type="button" class="btn" id="btn-gen-edito-ia" onclick="lancerAnalyseEditorialIA()" style="background-color: #08133b; width: auto;">🤖 Générer l'analyse</button>
+                    </div>
+                </div>
+
+                <div class="config-card" style="margin-top: 0;">
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Titre de la slide concurrence</label>
+                            <input type="text" id="ia-titre-editorial" placeholder="Votre écosystème informationnel concurrentiel" onblur="autoSaveEditorial()">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label class="input-label">Titre de la slide thématiques</label>
+                            <input type="text" id="ia-titre-thematique-edito" placeholder="3 contenus stratégiques pour asseoir votre expertise" onblur="autoSaveEditorial()">
+                        </div>
                     </div>
                     
                     <div id="kpi-editorial-container" style="margin-top: 15px;">
@@ -2420,7 +2429,7 @@
                 console.log("=== FIN : preparerOngletEtatLieux ===");
             }
             
-            function preparerOngletEditorial() {
+           function preparerOngletEditorial() {
                 console.log("=== DÉBUT : preparerOngletEditorial ===");
                 
                 switchTab('editorial');
@@ -2434,14 +2443,13 @@
 
                 var data = window.lastDiagnosticData;
                 
-                // Séparation exacte pour garantir le bon affichage : Vous > Leader > Autres
                 var allComps = data.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
                 var leaderKpi = allComps.length > 0 ? allComps[0] : null;
                 var clientKpi = data.kpis.find(function(k) { return k.isClient; });
                 var otherComps = allComps.slice(1, 5);
 
                 if (allComps.length > 0 || clientKpi) {
-                    var html = '<div class="panel" style="margin-top:20px;">';
+                    var html = '<div class="panel" style="margin-top:20px; border:1px solid #dadce0; box-shadow:none;">';
                     html += '<div class="panel-header" style="border-bottom:none;margin-bottom:0;padding-bottom:0;"><span>🏆</span> Paysage concurrentiel (Informationnel)</div>';
                     html += '<div class="section-description">Analyse du client face au leader et aux principaux concurrents sur la sélection de mots-clés informationnels.</div>';
                     html += '<div class="comp-grid">';
@@ -2464,7 +2472,6 @@
                     var fbImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23e0e0e0'/><text x='50' y='55' font-family='Arial' font-size='40' font-weight='bold' fill='%239e9e9e' text-anchor='middle' dominant-baseline='middle'>?</text></svg>";
                     var conf = window.globalConfig || {};
 
-                    // 1. Carte Client (Toujours en premier)
                     if (clientKpi) {
                         var clientDomain = findDomainByName(clientKpi.name);
                         var clientLogoUrl = getFaviconUrl(clientDomain);
@@ -2485,7 +2492,6 @@
                         html += '</div>';
                     }
 
-                    // 2. Carte Leader
                     if (leaderKpi) {
                         var leaderDomain = findDomainByName(leaderKpi.name);
                         var leaderLogoUrl = getFaviconUrl(leaderDomain);
@@ -2506,7 +2512,6 @@
                         html += '</div>';
                     }
 
-                    // 3. Cartes autres concurrents
                     otherComps.forEach(function(comp, idx) {
                         var compDomain = findDomainByName(comp.name);
                         var compLogoUrl = getFaviconUrl(compDomain);
@@ -2542,6 +2547,16 @@
                                 domain = "Capture";
                             }
                             var logoUrl = getFaviconUrl(domain);
+                            var nomContenuIdx = index + 1;
+                            var valNom = conf['nomContenu' + nomContenuIdx] || "";
+                            
+                            // FORMATAGE POUR GOOGLE SLIDES (avec astérisques et sans "exemples")
+                            var kwStr = piste.kwTop10 + " mots-clés positionnés en top 10 *(Trafic estimé : " + Math.round(piste.tec).toLocaleString('fr-FR') + ")* :\n";
+                            piste.kws.forEach(function(kwItem) {
+                                kwStr += "    • « " + kwItem.kw + " », recherché " + kwItem.vol.toLocaleString('fr-FR') + " fois par mois, en position " + kwItem.pos + "\n";
+                            });
+                            kwStr = kwStr.replace(/\n$/, "");
+
                             html += '<div class="edito-piste-card">';
                             html += '<div class="edito-piste-left">';
                             html += '<div class="edito-tskey">🔍 ' + piste.tsKey + '</div>';
@@ -2552,21 +2567,25 @@
                             html += '<div class="edito-url-link">' + piste.url + '</div>';
                             html += '</div></div>';
                             html += '<div style="margin-top: 15px;">';
-                            var nomContenuIdx = index + 1;
-                            var conf = window.globalConfig || {};
-                            var valNom = conf['nomContenu' + nomContenuIdx] || "";
                             html += '<label class="input-label">Nom du contenu</label>';
-                            html += '<input type="text" id="ia-nom-contenu-' + nomContenuIdx + '" class="input-nom-contenu" placeholder="Nom court du contenu" value="' + valNom.replace(/"/g, '"') + '" onblur="autoSaveEditorial()">';
+                            html += '<input type="text" id="ia-nom-contenu-' + nomContenuIdx + '" class="input-nom-contenu" placeholder="Nom court du contenu" value="' + valNom.replace(/"/g, '&quot;') + '" onblur="autoSaveEditorial()">';
+                            // Champ caché pour Slides
+                            html += '<input type="hidden" id="ia-data-top10-' + nomContenuIdx + '" value="' + kwStr.replace(/"/g, '&quot;').replace(/\n/g, '&#10;') + '">';
                             html += '</div></div>';
+                            
                             html += '<div class="edito-piste-right">';
+                            
+                            // AFFICHAGE HTML : TOP 100
                             html += '<div class="edito-stat-row">';
                             html += '<div class="edito-stat-icon">📊</div>';
                             html += '<div><strong>' + piste.kwTop100 + ' mots-clés positionnés</strong> dans le top 100</div>';
                             html += '</div>';
+
+                            // AFFICHAGE HTML : TOP 10 (Formatage personnalisé orange et suppression de "exemples")
                             html += '<div class="edito-stat-row">';
                             html += '<div class="edito-stat-icon" style="background:#e6f4ea; color:#137333;">🔥</div>';
                             html += '<div>';
-                            html += '<div><strong>' + piste.kwTop10 + ' mots-clés en top 10</strong> (Trafic estimé : ' + piste.tec.toLocaleString('fr-FR') + ') :</div>';
+                            html += '<div style="margin-bottom: 5px;">' + piste.kwTop10 + ' mots-clés positionnés en top 10 <strong style="color:#f67604;">(Trafic estimé : ' + Math.round(piste.tec).toLocaleString('fr-FR') + ')</strong> :</div>';
                             html += '<ul class="edito-kw-list">';
                             piste.kws.forEach(function(kwItem) {
                                 html += '<li>« ' + kwItem.kw + ' », recherché ' + kwItem.vol.toLocaleString('fr-FR') + ' fois par mois, en position ' + kwItem.pos + '</li>';
@@ -2592,6 +2611,10 @@
                 var nomC2 = document.getElementById('ia-nom-contenu-2') ? document.getElementById('ia-nom-contenu-2').value : "";
                 var nomC3 = document.getElementById('ia-nom-contenu-3') ? document.getElementById('ia-nom-contenu-3').value : "";
 
+                var dataTop1 = document.getElementById('ia-data-top10-1') ? document.getElementById('ia-data-top10-1').value : "";
+                var dataTop2 = document.getElementById('ia-data-top10-2') ? document.getElementById('ia-data-top10-2').value : "";
+                var dataTop3 = document.getElementById('ia-data-top10-3') ? document.getElementById('ia-data-top10-3').value : "";
+
                 var selects = document.querySelectorAll('.select-blog');
                 
                 var data = {
@@ -2599,7 +2622,10 @@
                     titreSlideThematiqueEdito: titreThematique,
                     nomContenu1: nomC1,
                     nomContenu2: nomC2,
-                    nomContenu3: nomC3
+                    nomContenu3: nomC3,
+                    dataTop10_1: dataTop1,
+                    dataTop10_2: dataTop2,
+                    dataTop10_3: dataTop3
                 };
                 
                 selects.forEach(function(select) {
@@ -2678,97 +2704,150 @@
                     .genererAnalyseEditorialIA(pistes, contexte);
             }
 
-            function lancerExportSlidesEditorial() {
+           function lancerExportSlidesEditorial() {
                 console.log("=== DÉBUT : lancerExportSlidesEditorial ===");
                 var btn = document.getElementById('btnExportSlidesEditorial');
                 var msg = document.getElementById('exportMsgEditorial');
+                
                 btn.disabled = true;
-                btn.innerText = "⏳ Import en cours...";
+                btn.innerText = "⏳ Sauvegarde et import...";
                 msg.innerText = "";
                 
-                var concurrenceDataEdito = null;
-                if (window.lastDiagnosticData) {
-                    var allComps = window.lastDiagnosticData.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
-                    var leaderKpi = allComps.length > 0 ? allComps[0] : null;
-                    var clientKpi = window.lastDiagnosticData.kpis.find(function(k) { return k.isClient; });
-                    var otherComps = allComps.slice(1, 5);
-
-                    function findDomainByNameForExport(name) {
-                        var conf = window.globalConfig || {};
-                        if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
-                        for (var i = 1; i <= 5; i++) {
-                            if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
-                        }
-                        return name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
-                    }
-                    
-                    function getFavUrl(domain) {
-                        if (!domain) return '';
-                        var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-                        return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
-                    }
-
-                    if (clientKpi) {
-                        concurrenceDataEdito = {
-                            client: {
-                                name: clientKpi.name,
-                                top10: clientKpi.infoTop10,
-                                pages: clientKpi.infoUrlsCount,
-                                logoUrl: getFavUrl(findDomainByNameForExport(clientKpi.name))
-                            },
-                            leader: leaderKpi ? {
-                                name: leaderKpi.name,
-                                top10: leaderKpi.infoTop10,
-                                pages: leaderKpi.infoUrlsCount,
-                                logoUrl: getFavUrl(findDomainByNameForExport(leaderKpi.name)),
-                                isClient: leaderKpi.isClient
-                            } : null,
-                            comps: otherComps.map(function(c) {
-                                return {
-                                    name: c.name,
-                                    top10: c.infoTop10,
-                                    pages: c.infoUrlsCount,
-                                    logoUrl: getFavUrl(findDomainByNameForExport(c.name))
-                                };
-                            })
-                        };
-                    }
-                }
+                // 1. Collecte de toutes les données actuelles de l'interface
+                var titre = document.getElementById('ia-titre-editorial') ? document.getElementById('ia-titre-editorial').value : "";
+                var titreThematique = document.getElementById('ia-titre-thematique-edito') ? document.getElementById('ia-titre-thematique-edito').value : "";
                 
-                var titreSlide = document.getElementById('ia-titre-editorial').value;
-                var conf = window.globalConfig || {};
-                var donneesBlog = {
-                    client: conf.blogClientEdito || "Non",
-                    leader: conf.blogLeaderEdito || "Non",
-                    comp1: conf.blogComp1Edito || "Non",
-                    comp2: conf.blogComp2Edito || "Non",
-                    comp3: conf.blogComp3Edito || "Non",
-                    comp4: conf.blogComp4Edito || "Non"
-                };
+                var nomC1 = document.getElementById('ia-nom-contenu-1') ? document.getElementById('ia-nom-contenu-1').value : "";
+                var nomC2 = document.getElementById('ia-nom-contenu-2') ? document.getElementById('ia-nom-contenu-2').value : "";
+                var nomC3 = document.getElementById('ia-nom-contenu-3') ? document.getElementById('ia-nom-contenu-3').value : "";
 
+                var dataTop1 = document.getElementById('ia-data-top10-1') ? document.getElementById('ia-data-top10-1').value : "";
+                var dataTop2 = document.getElementById('ia-data-top10-2') ? document.getElementById('ia-data-top10-2').value : "";
+                var dataTop3 = document.getElementById('ia-data-top10-3') ? document.getElementById('ia-data-top10-3').value : "";
+
+                var dataToSave = {
+                    titreSlideEditorial: titre,
+                    titreSlideThematiqueEdito: titreThematique,
+                    nomContenu1: nomC1,
+                    nomContenu2: nomC2,
+                    nomContenu3: nomC3,
+                    dataTop10_1: dataTop1,
+                    dataTop10_2: dataTop2,
+                    dataTop10_3: dataTop3
+                };
+                
+                var selects = document.querySelectorAll('.select-blog');
+                selects.forEach(function(select) {
+                    var entity = select.getAttribute('data-entity');
+                    if (entity === 'client') dataToSave.blogClientEdito = select.value;
+                    else if (entity === 'leader') dataToSave.blogLeaderEdito = select.value;
+                    else if (entity === 'comp1') dataToSave.blogComp1Edito = select.value;
+                    else if (entity === 'comp2') dataToSave.blogComp2Edito = select.value;
+                    else if (entity === 'comp3') dataToSave.blogComp3Edito = select.value;
+                    else if (entity === 'comp4') dataToSave.blogComp4Edito = select.value;
+                });
+
+                if (window.globalConfig) {
+                    Object.assign(window.globalConfig, dataToSave);
+                }
+
+                // 2. On lance la sauvegarde en base DE FAÇON SYNCHRONE avant l'export
                 google.script.run
-                    .withSuccessHandler(function(res) {
-                        if(res.success) {
-                            btn.innerText = "✅ Importé";
-                            msg.innerHTML = '<span style="color:#188038">Données injectées avec succès !</span>';
-                            setTimeout(function() {
+                    .withSuccessHandler(function() {
+                        console.log("Sauvegarde confirmée. Lancement de l'export Slides...");
+                        
+                        // 3. Préparation des données concurrentielles pour l'export
+                        var concurrenceDataEdito = null;
+                        if (window.lastDiagnosticData) {
+                            var allComps = window.lastDiagnosticData.kpis.filter(function(k) { return !k.isClient; }).sort(function(a, b) { return b.infoTop10 - a.infoTop10; });
+                            var leaderKpi = allComps.length > 0 ? allComps[0] : null;
+                            var clientKpi = window.lastDiagnosticData.kpis.find(function(k) { return k.isClient; });
+                            var otherComps = allComps.slice(1, 5);
+
+                            function findDomainByNameForExport(name) {
+                                var conf = window.globalConfig || {};
+                                if (conf.clientName === name && conf.clientUrl) return conf.clientUrl;
+                                for (var i = 1; i <= 5; i++) {
+                                    if (conf['competitorName' + i] === name) return conf['competitorUrl' + i] || conf['competitor' + i];
+                                }
+                                return name.toLowerCase().replace(/[^a-z0-9-.]/g, '') + '.com';
+                            }
+                            
+                            function getFavUrl(domain) {
+                                if (!domain) return '';
+                                var cleanDomain = domain.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+                                return 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
+                            }
+
+                            if (clientKpi) {
+                                concurrenceDataEdito = {
+                                    client: {
+                                        name: clientKpi.name,
+                                        top10: clientKpi.infoTop10,
+                                        pages: clientKpi.infoUrlsCount,
+                                        logoUrl: getFavUrl(findDomainByNameForExport(clientKpi.name))
+                                    },
+                                    leader: leaderKpi ? {
+                                        name: leaderKpi.name,
+                                        top10: leaderKpi.infoTop10,
+                                        pages: leaderKpi.infoUrlsCount,
+                                        logoUrl: getFavUrl(findDomainByNameForExport(leaderKpi.name)),
+                                        isClient: leaderKpi.isClient
+                                    } : null,
+                                    comps: otherComps.map(function(c) {
+                                        return {
+                                            name: c.name,
+                                            top10: c.infoTop10,
+                                            pages: c.infoUrlsCount,
+                                            logoUrl: getFavUrl(findDomainByNameForExport(c.name))
+                                        };
+                                    })
+                                };
+                            }
+                        }
+                        
+                        var titreSlide = dataToSave.titreSlideEditorial;
+                        var donneesBlog = {
+                            client: dataToSave.blogClientEdito || "Non",
+                            leader: dataToSave.blogLeaderEdito || "Non",
+                            comp1: dataToSave.blogComp1Edito || "Non",
+                            comp2: dataToSave.blogComp2Edito || "Non",
+                            comp3: dataToSave.blogComp3Edito || "Non",
+                            comp4: dataToSave.blogComp4Edito || "Non"
+                        };
+
+                        // 4. Appel effectif à Google Slides
+                        google.script.run
+                            .withSuccessHandler(function(res) {
+                                if(res.success) {
+                                    btn.innerText = "✅ Importé";
+                                    msg.innerHTML = '<span style="color:#188038">Données injectées avec succès !</span>';
+                                    setTimeout(function() {
+                                        btn.disabled = false;
+                                        btn.innerText = "📥 Importer dans Slides";
+                                        msg.innerHTML = "";
+                                    }, 3000);
+                                } else {
+                                    btn.disabled = false;
+                                    btn.innerText = "📥 Importer dans Slides";
+                                    msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
+                                }
+                            })
+                            .withFailureHandler(function(err) {
                                 btn.disabled = false;
                                 btn.innerText = "📥 Importer dans Slides";
-                                msg.innerHTML = "";
-                            }, 3000);
-                        } else {
-                            btn.disabled = false;
-                            btn.innerText = "📥 Importer dans Slides";
-                            msg.innerHTML = '<span style="color:#d93025">❌ Erreur : ' + res.error + '</span>';
-                        }
+                                msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                            })
+                            .exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog);
                     })
                     .withFailureHandler(function(err) {
                         btn.disabled = false;
                         btn.innerText = "📥 Importer dans Slides";
-                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur critique : ' + err.message + '</span>';
+                        msg.innerHTML = '<span style="color:#d93025">❌ Erreur de sauvegarde : ' + err.message + '</span>';
                     })
-                    .exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog);
+                    .sauvegarderDonneesEditorial(dataToSave);
             }
+
 
             function lancerAnalyseSegmentsIA() {
                 console.log("=== DÉBUT : lancerAnalyseSegmentsIA ===");
@@ -5363,7 +5442,24 @@
             }
             console.log("=== FIN : autoSaveAnalyseContenu ===");
         }
-
-        </script>
+        
+        function ouvrirURLsEdito() {
+            if (!window.lastDiagnosticData || !window.lastDiagnosticData.pistesEdito) {
+                alert("Aucune donnée éditoriale disponible.");
+                return;
+            }
+            var pistes = window.lastDiagnosticData.pistesEdito.slice(0, 3);
+            var opened = 0;
+            pistes.forEach(function(piste) {
+                if (piste.url && piste.url !== "-" && piste.url.startsWith("http")) {
+                    window.open(piste.url, '_blank');
+                    opened++;
+                }
+            });
+            if (opened === 0) {
+                alert("Aucune URL de contenu concurrent valide trouvée.");
+            }
+        }
+    </script>
     </body>
 </html>
