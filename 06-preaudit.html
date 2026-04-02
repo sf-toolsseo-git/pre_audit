@@ -1298,14 +1298,14 @@
                             if (config.techPaysCible) document.getElementById('tech-pays-cible').value = config.techPaysCible;
                             if (config.techUrlFiltre) document.getElementById('tech-url-filtre').value = config.techUrlFiltre;
                             
-                            if (config.TITRE_SLIDE_TECHNIQUE) document.getElementById('ia-titre-tech').value = config.TITRE_SLIDE_TECHNIQUE;
-                            if (config.TITRE_SLIDE_UX) document.getElementById('ia-titre-ux').value = config.TITRE_SLIDE_UX;
-                            if (config.TITRE_SLIDE_CONTENU_CLIENT) document.getElementById('ia-titre-contenu-client').value = config.TITRE_SLIDE_CONTENU_CLIENT;
-                            if (config.TITRE_SLIDE_CONTENU_CONCURRENT) document.getElementById('ia-titre-contenu-comp').value = config.TITRE_SLIDE_CONTENU_CONCURRENT;
+                            if (config.PA_TECH_TITRE) document.getElementById('ia-titre-tech').value = config.PA_TECH_TITRE;
+                            if (config.PA_UX_TITRE) document.getElementById('ia-titre-ux').value = config.PA_UX_TITRE;
+                            if (config.PA_CONTENU_TITRE_CLIENT) document.getElementById('ia-titre-contenu-client').value = config.PA_CONTENU_TITRE_CLIENT;
+                            if (config.PA_CONTENU_TITRE_CONC) document.getElementById('ia-titre-contenu-comp').value = config.PA_CONTENU_TITRE_CONC;
 
-                            if (config.DATA_TECH_IA_FULL_STATE) {
+                            if (config.PA_TECH_IA_FULL_STATE) {
                                 try {
-                                    var fullState = JSON.parse(config.DATA_TECH_IA_FULL_STATE);
+                                    var fullState = JSON.parse(config.PA_TECH_IA_FULL_STATE);
                                     document.getElementById('tech-ia-results-container').style.display = 'flex';
                                     
                                     google.script.run.withSuccessHandler(function(icons) {
@@ -4300,7 +4300,7 @@
 
         function getTechIAData() {
             var data = {
-                TITRE_SLIDE_TECHNIQUE: document.getElementById('ia-titre-tech').value
+                PA_TECH_TITRE: document.getElementById('ia-titre-tech').value
             };
             var fullStateObj = { crawl: [], index: [], pos: [] };
             
@@ -4697,7 +4697,7 @@
                 fullStateStr: "",
                 recoGlobale1: getRawMarkdownFromCE('ux-reco-globale-1'),
                 recoGlobale2: getRawMarkdownFromCE('ux-reco-globale-2'),
-                TITRE_SLIDE_UX: document.getElementById('ia-titre-ux').value
+                PA_UX_TITRE: document.getElementById('ia-titre-ux').value
             };
 
             for (var i = 1; i <= 6; i++) {

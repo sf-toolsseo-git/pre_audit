@@ -160,12 +160,12 @@ function enregistrerConfiguration(formulaire) {
     Logger.log("=== DÉBUT : enregistrerConfiguration ===");
     
     setDatabaseData({
-        'PA_URLS_CONTEXTE': formulaire.urlsContexte || "",
-        'PA_CONTEXTE_CLIENT': formulaire.contexteClient || "",
         'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
         'CONF_PROJECT_TYPE': formulaire.projectType,
         'CONF_CLIENT_NAME': formulaire.clientName,
+        'PA_CONF_ID_CLIENT': formulaire.clientName,
         'CONF_CLIENT_URL': formulaire.clientUrl,
+        'PA_CONF_URL_CLIENT': formulaire.clientUrl,
         'CONF_CLIENT_STRENGTH': formulaire.clientStrength,
         'CONF_CLIENT_BRAND': formulaire.clientBrand,
         'CONF_COMP_NAME_1': formulaire.competitorName1,
@@ -197,10 +197,7 @@ function enregistrerConfiguration(formulaire) {
         'CTR_POS_7': formulaire.ctrPos7,
         'CTR_POS_8': formulaire.ctrPos8,
         'CTR_POS_9': formulaire.ctrPos9,
-        'CTR_POS_10': formulaire.ctrPos10,
-        'CONF_CONTACT_COM': formulaire.contactCom,
-        'CONF_CONTACT_CONS1': formulaire.contactCons1,
-        'CONF_CONTACT_CONS2': formulaire.contactCons2
+        'CTR_POS_10': formulaire.ctrPos10
     });
     
     Logger.log("=== FIN : enregistrerConfiguration ===");

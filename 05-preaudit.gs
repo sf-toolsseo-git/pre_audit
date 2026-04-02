@@ -9,72 +9,72 @@ function ouvrirFenetrePreAudit() {
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
     var keys = [
-        'CONF_CLIENT_NAME', 'CONF_CLIENT_URL', 'CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT',
-        'PA_SLIDE_ID', 'PA_BRIEF_CONSULTANT', 'PA_URL_FORM_REPONSES', 'PA_PROFILAGE_COMMERCIAL',
-        'TAG_SLIDE_BESOIN_HTML', 'TAG_SLIDE_BESOIN', 'TAG_SLIDE_SOLUTION_HTML', 'TAG_SLIDE_SOLUTION',
-        'TITRE_SLIDE_SEMRUSH', 'ANALYSE_SEMRUSH_MOT_CLE_HTML', 'ANALYSE_SEMRUSH_MOT_CLE',
-        'ANALYSE_SEMRUSH_TRAFIC_HTML', 'ANALYSE_SEMRUSH_TRAFIC', 'TITRE_SLIDE_THEMATIQUETOP_CLIENT',
-        'ANALYSE_THEMATIQUETOP_CLIENT_1', 'TITRE_SLIDE_THEMATIQUEFLOP_CLIENT', 'ANALYSE_THEMATIQUEFLOP_CLIENT_1',
-        'TITRE_SLIDE_MCTOP_CLIENT', 'ANALYSE_MCTOP_CLIENT_1', 'TITRE_SLIDE_MCFLOP_CLIENT', 'ANALYSE_MCFLOP_CLIENT_1',
+        'PA_CONF_ID_CLIENT', 'PA_CONF_URL_CLIENT', 'CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT',
+        'PA_CONF_SLIDE_ID', 'PA_CONF_BRIEF', 'PA_CONF_URL_FORM_REPONSES', 'PA_CONF_PROFILAGE_COMMERCIAL',
+        'PA_GLOBALE_BESOIN_HTML', 'PA_GLOBALE_BESOIN', 'PA_GLOBALE_SOLUTION_HTML', 'PA_GLOBALE_SOLUTION',
+        'PA_GLOBALE_TITRE_SEMRUSH', 'PA_GLOBALE_SEMRUSH_MOTCLE_HTML', 'PA_GLOBALE_SEMRUSH_MOTCLE',
+        'PA_GLOBALE_SEMRUSH_TRAFIC_HTML', 'PA_GLOBALE_SEMRUSH_TRAFIC', 'PA_ETAT_TITRE_THEMATIQUETOP',
+        'PA_ETAT_ANALYSE_THEMATIQUETOP1', 'PA_ETAT_TITRE_THEMATIQUEFLOP', 'PA_ETAT_ANALYSE_THEMATIQUEFLOP1',
+        'PA_ETAT_TITRE_MCTOP', 'PA_ETAT_ANALYSE_MCTOP1', 'PA_ETAT_TITRE_MCFLOP', 'PA_ETAT_ANALYSE_MCFLOP1',
         'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_NAME_3',
         'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
-        'TARGET_KW', 'TARGET_KW_SV', 'TARGET_URL_CLIENT', 'TARGET_KW_CLIENT_POS', 'TARGET_URL_CONCURRENT',
-        'TARGET_KW_CONCURRENT_POS', 'TARGET_LOCALISATION', 'SERP_ELEMENT_TITRE_1', 'SERP_ELEMENT_DESC_1',
-        'PLACEHOLDER_SERPELEMENT_1', 'SERP_ELEMENT_TITRE_2', 'SERP_ELEMENT_DESC_2', 'PLACEHOLDER_SERPELEMENT_2',
-        'SERP_ELEMENT_TITRE_3', 'SERP_ELEMENT_DESC_3', 'PLACEHOLDER_SERPELEMENT_3', 'SERP_ELEMENT_TITRE_4',
-        'SERP_ELEMENT_DESC_4', 'PLACEHOLDER_SERPELEMENT_4', 'FOCUS_INTENTION_TITRE', 'FOCUS_INTENTION_DESC',
+        'PA_FOCUS_MCCIBLE', 'PA_FOCUS_MCCIBLE_VOLUME', 'PA_FOCUS_MCCIBLE_URLCLIENT', 'PA_FOCUS_MCCIBLE_POSCLIENT', 'PA_FOCUS_MCCIBLE_URLCONC',
+        'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
+        'PA_FOCUS_PLACEHOLDER_SERPELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_2', 'PA_FOCUS_SERP_ELEMENT_DESC_2', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_2',
+        'PA_FOCUS_SERP_ELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_DESC_3', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_4',
+        'PA_FOCUS_SERP_ELEMENT_DESC_4', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_4', 'PA_FOCUS_INTENTION_TITRE', 'PA_FOCUS_INTENTION_DESC',
         'focus_standard_texte_1', 'focus_standard_texte_2', 'focus_standard_texte_3',
         'focus_semantique_texte_1', 'focus_semantique_texte_2', 'focus_semantique_texte_3',
-        'FOCUS_GAP_TITRE_1', 'FOCUS_GAP_DESC_1', 'FOCUS_GAP_TITRE_2', 'FOCUS_GAP_DESC_2', 'FOCUS_GAP_TITRE_3', 'FOCUS_GAP_DESC_3',
-        'FOCUS_RECO_1', 'FOCUS_RECO_2', 'FOCUS_RECO_3', 'FOCUS_RECO_4',
-        'TECH_URL_CIBLE', 'TECH_SITEMAP', 'TECH_TYPE_PAGE', 'TECH_URL_PAGE_MERE', 'TECH_URL_PAGINEES', 'TECH_URL_FILTRE',
-        'TECH_IS_MULTILINGUE', 'TECH_LANGUE_CIBLE', 'TECH_PAYS_CIBLE', 'TECH_HTML_CRAWL', 'TECH_HTML_INDEX',
-        'TECH_HTML_POS', 'DATA_TECH_IA_FULL_STATE', 'TITRE_SLIDE_TECHNIQUE',
-        'UX_CLIENT_VIEWPORT_ID', 'UX_CLIENT_FULL_ID', 'UX_CLIENT_CROP_ID', 'UX_COMP_VIEWPORT_ID',
-        'UX_COMP_FULL_ID', 'UX_COMP_CROP_ID', 'DATA_UX_IA_FULL_STATE', 'UX_RECOMMANDATION_1', 'UX_RECOMMANDATION_2',
-        'TITRE_SLIDE_UX', 'CONTENU_YTG_CIBLE', 'CONTENU_STRUCTURE_CLIENT', 'CONTENU_STRUCTURE_CLIENT_HTML',
-        'CONTENU_YTG_CLIENT', 'CONTENU_YTG_CLIENT_HTML', 'CONTENU_YTG_SCORE_CLIENT', 'CONTENU_YTG_DATA_CLIENT',
-        'CONTENU_1FR_CLIENT', 'CONTENU_1FR_CLIENT_HTML', 'CONTENU_1FR_URL_CLIENT', 'CONTENU_1FR_SCORE_CLIENT',
-        'CONTENU_1FR_DATA_CLIENT', 'CONTENU_SCRAPED_CLIENT', 'TITRE_SLIDE_CONTENU_CLIENT', 'CONTENU_STRUCTURE_CONCURRENT',
-        'CONTENU_STRUCTURE_CONCURRENT_HTML', 'CONTENU_YTG_CONCURRENT', 'CONTENU_YTG_CONCURRENT_HTML',
-        'CONTENU_YTG_SCORE_CONCURRENT', 'CONTENU_YTG_DATA_CONCURRENT', 'CONTENU_1FR_CONCURRENT',
-        'CONTENU_1FR_CONCURRENT_HTML', 'CONTENU_1FR_URL_CONCURRENT', 'CONTENU_1FR_SCORE_CONCURRENT',
-        'CONTENU_1FR_DATA_CONCURRENT', 'CONTENU_SCRAPED_CONCURRENT', 'TITRE_SLIDE_CONTENU_CONCURRENT',
-        'TITRE_SLIDE_CONCURRENCE_EDITO', 'BLOG_CLIENT_EDITO', 'BLOG_LEADER_EDITO', 'BLOG_COMP1_EDITO',
-        'BLOG_COMP2_EDITO', 'BLOG_COMP3_EDITO', 'BLOG_COMP4_EDITO', 'TITRE_SLIDE_THEMATIQUE_EDITO',
-        'NOM_CONTENU_1', 'NOM_CONTENU_2', 'NOM_CONTENU_3',
-        'CONF_CONTACT_COM', 'CONF_CONTACT_CONS1', 'CONF_CONTACT_CONS2'
+        'PA_FOCUS_GAP_TITRE_1', 'PA_FOCUS_GAP_DESC_1', 'PA_FOCUS_GAP_TITRE_2', 'PA_FOCUS_GAP_DESC_2', 'PA_FOCUS_GAP_TITRE_3', 'PA_FOCUS_GAP_DESC_3',
+        'PA_FOCUS_RECO_1', 'PA_FOCUS_RECO_2', 'PA_FOCUS_RECO_3', 'PA_FOCUS_RECO_4',
+        'PA_TECH_URL_CLIENT', 'PA_TECH_SITEMAP', 'PA_TECH_TYPE_PAGE', 'PA_TECH_URL_PAGE_MERE', 'PA_TECH_URL_PAGINEES', 'PA_TECH_URL_FILTRE',
+        'PA_TECH_IS_MULTILINGUE', 'PA_TECH_LANGUE_CIBLE', 'PA_TECH_PAYS_CIBLE', 'PA_TECH_HTML_CRAWL', 'PA_TECH_HTML_INDEX',
+        'PA_TECH_HTML_POS', 'PA_TECH_IA_FULL_STATE', 'PA_TECH_TITRE',
+        'PA_UX_CLIENT_VIEWPORT', 'PA_UX_CLIENT_FULL', 'PA_UX_CLIENT_CROP', 'PA_UX_CONC_VIEWPORT',
+        'PA_UX_CONC_FULL', 'PA_UX_CONC_CROP', 'PA_UX_IA_FULL_STATE', 'PA_UX_RECO_1', 'PA_UX_RECO_2',
+        'PA_UX_TITRE', 'PA_CONTENU_YTG_CIBLE_GLOBALE', 'PA_CONTENU_STRUCTURE_CLIENT', 'PA_CONTENU_STRUCTURE_CLIENT_HTML',
+        'PA_CONTENU_YTG_CLIENT', 'PA_CONTENU_YTG_CLIENT_HTML', 'PA_CONTENU_YTG_SCORE_CLIENT', 'PA_CONTENU_YTG_DATA_CLIENT',
+        'PA_CONTENU_1FR_CLIENT', 'PA_CONTENU_1FR_CLIENT_HTML', 'PA_CONTENU_1FR_URL_CLIENT', 'PA_CONTENU_1FR_SCORE_CLIENT',
+        'PA_CONTENU_1FR_DATA_CLIENT', 'PA_CONTENU_SCRAPED_CLIENT', 'PA_CONTENU_TITRE_CLIENT', 'PA_CONTENU_STRUCTURE_CONC',
+        'PA_CONTENU_STRUCTURE_CONC_HTML', 'PA_CONTENU_YTG_CONC', 'PA_CONTENU_YTG_CONC_HTML',
+        'PA_CONTENU_YTG_SCORE_CONC', 'PA_CONTENU_YTG_DATA_CONC', 'PA_CONTENU_1FR_CONC',
+        'PA_CONTENU_1FR_CONC_HTML', 'PA_CONTENU_1FR_URL_CONC', 'PA_CONTENU_1FR_SCORE_CONC',
+        'PA_CONTENU_1FR_DATA_CONC', 'PA_CONTENU_SCRAPED_CONC', 'PA_CONTENU_TITRE_CONC',
+        'PA_EDITO_TITRE_CONC', 'PA_EDITO_BLOG_CLIENT', 'PA_EDITO_BLOG_LEADER', 'PA_EDITO_BLOG_CONC1',
+        'PA_EDITO_BLOG_CONC2', 'PA_EDITO_BLOG_CONC3', 'PA_EDITO_BLOG_CONC4', 'PA_EDITO_TITRE_THEMATIQUE',
+        'PA_EDITO_NOM_CONTENU_1', 'PA_EDITO_NOM_CONTENU_2', 'PA_EDITO_NOM_CONTENU_3',
+        'PA_CONF_CONTACT_COM', 'PA_CONF_CONTACT_CONS1', 'PA_CONF_CONTACT_CONS2'
     ];
     var props = getDatabaseData(keys);
     var userProps = PropertiesService.getUserProperties().getProperties();
     
     var config = {
-        clientName: props['CONF_CLIENT_NAME'] || "",
-        clientUrl: props['CONF_CLIENT_URL'] || "",
+        clientName: props['PA_CONF_ID_CLIENT'] || "",
+        clientUrl: props['PA_CONF_URL_CLIENT'] || "",
         urlsContexte: props['CLUSTERING_URL_SUPPLEMENTAIRE'] || "",
         contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
-        slideId: props['PA_SLIDE_ID'] || "",
-        brief: props['PA_BRIEF_CONSULTANT'] || "",
-        urlReponses: props['PA_URL_FORM_REPONSES'] || "",
-        contextePreaudit: props['PA_PROFILAGE_COMMERCIAL'] || "",
-        besoinHtml: props['TAG_SLIDE_BESOIN_HTML'] || "",
-        besoinTexte: props['TAG_SLIDE_BESOIN'] || "",
-        solutionHtml: props['TAG_SLIDE_SOLUTION_HTML'] || "",
-        solutionTexte: props['TAG_SLIDE_SOLUTION'] || "",
-        titreSemrush: props['TITRE_SLIDE_SEMRUSH'] || "",
-        analyseKwHtml: props['ANALYSE_SEMRUSH_MOT_CLE_HTML'] || "",
-        analyseKwTexte: props['ANALYSE_SEMRUSH_MOT_CLE'] || "",
-        analyseTraficHtml: props['ANALYSE_SEMRUSH_TRAFIC_HTML'] || "",
-        analyseTraficTexte: props['ANALYSE_SEMRUSH_TRAFIC'] || "",
+        slideId: props['PA_CONF_SLIDE_ID'] || "",
+        brief: props['PA_CONF_BRIEF'] || "",
+        urlReponses: props['PA_CONF_URL_FORM_REPONSES'] || "",
+        contextePreaudit: props['PA_CONF_PROFILAGE_COMMERCIAL'] || "",
+        besoinHtml: props['PA_GLOBALE_BESOIN_HTML'] || "",
+        besoinTexte: props['PA_GLOBALE_BESOIN'] || "",
+        solutionHtml: props['PA_GLOBALE_SOLUTION_HTML'] || "",
+        solutionTexte: props['PA_GLOBALE_SOLUTION'] || "",
+        titreSemrush: props['PA_GLOBALE_TITRE_SEMRUSH'] || "",
+        analyseKwHtml: props['PA_GLOBALE_SEMRUSH_MOTCLE_HTML'] || "",
+        analyseKwTexte: props['PA_GLOBALE_SEMRUSH_MOTCLE'] || "",
+        analyseTraficHtml: props['PA_GLOBALE_SEMRUSH_TRAFIC_HTML'] || "",
+        analyseTraficTexte: props['PA_GLOBALE_SEMRUSH_TRAFIC'] || "",
         activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config",
-        analyseThemeTopTitre: props['TITRE_SLIDE_THEMATIQUETOP_CLIENT'] || "",
-        analyseThemeTop: props['ANALYSE_THEMATIQUETOP_CLIENT_1'] || "",
-        analyseThemeFlopTitre: props['TITRE_SLIDE_THEMATIQUEFLOP_CLIENT'] || "",
-        analyseThemeFlop: props['ANALYSE_THEMATIQUEFLOP_CLIENT_1'] || "",
-        analyseSegmentTopTitre: props['TITRE_SLIDE_MCTOP_CLIENT'] || "",
-        analyseSegmentTop: props['ANALYSE_MCTOP_CLIENT_1'] || "",
-        analyseSegmentFlopTitre: props['TITRE_SLIDE_MCFLOP_CLIENT'] || "",
-        analyseSegmentFlop: props['ANALYSE_MCFLOP_CLIENT_1'] || "",
+        analyseThemeTopTitre: props['PA_ETAT_TITRE_THEMATIQUETOP'] || "",
+        analyseThemeTop: props['PA_ETAT_ANALYSE_THEMATIQUETOP1'] || "",
+        analyseThemeFlopTitre: props['PA_ETAT_TITRE_THEMATIQUEFLOP'] || "",
+        analyseThemeFlop: props['PA_ETAT_ANALYSE_THEMATIQUEFLOP1'] || "",
+        analyseSegmentTopTitre: props['PA_ETAT_TITRE_MCTOP'] || "",
+        analyseSegmentTop: props['PA_ETAT_ANALYSE_MCTOP1'] || "",
+        analyseSegmentFlopTitre: props['PA_ETAT_TITRE_MCFLOP'] || "",
+        analyseSegmentFlop: props['PA_ETAT_ANALYSE_MCFLOP1'] || "",
         
         competitorName1: props['CONF_COMP_NAME_1'] || "",
         competitor1: props['CONF_COMP_URL_1'] || "",
@@ -87,31 +87,31 @@ function chargerConfigurationPreAudit() {
         competitorName5: props['CONF_COMP_NAME_5'] || "",
         competitor5: props['CONF_COMP_URL_5'] || "",
         
-        focusKw: props['TARGET_KW'] || "",
-        focusVol: props['TARGET_KW_SV'] || "",
-        focusClientUrl: props['TARGET_URL_CLIENT'] || "",
-        focusClientPos: props['TARGET_KW_CLIENT_POS'] || "-",
-        focusNoPage: props['TARGET_KW_CLIENT_POS'] === "-" ? "true" : "false",
-        focusCompUrl: props['TARGET_URL_CONCURRENT'] || "",
-        focusCompPos: props['TARGET_KW_CONCURRENT_POS'] || "-",
-        focusLocalisation: props['TARGET_LOCALISATION'] || "",
+        focusKw: props['PA_FOCUS_MCCIBLE'] || "",
+        focusVol: props['PA_FOCUS_MCCIBLE_VOLUME'] || "",
+        focusClientUrl: props['PA_FOCUS_MCCIBLE_URLCLIENT'] || "",
+        focusClientPos: props['PA_FOCUS_MCCIBLE_POSCLIENT'] || "-",
+        focusNoPage: props['PA_FOCUS_MCCIBLE_POSCLIENT'] === "-" ? "true" : "false",
+        focusCompUrl: props['PA_FOCUS_MCCIBLE_URLCONC'] || "",
+        focusCompPos: props['PA_FOCUS_MCCIBLE_POSCONC'] || "-",
+        focusLocalisation: props['PA_FOCUS_LOCALISATION'] || "",
         
-        serpTitre1: props['SERP_ELEMENT_TITRE_1'] || "",
-        serpDesc1: props['SERP_ELEMENT_DESC_1'] || "",
-        serpSvg1: props['PLACEHOLDER_SERPELEMENT_1'] || "",
-        serpTitre2: props['SERP_ELEMENT_TITRE_2'] || "",
-        serpDesc2: props['SERP_ELEMENT_DESC_2'] || "",
-        serpSvg2: props['PLACEHOLDER_SERPELEMENT_2'] || "",
-        serpTitre3: props['SERP_ELEMENT_TITRE_3'] || "",
-        serpDesc3: props['SERP_ELEMENT_DESC_3'] || "",
-        serpSvg3: props['PLACEHOLDER_SERPELEMENT_3'] || "",
-        serpTitre4: props['SERP_ELEMENT_TITRE_4'] || "",
-        serpDesc4: props['SERP_ELEMENT_DESC_4'] || "",
-        serpSvg4: props['PLACEHOLDER_SERPELEMENT_4'] || "",
+        serpTitre1: props['PA_FOCUS_SERP_ELEMENT_1'] || "",
+        serpDesc1: props['PA_FOCUS_SERP_ELEMENT_DESC_1'] || "",
+        serpSvg1: props['PA_FOCUS_PLACEHOLDER_SERPELEMENT_1'] || "",
+        serpTitre2: props['PA_FOCUS_SERP_ELEMENT_2'] || "",
+        serpDesc2: props['PA_FOCUS_SERP_ELEMENT_DESC_2'] || "",
+        serpSvg2: props['PA_FOCUS_PLACEHOLDER_SERPELEMENT_2'] || "",
+        serpTitre3: props['PA_FOCUS_SERP_ELEMENT_3'] || "",
+        serpDesc3: props['PA_FOCUS_SERP_ELEMENT_DESC_3'] || "",
+        serpSvg3: props['PA_FOCUS_PLACEHOLDER_SERPELEMENT_3'] || "",
+        serpTitre4: props['PA_FOCUS_SERP_ELEMENT_4'] || "",
+        serpDesc4: props['PA_FOCUS_SERP_ELEMENT_DESC_4'] || "",
+        serpSvg4: props['PA_FOCUS_PLACEHOLDER_SERPELEMENT_4'] || "",
         
-        intentionTitre: props['FOCUS_INTENTION_TITRE'] || "",
-        intentionDesc: props['FOCUS_INTENTION_DESC'] || "",
-        intentionDescHtml: props['FOCUS_INTENTION_DESC'] || "",
+        intentionTitre: props['PA_FOCUS_INTENTION_TITRE'] || "",
+        intentionDesc: props['PA_FOCUS_INTENTION_DESC'] || "",
+        intentionDescHtml: props['PA_FOCUS_INTENTION_DESC'] || "",
         
         standard1: props['focus_standard_texte_1'] || "",
         standard1Html: props['focus_standard_texte_1'] || "",
@@ -127,98 +127,98 @@ function chargerConfigurationPreAudit() {
         semantique3: props['focus_semantique_texte_3'] || "",
         semantique3Html: props['focus_semantique_texte_3'] || "",
 
-        gapTitre1: props['FOCUS_GAP_TITRE_1'] || "",
-        gapDesc1: props['FOCUS_GAP_DESC_1'] || "",
-        gapDesc1Html: props['FOCUS_GAP_DESC_1'] || "",
-        gapTitre2: props['FOCUS_GAP_TITRE_2'] || "",
-        gapDesc2: props['FOCUS_GAP_DESC_2'] || "",
-        gapDesc2Html: props['FOCUS_GAP_DESC_2'] || "",
-        gapTitre3: props['FOCUS_GAP_TITRE_3'] || "",
-        gapDesc3: props['FOCUS_GAP_DESC_3'] || "",
-        gapDesc3Html: props['FOCUS_GAP_DESC_3'] || "",
+        gapTitre1: props['PA_FOCUS_GAP_TITRE_1'] || "",
+        gapDesc1: props['PA_FOCUS_GAP_DESC_1'] || "",
+        gapDesc1Html: props['PA_FOCUS_GAP_DESC_1'] || "",
+        gapTitre2: props['PA_FOCUS_GAP_TITRE_2'] || "",
+        gapDesc2: props['PA_FOCUS_GAP_DESC_2'] || "",
+        gapDesc2Html: props['PA_FOCUS_GAP_DESC_2'] || "",
+        gapTitre3: props['PA_FOCUS_GAP_TITRE_3'] || "",
+        gapDesc3: props['PA_FOCUS_GAP_DESC_3'] || "",
+        gapDesc3Html: props['PA_FOCUS_GAP_DESC_3'] || "",
 
-        reco1: props['FOCUS_RECO_1'] || "",
-        reco1Html: props['FOCUS_RECO_1'] || "",
-        reco2: props['FOCUS_RECO_2'] || "",
-        reco2Html: props['FOCUS_RECO_2'] || "",
-        reco3: props['FOCUS_RECO_3'] || "",
-        reco3Html: props['FOCUS_RECO_3'] || "",
-        reco4: props['FOCUS_RECO_4'] || "",
-        reco4Html: props['FOCUS_RECO_4'] || "",
+        reco1: props['PA_FOCUS_RECO_1'] || "",
+        reco1Html: props['PA_FOCUS_RECO_1'] || "",
+        reco2: props['PA_FOCUS_RECO_2'] || "",
+        reco2Html: props['PA_FOCUS_RECO_2'] || "",
+        reco3: props['PA_FOCUS_RECO_3'] || "",
+        reco3Html: props['PA_FOCUS_RECO_3'] || "",
+        reco4: props['PA_FOCUS_RECO_4'] || "",
+        reco4Html: props['PA_FOCUS_RECO_4'] || "",
 
-        techUrlCible: props['TECH_URL_CIBLE'] || "",
-        techSitemap: props['TECH_SITEMAP'] || "",
-        techTypePage: props['TECH_TYPE_PAGE'] || "",
-        techUrlPageMere: props['TECH_URL_PAGE_MERE'] || "",
-        techUrlPaginees: props['TECH_URL_PAGINEES'] || "",
-        techUrlFiltre: props['TECH_URL_FILTRE'] || "",
-        techIsMultilingue: props['TECH_IS_MULTILINGUE'] || "non",
-        techLangueCible: props['TECH_LANGUE_CIBLE'] || "",
-        techPaysCible: props['TECH_PAYS_CIBLE'] || "",
+        techUrlCible: props['PA_TECH_URL_CLIENT'] || "",
+        techSitemap: props['PA_TECH_SITEMAP'] || "",
+        techTypePage: props['PA_TECH_TYPE_PAGE'] || "",
+        techUrlPageMere: props['PA_TECH_URL_PAGE_MERE'] || "",
+        techUrlPaginees: props['PA_TECH_URL_PAGINEES'] || "",
+        techUrlFiltre: props['PA_TECH_URL_FILTRE'] || "",
+        techIsMultilingue: props['PA_TECH_IS_MULTILINGUE'] || "non",
+        techLangueCible: props['PA_TECH_LANGUE_CIBLE'] || "",
+        techPaysCible: props['PA_TECH_PAYS_CIBLE'] || "",
 
-        techHtmlCrawl: props['TECH_HTML_CRAWL'] || "",
-        techHtmlIndex: props['TECH_HTML_INDEX'] || "",
-        techHtmlPos: props['TECH_HTML_POS'] || "",
-        DATA_TECH_IA_FULL_STATE: props['DATA_TECH_IA_FULL_STATE'] || "",
-        TITRE_SLIDE_TECHNIQUE: props['TITRE_SLIDE_TECHNIQUE'] || "",
+        techHtmlCrawl: props['PA_TECH_HTML_CRAWL'] || "",
+        techHtmlIndex: props['PA_TECH_HTML_INDEX'] || "",
+        techHtmlPos: props['PA_TECH_HTML_POS'] || "",
+        PA_TECH_IA_FULL_STATE: props['PA_TECH_IA_FULL_STATE'] || "",
+        PA_TECH_TITRE: props['PA_TECH_TITRE'] || "",
         
-        uxClientViewportId: props['UX_CLIENT_VIEWPORT_ID'] || "",
-        uxClientFullId: props['UX_CLIENT_FULL_ID'] || "",
-        uxClientCropId: props['UX_CLIENT_CROP_ID'] || "",
-        uxCompViewportId: props['UX_COMP_VIEWPORT_ID'] || "",
-        uxCompFullId: props['UX_COMP_FULL_ID'] || "",
-        uxCompCropId: props['UX_COMP_CROP_ID'] || "",
+        uxClientViewportId: props['PA_UX_CLIENT_VIEWPORT'] || "",
+        uxClientFullId: props['PA_UX_CLIENT_FULL'] || "",
+        uxClientCropId: props['PA_UX_CLIENT_CROP'] || "",
+        uxCompViewportId: props['PA_UX_CONC_VIEWPORT'] || "",
+        uxCompFullId: props['PA_UX_CONC_FULL'] || "",
+        uxCompCropId: props['PA_UX_CONC_CROP'] || "",
         
-        dataUxIaFullState: props['DATA_UX_IA_FULL_STATE'] || "",
-        uxRecommandation1: props['UX_RECOMMANDATION_1'] || "",
-        uxRecommandation2: props['UX_RECOMMANDATION_2'] || "",
-        TITRE_SLIDE_UX: props['TITRE_SLIDE_UX'] || "",
+        dataUxIaFullState: props['PA_UX_IA_FULL_STATE'] || "",
+        uxRecommandation1: props['PA_UX_RECO_1'] || "",
+        uxRecommandation2: props['PA_UX_RECO_2'] || "",
+        PA_UX_TITRE: props['PA_UX_TITRE'] || "",
         
-        contenuYtgCible: props['CONTENU_YTG_CIBLE'] || "",
+        contenuYtgCible: props['PA_CONTENU_YTG_CIBLE_GLOBALE'] || "",
         
-        contenuStructureClient: props['CONTENU_STRUCTURE_CLIENT'] || "",
-        contenuStructureClientHtml: props['CONTENU_STRUCTURE_CLIENT_HTML'] || "",
-        contenuYtgClient: props['CONTENU_YTG_CLIENT'] || "",
-        contenuYtgClientHtml: props['CONTENU_YTG_CLIENT_HTML'] || "",
-        contenuYtgScoreClient: props['CONTENU_YTG_SCORE_CLIENT'] || "",
-        contenuYtgDataClient: props['CONTENU_YTG_DATA_CLIENT'] || "",
-        contenu1frClient: props['CONTENU_1FR_CLIENT'] || "",
-        contenu1frClientHtml: props['CONTENU_1FR_CLIENT_HTML'] || "",
-        contenu1frUrlClient: props['CONTENU_1FR_URL_CLIENT'] || "",
-        contenu1frScoreClient: props['CONTENU_1FR_SCORE_CLIENT'] || "",
-        contenu1frDataClient: props['CONTENU_1FR_DATA_CLIENT'] || "",
-        contenuScrapedClient: props['CONTENU_SCRAPED_CLIENT'] || "",
-        TITRE_SLIDE_CONTENU_CLIENT: props['TITRE_SLIDE_CONTENU_CLIENT'] || "",
+        contenuStructureClient: props['PA_CONTENU_STRUCTURE_CLIENT'] || "",
+        contenuStructureClientHtml: props['PA_CONTENU_STRUCTURE_CLIENT_HTML'] || "",
+        contenuYtgClient: props['PA_CONTENU_YTG_CLIENT'] || "",
+        contenuYtgClientHtml: props['PA_CONTENU_YTG_CLIENT_HTML'] || "",
+        contenuYtgScoreClient: props['PA_CONTENU_YTG_SCORE_CLIENT'] || "",
+        contenuYtgDataClient: props['PA_CONTENU_YTG_DATA_CLIENT'] || "",
+        contenu1frClient: props['PA_CONTENU_1FR_CLIENT'] || "",
+        contenu1frClientHtml: props['PA_CONTENU_1FR_CLIENT_HTML'] || "",
+        contenu1frUrlClient: props['PA_CONTENU_1FR_URL_CLIENT'] || "",
+        contenu1frScoreClient: props['PA_CONTENU_1FR_SCORE_CLIENT'] || "",
+        contenu1frDataClient: props['PA_CONTENU_1FR_DATA_CLIENT'] || "",
+        contenuScrapedClient: props['PA_CONTENU_SCRAPED_CLIENT'] || "",
+        PA_CONTENU_TITRE_CLIENT: props['PA_CONTENU_TITRE_CLIENT'] || "",
         
-        contenuStructureComp: props['CONTENU_STRUCTURE_CONCURRENT'] || "",
-        contenuStructureCompHtml: props['CONTENU_STRUCTURE_CONCURRENT_HTML'] || "",
-        contenuYtgComp: props['CONTENU_YTG_CONCURRENT'] || "",
-        contenuYtgCompHtml: props['CONTENU_YTG_CONCURRENT_HTML'] || "",
-        contenuYtgScoreComp: props['CONTENU_YTG_SCORE_CONCURRENT'] || "",
-        contenuYtgDataComp: props['CONTENU_YTG_DATA_CONCURRENT'] || "",
-        contenu1frComp: props['CONTENU_1FR_CONCURRENT'] || "",
-        contenu1frCompHtml: props['CONTENU_1FR_CONCURRENT_HTML'] || "",
-        contenu1frUrlComp: props['CONTENU_1FR_URL_CONCURRENT'] || "",
-        contenu1frScoreComp: props['CONTENU_1FR_SCORE_CONCURRENT'] || "",
-        contenu1frDataComp: props['CONTENU_1FR_DATA_CONCURRENT'] || "",
-        contenuScrapedComp: props['CONTENU_SCRAPED_CONCURRENT'] || "",
-        TITRE_SLIDE_CONTENU_CONCURRENT: props['TITRE_SLIDE_CONTENU_CONCURRENT'] || "",
+        contenuStructureComp: props['PA_CONTENU_STRUCTURE_CONC'] || "",
+        contenuStructureCompHtml: props['PA_CONTENU_STRUCTURE_CONC_HTML'] || "",
+        contenuYtgComp: props['PA_CONTENU_YTG_CONC'] || "",
+        contenuYtgCompHtml: props['PA_CONTENU_YTG_CONC_HTML'] || "",
+        contenuYtgScoreComp: props['PA_CONTENU_YTG_SCORE_CONC'] || "",
+        contenuYtgDataComp: props['PA_CONTENU_YTG_DATA_CONC'] || "",
+        contenu1frComp: props['PA_CONTENU_1FR_CONC'] || "",
+        contenu1frCompHtml: props['PA_CONTENU_1FR_CONC_HTML'] || "",
+        contenu1frUrlComp: props['PA_CONTENU_1FR_URL_CONC'] || "",
+        contenu1frScoreComp: props['PA_CONTENU_1FR_SCORE_CONC'] || "",
+        contenu1frDataComp: props['PA_CONTENU_1FR_DATA_CONC'] || "",
+        contenuScrapedComp: props['PA_CONTENU_SCRAPED_CONC'] || "",
+        PA_CONTENU_TITRE_CONC: props['PA_CONTENU_TITRE_CONC'] || "",
         
-        titreSlideEditorial: props['TITRE_SLIDE_CONCURRENCE_EDITO'] || "",
-        blogClientEdito: props['BLOG_CLIENT_EDITO'] || "Non",
-        blogLeaderEdito: props['BLOG_LEADER_EDITO'] || "Non",
-        blogComp1Edito: props['BLOG_COMP1_EDITO'] || "Non",
-        blogComp2Edito: props['BLOG_COMP2_EDITO'] || "Non",
-        blogComp3Edito: props['BLOG_COMP3_EDITO'] || "Non",
-        blogComp4Edito: props['BLOG_COMP4_EDITO'] || "Non",
-        titreSlideThematiqueEdito: props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "",
-        nomContenu1: props['NOM_CONTENU_1'] || "",
-        nomContenu2: props['NOM_CONTENU_2'] || "",
-        nomContenu3: props['NOM_CONTENU_3'] || "",
+        titreSlideEditorial: props['PA_EDITO_TITRE_CONC'] || "",
+        blogClientEdito: props['PA_EDITO_BLOG_CLIENT'] || "Non",
+        blogLeaderEdito: props['PA_EDITO_BLOG_LEADER'] || "Non",
+        blogComp1Edito: props['PA_EDITO_BLOG_CONC1'] || "Non",
+        blogComp2Edito: props['PA_EDITO_BLOG_CONC2'] || "Non",
+        blogComp3Edito: props['PA_EDITO_BLOG_CONC3'] || "Non",
+        blogComp4Edito: props['PA_EDITO_BLOG_CONC4'] || "Non",
+        titreSlideThematiqueEdito: props['PA_EDITO_TITRE_THEMATIQUE'] || "",
+        nomContenu1: props['PA_EDITO_NOM_CONTENU_1'] || "",
+        nomContenu2: props['PA_EDITO_NOM_CONTENU_2'] || "",
+        nomContenu3: props['PA_EDITO_NOM_CONTENU_3'] || "",
         
-        contactCom: props['CONF_CONTACT_COM'] || "Achille",
-        contactCons1: props['CONF_CONTACT_CONS1'] || "Benjamin",
-        contactCons2: props['CONF_CONTACT_CONS2'] || "Aucun"
+        contactCom: props['PA_CONF_CONTACT_COM'] || "Achille",
+        contactCons1: props['PA_CONF_CONTACT_CONS1'] || "Benjamin",
+        contactCons2: props['PA_CONF_CONTACT_CONS2'] || "Aucun"
     };
     Logger.log("=== FIN : chargerConfigurationPreAudit ===");
     return config;
@@ -269,8 +269,8 @@ function sauvegarderDonneesAnalyseGlobale(data) {
             'PA_GLOBALE_SEMRUSH_TRAFIC':      data.analyseTraficTexte || "",
             'PA_GLOBALE_SEMRUSH_TRAFIC_HTML': data.analyseTraficHtml || "",
             
-            'PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE': "IMAGE",
-            'PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC': "IMAGE"
+            'PLACEHOLDER_PA_GLOBALE_SEMRUSH_MOTCLE': "IMAGE",
+            'PLACEHOLDER_PA_GLOBALE_SEMRUSH_TRAFIC': "IMAGE"
         });
         Logger.log("Propriétés enregistrées vers CONFIG...");
         Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
@@ -312,20 +312,20 @@ function sauvegarderDonneesEditorial(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesEditorial ===");
     try {
         var propsToSet = {
-            'TITRE_SLIDE_CONCURRENCE_EDITO': data.titreSlideEditorial || "",
-            'BLOG_CLIENT_EDITO': data.blogClientEdito || "Non",
-            'BLOG_LEADER_EDITO': data.blogLeaderEdito || "Non",
-            'BLOG_COMP1_EDITO': data.blogComp1Edito || "Non",
-            'BLOG_COMP2_EDITO': data.blogComp2Edito || "Non",
-            'BLOG_COMP3_EDITO': data.blogComp3Edito || "Non",
-            'BLOG_COMP4_EDITO': data.blogComp4Edito || "Non",
-            'TITRE_SLIDE_THEMATIQUE_EDITO': data.titreSlideThematiqueEdito || "",
-            'NOM_CONTENU_1': data.nomContenu1 || "",
-            'NOM_CONTENU_2': data.nomContenu2 || "",
-            'NOM_CONTENU_3': data.nomContenu3 || "",
-            'DATA_TOP10_CONTENU_1': data.dataTop10_1 || "",
-            'DATA_TOP10_CONTENU_2': data.dataTop10_2 || "",
-            'DATA_TOP10_CONTENU_3': data.dataTop10_3 || ""
+            'PA_EDITO_TITRE_CONC': data.titreSlideEditorial || "",
+            'PA_EDITO_BLOG_CLIENT': data.blogClientEdito || "Non",
+            'PA_EDITO_BLOG_LEADER': data.blogLeaderEdito || "Non",
+            'PA_EDITO_BLOG_CONC1': data.blogComp1Edito || "Non",
+            'PA_EDITO_BLOG_CONC2': data.blogComp2Edito || "Non",
+            'PA_EDITO_BLOG_CONC3': data.blogComp3Edito || "Non",
+            'PA_EDITO_BLOG_CONC4': data.blogComp4Edito || "Non",
+            'PA_EDITO_TITRE_THEMATIQUE': data.titreSlideThematiqueEdito || "",
+            'PA_EDITO_NOM_CONTENU_1': data.nomContenu1 || "",
+            'PA_EDITO_NOM_CONTENU_2': data.nomContenu2 || "",
+            'PA_EDITO_NOM_CONTENU_3': data.nomContenu3 || "",
+            'PA_EDITO_DATA_TOP10_1': data.dataTop10_1 || "",
+            'PA_EDITO_DATA_TOP10_2': data.dataTop10_2 || "",
+            'PA_EDITO_DATA_TOP10_3': data.dataTop10_3 || ""
         };
         
         setDatabaseData(propsToSet);
@@ -445,35 +445,35 @@ function sauvegarderDonneesContenu(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesContenu ===");
     try {
         var propsToSet = {
-            'CONTENU_YTG_CIBLE': data.CONTENU_YTG_CIBLE || "",
-            'TITRE_SLIDE_CONTENU_CLIENT': data.TITRE_SLIDE_CONTENU_CLIENT || "",
-            'TITRE_SLIDE_CONTENU_CONCURRENT': data.TITRE_SLIDE_CONTENU_CONCURRENT || "",
+            'PA_CONTENU_YTG_CIBLE_GLOBALE': data.CONTENU_YTG_CIBLE || "",
+            'PA_CONTENU_TITRE_CLIENT': data.TITRE_SLIDE_CONTENU_CLIENT || "",
+            'PA_CONTENU_TITRE_CONC': data.TITRE_SLIDE_CONTENU_CONCURRENT || "",
             
-            'CONTENU_STRUCTURE_CLIENT': data.CONTENU_STRUCTURE_CLIENT || "",
-            'CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
-            'CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
-            'CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
-            'CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
-            'CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
-            'CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
-            'CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
-            'CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
-            'CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
-            'CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
-            'CONTENU_SCRAPED_CLIENT': data.CONTENU_SCRAPED_CLIENT || "",
+            'PA_CONTENU_STRUCTURE_CLIENT': data.CONTENU_STRUCTURE_CLIENT || "",
+            'PA_CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
+            'PA_CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
+            'PA_CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
+            'PA_CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
+            'PA_CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
+            'PA_CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
+            'PA_CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
+            'PA_CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
+            'PA_CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
+            'PA_CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
+            'PA_CONTENU_SCRAPED_CLIENT': data.CONTENU_SCRAPED_CLIENT || "",
             
-            'CONTENU_STRUCTURE_CONCURRENT': data.CONTENU_STRUCTURE_CONCURRENT || "",
-            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.contenuStructureCompHtml || "",
-            'CONTENU_YTG_CONCURRENT': data.CONTENU_YTG_CONCURRENT || "",
-            'CONTENU_YTG_CONCURRENT_HTML': data.contenuYtgCompHtml || "",
-            'CONTENU_YTG_SCORE_CONCURRENT': data.CONTENU_YTG_SCORE_CONCURRENT || "",
-            'CONTENU_1FR_CONCURRENT': data.CONTENU_1FR_CONCURRENT || "",
-            'CONTENU_1FR_CONCURRENT_HTML': data.contenu1frCompHtml || "",
-            'CONTENU_1FR_URL_CONCURRENT': data.CONTENU_1FR_URL_CONCURRENT || "",
-            'CONTENU_1FR_SCORE_CONCURRENT': data.CONTENU_1FR_SCORE_CONCURRENT || "",
-            'CONTENU_YTG_DATA_CONCURRENT': data.CONTENU_YTG_DATA_CONCURRENT || "",
-            'CONTENU_1FR_DATA_CONCURRENT': data.CONTENU_1FR_DATA_CONCURRENT || "",
-            'CONTENU_SCRAPED_CONCURRENT': data.CONTENU_SCRAPED_CONCURRENT || ""
+            'PA_CONTENU_STRUCTURE_CONC': data.CONTENU_STRUCTURE_CONCURRENT || "",
+            'PA_CONTENU_STRUCTURE_CONC_HTML': data.contenuStructureCompHtml || "",
+            'PA_CONTENU_YTG_CONC': data.CONTENU_YTG_CONCURRENT || "",
+            'PA_CONTENU_YTG_CONC_HTML': data.contenuYtgCompHtml || "",
+            'PA_CONTENU_YTG_SCORE_CONC': data.CONTENU_YTG_SCORE_CONCURRENT || "",
+            'PA_CONTENU_1FR_CONC': data.CONTENU_1FR_CONCURRENT || "",
+            'PA_CONTENU_1FR_CONC_HTML': data.contenu1frCompHtml || "",
+            'PA_CONTENU_1FR_URL_CONC': data.CONTENU_1FR_URL_CONCURRENT || "",
+            'PA_CONTENU_1FR_SCORE_CONC': data.CONTENU_1FR_SCORE_CONCURRENT || "",
+            'PA_CONTENU_YTG_DATA_CONC': data.CONTENU_YTG_DATA_CONCURRENT || "",
+            'PA_CONTENU_1FR_DATA_CONC': data.CONTENU_1FR_DATA_CONCURRENT || "",
+            'PA_CONTENU_SCRAPED_CONC': data.CONTENU_SCRAPED_CONCURRENT || ""
         };
         
         setDatabaseData(propsToSet);
@@ -648,13 +648,13 @@ function sauvegarderConfigFocusMotCle(data) {
         }
 
         setDatabaseData({
-            'TARGET_KW': data.kw || "",
-            'TARGET_KW_SV': data.vol || "",
-            'TARGET_URL_CLIENT': data.clientUrl || "",
-            'TARGET_KW_CLIENT_POS': String(clientPos),
-            'TARGET_URL_CONCURRENT': data.compUrl || "",
-            'TARGET_KW_CONCURRENT_POS': String(compPos),
-            'TARGET_LOCALISATION': localisation
+            'PA_FOCUS_MCCIBLE': data.kw || "",
+            'PA_FOCUS_MCCIBLE_VOLUME': data.vol || "",
+            'PA_FOCUS_MCCIBLE_URLCLIENT': data.clientUrl || "",
+            'PA_FOCUS_MCCIBLE_POSCLIENT': String(clientPos),
+            'PA_FOCUS_MCCIBLE_URLCONC': data.compUrl || "",
+            'PA_FOCUS_MCCIBLE_POSCONC': String(compPos),
+            'PA_FOCUS_LOCALISATION': localisation
         });
         
         Logger.log("Sauvegarde réussie. Pos Client: " + clientPos + " | Pos Concurrent: " + compPos);
@@ -780,14 +780,14 @@ function sauvegarderAnalysesEtatLieux(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesEtatLieux ===");
     try {
         setDatabaseData({
-            'TITRE_SLIDE_THEMATIQUETOP_CLIENT': data.titreTopThematiques || "",
-            'ANALYSE_THEMATIQUETOP_CLIENT_1': data.analyseTopThematiques || "",
-            'TITRE_SLIDE_THEMATIQUEFLOP_CLIENT': data.titreFlopThematiques || "",
-            'ANALYSE_THEMATIQUEFLOP_CLIENT_1': data.analyseFlopThematiques || "",
-            'TITRE_SLIDE_MCTOP_CLIENT': data.titreTopSegments || "",
-            'ANALYSE_MCTOP_CLIENT_1': data.analyseTopSegments || "",
-            'TITRE_SLIDE_MCFLOP_CLIENT': data.titreFlopSegments || "",
-            'ANALYSE_MCFLOP_CLIENT_1': data.analyseFlopSegments || ""
+            'PA_ETAT_TITRE_THEMATIQUETOP': data.titreTopThematiques || "",
+            'PA_ETAT_ANALYSE_THEMATIQUETOP1': data.analyseTopThematiques || "",
+            'PA_ETAT_TITRE_THEMATIQUEFLOP': data.titreFlopThematiques || "",
+            'PA_ETAT_ANALYSE_THEMATIQUEFLOP1': data.analyseFlopThematiques || "",
+            'PA_ETAT_TITRE_MCTOP': data.titreTopSegments || "",
+            'PA_ETAT_ANALYSE_MCTOP1': data.analyseTopSegments || "",
+            'PA_ETAT_TITRE_MCFLOP': data.titreFlopSegments || "",
+            'PA_ETAT_ANALYSE_MCFLOP1': data.analyseFlopSegments || ""
         });
         Logger.log("=== FIN : sauvegarderAnalysesEtatLieux ===");
         return true;
@@ -807,7 +807,7 @@ function genererDiagnostic(selection) {
     if (!selection || selection.length === 0) throw new Error("Aucune thématique sélectionnée.");
     var props = getDatabaseData();
     // NOUVEAU : Récupération du mot-clé fil rouge pour exclusion
-    var targetKwGlobal = (props['TARGET_KW'] || "").toLowerCase().trim();
+    var targetKwGlobal = (props['PA_FOCUS_MCCIBLE'] || "").toLowerCase().trim();
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
     for (var ci = 1; ci <= 10; ci++) {
@@ -1199,9 +1199,9 @@ function sauvegarderAnalyseEvolution(titre, texteKw, texteTrafic) {
     Logger.log("=== DÉBUT : sauvegarderAnalyseEvolution ===");
     try {
         setDatabaseData({
-            'TITRE_SLIDE_SEMRUSH': titre || "",
-            'ANALYSE_SEMRUSH_MOT_CLE': texteKw || "",
-            'ANALYSE_SEMRUSH_TRAFIC': texteTrafic || ""
+            'PA_GLOBALE_TITRE_SEMRUSH': titre || "",
+            'PA_GLOBALE_SEMRUSH_MOTCLE': texteKw || "",
+            'PA_GLOBALE_SEMRUSH_TRAFIC': texteTrafic || ""
         });
         Logger.log("=== FIN : sauvegarderAnalyseEvolution ===");
         return true;
@@ -1321,7 +1321,7 @@ function lancerWorkflowSERP(data) {
         var geminiApiKey = userProps['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = userProps['LISTE_CLES_API'];
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "";
 
         if (!geminiApiKey || geminiApiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -2156,9 +2156,9 @@ function sauvegarderHtmlTechnique(htmlCrawl, htmlIndex, htmlPos) {
     Logger.log("=== DÉBUT : sauvegarderHtmlTechnique ===");
     try {
         setDatabaseData({
-            'TECH_HTML_CRAWL': htmlCrawl || "",
-            'TECH_HTML_INDEX': htmlIndex || "",
-            'TECH_HTML_POS': htmlPos || ""
+            'PA_TECH_HTML_CRAWL': htmlCrawl || "",
+            'PA_TECH_HTML_INDEX': htmlIndex || "",
+            'PA_TECH_HTML_POS': htmlPos || ""
         });
         Logger.log("HTML de l'onglet 6 sauvegardé avec succès.");
         Logger.log("=== FIN : sauvegarderHtmlTechnique ===");
@@ -2174,15 +2174,15 @@ function sauvegarderEtatLieuxTechnique(data) {
     Logger.log("=== DÉBUT : sauvegarderEtatLieuxTechnique ===");
     try {
         setDatabaseData({
-            'TECH_URL_CIBLE': data.techUrlCible || "",
-            'TECH_SITEMAP': data.techSitemap || "",
-            'TECH_TYPE_PAGE': data.techTypePage || "",
-            'TECH_URL_PAGE_MERE': data.techUrlPageMere || "",
-            'TECH_URL_PAGINEES': data.techUrlPaginees || "",
-            'TECH_URL_FILTRE': data.techUrlFiltre || "",
-            'TECH_IS_MULTILINGUE': data.techIsMultilingue || "non",
-            'TECH_LANGUE_CIBLE': data.techLangueCible || "",
-            'TECH_PAYS_CIBLE': data.techPaysCible || ""
+            'PA_TECH_URL_CLIENT': data.techUrlCible || "",
+            'PA_TECH_SITEMAP': data.techSitemap || "",
+            'PA_TECH_TYPE_PAGE': data.techTypePage || "",
+            'PA_TECH_URL_PAGE_MERE': data.techUrlPageMere || "",
+            'PA_TECH_URL_PAGINEES': data.techUrlPaginees || "",
+            'PA_TECH_URL_FILTRE': data.techUrlFiltre || "",
+            'PA_TECH_IS_MULTILINGUE': data.techIsMultilingue || "non",
+            'PA_TECH_LANGUE_CIBLE': data.techLangueCible || "",
+            'PA_TECH_PAYS_CIBLE': data.techPaysCible || ""
         });
         Logger.log("Données techniques sauvegardées avec succès.");
         Logger.log("=== FIN : sauvegarderEtatLieuxTechnique ===");
@@ -2270,7 +2270,7 @@ function analyserCrawlBackend(urlCible, robotsUrl, urlFiltre, urlPageMere, urlPa
 
         // --- 0. POSITIONNEMENT ON-PAGE (Title, Hn, Schema) ---
         var propsGlobal = getDatabaseData();
-        var targetKw = propsGlobal['TARGET_KW'] || "";
+        var targetKw = propsGlobal['PA_FOCUS_MCCIBLE'] || "";
         
         function verifierMotCle(texte, keyword) {
             if (!keyword || !texte) return false;
@@ -2462,26 +2462,26 @@ function sauvegarderResultatsCrawl(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsCrawl ===");
     try {
         setDatabaseData({
-            'TECH_CRAWL_STATUS_CODE': String(data.statusCode || ""),
-            'TECH_CRAWL_TTFB_MS': String(data.ttfb || ""),
-            'TECH_CRAWL_TTFB_SCORE': String(data.scoreTtfb || ""),
-            'TECH_CRAWL_ROBOTS_BLOCKED': String(data.isBlocked),
-            'TECH_CRAWL_ROBOTS': String(data.robotsTxt || ""),
-            'TECH_CRAWL_FIRST_LINK_URL': String(data.firstLinkHref || ""),
-            'TECH_CRAWL_FIRST_LINK_ANCHOR': String(data.firstLinkAnchor || ""),
-            'TECH_CRAWL_LINKS_TOTAL': String(data.linksTotal || "0"),
-            'TECH_CRAWL_LINKS_INTERNAL': String(data.internalLinks || "0"),
-            'TECH_CRAWL_LINKS_EXTERNAL': String(data.externalLinks || "0"),
-            'TECH_CRAWL_LINKS_200': String(data.status200 || "0"),
-            'TECH_CRAWL_LINKS_3XX': String(data.status3xx || "0"),
-            'TECH_CRAWL_LINKS_4XX': String(data.status4xx || "0"),
-            'TECH_CRAWL_LINKS_5XX': String(data.status5xx || "0"),
-            'TECH_CRAWL_PAGI_MERE_BODY': String(data.pagiMereBody),
-            'TECH_CRAWL_PAGI_MERE_HEAD': String(data.pagiMereHead),
-            'TECH_CRAWL_PAGI_P2_BODY': String(data.pagiP2Body),
-            'TECH_CRAWL_PAGI_P2_HEAD': String(data.pagiP2Head),
-            'TECH_CRAWL_PAGI_ERREUR_LIEN': String(data.pagiErreurLien || ""),
-            'TECH_CRAWL_HREFLANGS': String(data.hreflangs || "")
+            'PA_TECH_CRAWL_STATUS_CODE': String(data.statusCode || ""),
+            'PA_TECH_CRAWL_TTFB_MS': String(data.ttfb || ""),
+            'PA_TECH_CRAWL_TTFB_SCORE': String(data.scoreTtfb || ""),
+            'PA_TECH_CRAWL_ROBOTS_BLOCKED': String(data.isBlocked),
+            'PA_TECH_CRAWL_ROBOTS': String(data.robotsTxt || ""),
+            'PA_TECH_CRAWL_FIRST_LINK_URL': String(data.firstLinkHref || ""),
+            'PA_TECH_CRAWL_FIRST_LINK_ANCHOR': String(data.firstLinkAnchor || ""),
+            'PA_TECH_CRAWL_LINKS_TOTAL': String(data.linksTotal || "0"),
+            'PA_TECH_CRAWL_LINKS_INTERNAL': String(data.internalLinks || "0"),
+            'PA_TECH_CRAWL_LINKS_EXTERNAL': String(data.externalLinks || "0"),
+            'PA_TECH_CRAWL_LINKS_200': String(data.status200 || "0"),
+            'PA_TECH_CRAWL_LINKS_3XX': String(data.status3xx || "0"),
+            'PA_TECH_CRAWL_LINKS_4XX': String(data.status4xx || "0"),
+            'PA_TECH_CRAWL_LINKS_5XX': String(data.status5xx || "0"),
+            'PA_TECH_CRAWL_PAGI_MERE_BODY': String(data.pagiMereBody),
+            'PA_TECH_CRAWL_PAGI_MERE_HEAD': String(data.pagiMereHead),
+            'PA_TECH_CRAWL_PAGI_P2_BODY': String(data.pagiP2Body),
+            'PA_TECH_CRAWL_PAGI_P2_HEAD': String(data.pagiP2Head),
+            'PA_TECH_CRAWL_PAGI_ERREUR_LIEN': String(data.pagiErreurLien || ""),
+            'PA_TECH_CRAWL_HREFLANGS': String(data.hreflangs || "")
         });
         Logger.log("Résultats Crawl sauvegardés.");
         return { success: true };
@@ -2575,12 +2575,12 @@ function sauvegarderResultatsIndexation(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsIndexation ===");
     try {
         setDatabaseData({
-            'TECH_INDEX_SITEMAP_PRESENT': String(data.sitemapPresent || "Non"),
-            'TECH_INDEX_URL_IN_SITEMAP': String(data.urlInSitemap || "Absente"),
-            'TECH_INDEX_META_ROBOTS': String(data.metaRobots || ""),
-            'TECH_INDEX_CANONICAL': String(data.canonical || ""),
-            'TECH_INDEX_PAGI_META_ROBOTS': String(data.pagiMetaRobots || ""),
-            'TECH_INDEX_PAGI_CANONICAL': String(data.pagiCanonical || "")
+            'PA_TECH_INDEX_SITEMAP_PRESENT': String(data.sitemapPresent || "Non"),
+            'PA_TECH_INDEX_URL_IN_SITEMAP': String(data.urlInSitemap || "Absente"),
+            'PA_TECH_INDEX_META_ROBOTS': String(data.metaRobots || ""),
+            'PA_TECH_INDEX_CANONICAL': String(data.canonical || ""),
+            'PA_TECH_INDEX_PAGI_META_ROBOTS': String(data.pagiMetaRobots || ""),
+            'PA_TECH_INDEX_PAGI_CANONICAL': String(data.pagiCanonical || "")
         });
         Logger.log("Résultats Indexation sauvegardés.");
         Logger.log("=== FIN : sauvegarderResultatsIndexation ===");
@@ -2595,12 +2595,12 @@ function sauvegarderResultatsPositionnement(data) {
     Logger.log("=== DÉBUT : sauvegarderResultatsPositionnement ===");
     try {
         setDatabaseData({
-            'TECH_POS_TITLE': String(data.title || ""),
-            'TECH_POS_TITLE_HAS_KW': String(data.titleHasKw),
-            'TECH_POS_H1': String(data.h1 || ""),
-            'TECH_POS_H1_HAS_KW': String(data.h1HasKw),
-            'TECH_POS_HN': JSON.stringify(data.structureHn || []),
-            'TECH_POS_SCHEMA': JSON.stringify(data.structuredDataTypes || [])
+            'PA_TECH_POS_TITLE': String(data.title || ""),
+            'PA_TECH_POS_TITLE_HAS_KW': String(data.titleHasKw),
+            'PA_TECH_POS_H1': String(data.h1 || ""),
+            'PA_TECH_POS_H1_HAS_KW': String(data.h1HasKw),
+            'PA_TECH_POS_HN': JSON.stringify(data.structureHn || []),
+            'PA_TECH_POS_SCHEMA': JSON.stringify(data.structuredDataTypes || [])
         });
         Logger.log("Résultats Positionnement sauvegardés.");
         Logger.log("=== FIN : sauvegarderResultatsPositionnement ===");
@@ -2617,9 +2617,9 @@ function genererAnalyseTechniqueIA() {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "";
-        var urlCible = props['TECH_URL_CIBLE'] || "";
-        var motCleCible = props['TARGET_KW'] || "Non défini";
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "";
+        var urlCible = props['PA_TECH_URL_CLIENT'] || "";
+        var motCleCible = props['PA_FOCUS_MCCIBLE'] || "Non défini";
 
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -2709,7 +2709,7 @@ function genererAnalyseTechniqueIA() {
         Logger.log("Étape 2 : Construction du dossier technique pour l'IA");
 
         var techDataStr = "=== PROFILAGE COMMERCIAL ===\n" +
-            (props['PA_PROFILAGE_COMMERCIAL'] || "Non renseigné.") + "\n\n" +
+            (props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.") + "\n\n" +
             "=== BLOC 1 : CRAWL ===\n" +
             "- Code HTTP : " + statusCode + " -> Évaluation stricte : " + evalStatus + "\n" +
             "- Temps de réponse (TTFB) : " + ttfb + " ms -> Évaluation stricte : " + evalTtfb + "\n" +
@@ -2833,26 +2833,26 @@ function sauvegarderAnalysesTechniquesIA(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesTechniquesIA ===");
     try {
         setDatabaseData({
-            'TITRE_SLIDE_TECHNIQUE': data.TITRE_SLIDE_TECHNIQUE || "",
-            'CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
-            'CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
-            'CRAWL_CHECK_2': data.CRAWL_CHECK_2 || "",
-            'CRAWL_CONTENT_2': data.CRAWL_CONTENT_2 || "",
-            'CRAWL_CHECK_3': data.CRAWL_CHECK_3 || "",
-            'CRAWL_CONTENT_3': data.CRAWL_CONTENT_3 || "",
-            'INDEX_CHECK_1': data.INDEX_CHECK_1 || "",
-            'INDEX_CONTENT_1': data.INDEX_CONTENT_1 || "",
-            'INDEX_CHECK_2': data.INDEX_CHECK_2 || "",
-            'INDEX_CONTENT_2': data.INDEX_CONTENT_2 || "",
-            'INDEX_CHECK_3': data.INDEX_CHECK_3 || "",
-            'INDEX_CONTENT_3': data.INDEX_CONTENT_3 || "",
-            'POS_CHECK_1': data.POS_CHECK_1 || "",
-            'POS_CONTENT_1': data.POS_CONTENT_1 || "",
-            'POS_CHECK_2': data.POS_CHECK_2 || "",
-            'POS_CONTENT_2': data.POS_CONTENT_2 || "",
-            'POS_CHECK_3': data.POS_CHECK_3 || "",
-            'POS_CONTENT_3': data.POS_CONTENT_3 || "",
-            'DATA_TECH_IA_FULL_STATE': data.fullStateStr || ""
+            'PA_TECH_TITRE': data.PA_TECH_TITRE || "",
+            'PA_TECH_CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
+            'PA_TECH_CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
+            'PA_TECH_CRAWL_CHECK_2': data.CRAWL_CHECK_2 || "",
+            'PA_TECH_CRAWL_CONTENT_2': data.CRAWL_CONTENT_2 || "",
+            'PA_TECH_CRAWL_CHECK_3': data.CRAWL_CHECK_3 || "",
+            'PA_TECH_CRAWL_CONTENT_3': data.CRAWL_CONTENT_3 || "",
+            'PA_TECH_INDEX_CHECK_1': data.INDEX_CHECK_1 || "",
+            'PA_TECH_INDEX_CONTENT_1': data.INDEX_CONTENT_1 || "",
+            'PA_TECH_INDEX_CHECK_2': data.INDEX_CHECK_2 || "",
+            'PA_TECH_INDEX_CONTENT_2': data.INDEX_CONTENT_2 || "",
+            'PA_TECH_INDEX_CHECK_3': data.INDEX_CHECK_3 || "",
+            'PA_TECH_INDEX_CONTENT_3': data.INDEX_CONTENT_3 || "",
+            'PA_TECH_POS_CHECK_1': data.POS_CHECK_1 || "",
+            'PA_TECH_POS_CONTENT_1': data.POS_CONTENT_1 || "",
+            'PA_TECH_POS_CHECK_2': data.POS_CHECK_2 || "",
+            'PA_TECH_POS_CONTENT_2': data.POS_CONTENT_2 || "",
+            'PA_TECH_POS_CHECK_3': data.POS_CHECK_3 || "",
+            'PA_TECH_POS_CONTENT_3': data.POS_CONTENT_3 || "",
+            'PA_TECH_IA_FULL_STATE': data.fullStateStr || ""
         });
         Logger.log("Analyses Techniques IA sauvegardées.");
         Logger.log("=== FIN : sauvegarderAnalysesTechniquesIA ===");
@@ -3537,20 +3537,20 @@ function sauvegarderAnalysesContenuTexte(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesContenuTexte ===");
     try {
         setDatabaseData({
-            'TITRE_SLIDE_CONTENU_CLIENT': data.titreClient || "",
-            'TITRE_SLIDE_CONTENU_CONCURRENT': data.titreComp || "",
-            'CONTENU_STRUCTURE_CLIENT': data.structureClient || "",
-            'CONTENU_STRUCTURE_CLIENT_HTML': data.structureClientHtml || "",
-            'CONTENU_YTG_CLIENT': data.ytgClient || "",
-            'CONTENU_YTG_CLIENT_HTML': data.ytgClientHtml || "",
-            'CONTENU_1FR_CLIENT': data.unfrClient || "",
-            'CONTENU_1FR_CLIENT_HTML': data.unfrClientHtml || "",
-            'CONTENU_STRUCTURE_CONCURRENT': data.structureComp || "",
-            'CONTENU_STRUCTURE_CONCURRENT_HTML': data.structureCompHtml || "",
-            'CONTENU_YTG_CONCURRENT': data.ytgComp || "",
-            'CONTENU_YTG_CONCURRENT_HTML': data.ytgCompHtml || "",
-            'CONTENU_1FR_CONCURRENT': data.unfrComp || "",
-            'CONTENU_1FR_CONCURRENT_HTML': data.unfrCompHtml || ""
+            'PA_CONTENU_TITRE_CLIENT': data.titreClient || "",
+            'PA_CONTENU_TITRE_CONC': data.titreComp || "",
+            'PA_CONTENU_STRUCTURE_CLIENT': data.structureClient || "",
+            'PA_CONTENU_STRUCTURE_CLIENT_HTML': data.structureClientHtml || "",
+            'PA_CONTENU_YTG_CLIENT': data.ytgClient || "",
+            'PA_CONTENU_YTG_CLIENT_HTML': data.ytgClientHtml || "",
+            'PA_CONTENU_1FR_CLIENT': data.unfrClient || "",
+            'PA_CONTENU_1FR_CLIENT_HTML': data.unfrClientHtml || "",
+            'PA_CONTENU_STRUCTURE_CONC': data.structureComp || "",
+            'PA_CONTENU_STRUCTURE_CONC_HTML': data.structureCompHtml || "",
+            'PA_CONTENU_YTG_CONC': data.ytgComp || "",
+            'PA_CONTENU_YTG_CONC_HTML': data.ytgCompHtml || "",
+            'PA_CONTENU_1FR_CONC': data.unfrComp || "",
+            'PA_CONTENU_1FR_CONC_HTML': data.unfrCompHtml || ""
         });
         Logger.log("=== FIN : sauvegarderAnalysesContenuTexte (Succès) ===");
         return true;
