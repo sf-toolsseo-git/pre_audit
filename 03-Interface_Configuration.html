@@ -373,31 +373,31 @@
             console.log("Préparation de la sauvegarde de la configuration");
             var formObj = {
                 isMultiTheme: document.getElementById('isMultiTheme').checked,
-                PA_CONF_PROJECT_TYPE: document.getElementById('projectType').value,
-                PA_CONF_ID_CLIENT: document.getElementById('clientName').value,
-                PA_CONF_URL_CLIENT: document.getElementById('clientUrl').value,
-                PA_CONF_CLIENT_STRENGTH: document.getElementById('clientStrength').value,
-                PA_CONF_CLIENT_BRAND: document.getElementById('clientBrand').value,
-                PA_CONF_COMP_NAME_1: document.getElementById('competitorName1').value,
-                PA_CONF_COMP_URL_1: document.getElementById('competitor1').value,
-                PA_CONF_COMP_STRENGTH_1: document.getElementById('competitorStrength1').value,
-                PA_CONF_COMP_BRAND_1: document.getElementById('competitorBrand1').value,
-                PA_CONF_COMP_NAME_2: document.getElementById('competitorName2').value,
-                PA_CONF_COMP_URL_2: document.getElementById('competitor2').value,
-                PA_CONF_COMP_STRENGTH_2: document.getElementById('competitorStrength2').value,
-                PA_CONF_COMP_BRAND_2: document.getElementById('competitorBrand2').value,
-                PA_CONF_COMP_NAME_3: document.getElementById('competitorName3').value,
-                PA_CONF_COMP_URL_3: document.getElementById('competitor3').value,
-                PA_CONF_COMP_STRENGTH_3: document.getElementById('competitorStrength3').value,
-                PA_CONF_COMP_BRAND_3: document.getElementById('competitorBrand3').value,
-                PA_CONF_COMP_NAME_4: document.getElementById('competitorName4').value,
-                PA_CONF_COMP_URL_4: document.getElementById('competitor4').value,
-                PA_CONF_COMP_STRENGTH_4: document.getElementById('competitorStrength4').value,
-                PA_CONF_COMP_BRAND_4: document.getElementById('competitorBrand4').value,
-                PA_CONF_COMP_NAME_5: document.getElementById('competitorName5').value,
-                PA_CONF_COMP_URL_5: document.getElementById('competitor5').value,
-                PA_CONF_COMP_STRENGTH_5: document.getElementById('competitorStrength5').value,
-                PA_CONF_COMP_BRAND_5: document.getElementById('competitorBrand5').value,
+                CONF_PROJECT_TYPE: document.getElementById('projectType').value,
+                CONF_ID_CLIENT: document.getElementById('clientName').value,
+                CONF_URL_CLIENT: document.getElementById('clientUrl').value,
+                CONF_CLIENT_STRENGTH: document.getElementById('clientStrength').value,
+                CONF_CLIENT_BRAND: document.getElementById('clientBrand').value,
+                CONF_COMP_NAME_1: document.getElementById('competitorName1').value,
+                CONF_COMP_URL_1: document.getElementById('competitor1').value,
+                CONF_COMP_STRENGTH_1: document.getElementById('competitorStrength1').value,
+                CONF_COMP_BRAND_1: document.getElementById('competitorBrand1').value,
+                CONF_COMP_NAME_2: document.getElementById('competitorName2').value,
+                CONF_COMP_URL_2: document.getElementById('competitor2').value,
+                CONF_COMP_STRENGTH_2: document.getElementById('competitorStrength2').value,
+                CONF_COMP_BRAND_2: document.getElementById('competitorBrand2').value,
+                CONF_COMP_NAME_3: document.getElementById('competitorName3').value,
+                CONF_COMP_URL_3: document.getElementById('competitor3').value,
+                CONF_COMP_STRENGTH_3: document.getElementById('competitorStrength3').value,
+                CONF_COMP_BRAND_3: document.getElementById('competitorBrand3').value,
+                CONF_COMP_NAME_4: document.getElementById('competitorName4').value,
+                CONF_COMP_URL_4: document.getElementById('competitor4').value,
+                CONF_COMP_STRENGTH_4: document.getElementById('competitorStrength4').value,
+                CONF_COMP_BRAND_4: document.getElementById('competitorBrand4').value,
+                CONF_COMP_NAME_5: document.getElementById('competitorName5').value,
+                CONF_COMP_URL_5: document.getElementById('competitor5').value,
+                CONF_COMP_STRENGTH_5: document.getElementById('competitorStrength5').value,
+                CONF_COMP_BRAND_5: document.getElementById('competitorBrand5').value,
                 ctrPos1: document.getElementById('ctrPos1').value,
                 ctrPos2: document.getElementById('ctrPos2').value,
                 ctrPos3: document.getElementById('ctrPos3').value,
@@ -446,31 +446,31 @@
             try {
                 console.log("Restauration des valeurs du formulaire");
                 safeSetValue('isMultiTheme', data.isMultiTheme);
-                safeSetValue('projectType', data.PA_CONF_PROJECT_TYPE || 'installe');
-                safeSetValue('clientName', data.PA_CONF_ID_CLIENT || '');
-                safeSetValue('clientUrl', data.PA_CONF_URL_CLIENT || '');
-                safeSetValue('clientStrength', data.PA_CONF_CLIENT_STRENGTH || 'moyenne');
-                safeSetValue('clientBrand', data.PA_CONF_CLIENT_BRAND || '');
-                safeSetValue('competitorName1', data.PA_CONF_COMP_NAME_1 || '');
-                safeSetValue('competitor1', data.PA_CONF_COMP_URL_1 || '');
-                safeSetValue('competitorStrength1', data.PA_CONF_COMP_STRENGTH_1 || 'moyenne');
-                safeSetValue('competitorBrand1', data.PA_CONF_COMP_BRAND_1 || '');
-                safeSetValue('competitorName2', data.PA_CONF_COMP_NAME_2 || '');
-                safeSetValue('competitor2', data.PA_CONF_COMP_URL_2 || '');
-                safeSetValue('competitorStrength2', data.PA_CONF_COMP_STRENGTH_2 || 'moyenne');
-                safeSetValue('competitorBrand2', data.PA_CONF_COMP_BRAND_2 || '');
-                safeSetValue('competitorName3', data.PA_CONF_COMP_NAME_3 || '');
-                safeSetValue('competitor3', data.PA_CONF_COMP_URL_3 || '');
-                safeSetValue('competitorStrength3', data.PA_CONF_COMP_STRENGTH_3 || 'moyenne');
-                safeSetValue('competitorBrand3', data.PA_CONF_COMP_BRAND_3 || '');
-                safeSetValue('competitorName4', data.PA_CONF_COMP_NAME_4 || '');
-                safeSetValue('competitor4', data.PA_CONF_COMP_URL_4 || '');
-                safeSetValue('competitorStrength4', data.PA_CONF_COMP_STRENGTH_4 || 'moyenne');
-                safeSetValue('competitorBrand4', data.PA_CONF_COMP_BRAND_4 || '');
-                safeSetValue('competitorName5', data.PA_CONF_COMP_NAME_5 || '');
-                safeSetValue('competitor5', data.PA_CONF_COMP_URL_5 || '');
-                safeSetValue('competitorStrength5', data.PA_CONF_COMP_STRENGTH_5 || 'moyenne');
-                safeSetValue('competitorBrand5', data.PA_CONF_COMP_BRAND_5 || '');
+                safeSetValue('projectType', data.CONF_PROJECT_TYPE || 'installe');
+                safeSetValue('clientName', data.CONF_ID_CLIENT || '');
+                safeSetValue('clientUrl', data.CONF_URL_CLIENT || '');
+                safeSetValue('clientStrength', data.CONF_CLIENT_STRENGTH || 'moyenne');
+                safeSetValue('clientBrand', data.CONF_CLIENT_BRAND || '');
+                safeSetValue('competitorName1', data.CONF_COMP_NAME_1 || '');
+                safeSetValue('competitor1', data.CONF_COMP_URL_1 || '');
+                safeSetValue('competitorStrength1', data.CONF_COMP_STRENGTH_1 || 'moyenne');
+                safeSetValue('competitorBrand1', data.CONF_COMP_BRAND_1 || '');
+                safeSetValue('competitorName2', data.CONF_COMP_NAME_2 || '');
+                safeSetValue('competitor2', data.CONF_COMP_URL_2 || '');
+                safeSetValue('competitorStrength2', data.CONF_COMP_STRENGTH_2 || 'moyenne');
+                safeSetValue('competitorBrand2', data.CONF_COMP_BRAND_2 || '');
+                safeSetValue('competitorName3', data.CONF_COMP_NAME_3 || '');
+                safeSetValue('competitor3', data.CONF_COMP_URL_3 || '');
+                safeSetValue('competitorStrength3', data.CONF_COMP_STRENGTH_3 || 'moyenne');
+                safeSetValue('competitorBrand3', data.CONF_COMP_BRAND_3 || '');
+                safeSetValue('competitorName4', data.CONF_COMP_NAME_4 || '');
+                safeSetValue('competitor4', data.CONF_COMP_URL_4 || '');
+                safeSetValue('competitorStrength4', data.CONF_COMP_STRENGTH_4 || 'moyenne');
+                safeSetValue('competitorBrand4', data.CONF_COMP_BRAND_4 || '');
+                safeSetValue('competitorName5', data.CONF_COMP_NAME_5 || '');
+                safeSetValue('competitor5', data.CONF_COMP_URL_5 || '');
+                safeSetValue('competitorStrength5', data.CONF_COMP_STRENGTH_5 || 'moyenne');
+                safeSetValue('competitorBrand5', data.CONF_COMP_BRAND_5 || '');
                 safeSetValue('ctrPos1', data.ctrPos1 || 28);
                 safeSetValue('ctrPos2', data.ctrPos2 || 20);
                 safeSetValue('ctrPos3', data.ctrPos3 || 12);

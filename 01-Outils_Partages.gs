@@ -300,8 +300,8 @@ function sauvegarderPreAudit() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var ui = SpreadsheetApp.getUi();
 
-    var props = PropertiesService.getScriptProperties().getProperties();
-    var clientName = props['CLIENT_NAME'];
+    var props = getDatabaseData(['CONF_ID_CLIENT']);
+    var clientName = props['CONF_ID_CLIENT'];
 
     if (!clientName || clientName.trim() === "") {
         ui.alert("Erreur : Le nom du client n'est pas configuré. Veuillez le renseigner dans la configuration.");

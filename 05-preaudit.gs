@@ -9,17 +9,17 @@ function ouvrirFenetrePreAudit() {
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
         var keys = [
-        'PA_CONF_ID_CLIENT', 'PA_CONF_URL_CLIENT', 'PA_CONF_URLS_CONTEXTE', 'PA_CONF_CONTEXTE_CLIENT',
+        'CONF_ID_CLIENT', 'CONF_URL_CLIENT', 'CONF_URLS_CONTEXTE', 'CONF_CONTEXTE_CLIENT',
         'PA_CONF_SLIDE_ID', 'PA_CONF_BRIEF', 'PA_CONF_URL_FORM_REPONSES', 'PA_CONF_PROFILAGE_COMMERCIAL',
         'PA_GLOBALE_BESOIN_HTML', 'PA_GLOBALE_BESOIN', 'PA_GLOBALE_SOLUTION_HTML', 'PA_GLOBALE_SOLUTION',
         'PA_GLOBALE_TITRE_SEMRUSH', 'PA_GLOBALE_SEMRUSH_MOTCLE_HTML', 'PA_GLOBALE_SEMRUSH_MOTCLE',
         'PA_GLOBALE_SEMRUSH_TRAFIC_HTML', 'PA_GLOBALE_SEMRUSH_TRAFIC', 'PA_ETAT_TITRE_THEMATIQUETOP',
         'PA_ETAT_ANALYSE_THEMATIQUETOP1', 'PA_ETAT_TITRE_THEMATIQUEFLOP', 'PA_ETAT_ANALYSE_THEMATIQUEFLOP1',
         'PA_ETAT_TITRE_MCTOP', 'PA_ETAT_ANALYSE_MCTOP1', 'PA_ETAT_TITRE_MCFLOP', 'PA_ETAT_ANALYSE_MCFLOP1',
-        'PA_CONF_COMP_NAME_1', 'PA_CONF_COMP_URL_1', 'PA_CONF_COMP_NAME_2', 'PA_CONF_COMP_URL_2', 'PA_CONF_COMP_NAME_3',
-        'PA_CONF_COMP_URL_3', 'PA_CONF_COMP_NAME_4', 'PA_CONF_COMP_URL_4', 'PA_CONF_COMP_NAME_5', 'PA_CONF_COMP_URL_5',
+        'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_NAME_3',
+        'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
         'PA_FOCUS_MCCIBLE', 'PA_FOCUS_MCCIBLE_VOLUME', 'PA_FOCUS_MCCIBLE_URLCLIENT', 'PA_FOCUS_MCCIBLE_POSCLIENT', 'PA_FOCUS_MCCIBLE_URLCONC',
-        'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_CONTEXTECLIENT', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
+        'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
         'PA_FOCUS_PLACEHOLDER_SERPELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_2', 'PA_FOCUS_SERP_ELEMENT_DESC_2', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_2',
         'PA_FOCUS_SERP_ELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_DESC_3', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_4',
         'PA_FOCUS_SERP_ELEMENT_DESC_4', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_4', 'PA_FOCUS_INTENTION_TITRE', 'PA_FOCUS_INTENTION_DESC',
@@ -61,10 +61,10 @@ function chargerConfigurationPreAudit() {
     var userProps = PropertiesService.getUserProperties().getProperties();
     
     var config = {
-        clientName: props['PA_CONF_ID_CLIENT'] || "",
-        clientUrl: props['PA_CONF_URL_CLIENT'] || "",
-        urlsContexte: props['PA_CONF_URLS_CONTEXTE'] || "",
-        contexteClient: props['PA_CONF_CONTEXTE_CLIENT'] || "",
+        clientName: props['CONF_ID_CLIENT'] || "",
+        clientUrl: props['CONF_URL_CLIENT'] || "",
+        urlsContexte: props['CONF_URLS_CONTEXTE'] || "",
+        contexteClient: props['CONF_CONTEXTE_CLIENT'] || "",
         slideId: props['PA_CONF_SLIDE_ID'] || "",
         brief: props['PA_CONF_BRIEF'] || "",
         urlReponses: props['PA_CONF_URL_FORM_REPONSES'] || "",
@@ -88,16 +88,16 @@ function chargerConfigurationPreAudit() {
         analyseSegmentFlopTitre: props['PA_ETAT_TITRE_MCFLOP'] || "",
         analyseSegmentFlop: props['PA_ETAT_ANALYSE_MCFLOP1'] || "",
         
-        competitorName1: props['PA_CONF_COMP_NAME_1'] || "",
-        competitor1: props['PA_CONF_COMP_URL_1'] || "",
-        competitorName2: props['PA_CONF_COMP_NAME_2'] || "",
-        competitor2: props['PA_CONF_COMP_URL_2'] || "",
-        competitorName3: props['PA_CONF_COMP_NAME_3'] || "",
-        competitor3: props['PA_CONF_COMP_URL_3'] || "",
-        competitorName4: props['PA_CONF_COMP_NAME_4'] || "",
-        competitor4: props['PA_CONF_COMP_URL_4'] || "",
-        competitorName5: props['PA_CONF_COMP_NAME_5'] || "",
-        competitor5: props['PA_CONF_COMP_URL_5'] || "",
+        competitorName1: props['CONF_COMP_NAME_1'] || "",
+        competitor1: props['CONF_COMP_URL_1'] || "",
+        competitorName2: props['CONF_COMP_NAME_2'] || "",
+        competitor2: props['CONF_COMP_URL_2'] || "",
+        competitorName3: props['CONF_COMP_NAME_3'] || "",
+        competitor3: props['CONF_COMP_URL_3'] || "",
+        competitorName4: props['CONF_COMP_NAME_4'] || "",
+        competitor4: props['CONF_COMP_URL_4'] || "",
+        competitorName5: props['CONF_COMP_NAME_5'] || "",
+        competitor5: props['CONF_COMP_URL_5'] || "",
         
         focusKw: props['PA_FOCUS_MCCIBLE'] || "",
         focusVol: props['PA_FOCUS_MCCIBLE_VOLUME'] || "",
@@ -245,21 +245,15 @@ function sauvegarderConfigurationPreAudit(form) {
         'PA_CONF_CONTACT_CONS2': form.contactCons2 || "",
         
         // Bloc Projet
-        'PA_CONF_ID_CLIENT': form.clientName || "",
-        'PA_CONF_URL_CLIENT': form.clientUrl || "",
         'PA_CONF_SLIDE_ID': form.slideId || "",
 
         // Bloc Contexte & Brief
         'PA_CONF_BRIEF': form.brief || "",
         'PA_CONF_URL_FORM_REPONSES': form.urlReponses || "",
         
-        // Synchronisation des clés (Pré-audit / Clustering)
-        'PA_CONF_URLS_CONTEXTE': form.urlsContexte || "",
-        'CLUSTERING_URL_SUPPLEMENTAIRE': form.urlsContexte || "",
-        
-        'PA_CONF_CONTEXTE_CLIENT': form.contexteClient || "",
-        'CLUSTERING_CONTEXTE_CLIENT': form.contexteClient || "",
-        'PA_FOCUS_CONTEXTECLIENT': form.contexteClient || "",
+        // Synchronisation des clés
+        'CONF_URLS_CONTEXTE': form.urlsContexte || "",
+        'CONF_CONTEXTE_CLIENT': form.contexteClient || "",
         
         'PA_CONF_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
     });
@@ -355,7 +349,7 @@ function genererAnalyseEditorialIA(pistesEdito) {
     Logger.log("=== DÉBUT : genererAnalyseEditorialIA ===");
     try {
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné";
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
@@ -525,7 +519,7 @@ function recupererDetailsMotCle(motCle) {
     var posCompIndices = [];
     
     var props = getDatabaseData();
-    var clientName = props['PA_CONF_ID_CLIENT'] || "Client";
+    var clientName = props['CONF_ID_CLIENT'] || "Client";
 
     for (var j = 0; j < headers.length; j++) {
         var h = String(headers[j]);
@@ -690,8 +684,8 @@ function recupererReponseFormulaire(urlForm) {
 
     try {
         var props = getDatabaseData();
-        var clientName = (props['PA_CONF_ID_CLIENT'] || "").toLowerCase().trim();
-        var clientUrl = (props['PA_CONF_URL_CLIENT'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
+        var clientName = (props['CONF_ID_CLIENT'] || "").toLowerCase().trim();
+        var clientUrl = (props['CONF_URL_CLIENT'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
         
         Logger.log("=== RECHERCHE DE RÉPONSE FORMULAIRE (PAR ID) ===");
         Logger.log("Critères de filtrage : Nom [" + clientName + "] | Domaine [" + clientUrl + "]");
@@ -826,7 +820,7 @@ function genererDiagnostic(selection) {
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
     for (var ci = 1; ci <= 10; ci++) {
-        ctrTable.push((parseFloat(props['PA_CONF_CTR_POS_' + ci]) || 0) / 100);
+        ctrTable.push((parseFloat(props['CONF_CTR_POS_' + ci]) || 0) / 100);
     }
     function computeTEC(vol, pos) {
         if (isNaN(pos) || pos <= 0 || pos > 10) return 0;
@@ -884,7 +878,7 @@ function genererDiagnostic(selection) {
         }
     }
 
-    var clientName = props['PA_CONF_ID_CLIENT'] || "Client";
+    var clientName = props['CONF_ID_CLIENT'] || "Client";
     if (clientName.trim() === "") clientName = "Client";
     var clientEntity = entities.find(function(e) { return e.name === clientName; });
     var kpis = {};
@@ -1128,7 +1122,7 @@ function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime) 
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "non renseigné.";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "non renseigné.";
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable dans la configuration générale.");
@@ -1338,7 +1332,7 @@ function lancerWorkflowSERP(data) {
         var geminiApiKey = userProps['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = userProps['LISTE_CLES_API'];
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "";
 
         if (!geminiApiKey || geminiApiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
@@ -2635,7 +2629,7 @@ function genererAnalyseTechniqueIA() {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "";
         var urlCible = props['PA_TECH_URL_CLIENT'] || "";
         var motCleCible = props['PA_FOCUS_MCCIBLE'] || "Non défini";
 
@@ -3058,7 +3052,7 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         var compFullId = props['PA_UX_CONC_FULL'];
         var compCropId = props['PA_UX_CONC_CROP'];
         
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
 
         if (!clientViewportId || !clientFullId || !compViewportId || !compFullId) {
             throw new Error("Les identifiants des captures principales (Viewport/Full) sont manquants.");
@@ -3430,7 +3424,7 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         }
 
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
         var profilage = props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
         var intention = props['PA_FOCUS_INTENTION_TITRE'] || "Non renseignée.";
         var motCle = props['PA_FOCUS_MCCIBLE'] || "Non défini.";

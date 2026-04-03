@@ -89,48 +89,48 @@ function chargerDonneesInitiales() {
     }
 
     var keys = [
-        'PA_CONF_PROJECT_TYPE', 'PA_CONF_ID_CLIENT', 'PA_CONF_URL_CLIENT', 'PA_CONF_CLIENT_STRENGTH', 'PA_CONF_CLIENT_BRAND',
-        'PA_CONF_COMP_NAME_1', 'PA_CONF_COMP_URL_1', 'PA_CONF_COMP_STRENGTH_1', 'PA_CONF_COMP_BRAND_1',
-        'PA_CONF_COMP_NAME_2', 'PA_CONF_COMP_URL_2', 'PA_CONF_COMP_STRENGTH_2', 'PA_CONF_COMP_BRAND_2',
-        'PA_CONF_COMP_NAME_3', 'PA_CONF_COMP_URL_3', 'PA_CONF_COMP_STRENGTH_3', 'PA_CONF_COMP_BRAND_3',
-        'PA_CONF_COMP_NAME_4', 'PA_CONF_COMP_URL_4', 'PA_CONF_COMP_STRENGTH_4', 'PA_CONF_COMP_BRAND_4',
-        'PA_CONF_COMP_NAME_5', 'PA_CONF_COMP_URL_5', 'PA_CONF_COMP_STRENGTH_5', 'PA_CONF_COMP_BRAND_5',
-        'PA_CONF_SEUIL_POSITION', 'PA_CONF_EXCLUSION_GLOBALE', 'PA_CONF_IS_MULTI_THEME',
-        'PA_CONF_CTR_POS_1', 'PA_CONF_CTR_POS_2', 'PA_CONF_CTR_POS_3', 'PA_CONF_CTR_POS_4', 'PA_CONF_CTR_POS_5',
-        'PA_CONF_CTR_POS_6', 'PA_CONF_CTR_POS_7', 'PA_CONF_CTR_POS_8', 'PA_CONF_CTR_POS_9', 'PA_CONF_CTR_POS_10'
+        'CONF_PROJECT_TYPE', 'CONF_ID_CLIENT', 'CONF_URL_CLIENT', 'CONF_CLIENT_STRENGTH', 'CONF_CLIENT_BRAND',
+        'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_STRENGTH_1', 'CONF_COMP_BRAND_1',
+        'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_STRENGTH_2', 'CONF_COMP_BRAND_2',
+        'CONF_COMP_NAME_3', 'CONF_COMP_URL_3', 'CONF_COMP_STRENGTH_3', 'CONF_COMP_BRAND_3',
+        'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_STRENGTH_4', 'CONF_COMP_BRAND_4',
+        'CONF_COMP_NAME_5', 'CONF_COMP_URL_5', 'CONF_COMP_STRENGTH_5', 'CONF_COMP_BRAND_5',
+        'CONF_SEUIL_POSITION', 'CONF_EXCLUSION_GLOBALE', 'CONF_IS_MULTI_THEME',
+        'CONF_CTR_POS_1', 'CONF_CTR_POS_2', 'CONF_CTR_POS_3', 'CONF_CTR_POS_4', 'CONF_CTR_POS_5',
+        'CONF_CTR_POS_6', 'CONF_CTR_POS_7', 'CONF_CTR_POS_8', 'CONF_CTR_POS_9', 'CONF_CTR_POS_10'
     ];
     var props = getDatabaseData(keys);
     var hasMatrix = (ss.getSheetByName("Matrice") !== null);
     var donnees = {
         hasMatrix: hasMatrix,
-        PA_CONF_PROJECT_TYPE: props['PA_CONF_PROJECT_TYPE'] || "installe",
-        PA_CONF_ID_CLIENT: props['PA_CONF_ID_CLIENT'] || "",
-        PA_CONF_URL_CLIENT: props['PA_CONF_URL_CLIENT'] || "",
-        PA_CONF_CLIENT_STRENGTH: props['PA_CONF_CLIENT_STRENGTH'] || "moyenne",
-        PA_CONF_CLIENT_BRAND: props['PA_CONF_CLIENT_BRAND'] || "",
-        PA_CONF_COMP_NAME_1: props['PA_CONF_COMP_NAME_1'] || "",
-        PA_CONF_COMP_URL_1: props['PA_CONF_COMP_URL_1'] || "",
-        PA_CONF_COMP_STRENGTH_1: props['PA_CONF_COMP_STRENGTH_1'] || "moyenne",
-        PA_CONF_COMP_BRAND_1: props['PA_CONF_COMP_BRAND_1'] || "",
-        PA_CONF_COMP_NAME_2: props['PA_CONF_COMP_NAME_2'] || "",
-        PA_CONF_COMP_URL_2: props['PA_CONF_COMP_URL_2'] || "",
-        PA_CONF_COMP_STRENGTH_2: props['PA_CONF_COMP_STRENGTH_2'] || "moyenne",
-        PA_CONF_COMP_BRAND_2: props['PA_CONF_COMP_BRAND_2'] || "",
-        PA_CONF_COMP_NAME_3: props['PA_CONF_COMP_NAME_3'] || "",
-        PA_CONF_COMP_URL_3: props['PA_CONF_COMP_URL_3'] || "",
-        PA_CONF_COMP_STRENGTH_3: props['PA_CONF_COMP_STRENGTH_3'] || "moyenne",
-        PA_CONF_COMP_BRAND_3: props['PA_CONF_COMP_BRAND_3'] || "",
-        PA_CONF_COMP_NAME_4: props['PA_CONF_COMP_NAME_4'] || "",
-        PA_CONF_COMP_URL_4: props['PA_CONF_COMP_URL_4'] || "",
-        PA_CONF_COMP_STRENGTH_4: props['PA_CONF_COMP_STRENGTH_4'] || "moyenne",
-        PA_CONF_COMP_BRAND_4: props['PA_CONF_COMP_BRAND_4'] || "",
-        PA_CONF_COMP_NAME_5: props['PA_CONF_COMP_NAME_5'] || "",
-        PA_CONF_COMP_URL_5: props['PA_CONF_COMP_URL_5'] || "",
-        PA_CONF_COMP_STRENGTH_5: props['PA_CONF_COMP_STRENGTH_5'] || "moyenne",
-        PA_CONF_COMP_BRAND_5: props['PA_CONF_COMP_BRAND_5'] || "",
-        seuilPos: props['PA_CONF_SEUIL_POSITION'] || "20",
-        exclusionTxt: props['PA_CONF_EXCLUSION_GLOBALE'] || "",
-        isMultiTheme: props['PA_CONF_IS_MULTI_THEME'] === 'true'
+        CONF_PROJECT_TYPE: props['CONF_PROJECT_TYPE'] || "installe",
+        CONF_ID_CLIENT: props['CONF_ID_CLIENT'] || "",
+        CONF_URL_CLIENT: props['CONF_URL_CLIENT'] || "",
+        CONF_CLIENT_STRENGTH: props['CONF_CLIENT_STRENGTH'] || "moyenne",
+        CONF_CLIENT_BRAND: props['CONF_CLIENT_BRAND'] || "",
+        CONF_COMP_NAME_1: props['CONF_COMP_NAME_1'] || "",
+        CONF_COMP_URL_1: props['CONF_COMP_URL_1'] || "",
+        CONF_COMP_STRENGTH_1: props['CONF_COMP_STRENGTH_1'] || "moyenne",
+        CONF_COMP_BRAND_1: props['CONF_COMP_BRAND_1'] || "",
+        CONF_COMP_NAME_2: props['CONF_COMP_NAME_2'] || "",
+        CONF_COMP_URL_2: props['CONF_COMP_URL_2'] || "",
+        CONF_COMP_STRENGTH_2: props['CONF_COMP_STRENGTH_2'] || "moyenne",
+        CONF_COMP_BRAND_2: props['CONF_COMP_BRAND_2'] || "",
+        CONF_COMP_NAME_3: props['CONF_COMP_NAME_3'] || "",
+        CONF_COMP_URL_3: props['CONF_COMP_URL_3'] || "",
+        CONF_COMP_STRENGTH_3: props['CONF_COMP_STRENGTH_3'] || "moyenne",
+        CONF_COMP_BRAND_3: props['CONF_COMP_BRAND_3'] || "",
+        CONF_COMP_NAME_4: props['CONF_COMP_NAME_4'] || "",
+        CONF_COMP_URL_4: props['CONF_COMP_URL_4'] || "",
+        CONF_COMP_STRENGTH_4: props['CONF_COMP_STRENGTH_4'] || "moyenne",
+        CONF_COMP_BRAND_4: props['CONF_COMP_BRAND_4'] || "",
+        CONF_COMP_NAME_5: props['CONF_COMP_NAME_5'] || "",
+        CONF_COMP_URL_5: props['CONF_COMP_URL_5'] || "",
+        CONF_COMP_STRENGTH_5: props['CONF_COMP_STRENGTH_5'] || "moyenne",
+        CONF_COMP_BRAND_5: props['CONF_COMP_BRAND_5'] || "",
+        seuilPos: props['CONF_SEUIL_POSITION'] || "20",
+        exclusionTxt: props['CONF_EXCLUSION_GLOBALE'] || "",
+        isMultiTheme: props['CONF_IS_MULTI_THEME'] === 'true'
     };
     function parseAndMigrateCTR(val, defaultVal) {
         if (val === undefined || val === null || String(val).trim() === "") return defaultVal;
@@ -142,16 +142,16 @@ function chargerDonneesInitiales() {
         return num.toString();
     }
 
-    donnees.ctrPos1 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_1'], "28");
-    donnees.ctrPos2 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_2'], "20");
-    donnees.ctrPos3 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_3'], "12");
-    donnees.ctrPos4 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_4'], "8");
-    donnees.ctrPos5 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_5'], "7");
-    donnees.ctrPos6 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_6'], "6");
-    donnees.ctrPos7 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_7'], "5");
-    donnees.ctrPos8 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_8'], "5");
-    donnees.ctrPos9 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_9'], "4");
-    donnees.ctrPos10 = parseAndMigrateCTR(props['PA_CONF_CTR_POS_10'], "3");
+    donnees.ctrPos1 = parseAndMigrateCTR(props['CONF_CTR_POS_1'], "28");
+    donnees.ctrPos2 = parseAndMigrateCTR(props['CONF_CTR_POS_2'], "20");
+    donnees.ctrPos3 = parseAndMigrateCTR(props['CONF_CTR_POS_3'], "12");
+    donnees.ctrPos4 = parseAndMigrateCTR(props['CONF_CTR_POS_4'], "8");
+    donnees.ctrPos5 = parseAndMigrateCTR(props['CONF_CTR_POS_5'], "7");
+    donnees.ctrPos6 = parseAndMigrateCTR(props['CONF_CTR_POS_6'], "6");
+    donnees.ctrPos7 = parseAndMigrateCTR(props['CONF_CTR_POS_7'], "5");
+    donnees.ctrPos8 = parseAndMigrateCTR(props['CONF_CTR_POS_8'], "5");
+    donnees.ctrPos9 = parseAndMigrateCTR(props['CONF_CTR_POS_9'], "4");
+    donnees.ctrPos10 = parseAndMigrateCTR(props['CONF_CTR_POS_10'], "3");
 
     return donnees;
 }
@@ -160,42 +160,42 @@ function enregistrerConfiguration(formulaire) {
     Logger.log("=== DÉBUT : enregistrerConfiguration ===");
     
     setDatabaseData({
-        'PA_CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
-        'PA_CONF_PROJECT_TYPE': formulaire.PA_CONF_PROJECT_TYPE,
-        'PA_CONF_ID_CLIENT': formulaire.PA_CONF_ID_CLIENT,
-        'PA_CONF_URL_CLIENT': formulaire.PA_CONF_URL_CLIENT,
-        'PA_CONF_CLIENT_STRENGTH': formulaire.PA_CONF_CLIENT_STRENGTH,
-        'PA_CONF_CLIENT_BRAND': formulaire.PA_CONF_CLIENT_BRAND,
-        'PA_CONF_COMP_NAME_1': formulaire.PA_CONF_COMP_NAME_1,
-        'PA_CONF_COMP_URL_1': formulaire.PA_CONF_COMP_URL_1,
-        'PA_CONF_COMP_STRENGTH_1': formulaire.PA_CONF_COMP_STRENGTH_1,
-        'PA_CONF_COMP_BRAND_1': formulaire.PA_CONF_COMP_BRAND_1,
-        'PA_CONF_COMP_NAME_2': formulaire.PA_CONF_COMP_NAME_2,
-        'PA_CONF_COMP_URL_2': formulaire.PA_CONF_COMP_URL_2,
-        'PA_CONF_COMP_STRENGTH_2': formulaire.PA_CONF_COMP_STRENGTH_2,
-        'PA_CONF_COMP_BRAND_2': formulaire.PA_CONF_COMP_BRAND_2,
-        'PA_CONF_COMP_NAME_3': formulaire.PA_CONF_COMP_NAME_3,
-        'PA_CONF_COMP_URL_3': formulaire.PA_CONF_COMP_URL_3,
-        'PA_CONF_COMP_STRENGTH_3': formulaire.PA_CONF_COMP_STRENGTH_3,
-        'PA_CONF_COMP_BRAND_3': formulaire.PA_CONF_COMP_BRAND_3,
-        'PA_CONF_COMP_NAME_4': formulaire.PA_CONF_COMP_NAME_4,
-        'PA_CONF_COMP_URL_4': formulaire.PA_CONF_COMP_URL_4,
-        'PA_CONF_COMP_STRENGTH_4': formulaire.PA_CONF_COMP_STRENGTH_4,
-        'PA_CONF_COMP_BRAND_4': formulaire.PA_CONF_COMP_BRAND_4,
-        'PA_CONF_COMP_NAME_5': formulaire.PA_CONF_COMP_NAME_5,
-        'PA_CONF_COMP_URL_5': formulaire.PA_CONF_COMP_URL_5,
-        'PA_CONF_COMP_STRENGTH_5': formulaire.PA_CONF_COMP_STRENGTH_5,
-        'PA_CONF_COMP_BRAND_5': formulaire.PA_CONF_COMP_BRAND_5,
-        'PA_CONF_CTR_POS_1': formulaire.ctrPos1,
-        'PA_CONF_CTR_POS_2': formulaire.ctrPos2,
-        'PA_CONF_CTR_POS_3': formulaire.ctrPos3,
-        'PA_CONF_CTR_POS_4': formulaire.ctrPos4,
-        'PA_CONF_CTR_POS_5': formulaire.ctrPos5,
-        'PA_CONF_CTR_POS_6': formulaire.ctrPos6,
-        'PA_CONF_CTR_POS_7': formulaire.ctrPos7,
-        'PA_CONF_CTR_POS_8': formulaire.ctrPos8,
-        'PA_CONF_CTR_POS_9': formulaire.ctrPos9,
-        'PA_CONF_CTR_POS_10': formulaire.ctrPos10
+        'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
+        'CONF_PROJECT_TYPE': formulaire.CONF_PROJECT_TYPE,
+        'CONF_ID_CLIENT': formulaire.CONF_ID_CLIENT,
+        'CONF_URL_CLIENT': formulaire.CONF_URL_CLIENT,
+        'CONF_CLIENT_STRENGTH': formulaire.CONF_CLIENT_STRENGTH,
+        'CONF_CLIENT_BRAND': formulaire.CONF_CLIENT_BRAND,
+        'CONF_COMP_NAME_1': formulaire.CONF_COMP_NAME_1,
+        'CONF_COMP_URL_1': formulaire.CONF_COMP_URL_1,
+        'CONF_COMP_STRENGTH_1': formulaire.CONF_COMP_STRENGTH_1,
+        'CONF_COMP_BRAND_1': formulaire.CONF_COMP_BRAND_1,
+        'CONF_COMP_NAME_2': formulaire.CONF_COMP_NAME_2,
+        'CONF_COMP_URL_2': formulaire.CONF_COMP_URL_2,
+        'CONF_COMP_STRENGTH_2': formulaire.CONF_COMP_STRENGTH_2,
+        'CONF_COMP_BRAND_2': formulaire.CONF_COMP_BRAND_2,
+        'CONF_COMP_NAME_3': formulaire.CONF_COMP_NAME_3,
+        'CONF_COMP_URL_3': formulaire.CONF_COMP_URL_3,
+        'CONF_COMP_STRENGTH_3': formulaire.CONF_COMP_STRENGTH_3,
+        'CONF_COMP_BRAND_3': formulaire.CONF_COMP_BRAND_3,
+        'CONF_COMP_NAME_4': formulaire.CONF_COMP_NAME_4,
+        'CONF_COMP_URL_4': formulaire.CONF_COMP_URL_4,
+        'CONF_COMP_STRENGTH_4': formulaire.CONF_COMP_STRENGTH_4,
+        'CONF_COMP_BRAND_4': formulaire.CONF_COMP_BRAND_4,
+        'CONF_COMP_NAME_5': formulaire.CONF_COMP_NAME_5,
+        'CONF_COMP_URL_5': formulaire.CONF_COMP_URL_5,
+        'CONF_COMP_STRENGTH_5': formulaire.CONF_COMP_STRENGTH_5,
+        'CONF_COMP_BRAND_5': formulaire.CONF_COMP_BRAND_5,
+        'CONF_CTR_POS_1': formulaire.ctrPos1,
+        'CONF_CTR_POS_2': formulaire.ctrPos2,
+        'CONF_CTR_POS_3': formulaire.ctrPos3,
+        'CONF_CTR_POS_4': formulaire.ctrPos4,
+        'CONF_CTR_POS_5': formulaire.ctrPos5,
+        'CONF_CTR_POS_6': formulaire.ctrPos6,
+        'CONF_CTR_POS_7': formulaire.ctrPos7,
+        'CONF_CTR_POS_8': formulaire.ctrPos8,
+        'CONF_CTR_POS_9': formulaire.ctrPos9,
+        'CONF_CTR_POS_10': formulaire.ctrPos10
     });
     
     Logger.log("=== FIN : enregistrerConfiguration ===");
@@ -216,14 +216,14 @@ function traiterConcurrence(projectType, headersRaw, allRows) {
         var props = getDatabaseData();
         var isInstall = (projectType === 'installe');
         
-        var clientDomain = isInstall ? extractDomainForMatrix(props['PA_CONF_URL_CLIENT'] || "") : "";
-        var clientNameRaw = props['PA_CONF_ID_CLIENT'] || "";
+        var clientDomain = isInstall ? extractDomainForMatrix(props['CONF_URL_CLIENT'] || "") : "";
+        var clientNameRaw = props['CONF_ID_CLIENT'] || "";
         var clientLabel = clientNameRaw.trim() !== "" ? clientNameRaw.trim() : "Client";
 
         var comps = [];
         for (var i = 1; i <= 5; i++) {
-            var d = extractDomainForMatrix(props['PA_CONF_COMP_URL_' + i] || "");
-            if (d) comps.push({ id: 'comp' + i, domain: d, name: props['PA_CONF_COMP_NAME_' + i] || d });
+            var d = extractDomainForMatrix(props['CONF_COMP_URL_' + i] || "");
+            if (d) comps.push({ id: 'comp' + i, domain: d, name: props['CONF_COMP_NAME_' + i] || d });
         }
         
         if (comps.length === 0) throw new Error("Aucun concurrent configuré.");
@@ -365,7 +365,7 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
         ss.setSpreadsheetLocale('fr_FR');
         
         var props = getDatabaseData();
-        var isInstall = (props['PA_CONF_PROJECT_TYPE'] === 'installe');
+        var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
         
         var feuilleSource = ss.getSheetByName("Matrice");
         if (!feuilleSource) throw new Error("La feuille 'Matrice' est introuvable.");
@@ -391,11 +391,11 @@ function traiterConcurrenceFiltrer(seuilPosition, exclusionTexte, isMultiTheme) 
         }
 
         addExclusion(exclusionTexte);
-        addExclusion(props['PA_CONF_ID_CLIENT']);
-        addExclusion(props['PA_CONF_CLIENT_BRAND']);
+        addExclusion(props['CONF_ID_CLIENT']);
+        addExclusion(props['CONF_CLIENT_BRAND']);
         for (var i = 1; i <= 5; i++) {
-            addExclusion(props['PA_CONF_COMP_NAME_' + i]);
-            addExclusion(props['PA_CONF_COMP_BRAND_' + i]);
+            addExclusion(props['CONF_COMP_NAME_' + i]);
+            addExclusion(props['CONF_COMP_BRAND_' + i]);
         }
 
         var finalExclusions = [];
@@ -631,9 +631,9 @@ function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) 
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = getDatabaseData();
-        var isMultiTheme = (props['PA_CONF_IS_MULTI_THEME'] === 'true');
+        var isMultiTheme = (props['CONF_IS_MULTI_THEME'] === 'true');
         
-        var ctxFinal = contexteClient || props['CLUSTERING_CONTEXTE_CLIENT'] || "";
+        var ctxFinal = contexteClient || props['CONF_CONTEXTE_CLIENT'] || "";
         var dirFinal = directivePrioritaire || props['CLUSTERING_DIRECTIVE'] || "";
 
         var sheet = ss.getSheetByName("Concurrence filtrée");
@@ -693,7 +693,7 @@ function preparerDonneesClustering(jsonMotsCles) {
     try {
         var ss = SpreadsheetApp.getActiveSpreadsheet();
         var props = getDatabaseData();
-        var isInstall = (props['PA_CONF_PROJECT_TYPE'] === 'installe');
+        var isInstall = (props['CONF_PROJECT_TYPE'] === 'installe');
 
         var sheetSource = ss.getSheetByName("Concurrence filtrée");
         var mapKw = {};
@@ -912,7 +912,7 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
             throw new Error("Clé API Gemini introuvable. Veuillez configurer et sauvegarder l'onglet Général.");
         }
 
-        var clientUrl = props['PA_CONF_URL_CLIENT'] || "";
+        var clientUrl = props['CONF_URL_CLIENT'] || "";
         var urlsArray = urlsTexte ? urlsTexte.split('\n') : [];
         
         if (clientUrl && clientUrl.trim() !== "") {
@@ -1025,12 +1025,12 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
 
 function chargerContexteIA() {
     Logger.log("=== DÉBUT : chargerContexteIA ===");
-    var keys = ['CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT', 'CLUSTERING_DIRECTIVE'];
+    var keys = ['CONF_URLS_CONTEXTE', 'CONF_CONTEXTE_CLIENT', 'CLUSTERING_DIRECTIVE'];
     var props = getDatabaseData(keys);
     Logger.log("=== FIN : chargerContexteIA ===");
     return {
-        urlsContexte: props['CLUSTERING_URL_SUPPLEMENTAIRE'] || "",
-        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
+        urlsContexte: props['CONF_URLS_CONTEXTE'] || "",
+        contexteClient: props['CONF_CONTEXTE_CLIENT'] || "",
         directivePrioritaire: props['CLUSTERING_DIRECTIVE'] || ""
     };
 }
@@ -1038,14 +1038,9 @@ function chargerContexteIA() {
 function sauvegarderContexteIA(urls, contexte, directive) {
     Logger.log("=== DÉBUT : sauvegarderContexteIA ===");
     setDatabaseData({
-        // Synchronisation des clés (Clustering / Pré-audit)
-        'CLUSTERING_URL_SUPPLEMENTAIRE': urls || "",
-        'PA_CONF_URLS_CONTEXTE': urls || "",
-        
-        'CLUSTERING_CONTEXTE_CLIENT': contexte || "",
-        'PA_CONF_CONTEXTE_CLIENT': contexte || "",
-        'PA_FOCUS_CONTEXTECLIENT': contexte || "",
-        
+        // Synchronisation des clés
+        'CONF_URLS_CONTEXTE': urls || "",
+        'CONF_CONTEXTE_CLIENT': contexte || "",
         'CLUSTERING_DIRECTIVE': directive || ""
     });
     Logger.log("=== FIN : sauvegarderContexteIA ===");
@@ -1137,24 +1132,24 @@ function initFormatConfigSheet() {
     
     var keysByGroup = {
         0: [
-            "PA_CONF_PROJECT_TYPE", "PA_CONF_ID_CLIENT", "PA_CONF_URL_CLIENT", "PA_CONF_CLIENT_STRENGTH", "PA_CONF_CLIENT_BRAND", 
-            "PA_CONF_COMP_NAME_1", "PA_CONF_COMP_URL_1", "PA_CONF_COMP_STRENGTH_1", "PA_CONF_COMP_BRAND_1", 
-            "PA_CONF_COMP_NAME_2", "PA_CONF_COMP_URL_2", "PA_CONF_COMP_STRENGTH_2", "PA_CONF_COMP_BRAND_2", 
-            "PA_CONF_COMP_NAME_3", "PA_CONF_COMP_URL_3", "PA_CONF_COMP_STRENGTH_3", "PA_CONF_COMP_BRAND_3", 
-            "PA_CONF_COMP_NAME_4", "PA_CONF_COMP_URL_4", "PA_CONF_COMP_STRENGTH_4", "PA_CONF_COMP_BRAND_4", 
-            "PA_CONF_COMP_NAME_5", "PA_CONF_COMP_URL_5", "PA_CONF_COMP_STRENGTH_5", "PA_CONF_COMP_BRAND_5",
-            "PA_CONF_SEUIL_POSITION", "PA_CONF_EXCLUSION_GLOBALE", "PA_CONF_IS_MULTI_THEME",
-            "PA_CONF_CTR_POS_1", "PA_CONF_CTR_POS_2", "PA_CONF_CTR_POS_3", "PA_CONF_CTR_POS_4", "PA_CONF_CTR_POS_5", "PA_CONF_CTR_POS_6", "PA_CONF_CTR_POS_7", "PA_CONF_CTR_POS_8", "PA_CONF_CTR_POS_9", "PA_CONF_CTR_POS_10"
+            "CONF_PROJECT_TYPE", "CONF_ID_CLIENT", "CONF_URL_CLIENT", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", 
+            "CONF_COMP_NAME_1", "CONF_COMP_URL_1", "CONF_COMP_STRENGTH_1", "CONF_COMP_BRAND_1", 
+            "CONF_COMP_NAME_2", "CONF_COMP_URL_2", "CONF_COMP_STRENGTH_2", "CONF_COMP_BRAND_2", 
+            "CONF_COMP_NAME_3", "CONF_COMP_URL_3", "CONF_COMP_STRENGTH_3", "CONF_COMP_BRAND_3", 
+            "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4", 
+            "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
+            "CONF_SEUIL_POSITION", "CONF_EXCLUSION_GLOBALE", "CONF_IS_MULTI_THEME",
+            "CONF_CTR_POS_1", "CONF_CTR_POS_2", "CONF_CTR_POS_3", "CONF_CTR_POS_4", "CONF_CTR_POS_5", "CONF_CTR_POS_6", "CONF_CTR_POS_7", "CONF_CTR_POS_8", "CONF_CTR_POS_9", "CONF_CTR_POS_10",
+            "CONF_URLS_CONTEXTE", "CONF_CONTEXTE_CLIENT"
         ],
         3: [
-            "CLUSTERING_URL_SUPPLEMENTAIRE", "CLUSTERING_CONTEXTE_CLIENT", "CLUSTERING_DIRECTIVE"
+            "CLUSTERING_DIRECTIVE"
         ],
         6: [
             "PA_CONF_CONTACT_COM", "PA_CONF_CONTACT_CONS1", "PA_CONF_CONTACT_CONS2", 
             "PLACEHOLDER_CONTACT_COM", "PLACEHOLDER_CONTACT_CONS1", "PLACEHOLDER_CONTACT_CONS2", 
             "nom_com", "poste_com", "email_com", "nom_cons1", "poste_cons1", "email_cons1", "nom_cons2", "poste_cons2", "email_cons2",
-            "PA_CONF_ID_CLIENT", "PA_CONF_URL_CLIENT", "PA_CONF_SLIDE_ID",
-            "PA_CONF_BRIEF", "PA_CONF_URL_FORM_REPONSES", "PA_CONF_URLS_CONTEXTE", "PA_CONF_CONTEXTE_CLIENT", "PA_CONF_PROFILAGE_COMMERCIAL"
+            "PA_CONF_SLIDE_ID", "PA_CONF_BRIEF", "PA_CONF_URL_FORM_REPONSES", "PA_CONF_PROFILAGE_COMMERCIAL"
         ],
         9: [
             "PA_GLOBALE_BESOIN", "PA_GLOBALE_BESOIN_HTML", "PA_GLOBALE_SOLUTION", "PA_GLOBALE_SOLUTION_HTML", 
@@ -1208,7 +1203,7 @@ function initFormatConfigSheet() {
             "PA_ETAT_ANALYSE_MCFLOP1", "PA_ETAT_ANALYSE_MCFLOP2", "PA_ETAT_ANALYSE_MCFLOP3"
         ],
         15: [
-            "PA_FOCUS_MCCIBLE", "PA_FOCUS_MCCIBLE_VOLUME", "PA_FOCUS_MCCIBLE_URLCLIENT", "PA_FOCUS_MCCIBLE_POSCLIENT", "PA_FOCUS_MCCIBLE_URLCONC", "PA_FOCUS_MCCIBLE_POSCONC", "PA_FOCUS_LOCALISATION", "PA_FOCUS_CONTEXTECLIENT",
+            "PA_FOCUS_MCCIBLE", "PA_FOCUS_MCCIBLE_VOLUME", "PA_FOCUS_MCCIBLE_URLCLIENT", "PA_FOCUS_MCCIBLE_POSCLIENT", "PA_FOCUS_MCCIBLE_URLCONC", "PA_FOCUS_MCCIBLE_POSCONC", "PA_FOCUS_LOCALISATION",
             "PA_FOCUS_SERP_ELEMENT_1", "PA_FOCUS_SERP_ELEMENT_DESC_1", "PA_FOCUS_PLACEHOLDER_SERPELEMENT_1",
             "PA_FOCUS_SERP_ELEMENT_2", "PA_FOCUS_SERP_ELEMENT_DESC_2", "PA_FOCUS_PLACEHOLDER_SERPELEMENT_2",
             "PA_FOCUS_SERP_ELEMENT_3", "PA_FOCUS_SERP_ELEMENT_DESC_3", "PA_FOCUS_PLACEHOLDER_SERPELEMENT_3",
@@ -1302,7 +1297,7 @@ function applyConfigStyle(sheet) {
     var maxCols = 32;
 
     var TRIGGER_KEYS = [
-        "PA_CONF_COMP_BRAND_5", "PA_CONF_IS_MULTI_THEME", "PA_CONF_CTR_POS_10", 
+        "CONF_COMP_BRAND_5", "CONF_IS_MULTI_THEME", "CONF_CTR_POS_10", "CONF_CONTEXTE_CLIENT",
         "CLUSTERING_DIRECTIVE",
         "email_cons2", "PA_CONF_SLIDE_ID", "PA_CONF_PROFILAGE_COMMERCIAL",
         "PA_GLOBALE_SOLUTION_HTML", "PA_GLOBALE_SEMRUSH_TRAFIC_HTML",
@@ -1312,7 +1307,7 @@ function applyConfigStyle(sheet) {
         "PA_ETAT_ANALYSE_MCTOP3",
         "PA_ETAT_PAGES_COMP4",
         "PA_ETAT_ANALYSE_MCFLOP3",
-        "PA_FOCUS_CONTEXTECLIENT", "focus_semantique_texte_3", "PA_FOCUS_RECO_4",
+        "focus_semantique_texte_3", "PA_FOCUS_RECO_4",
         "PA_TECH_PAYS_CIBLE", "PA_TECH_IA_FULL_STATE",
         "PA_UX_RECO_HTML_2", "PA_UX_CONC_CROP", "PA_UX_IA_FULL_STATE",
         "PA_CONTENU_YTG_CIBLE_GLOBALE", "PA_CONTENU_SCRAPED_CLIENT", "PA_CONTENU_SCRAPED_CONC",
@@ -1343,7 +1338,7 @@ function applyConfigStyle(sheet) {
 
             var isSlideKey = (cellKey.indexOf('PA_GLOBALE_') === 0 && cellKey.indexOf('_HTML') === -1) ||
                              cellKey.indexOf('PA_ETAT_') === 0 ||
-                             (cellKey.indexOf('PA_FOCUS_') === 0 && cellKey !== 'PA_FOCUS_LOCALISATION' && cellKey !== 'PA_FOCUS_CONTEXTECLIENT' && cellKey.indexOf('_HTML') === -1) ||
+                             (cellKey.indexOf('PA_FOCUS_') === 0 && cellKey !== 'PA_FOCUS_LOCALISATION' && cellKey.indexOf('_HTML') === -1) ||
                              (cellKey.indexOf('PA_TECH_') === 0 && (cellKey === 'PA_TECH_TITRE' || cellKey.indexOf('_CHECK_') !== -1 || (cellKey.indexOf('_CONTENT_') !== -1 && cellKey.indexOf('_HTML') === -1))) ||
                              (cellKey.indexOf('PA_UX_') === 0 && cellKey.indexOf('_HTML') === -1 && cellKey.indexOf('_VIEWPORT') === -1 && cellKey.indexOf('_FULL') === -1 && cellKey.indexOf('_CROP') === -1 && cellKey.indexOf('_STATE') === -1) ||
                              (cellKey.indexOf('PA_CONTENU_') === 0 && cellKey.indexOf('_HTML') === -1 && cellKey.indexOf('_SCORE_') === -1 && cellKey.indexOf('_URL_') === -1 && cellKey.indexOf('_DATA_') === -1 && cellKey.indexOf('_SCRAPED_') === -1 && cellKey.indexOf('_GLOBALE') === -1) ||

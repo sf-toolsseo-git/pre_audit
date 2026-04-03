@@ -236,11 +236,11 @@
                     <div class="row" style="margin-bottom: 20px;">
                         <div class="col">
                             <label class="input-label">Identité client</label>
-                            <input type="text" id="conf-client-name" placeholder="Nom du client">
+                            <input type="text" id="conf-client-name" placeholder="Nom du client" readonly style="background-color: #f1f3f4; cursor: not-allowed;">
                         </div>
                         <div class="col">
                             <label class="input-label">URL page d'accueil</label>
-                            <input type="text" id="conf-client-url" placeholder="https://...">
+                            <input type="text" id="conf-client-url" placeholder="https://..." readonly style="background-color: #f1f3f4; cursor: not-allowed;">
                         </div>
                         <div class="col">
                             <label class="input-label">ID du Google Slides</label>
@@ -1550,8 +1550,6 @@
                 var msg = document.getElementById('save-config-msg');
 
                 var form = {
-                    clientName: document.getElementById('conf-client-name').value,
-                    clientUrl: document.getElementById('conf-client-url').value,
                     urlsContexte: document.getElementById('conf-urls-contexte').value,
                     contexteClient: document.getElementById('conf-contexte-client').value,
                     slideId: document.getElementById('conf-slide-id').value,
@@ -3253,8 +3251,6 @@
                 
                 // 3. Préparation de l'objet complet pour ne rien écraser
                 var form = {
-                    clientName: document.getElementById('conf-client-name').value,
-                    clientUrl: document.getElementById('conf-client-url').value,
                     urlsContexte: document.getElementById('conf-urls-contexte').value,
                     contexteClient: newContext, // La nouvelle valeur
                     slideId: document.getElementById('conf-slide-id').value,
