@@ -8,31 +8,41 @@ function ouvrirFenetrePreAudit() {
 
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
-    var keys = [
-        'PA_CONF_ID_CLIENT', 'PA_CONF_URL_CLIENT', 'CLUSTERING_URL_SUPPLEMENTAIRE', 'CLUSTERING_CONTEXTE_CLIENT',
+        var keys = [
+        'PA_CONF_ID_CLIENT', 'PA_CONF_URL_CLIENT', 'PA_CONF_URLS_CONTEXTE', 'PA_CONF_CONTEXTE_CLIENT',
         'PA_CONF_SLIDE_ID', 'PA_CONF_BRIEF', 'PA_CONF_URL_FORM_REPONSES', 'PA_CONF_PROFILAGE_COMMERCIAL',
         'PA_GLOBALE_BESOIN_HTML', 'PA_GLOBALE_BESOIN', 'PA_GLOBALE_SOLUTION_HTML', 'PA_GLOBALE_SOLUTION',
         'PA_GLOBALE_TITRE_SEMRUSH', 'PA_GLOBALE_SEMRUSH_MOTCLE_HTML', 'PA_GLOBALE_SEMRUSH_MOTCLE',
         'PA_GLOBALE_SEMRUSH_TRAFIC_HTML', 'PA_GLOBALE_SEMRUSH_TRAFIC', 'PA_ETAT_TITRE_THEMATIQUETOP',
         'PA_ETAT_ANALYSE_THEMATIQUETOP1', 'PA_ETAT_TITRE_THEMATIQUEFLOP', 'PA_ETAT_ANALYSE_THEMATIQUEFLOP1',
         'PA_ETAT_TITRE_MCTOP', 'PA_ETAT_ANALYSE_MCTOP1', 'PA_ETAT_TITRE_MCFLOP', 'PA_ETAT_ANALYSE_MCFLOP1',
-        'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_NAME_3',
-        'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
+        'PA_CONF_COMP_NAME_1', 'PA_CONF_COMP_URL_1', 'PA_CONF_COMP_NAME_2', 'PA_CONF_COMP_URL_2', 'PA_CONF_COMP_NAME_3',
+        'PA_CONF_COMP_URL_3', 'PA_CONF_COMP_NAME_4', 'PA_CONF_COMP_URL_4', 'PA_CONF_COMP_NAME_5', 'PA_CONF_COMP_URL_5',
         'PA_FOCUS_MCCIBLE', 'PA_FOCUS_MCCIBLE_VOLUME', 'PA_FOCUS_MCCIBLE_URLCLIENT', 'PA_FOCUS_MCCIBLE_POSCLIENT', 'PA_FOCUS_MCCIBLE_URLCONC',
-        'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
+        'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_CONTEXTECLIENT', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
         'PA_FOCUS_PLACEHOLDER_SERPELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_2', 'PA_FOCUS_SERP_ELEMENT_DESC_2', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_2',
         'PA_FOCUS_SERP_ELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_DESC_3', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_3', 'PA_FOCUS_SERP_ELEMENT_4',
         'PA_FOCUS_SERP_ELEMENT_DESC_4', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_4', 'PA_FOCUS_INTENTION_TITRE', 'PA_FOCUS_INTENTION_DESC',
-        'focus_standard_texte_1', 'focus_standard_texte_2', 'focus_standard_texte_3',
-        'focus_semantique_texte_1', 'focus_semantique_texte_2', 'focus_semantique_texte_3',
+        'PA_FOCUS_STANDARD_TEXTE_1', 'PA_FOCUS_STANDARD_TEXTE_2', 'PA_FOCUS_STANDARD_TEXTE_3',
+        'PA_FOCUS_SEMANTIQUE_TEXTE_1', 'PA_FOCUS_SEMANTIQUE_TEXTE_2', 'PA_FOCUS_SEMANTIQUE_TEXTE_3',
         'PA_FOCUS_GAP_TITRE_1', 'PA_FOCUS_GAP_DESC_1', 'PA_FOCUS_GAP_TITRE_2', 'PA_FOCUS_GAP_DESC_2', 'PA_FOCUS_GAP_TITRE_3', 'PA_FOCUS_GAP_DESC_3',
         'PA_FOCUS_RECO_1', 'PA_FOCUS_RECO_2', 'PA_FOCUS_RECO_3', 'PA_FOCUS_RECO_4',
         'PA_TECH_URL_CLIENT', 'PA_TECH_SITEMAP', 'PA_TECH_TYPE_PAGE', 'PA_TECH_URL_PAGE_MERE', 'PA_TECH_URL_PAGINEES', 'PA_TECH_URL_FILTRE',
         'PA_TECH_IS_MULTILINGUE', 'PA_TECH_LANGUE_CIBLE', 'PA_TECH_PAYS_CIBLE', 'PA_TECH_HTML_CRAWL', 'PA_TECH_HTML_INDEX',
         'PA_TECH_HTML_POS', 'PA_TECH_IA_FULL_STATE', 'PA_TECH_TITRE',
+        'PA_TECH_CRAWL_CHECK_1', 'PA_TECH_CRAWL_CHECK_2', 'PA_TECH_CRAWL_CHECK_3',
+        'PA_TECH_CRAWL_CONTENT_1', 'PA_TECH_CRAWL_CONTENT_2', 'PA_TECH_CRAWL_CONTENT_3',
+        'PA_TECH_INDEX_CHECK_1', 'PA_TECH_INDEX_CHECK_2', 'PA_TECH_INDEX_CHECK_3',
+        'PA_TECH_INDEX_CONTENT_1', 'PA_TECH_INDEX_CONTENT_2', 'PA_TECH_INDEX_CONTENT_3',
+        'PA_TECH_POS_CHECK_1', 'PA_TECH_POS_CHECK_2', 'PA_TECH_POS_CHECK_3',
+        'PA_TECH_POS_CONTENT_1', 'PA_TECH_POS_CONTENT_2', 'PA_TECH_POS_CONTENT_3',
         'PA_UX_CLIENT_VIEWPORT', 'PA_UX_CLIENT_FULL', 'PA_UX_CLIENT_CROP', 'PA_UX_CONC_VIEWPORT',
         'PA_UX_CONC_FULL', 'PA_UX_CONC_CROP', 'PA_UX_IA_FULL_STATE', 'PA_UX_RECO_1', 'PA_UX_RECO_2',
-        'PA_UX_TITRE', 'PA_CONTENU_YTG_CIBLE_GLOBALE', 'PA_CONTENU_STRUCTURE_CLIENT', 'PA_CONTENU_STRUCTURE_CLIENT_HTML',
+        'PA_UX_TITRE', 'PA_UX_PLACEHOLDER_CLIENT', 'PA_UX_PLACEHOLDER_CONC',
+        'PA_UX_ELEMENT_1', 'PA_UX_ELEMENT_2', 'PA_UX_ELEMENT_3', 'PA_UX_ELEMENT_4', 'PA_UX_ELEMENT_5', 'PA_UX_ELEMENT_6',
+        'PA_UX_CLIENT_CHECK_1', 'PA_UX_CLIENT_CHECK_2', 'PA_UX_CLIENT_CHECK_3', 'PA_UX_CLIENT_CHECK_4', 'PA_UX_CLIENT_CHECK_5', 'PA_UX_CLIENT_CHECK_6',
+        'PA_UX_CONC_CHECK_1', 'PA_UX_CONC_CHECK_2', 'PA_UX_CONC_CHECK_3', 'PA_UX_CONC_CHECK_4', 'PA_UX_CONC_CHECK_5', 'PA_UX_CONC_CHECK_6',
+        'PA_CONTENU_YTG_CIBLE_GLOBALE', 'PA_CONTENU_STRUCTURE_CLIENT', 'PA_CONTENU_STRUCTURE_CLIENT_HTML',
         'PA_CONTENU_YTG_CLIENT', 'PA_CONTENU_YTG_CLIENT_HTML', 'PA_CONTENU_YTG_SCORE_CLIENT', 'PA_CONTENU_YTG_DATA_CLIENT',
         'PA_CONTENU_1FR_CLIENT', 'PA_CONTENU_1FR_CLIENT_HTML', 'PA_CONTENU_1FR_URL_CLIENT', 'PA_CONTENU_1FR_SCORE_CLIENT',
         'PA_CONTENU_1FR_DATA_CLIENT', 'PA_CONTENU_SCRAPED_CLIENT', 'PA_CONTENU_TITRE_CLIENT', 'PA_CONTENU_STRUCTURE_CONC',
@@ -42,7 +52,9 @@ function chargerConfigurationPreAudit() {
         'PA_CONTENU_1FR_DATA_CONC', 'PA_CONTENU_SCRAPED_CONC', 'PA_CONTENU_TITRE_CONC',
         'PA_EDITO_TITRE_CONC', 'PA_EDITO_BLOG_CLIENT', 'PA_EDITO_BLOG_LEADER', 'PA_EDITO_BLOG_CONC1',
         'PA_EDITO_BLOG_CONC2', 'PA_EDITO_BLOG_CONC3', 'PA_EDITO_BLOG_CONC4', 'PA_EDITO_TITRE_THEMATIQUE',
-        'PA_EDITO_NOM_CONTENU_1', 'PA_EDITO_NOM_CONTENU_2', 'PA_EDITO_NOM_CONTENU_3',
+        'PA_EDITO_NOM_CLIENT', 'PA_EDITO_NOM_CONC_CONTENU_1', 'PA_EDITO_URL_CONTENU_1', 'PA_EDITO_NOM_CONTENU_1', 'PA_EDITO_DATA_TOP10_1',
+        'PA_EDITO_NOM_CONC_CONTENU_2', 'PA_EDITO_URL_CONTENU_2', 'PA_EDITO_NOM_CONTENU_2', 'PA_EDITO_DATA_TOP10_2',
+        'PA_EDITO_NOM_CONC_CONTENU_3', 'PA_EDITO_URL_CONTENU_3', 'PA_EDITO_NOM_CONTENU_3', 'PA_EDITO_DATA_TOP10_3',
         'PA_CONF_CONTACT_COM', 'PA_CONF_CONTACT_CONS1', 'PA_CONF_CONTACT_CONS2'
     ];
     var props = getDatabaseData(keys);
@@ -51,8 +63,8 @@ function chargerConfigurationPreAudit() {
     var config = {
         clientName: props['PA_CONF_ID_CLIENT'] || "",
         clientUrl: props['PA_CONF_URL_CLIENT'] || "",
-        urlsContexte: props['CLUSTERING_URL_SUPPLEMENTAIRE'] || "",
-        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
+        urlsContexte: props['PA_CONF_URLS_CONTEXTE'] || "",
+        contexteClient: props['PA_CONF_CONTEXTE_CLIENT'] || "",
         slideId: props['PA_CONF_SLIDE_ID'] || "",
         brief: props['PA_CONF_BRIEF'] || "",
         urlReponses: props['PA_CONF_URL_FORM_REPONSES'] || "",
@@ -76,16 +88,16 @@ function chargerConfigurationPreAudit() {
         analyseSegmentFlopTitre: props['PA_ETAT_TITRE_MCFLOP'] || "",
         analyseSegmentFlop: props['PA_ETAT_ANALYSE_MCFLOP1'] || "",
         
-        competitorName1: props['CONF_COMP_NAME_1'] || "",
-        competitor1: props['CONF_COMP_URL_1'] || "",
-        competitorName2: props['CONF_COMP_NAME_2'] || "",
-        competitor2: props['CONF_COMP_URL_2'] || "",
-        competitorName3: props['CONF_COMP_NAME_3'] || "",
-        competitor3: props['CONF_COMP_URL_3'] || "",
-        competitorName4: props['CONF_COMP_NAME_4'] || "",
-        competitor4: props['CONF_COMP_URL_4'] || "",
-        competitorName5: props['CONF_COMP_NAME_5'] || "",
-        competitor5: props['CONF_COMP_URL_5'] || "",
+        competitorName1: props['PA_CONF_COMP_NAME_1'] || "",
+        competitor1: props['PA_CONF_COMP_URL_1'] || "",
+        competitorName2: props['PA_CONF_COMP_NAME_2'] || "",
+        competitor2: props['PA_CONF_COMP_URL_2'] || "",
+        competitorName3: props['PA_CONF_COMP_NAME_3'] || "",
+        competitor3: props['PA_CONF_COMP_URL_3'] || "",
+        competitorName4: props['PA_CONF_COMP_NAME_4'] || "",
+        competitor4: props['PA_CONF_COMP_URL_4'] || "",
+        competitorName5: props['PA_CONF_COMP_NAME_5'] || "",
+        competitor5: props['PA_CONF_COMP_URL_5'] || "",
         
         focusKw: props['PA_FOCUS_MCCIBLE'] || "",
         focusVol: props['PA_FOCUS_MCCIBLE_VOLUME'] || "",
@@ -113,19 +125,19 @@ function chargerConfigurationPreAudit() {
         intentionDesc: props['PA_FOCUS_INTENTION_DESC'] || "",
         intentionDescHtml: props['PA_FOCUS_INTENTION_DESC'] || "",
         
-        standard1: props['focus_standard_texte_1'] || "",
-        standard1Html: props['focus_standard_texte_1'] || "",
-        standard2: props['focus_standard_texte_2'] || "",
-        standard2Html: props['focus_standard_texte_2'] || "",
-        standard3: props['focus_standard_texte_3'] || "",
-        standard3Html: props['focus_standard_texte_3'] || "",
+        standard1: props['PA_FOCUS_STANDARD_TEXTE_1'] || "",
+        standard1Html: props['PA_FOCUS_STANDARD_TEXTE_1'] || "",
+        standard2: props['PA_FOCUS_STANDARD_TEXTE_2'] || "",
+        standard2Html: props['PA_FOCUS_STANDARD_TEXTE_2'] || "",
+        standard3: props['PA_FOCUS_STANDARD_TEXTE_3'] || "",
+        standard3Html: props['PA_FOCUS_STANDARD_TEXTE_3'] || "",
         
-        semantique1: props['focus_semantique_texte_1'] || "",
-        semantique1Html: props['focus_semantique_texte_1'] || "",
-        semantique2: props['focus_semantique_texte_2'] || "",
-        semantique2Html: props['focus_semantique_texte_2'] || "",
-        semantique3: props['focus_semantique_texte_3'] || "",
-        semantique3Html: props['focus_semantique_texte_3'] || "",
+        semantique1: props['PA_FOCUS_SEMANTIQUE_TEXTE_1'] || "",
+        semantique1Html: props['PA_FOCUS_SEMANTIQUE_TEXTE_1'] || "",
+        semantique2: props['PA_FOCUS_SEMANTIQUE_TEXTE_2'] || "",
+        semantique2Html: props['PA_FOCUS_SEMANTIQUE_TEXTE_2'] || "",
+        semantique3: props['PA_FOCUS_SEMANTIQUE_TEXTE_3'] || "",
+        semantique3Html: props['PA_FOCUS_SEMANTIQUE_TEXTE_3'] || "",
 
         gapTitre1: props['PA_FOCUS_GAP_TITRE_1'] || "",
         gapDesc1: props['PA_FOCUS_GAP_DESC_1'] || "",
@@ -247,6 +259,7 @@ function sauvegarderConfigurationPreAudit(form) {
         
         'PA_CONF_CONTEXTE_CLIENT': form.contexteClient || "",
         'CLUSTERING_CONTEXTE_CLIENT': form.contexteClient || "",
+        'PA_FOCUS_CONTEXTECLIENT': form.contexteClient || "",
         
         'PA_CONF_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
     });
@@ -269,8 +282,8 @@ function sauvegarderDonneesAnalyseGlobale(data) {
             'PA_GLOBALE_SEMRUSH_TRAFIC':      data.analyseTraficTexte || "",
             'PA_GLOBALE_SEMRUSH_TRAFIC_HTML': data.analyseTraficHtml || "",
             
-            'PLACEHOLDER_PA_GLOBALE_SEMRUSH_MOTCLE': "IMAGE",
-            'PLACEHOLDER_PA_GLOBALE_SEMRUSH_TRAFIC': "IMAGE"
+            'PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE': "IMAGE",
+            'PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC': "IMAGE"
         });
         Logger.log("Propriétés enregistrées vers CONFIG...");
         Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
@@ -338,9 +351,11 @@ function sauvegarderDonneesEditorial(data) {
     }
 }
 
-function genererAnalyseEditorialIA(pistesEdito, contexteClient) {
+function genererAnalyseEditorialIA(pistesEdito) {
     Logger.log("=== DÉBUT : genererAnalyseEditorialIA ===");
     try {
+        var props = getDatabaseData();
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné";
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
@@ -445,35 +460,35 @@ function sauvegarderDonneesContenu(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesContenu ===");
     try {
         var propsToSet = {
-            'PA_CONTENU_YTG_CIBLE_GLOBALE': data.CONTENU_YTG_CIBLE || "",
-            'PA_CONTENU_TITRE_CLIENT': data.TITRE_SLIDE_CONTENU_CLIENT || "",
-            'PA_CONTENU_TITRE_CONC': data.TITRE_SLIDE_CONTENU_CONCURRENT || "",
+            'PA_CONTENU_YTG_CIBLE_GLOBALE': data.PA_CONTENU_YTG_CIBLE_GLOBALE || "",
+            'PA_CONTENU_TITRE_CLIENT': data.PA_CONTENU_TITRE_CLIENT || "",
+            'PA_CONTENU_TITRE_CONC': data.PA_CONTENU_TITRE_CONC || "",
             
-            'PA_CONTENU_STRUCTURE_CLIENT': data.CONTENU_STRUCTURE_CLIENT || "",
+            'PA_CONTENU_STRUCTURE_CLIENT': data.PA_CONTENU_STRUCTURE_CLIENT || "",
             'PA_CONTENU_STRUCTURE_CLIENT_HTML': data.contenuStructureClientHtml || "",
-            'PA_CONTENU_YTG_CLIENT': data.CONTENU_YTG_CLIENT || "",
+            'PA_CONTENU_YTG_CLIENT': data.PA_CONTENU_YTG_CLIENT || "",
             'PA_CONTENU_YTG_CLIENT_HTML': data.contenuYtgClientHtml || "",
-            'PA_CONTENU_YTG_SCORE_CLIENT': data.CONTENU_YTG_SCORE_CLIENT || "",
-            'PA_CONTENU_1FR_CLIENT': data.CONTENU_1FR_CLIENT || "",
+            'PA_CONTENU_YTG_SCORE_CLIENT': data.PA_CONTENU_YTG_SCORE_CLIENT || "",
+            'PA_CONTENU_1FR_CLIENT': data.PA_CONTENU_1FR_CLIENT || "",
             'PA_CONTENU_1FR_CLIENT_HTML': data.contenu1frClientHtml || "",
-            'PA_CONTENU_1FR_URL_CLIENT': data.CONTENU_1FR_URL_CLIENT || "",
-            'PA_CONTENU_1FR_SCORE_CLIENT': data.CONTENU_1FR_SCORE_CLIENT || "",
-            'PA_CONTENU_YTG_DATA_CLIENT': data.CONTENU_YTG_DATA_CLIENT || "",
-            'PA_CONTENU_1FR_DATA_CLIENT': data.CONTENU_1FR_DATA_CLIENT || "",
-            'PA_CONTENU_SCRAPED_CLIENT': data.CONTENU_SCRAPED_CLIENT || "",
+            'PA_CONTENU_1FR_URL_CLIENT': data.PA_CONTENU_1FR_URL_CLIENT || "",
+            'PA_CONTENU_1FR_SCORE_CLIENT': data.PA_CONTENU_1FR_SCORE_CLIENT || "",
+            'PA_CONTENU_YTG_DATA_CLIENT': data.PA_CONTENU_YTG_DATA_CLIENT || "",
+            'PA_CONTENU_1FR_DATA_CLIENT': data.PA_CONTENU_1FR_DATA_CLIENT || "",
+            'PA_CONTENU_SCRAPED_CLIENT': data.PA_CONTENU_SCRAPED_CLIENT || "",
             
-            'PA_CONTENU_STRUCTURE_CONC': data.CONTENU_STRUCTURE_CONCURRENT || "",
+            'PA_CONTENU_STRUCTURE_CONC': data.PA_CONTENU_STRUCTURE_CONC || "",
             'PA_CONTENU_STRUCTURE_CONC_HTML': data.contenuStructureCompHtml || "",
-            'PA_CONTENU_YTG_CONC': data.CONTENU_YTG_CONCURRENT || "",
+            'PA_CONTENU_YTG_CONC': data.PA_CONTENU_YTG_CONC || "",
             'PA_CONTENU_YTG_CONC_HTML': data.contenuYtgCompHtml || "",
-            'PA_CONTENU_YTG_SCORE_CONC': data.CONTENU_YTG_SCORE_CONCURRENT || "",
-            'PA_CONTENU_1FR_CONC': data.CONTENU_1FR_CONCURRENT || "",
+            'PA_CONTENU_YTG_SCORE_CONC': data.PA_CONTENU_YTG_SCORE_CONC || "",
+            'PA_CONTENU_1FR_CONC': data.PA_CONTENU_1FR_CONC || "",
             'PA_CONTENU_1FR_CONC_HTML': data.contenu1frCompHtml || "",
-            'PA_CONTENU_1FR_URL_CONC': data.CONTENU_1FR_URL_CONCURRENT || "",
-            'PA_CONTENU_1FR_SCORE_CONC': data.CONTENU_1FR_SCORE_CONCURRENT || "",
-            'PA_CONTENU_YTG_DATA_CONC': data.CONTENU_YTG_DATA_CONCURRENT || "",
-            'PA_CONTENU_1FR_DATA_CONC': data.CONTENU_1FR_DATA_CONCURRENT || "",
-            'PA_CONTENU_SCRAPED_CONC': data.CONTENU_SCRAPED_CONCURRENT || ""
+            'PA_CONTENU_1FR_URL_CONC': data.PA_CONTENU_1FR_URL_CONC || "",
+            'PA_CONTENU_1FR_SCORE_CONC': data.PA_CONTENU_1FR_SCORE_CONC || "",
+            'PA_CONTENU_YTG_DATA_CONC': data.PA_CONTENU_YTG_DATA_CONC || "",
+            'PA_CONTENU_1FR_DATA_CONC': data.PA_CONTENU_1FR_DATA_CONC || "",
+            'PA_CONTENU_SCRAPED_CONC': data.PA_CONTENU_SCRAPED_CONC || ""
         };
         
         setDatabaseData(propsToSet);
@@ -510,7 +525,7 @@ function recupererDetailsMotCle(motCle) {
     var posCompIndices = [];
     
     var props = getDatabaseData();
-    var clientName = props['CONF_CLIENT_NAME'] || "Client";
+    var clientName = props['PA_CONF_ID_CLIENT'] || "Client";
 
     for (var j = 0; j < headers.length; j++) {
         var h = String(headers[j]);
@@ -675,8 +690,8 @@ function recupererReponseFormulaire(urlForm) {
 
     try {
         var props = getDatabaseData();
-        var clientName = (props['CONF_CLIENT_NAME'] || "").toLowerCase().trim();
-        var clientUrl = (props['CONF_CLIENT_URL'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
+        var clientName = (props['PA_CONF_ID_CLIENT'] || "").toLowerCase().trim();
+        var clientUrl = (props['PA_CONF_URL_CLIENT'] || "").toLowerCase().replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].trim();
         
         Logger.log("=== RECHERCHE DE RÉPONSE FORMULAIRE (PAR ID) ===");
         Logger.log("Critères de filtrage : Nom [" + clientName + "] | Domaine [" + clientUrl + "]");
@@ -811,7 +826,7 @@ function genererDiagnostic(selection) {
     // Récupération des CTR (stockés en pourcentage, ex : 28.5 pour 28,5 %)
     var ctrTable = [];
     for (var ci = 1; ci <= 10; ci++) {
-        ctrTable.push((parseFloat(props['CONF_CTR_POS_' + ci]) || 0) / 100);
+        ctrTable.push((parseFloat(props['PA_CONF_CTR_POS_' + ci]) || 0) / 100);
     }
     function computeTEC(vol, pos) {
         if (isNaN(pos) || pos <= 0 || pos > 10) return 0;
@@ -869,7 +884,7 @@ function genererDiagnostic(selection) {
         }
     }
 
-    var clientName = props['CONF_CLIENT_NAME'] || "Client";
+    var clientName = props['PA_CONF_ID_CLIENT'] || "Client";
     if (clientName.trim() === "") clientName = "Client";
     var clientEntity = entities.find(function(e) { return e.name === clientName; });
     var kpis = {};
@@ -1107,11 +1122,13 @@ function genererDiagnostic(selection) {
     };
 }
 
-function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime, contexteClient) {
+function analyserEvolutionSemrushIA(img1Base64, img1Mime, img2Base64, img2Mime) {
     Logger.log("=== DÉBUT : analyserEvolutionSemrushIA ===");
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
+        var props = getDatabaseData();
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "non renseigné.";
         
         if (!apiKey || apiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable dans la configuration générale.");
@@ -1223,41 +1240,41 @@ function sauvegarderAnalysesFocus(data) {
     Logger.log("=== DÉBUT : sauvegarderAnalysesFocus ===");
     try {
         setDatabaseData({
-            'SERP_ELEMENT_TITRE_1': data.serpTitre1 || "",
-            'SERP_ELEMENT_DESC_1': data.serpDesc1 || "",
-            'PLACEHOLDER_SERPELEMENT_1': data.serpSvg1 || "",
-            'SERP_ELEMENT_TITRE_2': data.serpTitre2 || "",
-            'SERP_ELEMENT_DESC_2': data.serpDesc2 || "",
-            'PLACEHOLDER_SERPELEMENT_2': data.serpSvg2 || "",
-            'SERP_ELEMENT_TITRE_3': data.serpTitre3 || "",
-            'SERP_ELEMENT_DESC_3': data.serpDesc3 || "",
-            'PLACEHOLDER_SERPELEMENT_3': data.serpSvg3 || "",
-            'SERP_ELEMENT_TITRE_4': data.serpTitre4 || "",
-            'SERP_ELEMENT_DESC_4': data.serpDesc4 || "",
-            'PLACEHOLDER_SERPELEMENT_4': data.serpSvg4 || "",
+            'PA_FOCUS_SERP_ELEMENT_1': data.serpTitre1 || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_1': data.serpDesc1 || "",
+            'PA_FOCUS_PLACEHOLDER_SERPELEMENT_1': data.serpSvg1 || "",
+            'PA_FOCUS_SERP_ELEMENT_2': data.serpTitre2 || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_2': data.serpDesc2 || "",
+            'PA_FOCUS_PLACEHOLDER_SERPELEMENT_2': data.serpSvg2 || "",
+            'PA_FOCUS_SERP_ELEMENT_3': data.serpTitre3 || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_3': data.serpDesc3 || "",
+            'PA_FOCUS_PLACEHOLDER_SERPELEMENT_3': data.serpSvg3 || "",
+            'PA_FOCUS_SERP_ELEMENT_4': data.serpTitre4 || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_4': data.serpDesc4 || "",
+            'PA_FOCUS_PLACEHOLDER_SERPELEMENT_4': data.serpSvg4 || "",
             
-            'FOCUS_INTENTION_TITRE': data.intentionTitre || "",
-            'FOCUS_INTENTION_DESC': data.intentionDesc || "",
+            'PA_FOCUS_INTENTION_TITRE': data.intentionTitre || "",
+            'PA_FOCUS_INTENTION_DESC': data.intentionDesc || "",
             
-            'focus_standard_texte_1': data.standard1 || "",
-            'focus_standard_texte_2': data.standard2 || "",
-            'focus_standard_texte_3': data.standard3 || "",
+            'PA_FOCUS_STANDARD_TEXTE_1': data.standard1 || "",
+            'PA_FOCUS_STANDARD_TEXTE_2': data.standard2 || "",
+            'PA_FOCUS_STANDARD_TEXTE_3': data.standard3 || "",
             
-            'focus_semantique_texte_1': data.semantique1 || "",
-            'focus_semantique_texte_2': data.semantique2 || "",
-            'focus_semantique_texte_3': data.semantique3 || "",
+            'PA_FOCUS_SEMANTIQUE_TEXTE_1': data.semantique1 || "",
+            'PA_FOCUS_SEMANTIQUE_TEXTE_2': data.semantique2 || "",
+            'PA_FOCUS_SEMANTIQUE_TEXTE_3': data.semantique3 || "",
 
-            'FOCUS_GAP_TITRE_1': data.gapTitre1 || "",
-            'FOCUS_GAP_DESC_1': data.gapDesc1 || "",
-            'FOCUS_GAP_TITRE_2': data.gapTitre2 || "",
-            'FOCUS_GAP_DESC_2': data.gapDesc2 || "",
-            'FOCUS_GAP_TITRE_3': data.gapTitre3 || "",
-            'FOCUS_GAP_DESC_3': data.gapDesc3 || "",
+            'PA_FOCUS_GAP_TITRE_1': data.gapTitre1 || "",
+            'PA_FOCUS_GAP_DESC_1': data.gapDesc1 || "",
+            'PA_FOCUS_GAP_TITRE_2': data.gapTitre2 || "",
+            'PA_FOCUS_GAP_DESC_2': data.gapDesc2 || "",
+            'PA_FOCUS_GAP_TITRE_3': data.gapTitre3 || "",
+            'PA_FOCUS_GAP_DESC_3': data.gapDesc3 || "",
 
-            'FOCUS_RECO_1': data.reco1 || "",
-            'FOCUS_RECO_2': data.reco2 || "",
-            'FOCUS_RECO_3': data.reco3 || "",
-            'FOCUS_RECO_4': data.reco4 || ""
+            'PA_FOCUS_RECO_1': data.reco1 || "",
+            'PA_FOCUS_RECO_2': data.reco2 || "",
+            'PA_FOCUS_RECO_3': data.reco3 || "",
+            'PA_FOCUS_RECO_4': data.reco4 || ""
         });
         
         Logger.log("Analyses Focus sauvegardées avec la nouvelle granularité.");
@@ -2063,15 +2080,16 @@ function genererAnalyseTopFlopThemesIA(donneesTop, donneesFlop, contexteCommerci
     }
 }
 
-function genererAnalyseSegmentsIA(payloadTop, payloadFlop, contexteCommercial) {
+function genererAnalyseSegmentsIA(payloadTop, payloadFlop) {
     Logger.log("=== DÉBUT : genererAnalyseSegmentsIA ===");
     Logger.log("Payload Top reçu : " + payloadTop);
     Logger.log("Payload Flop reçu : " + payloadFlop);
-    Logger.log("Contexte commercial : " + contexteCommercial);
 
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
+        var props = getDatabaseData();
+        var contexteCommercial = props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
         
         if (!apiKey || apiKey.trim() === "") {
             Logger.log("Erreur : Clé API Gemini manquante.");
@@ -2628,32 +2646,32 @@ function genererAnalyseTechniqueIA() {
         Logger.log("Étape 1 : Évaluation algorithmique et préparation des données brutes");
 
         // --- CRAWL ---
-        var firstLinkUrl = props['TECH_CRAWL_FIRST_LINK_URL'] || "";
-        var firstLinkAnchor = props['TECH_CRAWL_FIRST_LINK_ANCHOR'] || "";
-        var pagiMereBody = props['TECH_CRAWL_PAGI_MERE_BODY'] === "true";
-        var pagiMereHead = props['TECH_CRAWL_PAGI_MERE_HEAD'] === "true";
-        var pagiP2Body = props['TECH_CRAWL_PAGI_P2_BODY'] === "true";
-        var pagiP2Head = props['TECH_CRAWL_PAGI_P2_HEAD'] === "true";
-        var statusCode = parseInt(props['TECH_CRAWL_STATUS_CODE'], 10);
+        var firstLinkUrl = props['PA_TECH_CRAWL_FIRST_LINK_URL'] || "";
+        var firstLinkAnchor = props['PA_TECH_CRAWL_FIRST_LINK_ANCHOR'] || "";
+        var pagiMereBody = props['PA_TECH_CRAWL_PAGI_MERE_BODY'] === "true";
+        var pagiMereHead = props['PA_TECH_CRAWL_PAGI_MERE_HEAD'] === "true";
+        var pagiP2Body = props['PA_TECH_CRAWL_PAGI_P2_BODY'] === "true";
+        var pagiP2Head = props['PA_TECH_CRAWL_PAGI_P2_HEAD'] === "true";
+        var statusCode = parseInt(props['PA_TECH_CRAWL_STATUS_CODE'], 10);
         var evalStatus = (statusCode === 200) ? "[OK]" : (statusCode >= 300 && statusCode < 400 ? "[AVERTISSEMENT]" : "[KO]");
-        var ttfb = parseInt(props['TECH_CRAWL_TTFB_MS'], 10);
+        var ttfb = parseInt(props['PA_TECH_CRAWL_TTFB_MS'], 10);
         var evalTtfb = (ttfb < 500) ? "[OK]" : (ttfb <= 1500 ? "[AVERTISSEMENT]" : "[KO]");
-        var links4xx = parseInt(props['TECH_CRAWL_LINKS_4XX'] || "0", 10);
-        var links5xx = parseInt(props['TECH_CRAWL_LINKS_5XX'] || "0", 10);
-        var robotsTxt = props['TECH_CRAWL_ROBOTS'] || "Fichier vide ou introuvable";
+        var links4xx = parseInt(props['PA_TECH_CRAWL_LINKS_4XX'] || "0", 10);
+        var links5xx = parseInt(props['PA_TECH_CRAWL_LINKS_5XX'] || "0", 10);
+        var robotsTxt = props['PA_TECH_CRAWL_ROBOTS'] || "Fichier vide ou introuvable";
 
         // --- INDEXATION ---
-        var metaRobots = (props['TECH_INDEX_META_ROBOTS'] || "").toLowerCase();
+        var metaRobots = (props['PA_TECH_INDEX_META_ROBOTS'] || "").toLowerCase();
         var evalMetaRobots = "[OK]";
         if (metaRobots.indexOf("noindex") !== -1) {
             evalMetaRobots = "[KO]";
         } else if (metaRobots.indexOf("nofollow") !== -1) {
             evalMetaRobots = "[AVERTISSEMENT]";
         }
-        var canonical = props['TECH_INDEX_CANONICAL'] || "";
+        var canonical = props['PA_TECH_INDEX_CANONICAL'] || "";
         var evalCanonical = (canonical === urlCible) ? "[OK]" : (canonical === "" ? "[AVERTISSEMENT]" : "[KO]");
-        var sitemapPresent = props['TECH_INDEX_SITEMAP_PRESENT'] || "";
-        var urlInSitemap = props['TECH_INDEX_URL_IN_SITEMAP'] || "";
+        var sitemapPresent = props['PA_TECH_INDEX_SITEMAP_PRESENT'] || "";
+        var urlInSitemap = props['PA_TECH_INDEX_URL_IN_SITEMAP'] || "";
         var evalSitemap = "[KO]";
         if (urlInSitemap.indexOf("Présente") !== -1) {
             evalSitemap = "[OK]";
@@ -2662,17 +2680,17 @@ function genererAnalyseTechniqueIA() {
         }
         
         // MULTILINGUE
-        var isMultilingue = (props['TECH_IS_MULTILINGUE'] || "non").toLowerCase();
-        var langueCible = props['TECH_LANGUE_CIBLE'] || "Non spécifiée";
-        var paysCible = props['TECH_PAYS_CIBLE'] || "Non spécifié";
-        var hreflangs = props['TECH_CRAWL_HREFLANGS'] || "Aucune balise détectée";
+        var isMultilingue = (props['PA_TECH_IS_MULTILINGUE'] || "non").toLowerCase();
+        var langueCible = props['PA_TECH_LANGUE_CIBLE'] || "Non spécifiée";
+        var paysCible = props['PA_TECH_PAYS_CIBLE'] || "Non spécifié";
+        var hreflangs = props['PA_TECH_CRAWL_HREFLANGS'] || "Aucune balise détectée";
 
         // PAGINATION (Conditionnelle)
-        var urlPageMere = props['TECH_URL_PAGE_MERE'] || "";
-        var urlPaginees = props['TECH_URL_PAGINEES'] || "";
-        var pagiMetaRobots = props['TECH_INDEX_PAGI_META_ROBOTS'] || "";
-        var pagiCanonical = props['TECH_INDEX_PAGI_CANONICAL'] || "";
-        var pagiErreurLien = props['TECH_CRAWL_PAGI_ERREUR_LIEN'] || "";
+        var urlPageMere = props['PA_TECH_URL_PAGE_MERE'] || "";
+        var urlPaginees = props['PA_TECH_URL_PAGINEES'] || "";
+        var pagiMetaRobots = props['PA_TECH_INDEX_PAGI_META_ROBOTS'] || "";
+        var pagiCanonical = props['PA_TECH_INDEX_PAGI_CANONICAL'] || "";
+        var pagiErreurLien = props['PA_TECH_CRAWL_PAGI_ERREUR_LIEN'] || "";
         
         var hasPagination = (urlPageMere !== "" && urlPaginees !== "");
         var paginationInfo = "";
@@ -2689,19 +2707,19 @@ function genererAnalyseTechniqueIA() {
         }
 
         // --- POSITIONNEMENT ---
-        var titleText = props['TECH_POS_TITLE'] || "";
-        var titleHasKw = props['TECH_POS_TITLE_HAS_KW'] === "true";
+        var titleText = props['PA_TECH_POS_TITLE'] || "";
+        var titleHasKw = props['PA_TECH_POS_TITLE_HAS_KW'] === "true";
         var evalTitle = titleHasKw ? "[OK]" : "[KO]";
         
-        var h1Text = props['TECH_POS_H1'] || "";
-        var h1HasKw = props['TECH_POS_H1_HAS_KW'] === "true";
+        var h1Text = props['PA_TECH_POS_H1'] || "";
+        var h1HasKw = props['PA_TECH_POS_H1_HAS_KW'] === "true";
         var evalH1 = h1HasKw ? "[OK]" : "[KO]";
 
-        var typePage = props['TECH_TYPE_PAGE'] || "Non spécifié";
-        var schemas = props['TECH_POS_SCHEMA'] || "Aucun schéma détecté";
+        var typePage = props['PA_TECH_TYPE_PAGE'] || "Non spécifié";
+        var schemas = props['PA_TECH_POS_SCHEMA'] || "Aucun schéma détecté";
 
         // STRUCTURE HN
-        var structureHnStr = props['TECH_POS_HN'] || "[]";
+        var structureHnStr = props['PA_TECH_POS_HN'] || "[]";
         var hnCount = 0;
         try { hnCount = JSON.parse(structureHnStr).length; } catch(e){}
         var evalHn = (hnCount > 0) ? "[OK]" : "[KO]";
@@ -2834,24 +2852,24 @@ function sauvegarderAnalysesTechniquesIA(data) {
     try {
         setDatabaseData({
             'PA_TECH_TITRE': data.PA_TECH_TITRE || "",
-            'PA_TECH_CRAWL_CHECK_1': data.CRAWL_CHECK_1 || "",
-            'PA_TECH_CRAWL_CONTENT_1': data.CRAWL_CONTENT_1 || "",
-            'PA_TECH_CRAWL_CHECK_2': data.CRAWL_CHECK_2 || "",
-            'PA_TECH_CRAWL_CONTENT_2': data.CRAWL_CONTENT_2 || "",
-            'PA_TECH_CRAWL_CHECK_3': data.CRAWL_CHECK_3 || "",
-            'PA_TECH_CRAWL_CONTENT_3': data.CRAWL_CONTENT_3 || "",
-            'PA_TECH_INDEX_CHECK_1': data.INDEX_CHECK_1 || "",
-            'PA_TECH_INDEX_CONTENT_1': data.INDEX_CONTENT_1 || "",
-            'PA_TECH_INDEX_CHECK_2': data.INDEX_CHECK_2 || "",
-            'PA_TECH_INDEX_CONTENT_2': data.INDEX_CONTENT_2 || "",
-            'PA_TECH_INDEX_CHECK_3': data.INDEX_CHECK_3 || "",
-            'PA_TECH_INDEX_CONTENT_3': data.INDEX_CONTENT_3 || "",
-            'PA_TECH_POS_CHECK_1': data.POS_CHECK_1 || "",
-            'PA_TECH_POS_CONTENT_1': data.POS_CONTENT_1 || "",
-            'PA_TECH_POS_CHECK_2': data.POS_CHECK_2 || "",
-            'PA_TECH_POS_CONTENT_2': data.POS_CONTENT_2 || "",
-            'PA_TECH_POS_CHECK_3': data.POS_CHECK_3 || "",
-            'PA_TECH_POS_CONTENT_3': data.POS_CONTENT_3 || "",
+            'PA_TECH_CRAWL_CHECK_1': data.PA_TECH_CRAWL_CHECK_1 || "",
+            'PA_TECH_CRAWL_CONTENT_1': data.PA_TECH_CRAWL_CONTENT_1 || "",
+            'PA_TECH_CRAWL_CHECK_2': data.PA_TECH_CRAWL_CHECK_2 || "",
+            'PA_TECH_CRAWL_CONTENT_2': data.PA_TECH_CRAWL_CONTENT_2 || "",
+            'PA_TECH_CRAWL_CHECK_3': data.PA_TECH_CRAWL_CHECK_3 || "",
+            'PA_TECH_CRAWL_CONTENT_3': data.PA_TECH_CRAWL_CONTENT_3 || "",
+            'PA_TECH_INDEX_CHECK_1': data.PA_TECH_INDEX_CHECK_1 || "",
+            'PA_TECH_INDEX_CONTENT_1': data.PA_TECH_INDEX_CONTENT_1 || "",
+            'PA_TECH_INDEX_CHECK_2': data.PA_TECH_INDEX_CHECK_2 || "",
+            'PA_TECH_INDEX_CONTENT_2': data.PA_TECH_INDEX_CONTENT_2 || "",
+            'PA_TECH_INDEX_CHECK_3': data.PA_TECH_INDEX_CHECK_3 || "",
+            'PA_TECH_INDEX_CONTENT_3': data.PA_TECH_INDEX_CONTENT_3 || "",
+            'PA_TECH_POS_CHECK_1': data.PA_TECH_POS_CHECK_1 || "",
+            'PA_TECH_POS_CONTENT_1': data.PA_TECH_POS_CONTENT_1 || "",
+            'PA_TECH_POS_CHECK_2': data.PA_TECH_POS_CHECK_2 || "",
+            'PA_TECH_POS_CONTENT_2': data.PA_TECH_POS_CONTENT_2 || "",
+            'PA_TECH_POS_CHECK_3': data.PA_TECH_POS_CHECK_3 || "",
+            'PA_TECH_POS_CONTENT_3': data.PA_TECH_POS_CONTENT_3 || "",
             'PA_TECH_IA_FULL_STATE': data.fullStateStr || ""
         });
         Logger.log("Analyses Techniques IA sauvegardées.");
@@ -3032,15 +3050,15 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         }
 
         var props = getDatabaseData();
-        var clientViewportId = props['UX_CLIENT_VIEWPORT_ID'];
-        var clientFullId = props['UX_CLIENT_FULL_ID'];
-        var clientCropId = props['UX_CLIENT_CROP_ID'];
+        var clientViewportId = props['PA_UX_CLIENT_VIEWPORT'];
+        var clientFullId = props['PA_UX_CLIENT_FULL'];
+        var clientCropId = props['PA_UX_CLIENT_CROP'];
         
-        var compViewportId = props['UX_COMP_VIEWPORT_ID'];
-        var compFullId = props['UX_COMP_FULL_ID'];
-        var compCropId = props['UX_COMP_CROP_ID'];
+        var compViewportId = props['PA_UX_CONC_VIEWPORT'];
+        var compFullId = props['PA_UX_CONC_FULL'];
+        var compCropId = props['PA_UX_CONC_CROP'];
         
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
 
         if (!clientViewportId || !clientFullId || !compViewportId || !compFullId) {
             throw new Error("Les identifiants des captures principales (Viewport/Full) sont manquants.");
@@ -3198,8 +3216,8 @@ function lancerCapturesUX() {
     Logger.log("=== DÉBUT : lancerCapturesUX ===");
     
     var props = getDatabaseData();
-    var urlClient = props['TARGET_URL_CLIENT'];
-    var urlComp = props['TARGET_URL_CONCURRENT'];
+    var urlClient = props['PA_FOCUS_MCCIBLE_URLCLIENT'];
+    var urlComp = props['PA_FOCUS_MCCIBLE_URLCONC'];
     
     if (!urlClient || urlClient === "-" || !urlComp || urlComp === "-") {
         var msgErreurUrls = "Les URLs cible du client ou du concurrent sont manquantes ou invalides.";
@@ -3267,12 +3285,12 @@ function lancerCapturesUX() {
     
     Logger.log("Sauvegarde des IDs dans les propriétés du script...");
     setDatabaseData({
-        'UX_CLIENT_VIEWPORT_ID': clientViewportId,
-        'UX_CLIENT_FULL_ID': clientFullId,
-        'UX_CLIENT_CROP_ID': clientCropId,
-        'UX_COMP_VIEWPORT_ID': compViewportId,
-        'UX_COMP_FULL_ID': compFullId,
-        'UX_COMP_CROP_ID': compCropId
+        'PA_UX_CLIENT_VIEWPORT': clientViewportId,
+        'PA_UX_CLIENT_FULL': clientFullId,
+        'PA_UX_CLIENT_CROP': clientCropId,
+        'PA_UX_CONC_VIEWPORT': compViewportId,
+        'PA_UX_CONC_FULL': compFullId,
+        'PA_UX_CONC_CROP': compCropId
     });
     
     Logger.log("Toutes les captures ont été réalisées avec succès.");
@@ -3412,10 +3430,10 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         }
 
         var props = getDatabaseData();
-        var contexteClient = props['PA_CONTEXTE_CLIENT'] || "Non renseigné.";
-        var profilage = props['PA_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
-        var intention = props['FOCUS_INTENTION_TITRE'] || "Non renseignée.";
-        var motCle = props['TARGET_KW'] || "Non défini.";
+        var contexteClient = props['PA_CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var profilage = props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
+        var intention = props['PA_FOCUS_INTENTION_TITRE'] || "Non renseignée.";
+        var motCle = props['PA_FOCUS_MCCIBLE'] || "Non défini.";
 
         Logger.log("Étape 1 : Préparation du Payload de données (récupération des données scrapées fournies en paramètres)...");
         var clientScraped = scrapedClientStr ? JSON.parse(scrapedClientStr) : { structure_hn: [], mots_comptes: 0 };

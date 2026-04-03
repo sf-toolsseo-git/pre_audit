@@ -53,7 +53,7 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
     try {
         Logger.log("=== DÉBUT : exporterSlideBesoinSolution ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -65,7 +65,7 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
         var slideTexteBesoin = texteBesoin.replace(/\n/g, '\n\n');
         var slideTexteSolution = texteSolution.replace(/\n/g, '\n\n');
         
-        Logger.log("Recherche des tags TAG_SLIDE_BESOIN et TAG_SLIDE_SOLUTION via description");
+        Logger.log("Recherche des tags PA_GLOBALE_BESOIN et PA_GLOBALE_SOLUTION via description");
 
         slides.forEach(function(slide) {
             var shapes = slide.getShapes();
@@ -75,9 +75,9 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
                 var targetKey = null;
 
                 // Détection via le texte alternatif en majuscule UNIQUEMENT (Cas 1)
-                if (descRaw === "TAG_SLIDE_BESOIN") {
+                if (descRaw === "PA_GLOBALE_BESOIN") {
                     targetKey = "besoin";
-                } else if (descRaw === "TAG_SLIDE_SOLUTION") {
+                } else if (descRaw === "PA_GLOBALE_SOLUTION") {
                     targetKey = "solution";
                 }
 
@@ -99,7 +99,7 @@ function exporterSlideBesoinSolution(texteBesoin, texteSolution) {
         Logger.log("=== FIN : exporterSlideBesoinSolution ===");
         
         if (tagsTrouves === 0) {
-            return { success: false, error: "Les tags 'TAG_SLIDE_BESOIN' et 'TAG_SLIDE_SOLUTION' n'ont pas été trouvés dans le texte alternatif de la présentation." };
+            return { success: false, error: "Les tags 'PA_GLOBALE_BESOIN' et 'PA_GLOBALE_SOLUTION' n'ont pas été trouvés dans le texte alternatif de la présentation." };
         }
 
         return { success: true, url: presentation.getUrl() };
@@ -113,7 +113,7 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
     try {
         Logger.log("=== DÉBUT : exporterAnalyseSemrushSlide ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
         
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -128,25 +128,25 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                 var descRaw = shape.getDescription() || "";
 
                 // Cas 1 : Description correspondante -> Écrasement total
-                if (descRaw === "TITRE_SLIDE_SEMRUSH") {
-                    Logger.log("Remplacement du titre TITRE_SLIDE_SEMRUSH");
+                if (descRaw === "PA_GLOBALE_TITRE_SEMRUSH") {
+                    Logger.log("Remplacement du titre PA_GLOBALE_TITRE_SEMRUSH");
                     shape.getText().setText(titre);
                 }
                 
-                if (descRaw === "ANALYSE_SEMRUSH_MOT_CLE") {
-                    Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_MOT_CLE");
+                if (descRaw === "PA_GLOBALE_SEMRUSH_MOTCLE") {
+                    Logger.log("Remplacement et formatage PA_GLOBALE_SEMRUSH_MOTCLE");
                     shape.getText().setText(texteKw);
                     appliquerMarkdownSurForme(shape);
                 }
                 
-                if (descRaw === "ANALYSE_SEMRUSH_TRAFIC") {
-                    Logger.log("Remplacement et formatage ANALYSE_SEMRUSH_TRAFIC");
+                if (descRaw === "PA_GLOBALE_SEMRUSH_TRAFIC") {
+                    Logger.log("Remplacement et formatage PA_GLOBALE_SEMRUSH_TRAFIC");
                     shape.getText().setText(texteTrafic);
                     appliquerMarkdownSurForme(shape);
                 }
 
                 // Cas 1 sur Image (Placeholders)
-                if (descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_MOT_CLE") {
+                if (descRaw === "PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE") {
                     Logger.log("Remplacement image mots-clés");
                     var blobKw = Utilities.newBlob(Utilities.base64Decode(imgKwB64), imgKwMime, "kw.png");
                     var newImageKw = slide.insertImage(blobKw, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
@@ -154,7 +154,7 @@ function exporterAnalyseSemrushSlide(titre, texteKw, texteTrafic, imgKwB64, imgK
                     shape.remove();
                 }
                 
-                if (descRaw === "PLACEHOLDER_ANALYSE_SEMRUSH_TRAFIC") {
+                if (descRaw === "PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC") {
                     Logger.log("Remplacement image trafic");
                     var blobTrafic = Utilities.newBlob(Utilities.base64Decode(imgTraficB64), imgTraficMime, "trafic.png");
                     var newImageTrafic = slide.insertImage(blobTrafic, shape.getLeft(), shape.getTop(), shape.getWidth(), shape.getHeight());
@@ -175,7 +175,7 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
     try {
         Logger.log("=== DÉBUT : exporterPerformanceGlobalSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -206,38 +206,38 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
 
         var mappingComp = {};
         if (concurrenceData) {
-            mappingComp['TITRE_SLIDE_CONCURRENCE'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
+            mappingComp['PA_ETAT_TITRE_CONCURRENCE'] = "L'environnement concurrentiel de " + (concurrenceData.client ? concurrenceData.client.name : "");
             if (concurrenceData.client) {
-                mappingComp['NOM_CLIENT'] = concurrenceData.client.name;
-                mappingComp['VALEUR_TOP10_CLIENT'] = safeNum(concurrenceData.client.top10);
-                mappingComp['VALEUR_PAGES_CLIENT'] = safeNum(concurrenceData.client.pages);
+                mappingComp['PA_ETAT_NOM_CLIENT'] = concurrenceData.client.name;
+                mappingComp['PA_ETAT_TOP10_CLIENT'] = safeNum(concurrenceData.client.top10);
+                mappingComp['PA_ETAT_PAGES_CLIENT'] = safeNum(concurrenceData.client.pages);
             }
             if (concurrenceData.leader) {
-                mappingComp['NOM_LEADER'] = concurrenceData.leader.name;
-                mappingComp['VALEUR_TOP10_LEADER'] = safeNum(concurrenceData.leader.top10);
-                mappingComp['VALEUR_PAGES_LEADER'] = safeNum(concurrenceData.leader.pages);
+                mappingComp['PA_ETAT_NOM_LEADER'] = concurrenceData.leader.name;
+                mappingComp['PA_ETAT_TOP10_LEADER'] = safeNum(concurrenceData.leader.top10);
+                mappingComp['PA_ETAT_PAGES_LEADER'] = safeNum(concurrenceData.leader.pages);
             }
             for (var c = 1; c <= 4; c++) {
                 var comp = concurrenceData.comps && concurrenceData.comps[c-1] ? concurrenceData.comps[c-1] : null;
                 if (comp) {
-                    mappingComp['NOM_COMP' + c] = comp.name;
-                    mappingComp['VALEUR_TOP10_COMP' + c] = safeNum(comp.top10);
-                    mappingComp['VALEUR_PAGES_COMP' + c] = safeNum(comp.pages);
+                    mappingComp['PA_ETAT_NOM_COMP' + c] = comp.name;
+                    mappingComp['PA_ETAT_TOP10_COMP' + c] = safeNum(comp.top10);
+                    mappingComp['PA_ETAT_PAGES_COMP' + c] = safeNum(comp.pages);
                 }
             }
         }
 
         var mapping = {
-            'MOTCLE_CLIENT_GLOBAL': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_TOP3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_TOP10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_URL': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_TRANSAC': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_INFO': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_TRANSAC_TOP10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_INFO_TOP10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
-            'MOTCLE_CLIENT_TRANSAC_PCT': Math.round(transacPctDec * 100) + "%",
-            'MOTCLE_CLIENT_INFO_PCT': Math.round(infoPctDec * 100) + "%"
+            'PA_ETAT_MOTCLE_CLIENT_GLOBAL': (clientKpi.posAll || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_TOP3': (clientKpi.top3 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_TOP10': (clientKpi.top10 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_CLIENT_URL': (clientKpi.urlsCount || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_TRANSAC': (intentStats.transac.top100 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_INFO': (intentStats.info.top100 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_TRANSAC_TOP10': (intentStats.transac.top10 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_INFO_TOP10': (intentStats.info.top10 || 0).toLocaleString('fr-FR'),
+            'PA_ETAT_MOTCLE_CLIENT_TRANSAC_PCT': Math.round(transacPctDec * 100) + "%",
+            'PA_ETAT_MOTCLE_CLIENT_INFO_PCT': Math.round(infoPctDec * 100) + "%"
         };
         
         var replaceDict = {};
@@ -307,10 +307,10 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
             propsToSave[cleanKey] = String(replaceDict[k]);
         }
         for (var idx = 1; idx <= 3; idx++) {
-            propsToSave["ANALYSE_THEMATIQUETOP_CLIENT_" + idx] = topThemParts[idx-1];
-            propsToSave["ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx] = flopThemParts[idx-1];
-            propsToSave["ANALYSE_MCTOP_CLIENT_" + idx] = topSegParts[idx-1];
-            propsToSave["ANALYSE_MCFLOP_CLIENT_" + idx] = flopSegParts[idx-1];
+            propsToSave["PA_ETAT_ANALYSE_THEMATIQUETOP" + idx] = topThemParts[idx-1];
+            propsToSave["PA_ETAT_ANALYSE_THEMATIQUEFLOP" + idx] = flopThemParts[idx-1];
+            propsToSave["PA_ETAT_ANALYSE_MCTOP" + idx] = topSegParts[idx-1];
+            propsToSave["PA_ETAT_ANALYSE_MCFLOP" + idx] = flopSegParts[idx-1];
         }
 
         propsToSave["PLACEHOLDER_LOGO_CLIENT"] = "IMAGE";
@@ -343,34 +343,34 @@ function exporterPerformanceGlobalSlides(diagnosticData, iaData, concurrenceData
                 }
 
                 // Titres IA
-                if (descRaw === "TITRE_SLIDE_THEMATIQUETOP_CLIENT" && iaData && iaData.titreTopThematiques) {
+                if (descRaw === "PA_ETAT_TITRE_THEMATIQUETOP" && iaData && iaData.titreTopThematiques) {
                     shape.getText().setText(iaData.titreTopThematiques);
                 }
-                if (descRaw === "TITRE_SLIDE_THEMATIQUEFLOP_CLIENT" && iaData && iaData.titreFlopThematiques) {
+                if (descRaw === "PA_ETAT_TITRE_THEMATIQUEFLOP" && iaData && iaData.titreFlopThematiques) {
                     shape.getText().setText(iaData.titreFlopThematiques);
                 }
-                if (descRaw === "TITRE_SLIDE_MCTOP_CLIENT" && iaData && iaData.titreTopSegments) {
+                if (descRaw === "PA_ETAT_TITRE_MCTOP" && iaData && iaData.titreTopSegments) {
                     shape.getText().setText(iaData.titreTopSegments);
                 }
-                if (descRaw === "TITRE_SLIDE_MCFLOP_CLIENT" && iaData && iaData.titreFlopSegments) {
+                if (descRaw === "PA_ETAT_TITRE_MCFLOP" && iaData && iaData.titreFlopSegments) {
                     shape.getText().setText(iaData.titreFlopSegments);
                 }
 
                 // Analyses IA découpées
                 for (var idx = 1; idx <= 3; idx++) {
-                    if (descRaw === "ANALYSE_THEMATIQUETOP_CLIENT_" + idx) {
+                    if (descRaw === "PA_ETAT_ANALYSE_THEMATIQUETOP" + idx) {
                         shape.getText().setText(topThemParts[idx-1]);
                         appliquerMarkdownSurForme(shape);
                     }
-                    if (descRaw === "ANALYSE_THEMATIQUEFLOP_CLIENT_" + idx) {
+                    if (descRaw === "PA_ETAT_ANALYSE_THEMATIQUEFLOP" + idx) {
                         shape.getText().setText(flopThemParts[idx-1]);
                         appliquerMarkdownSurForme(shape);
                     }
-                    if (descRaw === "ANALYSE_MCTOP_CLIENT_" + idx) {
+                    if (descRaw === "PA_ETAT_ANALYSE_MCTOP" + idx) {
                         shape.getText().setText(topSegParts[idx-1]);
                         appliquerMarkdownSurForme(shape);
                     }
-                    if (descRaw === "ANALYSE_MCFLOP_CLIENT_" + idx) {
+                    if (descRaw === "PA_ETAT_ANALYSE_MCFLOP" + idx) {
                         shape.getText().setText(flopSegParts[idx-1]);
                         appliquerMarkdownSurForme(shape);
                     }
@@ -469,72 +469,72 @@ function exporterFocusMotCleSlides() {
     try {
         Logger.log("=== DÉBUT : exporterFocusMotCleSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        var rawClientUrl = props['TARGET_URL_CLIENT'] || "";
+        var rawClientUrl = props['PA_FOCUS_MCCIBLE_URLCLIENT'] || "";
         var cleanClientUrl = rawClientUrl;
         if (rawClientUrl !== "" && rawClientUrl !== "-") {
             var matchPath = rawClientUrl.match(/^https?:\/\/[^\/]+(.*)$/i);
             cleanClientUrl = matchPath ? (matchPath[1] || "/") : rawClientUrl;
         }
 
-        var rawCompUrl = props['TARGET_URL_CONCURRENT'] || "";
+        var rawCompUrl = props['PA_FOCUS_MCCIBLE_URLCONC'] || "";
         var cleanCompUrl = rawCompUrl;
         if (rawCompUrl !== "" && rawCompUrl !== "-") {
             cleanCompUrl = rawCompUrl.replace(/^https?:\/\//i, "");
         }
         
-        var rawClientPos = props['TARGET_KW_CLIENT_POS'] || "";
+        var rawClientPos = props['PA_FOCUS_MCCIBLE_POSCLIENT'] || "";
         var formatedClientPos = (rawClientPos && rawClientPos !== "-") ? "Position " + rawClientPos : rawClientPos;
-        var rawCompPos = props['TARGET_KW_CONCURRENT_POS'] || "";
+        var rawCompPos = props['PA_FOCUS_MCCIBLE_POSCONC'] || "";
         var formatedCompPos = (rawCompPos && rawCompPos !== "-") ? "Position " + rawCompPos : rawCompPos;
 
-        var rawSv = props['TARGET_KW_SV'] || "";
+        var rawSv = props['PA_FOCUS_MCCIBLE_VOLUME'] || "";
         var formatedSv = rawSv ? rawSv + " rech./mois" : "";
 
         var simpleMapping = {
-            'SERP_ELEMENT_TITRE_1': props['SERP_ELEMENT_TITRE_1'] || "",
-            'SERP_ELEMENT_TITRE_2': props['SERP_ELEMENT_TITRE_2'] || "",
-            'SERP_ELEMENT_TITRE_3': props['SERP_ELEMENT_TITRE_3'] || "",
-            'SERP_ELEMENT_TITRE_4': props['SERP_ELEMENT_TITRE_4'] || "",
-            'FOCUS_INTENTION_TITRE': props['FOCUS_INTENTION_TITRE'] || "",
-            'FOCUS_GAP_TITRE_1': props['FOCUS_GAP_TITRE_1'] || "",
-            'FOCUS_GAP_TITRE_2': props['FOCUS_GAP_TITRE_2'] || "",
-            'FOCUS_GAP_TITRE_3': props['FOCUS_GAP_TITRE_3'] || "",
-            'TARGET_KW': props['TARGET_KW'] || "",
-            'TARGET_KW_SV': formatedSv,
-            'TARGET_URL_CLIENT': cleanClientUrl,
-            'TARGET_KW_CLIENT_POS': formatedClientPos,
-            'TARGET_URL_CONCURRENT': cleanCompUrl,
-            'TARGET_KW_CONCURRENT_POS': formatedCompPos
+            'PA_FOCUS_SERP_ELEMENT_1': props['PA_FOCUS_SERP_ELEMENT_1'] || "",
+            'PA_FOCUS_SERP_ELEMENT_2': props['PA_FOCUS_SERP_ELEMENT_2'] || "",
+            'PA_FOCUS_SERP_ELEMENT_3': props['PA_FOCUS_SERP_ELEMENT_3'] || "",
+            'PA_FOCUS_SERP_ELEMENT_4': props['PA_FOCUS_SERP_ELEMENT_4'] || "",
+            'PA_FOCUS_INTENTION_TITRE': props['PA_FOCUS_INTENTION_TITRE'] || "",
+            'PA_FOCUS_GAP_TITRE_1': props['PA_FOCUS_GAP_TITRE_1'] || "",
+            'PA_FOCUS_GAP_TITRE_2': props['PA_FOCUS_GAP_TITRE_2'] || "",
+            'PA_FOCUS_GAP_TITRE_3': props['PA_FOCUS_GAP_TITRE_3'] || "",
+            'PA_FOCUS_MCCIBLE': props['PA_FOCUS_MCCIBLE'] || "",
+            'PA_FOCUS_MCCIBLE_VOLUME': formatedSv,
+            'PA_FOCUS_MCCIBLE_URLCLIENT': cleanClientUrl,
+            'PA_FOCUS_MCCIBLE_POSCLIENT': formatedClientPos,
+            'PA_FOCUS_MCCIBLE_URLCONC': cleanCompUrl,
+            'PA_FOCUS_MCCIBLE_POSCONC': formatedCompPos
         };
 
         var altTextMapping = {
-            'SERP_ELEMENT_DESC_1': props['SERP_ELEMENT_DESC_1'] || "",
-            'SERP_ELEMENT_DESC_2': props['SERP_ELEMENT_DESC_2'] || "",
-            'SERP_ELEMENT_DESC_3': props['SERP_ELEMENT_DESC_3'] || "",
-            'SERP_ELEMENT_DESC_4': props['SERP_ELEMENT_DESC_4'] || "",
-            'FOCUS_INTENTION_DESC': props['FOCUS_INTENTION_DESC'] || "",
-            'FOCUS_GAP_DESC_1': props['FOCUS_GAP_DESC_1'] || "",
-            'FOCUS_GAP_DESC_2': props['FOCUS_GAP_DESC_2'] || "",
-            'FOCUS_GAP_DESC_3': props['FOCUS_GAP_DESC_3'] || "",
-            'FOCUS_RECO_1': props['FOCUS_RECO_1'] || "",
-            'FOCUS_RECO_2': props['FOCUS_RECO_2'] || "",
-            'FOCUS_RECO_3': props['FOCUS_RECO_3'] || "",
-            'FOCUS_RECO_4': props['FOCUS_RECO_4'] || ""
+            'PA_FOCUS_SERP_ELEMENT_DESC_1': props['PA_FOCUS_SERP_ELEMENT_DESC_1'] || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_2': props['PA_FOCUS_SERP_ELEMENT_DESC_2'] || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_3': props['PA_FOCUS_SERP_ELEMENT_DESC_3'] || "",
+            'PA_FOCUS_SERP_ELEMENT_DESC_4': props['PA_FOCUS_SERP_ELEMENT_DESC_4'] || "",
+            'PA_FOCUS_INTENTION_DESC': props['PA_FOCUS_INTENTION_DESC'] || "",
+            'PA_FOCUS_GAP_DESC_1': props['PA_FOCUS_GAP_DESC_1'] || "",
+            'PA_FOCUS_GAP_DESC_2': props['PA_FOCUS_GAP_DESC_2'] || "",
+            'PA_FOCUS_GAP_DESC_3': props['PA_FOCUS_GAP_DESC_3'] || "",
+            'PA_FOCUS_RECO_1': props['PA_FOCUS_RECO_1'] || "",
+            'PA_FOCUS_RECO_2': props['PA_FOCUS_RECO_2'] || "",
+            'PA_FOCUS_RECO_3': props['PA_FOCUS_RECO_3'] || "",
+            'PA_FOCUS_RECO_4': props['PA_FOCUS_RECO_4'] || ""
         };
 
         var placeholderMapping = {
-            '{{focus_standard_texte_1}}': props['focus_standard_texte_1'] || "",
-            '{{focus_standard_texte_2}}': props['focus_standard_texte_2'] || "",
-            '{{focus_standard_texte_3}}': props['focus_standard_texte_3'] || "",
-            '{{focus_semantique_texte_1}}': props['focus_semantique_texte_1'] || "",
-            '{{focus_semantique_texte_2}}': props['focus_semantique_texte_2'] || "",
-            '{{focus_semantique_texte_3}}': props['focus_semantique_texte_3'] || ""
+            '{{focus_standard_texte_1}}': props['PA_FOCUS_STANDARD_TEXTE_1'] || "",
+            '{{focus_standard_texte_2}}': props['PA_FOCUS_STANDARD_TEXTE_2'] || "",
+            '{{focus_standard_texte_3}}': props['PA_FOCUS_STANDARD_TEXTE_3'] || "",
+            '{{focus_semantique_texte_1}}': props['PA_FOCUS_SEMANTIQUE_TEXTE_1'] || "",
+            '{{focus_semantique_texte_2}}': props['PA_FOCUS_SEMANTIQUE_TEXTE_2'] || "",
+            '{{focus_semantique_texte_3}}': props['PA_FOCUS_SEMANTIQUE_TEXTE_3'] || ""
         };
 
         Logger.log("Parcours récursif des slides pour le Focus Mot-Clé (Groupes et Tableaux inclus)");
@@ -583,10 +583,10 @@ function exporterFocusMotCleSlides() {
                         return; 
                     }
 
-                    var isSerpIcon = (descRaw === "PLACEHOLDER_SERPELEMENT_1" || 
-                                      descRaw === "PLACEHOLDER_SERPELEMENT_2" || 
-                                      descRaw === "PLACEHOLDER_SERPELEMENT_3" || 
-                                      descRaw === "PLACEHOLDER_SERPELEMENT_4");
+                    var isSerpIcon = (descRaw === "PA_FOCUS_PLACEHOLDER_SERPELEMENT_1" || 
+                                      descRaw === "PA_FOCUS_PLACEHOLDER_SERPELEMENT_2" || 
+                                      descRaw === "PA_FOCUS_PLACEHOLDER_SERPELEMENT_3" || 
+                                      descRaw === "PA_FOCUS_PLACEHOLDER_SERPELEMENT_4");
 
                     if (isSerpIcon && props[descRaw] && currentSlide) {
                         Logger.log("Détection du placeholder d'image : " + descRaw);
@@ -659,7 +659,7 @@ function exporterEtatLieuxTechniqueSlides() {
     try {
         Logger.log("=== DÉBUT : exporterEtatLieuxTechniqueSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -673,16 +673,16 @@ function exporterEtatLieuxTechniqueSlides() {
         };
 
         var textMapping = {
-            'TITRE_SLIDE_TECHNIQUE': props['TITRE_SLIDE_TECHNIQUE'] || "",
-            'CRAWL_CONTENT_1': props['CRAWL_CONTENT_1'] || "",
-            'CRAWL_CONTENT_2': props['CRAWL_CONTENT_2'] || "",
-            'CRAWL_CONTENT_3': props['CRAWL_CONTENT_3'] || "",
-            'INDEX_CONTENT_1': props['INDEX_CONTENT_1'] || "",
-            'INDEX_CONTENT_2': props['INDEX_CONTENT_2'] || "",
-            'INDEX_CONTENT_3': props['INDEX_CONTENT_3'] || "",
-            'POS_CONTENT_1': props['POS_CONTENT_1'] || "",
-            'POS_CONTENT_2': props['POS_CONTENT_2'] || "",
-            'POS_CONTENT_3': props['POS_CONTENT_3'] || ""
+            'PA_TECH_TITRE': props['PA_TECH_TITRE'] || "",
+            'PA_TECH_CRAWL_CONTENT_1': props['PA_TECH_CRAWL_CONTENT_1'] || "",
+            'PA_TECH_CRAWL_CONTENT_2': props['PA_TECH_CRAWL_CONTENT_2'] || "",
+            'PA_TECH_CRAWL_CONTENT_3': props['PA_TECH_CRAWL_CONTENT_3'] || "",
+            'PA_TECH_INDEX_CONTENT_1': props['PA_TECH_INDEX_CONTENT_1'] || "",
+            'PA_TECH_INDEX_CONTENT_2': props['PA_TECH_INDEX_CONTENT_2'] || "",
+            'PA_TECH_INDEX_CONTENT_3': props['PA_TECH_INDEX_CONTENT_3'] || "",
+            'PA_TECH_POS_CONTENT_1': props['PA_TECH_POS_CONTENT_1'] || "",
+            'PA_TECH_POS_CONTENT_2': props['PA_TECH_POS_CONTENT_2'] || "",
+            'PA_TECH_POS_CONTENT_3': props['PA_TECH_POS_CONTENT_3'] || ""
         };
 
         Logger.log("Parcours récursif des slides pour l'État des lieux technique...");
@@ -722,9 +722,9 @@ function exporterEtatLieuxTechniqueSlides() {
 
                     // Remplacement des icônes d'évaluation (BON, MOYEN, MAUVAIS, INCONNU)
                     var isIconPlaceholder = (
-                        descRaw === "CRAWL_CHECK_1" || descRaw === "CRAWL_CHECK_2" || descRaw === "CRAWL_CHECK_3" ||
-                        descRaw === "INDEX_CHECK_1" || descRaw === "INDEX_CHECK_2" || descRaw === "INDEX_CHECK_3" ||
-                        descRaw === "POS_CHECK_1" || descRaw === "POS_CHECK_2" || descRaw === "POS_CHECK_3"
+                        descRaw === "PA_TECH_CRAWL_CHECK_1" || descRaw === "PA_TECH_CRAWL_CHECK_2" || descRaw === "PA_TECH_CRAWL_CHECK_3" ||
+                        descRaw === "PA_TECH_INDEX_CHECK_1" || descRaw === "PA_TECH_INDEX_CHECK_2" || descRaw === "PA_TECH_INDEX_CHECK_3" ||
+                        descRaw === "PA_TECH_POS_CHECK_1" || descRaw === "PA_TECH_POS_CHECK_2" || descRaw === "PA_TECH_POS_CHECK_3"
                     );
 
                     if (isIconPlaceholder && currentSlide) {
@@ -763,7 +763,7 @@ function exporterUXSlides() {
     try {
         Logger.log("=== DÉBUT : exporterUXSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -778,17 +778,17 @@ function exporterUXSlides() {
 
         var elementsMapping = {};
         for (var i = 1; i <= 6; i++) {
-            elementsMapping['UX_ELEMENT_' + i] = props['UX_ELEMENT_' + i] || "";
+            elementsMapping['PA_UX_ELEMENT_' + i] = props['PA_UX_ELEMENT_' + i] || "";
         }
         
         var recoMapping = {
-            'TITRE_SLIDE_UX': props['TITRE_SLIDE_UX'] || "",
-            'UX_RECOMMANDATION_1': props['UX_RECOMMANDATION_1'] || "",
-            'UX_RECOMMANDATION_2': props['UX_RECOMMANDATION_2'] || ""
+            'PA_UX_TITRE': props['PA_UX_TITRE'] || "",
+            'PA_UX_RECO_1': props['PA_UX_RECO_1'] || "",
+            'PA_UX_RECO_2': props['PA_UX_RECO_2'] || ""
         };
 
-        var clientViewportId = props['UX_CLIENT_VIEWPORT_ID'];
-        var compViewportId = props['UX_COMP_VIEWPORT_ID'];
+        var clientViewportId = props['PA_UX_CLIENT_VIEWPORT'];
+        var compViewportId = props['PA_UX_CONC_VIEWPORT'];
 
         Logger.log("Parcours récursif des slides pour l'UX...");
 
@@ -832,7 +832,7 @@ function exporterUXSlides() {
                     }
 
                     // Icônes d'évaluation
-                    var isIconPlaceholder = descRaw.indexOf("UX_CLIENT_CHECK_") === 0 || descRaw.indexOf("UX_CONCURRENT_CHECK_") === 0;
+                    var isIconPlaceholder = descRaw.indexOf("PA_UX_CLIENT_CHECK_") === 0 || descRaw.indexOf("PA_UX_CONC_CHECK_") === 0;
                     if (isIconPlaceholder && currentSlide) {
                         var statusValue = props[descRaw] || "INCONNU";
                         Logger.log("Remplacement de l'icône " + descRaw + " par le statut : " + statusValue);
@@ -852,7 +852,7 @@ function exporterUXSlides() {
                     }
 
                     // Captures d'écran
-                    if (descRaw === "PLACEHOLDER_UX_CLIENT" && clientViewportId && currentSlide) {
+                    if (descRaw === "PA_UX_PLACEHOLDER_CLIENT" && clientViewportId && currentSlide) {
                         Logger.log("Insertion capture client : " + clientViewportId);
                         try {
                             var fileClient = DriveApp.getFileById(clientViewportId);
@@ -865,7 +865,7 @@ function exporterUXSlides() {
                         return;
                     }
 
-                    if (descRaw === "PLACEHOLDER_UX_CONCURRENT" && compViewportId && currentSlide) {
+                    if (descRaw === "PA_UX_PLACEHOLDER_CONC" && compViewportId && currentSlide) {
                         Logger.log("Insertion capture concurrent : " + compViewportId);
                         try {
                             var fileComp = DriveApp.getFileById(compViewportId);
@@ -896,7 +896,7 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
     try {
         Logger.log("=== DÉBUT : exporterEditorialSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
@@ -919,35 +919,35 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
         var mappingComp = {};
         
         // Titres
-        mappingComp['TITRE_SLIDE_CONCURRENCE_EDITO'] = titreSlide || props['TITRE_SLIDE_CONCURRENCE_EDITO'] || "";
-        mappingComp['TITRE_SLIDE_THEMATIQUE_EDITO'] = props['TITRE_SLIDE_THEMATIQUE_EDITO'] || "";
+        mappingComp['PA_EDITO_TITRE_CONC'] = titreSlide || props['PA_EDITO_TITRE_CONC'] || "";
+        mappingComp['PA_EDITO_TITRE_THEMATIQUE'] = props['PA_EDITO_TITRE_THEMATIQUE'] || "";
         
         if (concurrenceDataEdito) {
             // Paysage concurrentiel
             if (concurrenceDataEdito.client) {
-                mappingComp['NOM_CLIENT_EDITO'] = concurrenceDataEdito.client.name;
-                mappingComp['VALEUR_TOP10_CLIENT_EDITO'] = safeNum(concurrenceDataEdito.client.top10);
-                mappingComp['VALEUR_PAGES_CLIENT_EDITO'] = safeNum(concurrenceDataEdito.client.pages);
-                mappingComp['BLOG_CLIENT_EDITO'] = donneesBlog.client || "Non";
+                mappingComp['PA_EDITO_NOM_CLIENT'] = concurrenceDataEdito.client.name;
+                mappingComp['PA_EDITO_TOP10_CLIENT'] = safeNum(concurrenceDataEdito.client.top10);
+                mappingComp['PA_EDITO_PAGES_CLIENT'] = safeNum(concurrenceDataEdito.client.pages);
+                mappingComp['PA_EDITO_BLOG_CLIENT'] = donneesBlog.client || "Non";
             }
             if (concurrenceDataEdito.leader) {
-                mappingComp['NOM_LEADER_EDITO'] = concurrenceDataEdito.leader.name;
-                mappingComp['VALEUR_TOP10_LEADER_EDITO'] = safeNum(concurrenceDataEdito.leader.top10);
-                mappingComp['VALEUR_PAGES_LEADER_EDITO'] = safeNum(concurrenceDataEdito.leader.pages);
-                mappingComp['BLOG_LEADER_EDITO'] = donneesBlog.leader || "Non";
+                mappingComp['PA_EDITO_NOM_LEADER'] = concurrenceDataEdito.leader.name;
+                mappingComp['PA_EDITO_TOP10_LEADER'] = safeNum(concurrenceDataEdito.leader.top10);
+                mappingComp['PA_EDITO_PAGES_LEADER'] = safeNum(concurrenceDataEdito.leader.pages);
+                mappingComp['PA_EDITO_BLOG_LEADER'] = donneesBlog.leader || "Non";
             }
             for (var c = 1; c <= 4; c++) {
                 var comp = concurrenceDataEdito.comps && concurrenceDataEdito.comps[c-1] ? concurrenceDataEdito.comps[c-1] : null;
                 if (comp) {
-                    mappingComp['NOM_COMP' + c + '_EDITO'] = comp.name;
-                    mappingComp['VALEUR_TOP10_COMP' + c + '_EDITO'] = safeNum(comp.top10);
-                    mappingComp['VALEUR_PAGES_COMP' + c + '_EDITO'] = safeNum(comp.pages);
-                    mappingComp['BLOG_COMP' + c + '_EDITO'] = donneesBlog['comp' + c] || "Non";
+                    mappingComp['PA_EDITO_NOM_COMP' + c] = comp.name;
+                    mappingComp['PA_EDITO_TOP10_COMP' + c] = safeNum(comp.top10);
+                    mappingComp['PA_EDITO_PAGES_COMP' + c] = safeNum(comp.pages);
+                    mappingComp['PA_EDITO_BLOG_CONC' + c] = donneesBlog['comp' + c] || "Non";
                 }
             }
             
             // Pistes Éditoriales (Thématiques)
-            var selectionJson = props['ANALYSE_SELECTION'];
+            var selectionJson = PropertiesService.getScriptProperties().getProperty('PA_DIAGNOSTIC_SELECTION');
             var selection = selectionJson ? JSON.parse(selectionJson) : [];
             var pistesEdito = [];
             try {
@@ -959,20 +959,20 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                 var piste = pistesEdito[i - 1];
                 if (piste) {
                     // Thématique avec retour à la ligne
-                    mappingComp['THEMATIQUE_EDITO_' + i] = piste.tsKey ? piste.tsKey.replace(" > ", "\n> ") : "";
-                    mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = piste.entite || "";
-                    mappingComp['URL_EDITO_CONTENU_' + i] = piste.url || "";
-                    mappingComp['NOM_CONTENU_' + i] = props['NOM_CONTENU_' + i] || "";
+                    mappingComp['PA_EDITO_THEMATIQUE_' + i] = piste.tsKey ? piste.tsKey.replace(" > ", "\n> ") : "";
+                    mappingComp['PA_EDITO_NOM_CONC_CONTENU_' + i] = piste.entite || "";
+                    mappingComp['PA_EDITO_URL_CONTENU_' + i] = piste.url || "";
+                    mappingComp['PA_EDITO_NOM_CONTENU_' + i] = props['PA_EDITO_NOM_CONTENU_' + i] || "";
                     
                     // Récupération directe du bloc Top 10 formaté par le front-end
-                    var dataTop10 = props['DATA_TOP10_CONTENU_' + i];
-                    mappingComp['DATA_TOP10_CONTENU_' + i] = dataTop10 ? dataTop10.replace(/&#10;/g, "\n") : "-";
+                    var dataTop10 = props['PA_EDITO_DATA_TOP10_' + i];
+                    mappingComp['PA_EDITO_DATA_TOP10_' + i] = dataTop10 ? dataTop10.replace(/&#10;/g, "\n") : "-";
                 } else {
-                    mappingComp['THEMATIQUE_EDITO_' + i] = "-";
-                    mappingComp['NOM_COMP' + i + '_EDITO_CONTENU'] = "-";
-                    mappingComp['URL_EDITO_CONTENU_' + i] = "-";
-                    mappingComp['NOM_CONTENU_' + i] = "-";
-                    mappingComp['DATA_TOP10_CONTENU_' + i] = "-";
+                    mappingComp['PA_EDITO_THEMATIQUE_' + i] = "-";
+                    mappingComp['PA_EDITO_NOM_CONC_CONTENU_' + i] = "-";
+                    mappingComp['PA_EDITO_URL_CONTENU_' + i] = "-";
+                    mappingComp['PA_EDITO_NOM_CONTENU_' + i] = "-";
+                    mappingComp['PA_EDITO_DATA_TOP10_' + i] = "-";
                 }
             }
         }
@@ -1025,7 +1025,7 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                     if (mappingComp[descRaw] !== undefined) {
                         element.getText().setText(mappingComp[descRaw].toString());
 
-                        if (descRaw.indexOf("BLOG_") === 0 && descRaw.indexOf("_EDITO") !== -1) {
+                        if (descRaw.indexOf("PA_EDITO_BLOG_") === 0) {
                             colorerBlogEdito(element, mappingComp[descRaw]);
                         }
                         
@@ -1041,7 +1041,7 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
                         if (descRaw.indexOf("_EDITO_CONTENU") !== -1) {
                             var mc = descRaw.match(/PLACEHOLDER_LOGO_COMP(\d+)_EDITO_CONTENU/);
                             if (mc && mc[1]) {
-                                var domainUrl = mappingComp['URL_EDITO_CONTENU_' + parseInt(mc[1])];
+                                var domainUrl = mappingComp['PA_EDITO_URL_CONTENU_' + parseInt(mc[1])];
                                 if (domainUrl && domainUrl !== "-") {
                                     var cleanDomain = domainUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
                                     imgUrl = 'https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://' + cleanDomain + '&size=128';
@@ -1081,54 +1081,37 @@ function exporterEditorialSlides(concurrenceDataEdito, titreSlide, donneesBlog) 
     }
 }
 
-var ANNUAIRE_CONTACTS = {
-    "Commerciaux": {
-        "Achille": { nom: "Achille Catel", poste: "Fondateur et Président", email: "achille.catel@search-factory.fr", driveId: "1QxX01BfLW5-oGHVdGnYHjB15BYDx1B8Q" },
-        "Quentin": { nom: "Quentin Pareyn", poste: "DG Adjoint Associé", email: "quentin.pareyn@search-factory.fr", driveId: "1o_uePHn_VcbSTW3va8o56cvzIAhAjB5N" },
-        "Sylvain": { nom: "Sylvain Peran", poste: "Chargé de Clientèle Digitale", email: "sylvain.peran@search-factory.fr", driveId: "1B2BohTw0jZDJUE_DENMz4eKoaJLI4cql" }
-    },
-    "Consultants": {
-        "Benjamin": { nom: "Benjamin Gennequin", poste: "Team Lead SEO", email: "benjamin.gennequin@search-factory.fr", driveId: "16uLGck2QSJTrduHYnM-1JPjH2PiWaes8" },
-        "Robin": { nom: "Robin Ansaldi", poste: "Expert SEO Confirmé", email: "robin.ansaldi@search-factory.fr", driveId: "1Z8MWV5bF6WIKWvdUKPsHmluoVn8wZlN8" },
-        "Léa": { nom: "Léa Deshayes", poste: "Experte SEO Confirmée", email: "lea.deshayes@search-factory.fr", driveId: "15M-xda-jDSVD0N9Wx0km-bZ4LkWEWdyN" },
-        "Claire": { nom: "Claire Chamaillard", poste: "Experte SEO Confirmée", email: "claire.chamaillard@search-factory.fr", driveId: "1ARiBcwRkf1bICZMSgoLktkDyHqXh8_rn" },
-        "Philippe": { nom: "Philippe Vesin", poste: "Team Lead SEO", email: "philippe.vesin@search-factory.fr", driveId: "1xw6tdoYYaN-utsqU60Q95EUD_O99AqWg" }
-    }
-};
-
 function exporterContactsSlides() {
     try {
         Logger.log("=== DÉBUT : exporterContactsSlides ===");
         var props = getDatabaseData();
-        var slideId = props['PA_SLIDE_ID'];
+        var slideId = props['PA_CONF_SLIDE_ID'];
 
         if (!slideId) throw new Error("L'ID du Google Slides n'est pas configuré.");
         var presentation = SlidesApp.openById(slideId);
         var slides = presentation.getSlides();
 
-        var confCom = props['CONF_CONTACT_COM'] || "Achille";
-        var confCons1 = props['CONF_CONTACT_CONS1'] || "Benjamin";
-        var confCons2 = props['CONF_CONTACT_CONS2'] || "Aucun";
-
-        var dataCom = ANNUAIRE_CONTACTS["Commerciaux"][confCom];
-        var dataCons1 = ANNUAIRE_CONTACTS["Consultants"][confCons1];
-        var dataCons2 = (confCons2 !== "Aucun") ? ANNUAIRE_CONTACTS["Consultants"][confCons2] : null;
-
         var textReplaceMapping = {};
-        if (dataCom) {
-            textReplaceMapping['{{NOM_COM}}'] = dataCom.nom;
-            textReplaceMapping['{{POSTE_COM}}'] = dataCom.poste;
-            textReplaceMapping['{{EMAIL_COM}}'] = dataCom.email;
-        }
-        if (dataCons1) {
-            textReplaceMapping['{{NOM_CONS1}}'] = dataCons1.nom;
-            textReplaceMapping['{{POSTE_CONS1}}'] = dataCons1.poste;
-            textReplaceMapping['{{EMAIL_CONS1}}'] = dataCons1.email;
-        }
-        if (dataCons2) {
-            textReplaceMapping['{{NOM_CONS2}}'] = dataCons2.nom;
-            textReplaceMapping['{{POSTE_CONS2}}'] = dataCons2.poste;
-            textReplaceMapping['{{EMAIL_CONS2}}'] = dataCons2.email;
+        
+        // Commerciaux
+        textReplaceMapping['{{NOM_COM}}'] = props['nom_com'] || "";
+        textReplaceMapping['{{POSTE_COM}}'] = props['poste_com'] || "";
+        textReplaceMapping['{{EMAIL_COM}}'] = props['email_com'] || "";
+        
+        // Consultant 1
+        textReplaceMapping['{{NOM_CONS1}}'] = props['nom_cons1'] || "";
+        textReplaceMapping['{{POSTE_CONS1}}'] = props['poste_cons1'] || "";
+        textReplaceMapping['{{EMAIL_CONS1}}'] = props['email_cons1'] || "";
+        
+        // Consultant 2 (Optionnel)
+        var nomCons2 = props['nom_cons2'] || "";
+        var imgCons2 = props['PLACEHOLDER_CONTACT_CONS2'] || "";
+        var isCons2Valid = (nomCons2 !== "" && imgCons2 !== "");
+
+        if (isCons2Valid) {
+            textReplaceMapping['{{NOM_CONS2}}'] = nomCons2;
+            textReplaceMapping['{{POSTE_CONS2}}'] = props['poste_cons2'] || "";
+            textReplaceMapping['{{EMAIL_CONS2}}'] = props['email_cons2'] || "";
         } else {
             textReplaceMapping['{{NOM_CONS2}}'] = "";
             textReplaceMapping['{{POSTE_CONS2}}'] = "";
@@ -1142,6 +1125,12 @@ function exporterContactsSlides() {
                 try {
                     shapeText = shape.getText().asString();
                 } catch(e) {}
+
+                // Sécurité : suppression de la forme texte si cons2 n'est pas valide
+                if (!isCons2Valid && shapeText && (shapeText.indexOf("{{NOM_CONS2}}") !== -1 || shapeText.indexOf("{{POSTE_CONS2}}") !== -1 || shapeText.indexOf("{{EMAIL_CONS2}}") !== -1)) {
+                    shape.remove();
+                    return;
+                }
 
                 if (shapeText && shapeText.indexOf("{{") !== -1) {
                     for (var key in textReplaceMapping) {
@@ -1177,13 +1166,13 @@ function exporterContactsSlides() {
                 var targetDriveId = null;
                 var shouldRemove = false;
 
-                if (descRaw === "PLACEHOLDER_CONTACT_COM" && dataCom) {
-                    targetDriveId = dataCom.driveId;
-                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS1" && dataCons1) {
-                    targetDriveId = dataCons1.driveId;
+                if (descRaw === "PLACEHOLDER_CONTACT_COM") {
+                    targetDriveId = props['PLACEHOLDER_CONTACT_COM'];
+                } else if (descRaw === "PLACEHOLDER_CONTACT_CONS1") {
+                    targetDriveId = props['PLACEHOLDER_CONTACT_CONS1'];
                 } else if (descRaw === "PLACEHOLDER_CONTACT_CONS2") {
-                    if (dataCons2) {
-                        targetDriveId = dataCons2.driveId;
+                    if (isCons2Valid) {
+                        targetDriveId = imgCons2;
                     } else {
                         shouldRemove = true;
                     }

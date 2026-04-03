@@ -1317,7 +1317,7 @@
                                 } catch(e) {
                                     console.log("Erreur de parsing JSON : " + e.message);
                                 }
-                            } else if (config.CRAWL_CONTENT_1 || config.CRAWL_CONTENT_2 || config.CRAWL_CONTENT_3) {
+                            } else if (config.PA_TECH_CRAWL_CONTENT_1 || config.PA_TECH_CRAWL_CONTENT_2 || config.PA_TECH_CRAWL_CONTENT_3) {
                                 document.getElementById('tech-ia-results-container').style.display = 'flex';
                                 var prefixMap = { 'CRAWL': 'crawl', 'INDEX': 'index', 'POS': 'pos' };
                                 
@@ -5064,27 +5064,27 @@
                 renderExtractionData('comp');
 
                 var data = {
-                    CONTENU_YTG_CIBLE: document.getElementById('contenu-ytg-cible').value,
+                    PA_CONTENU_YTG_CIBLE_GLOBALE: document.getElementById('contenu-ytg-cible').value,
                     
-                    CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
-                    CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
-                    CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
-                    CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
-                    CONTENU_1FR_URL_CLIENT: url1frClient,
-                    CONTENU_1FR_SCORE_CLIENT: (extracted1frClient && extracted1frClient.score) ? extracted1frClient.score : "",
-                    CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
-                    CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
-                    CONTENU_SCRAPED_CLIENT: scrapedDataClient ? JSON.stringify(scrapedDataClient) : "",
+                    PA_CONTENU_STRUCTURE_CLIENT: getRawMarkdownFromCE('ce-contenu-structure-client'),
+                    PA_CONTENU_YTG_CLIENT: getRawMarkdownFromCE('ce-contenu-ytg-client'),
+                    PA_CONTENU_YTG_SCORE_CLIENT: document.getElementById('contenu-ytg-score-client').value,
+                    PA_CONTENU_1FR_CLIENT: getRawMarkdownFromCE('ce-contenu-1fr-client'),
+                    PA_CONTENU_1FR_URL_CLIENT: url1frClient,
+                    PA_CONTENU_1FR_SCORE_CLIENT: (extracted1frClient && extracted1frClient.score) ? extracted1frClient.score : "",
+                    PA_CONTENU_YTG_DATA_CLIENT: extractedYtgClient ? JSON.stringify(extractedYtgClient) : "",
+                    PA_CONTENU_1FR_DATA_CLIENT: extracted1frClient ? JSON.stringify(extracted1frClient) : "",
+                    PA_CONTENU_SCRAPED_CLIENT: scrapedDataClient ? JSON.stringify(scrapedDataClient) : "",
 
-                    CONTENU_STRUCTURE_CONCURRENT: getRawMarkdownFromCE('ce-contenu-structure-comp'),
-                    CONTENU_YTG_CONCURRENT: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
-                    CONTENU_YTG_SCORE_CONCURRENT: document.getElementById('contenu-ytg-score-comp').value,
-                    CONTENU_1FR_CONCURRENT: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
-                    CONTENU_1FR_URL_CONCURRENT: url1frComp,
-                    CONTENU_1FR_SCORE_CONCURRENT: (extracted1frComp && extracted1frComp.score) ? extracted1frComp.score : "",
-                    CONTENU_YTG_DATA_CONCURRENT: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
-                    CONTENU_1FR_DATA_CONCURRENT: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
-                    CONTENU_SCRAPED_CONCURRENT: scrapedDataComp ? JSON.stringify(scrapedDataComp) : "",
+                    PA_CONTENU_STRUCTURE_CONC: getRawMarkdownFromCE('ce-contenu-structure-comp'),
+                    PA_CONTENU_YTG_CONC: getRawMarkdownFromCE('ce-contenu-ytg-comp'),
+                    PA_CONTENU_YTG_SCORE_CONC: document.getElementById('contenu-ytg-score-comp').value,
+                    PA_CONTENU_1FR_CONC: getRawMarkdownFromCE('ce-contenu-1fr-comp'),
+                    PA_CONTENU_1FR_URL_CONC: url1frComp,
+                    PA_CONTENU_1FR_SCORE_CONC: (extracted1frComp && extracted1frComp.score) ? extracted1frComp.score : "",
+                    PA_CONTENU_YTG_DATA_CONC: extractedYtgComp ? JSON.stringify(extractedYtgComp) : "",
+                    PA_CONTENU_1FR_DATA_CONC: extracted1frComp ? JSON.stringify(extracted1frComp) : "",
+                    PA_CONTENU_SCRAPED_CONC: scrapedDataComp ? JSON.stringify(scrapedDataComp) : "",
 
                     // Sauvegarde HTML pour le mode édition
                     contenuStructureClientHtml: document.getElementById('ce-contenu-structure-client').innerHTML,
