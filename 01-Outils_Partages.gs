@@ -370,7 +370,7 @@ function setDatabaseData(dict) {
         }
 
         var values = configSheet.getDataRange().getValues();
-        var maxCols = 26; 
+        var maxCols = 32; 
         var columnsData = [];
         for (var c = 0; c < maxCols; c++) {
             var col = [];
