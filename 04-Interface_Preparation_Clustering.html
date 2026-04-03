@@ -37,6 +37,7 @@
     <div class="config-card">
         <h3 style="color:#1a73e8;">Contexte sémantique (IA)</h3>
         <div class="helper-text" style="margin-bottom: 15px;">Renseignez des URLs (blog, à propos...) pour que l'IA analyse le contexte sémantique de l'entreprise. Ce contexte sera injecté dans le JSON d'export.</div>
+        
         <div class="row">
             <div class="col">
                 <label>URLs supplémentaires pour l'analyse (une par ligne)</label>
@@ -44,23 +45,19 @@
             </div>
         </div>
         
-        <div class="dropzone" id="dropzoneDocs" onclick="document.getElementById('importDocsFile').click()" ondragover="event.preventDefault(); this.classList.add('dragover');" ondragleave="this.classList.remove('dragover');" ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('importDocsFile').files = event.dataTransfer.files; gererImportDocs(event.dataTransfer.files);" style="margin-bottom: 15px; padding: 20px;">
-            <div class="bulk-title">📂 Glissez vos documents de contexte ici (PDF, Word, TXT)</div>
-            <div class="helper-text">ou cliquez pour les sélectionner.</div>
-            <label for="importDocsFile" class="custom-file-button" onclick="event.stopPropagation(); document.getElementById('importDocsFile').click();">Sélectionner les fichiers</label>
-            <input type="file" id="importDocsFile" accept=".pdf,.doc,.docx,.txt" multiple onchange="gererImportDocs(this.files)">
-            <div id="docsFileStatus" class="file-status"></div>
-        </div>
         <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
             <button type="button" id="btnGenererIA" class="action-button" onclick="lancerGenerationIA()">🤖 Générer le contexte par IA</button>
         </div>
+        
         <div id="iaMessage" style="margin-bottom: 15px; font-size: 13px; font-weight: bold; text-align: center;"></div>
+        
         <div class="row">
             <div class="col">
                 <label>Contexte client (généré ou manuel)</label>
                 <textarea id="contexteClient" name="contexteClient" rows="5" placeholder="Décrivez l'activité, la cible et le marché de l'entreprise..."></textarea>
             </div>
         </div>
+        
         <div class="row">
             <div class="col">
                 <label>Directive prioritaire d'architecture (Règle absolue pour l'IA)</label>
@@ -124,19 +121,6 @@
             }
         };
 
-        function gererImportDocs(filesList) {
-            var display = document.getElementById('docsFileStatus');
-            if (filesList && filesList.length > 0) {
-                var noms = [];
-                for (var i = 0; i < filesList.length; i++) {
-                    noms.push(filesList[i].name);
-                }
-                display.innerText = "✅ " + filesList.length + " document(s) prêt(s) : " + noms.join(", ");
-            } else {
-                display.innerText = "";
-            }
-        }
-
         function autoSaveContext() {
             var urls = document.getElementById('urlsContexte').value;
             var ctx = document.getElementById('contexteClient').value;
@@ -170,11 +154,9 @@
             var msg = document.getElementById('iaMessage');
             var urlsTexteBrut = document.getElementById('urlsContexte').value;
             var contexteField = document.getElementById('contexteClient');
-            var fileInput = document.getElementById('importDocsFile');
-            var files = fileInput ? fileInput.files : [];
 
-            if ((!urlsTexteBrut || urlsTexteBrut.trim() === "") && files.length === 0) {
-                msg.innerText = "⚠️ Veuillez saisir au moins une URL ou déposer un document.";
+            if (!urlsTexteBrut || urlsTexteBrut.trim() === "") {
+                msg.innerText = "⚠️ Veuillez saisir au moins une URL.";
                 msg.style.color = "#d93025";
                 return;
             }
@@ -191,7 +173,7 @@
 
             var loaderText = document.getElementById('loaderText');
             var steps = [
-                "1/3 : Extraction des textes (URLs et documents)...",
+                "1/3 : Extraction des textes (URLs)...",
                 "2/3 : Analyse sémantique par l'IA...",
                 "3/3 : Synthèse et rédaction du contexte..."
             ];
@@ -208,58 +190,33 @@
                 }
             }, 6000);
 
-            var filePromises = [];
-            for (var i = 0; i < files.length; i++) {
-                (function(file) {
-                    filePromises.push(new Promise(function(resolve, reject) {
-                        var reader = new FileReader();
-                        reader.onload = function(e) {
-                            var data = e.target.result;
-                            var base64 = data.split(',')[1];
-                            resolve({ nom: file.name, mimeType: file.type, base64: base64 });
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    }));
-                })(files[i]);
-            }
-
-            Promise.all(filePromises).then(function(fichiersBase64) {
-                google.script.run.withSuccessHandler(function(res) {
-                    clearInterval(stepTimer);
-                    loader.style.display = 'none';
-                    loader.innerHTML = '<div class="spinner"></div>';
-                    
-                    btn.disabled = false;
-                    btn.innerText = "🤖 Générer le contexte par IA";
-                    
-                    if (res.success) {
-                        contexteField.value = res.texte;
-                        autoSaveContext();
-                        msg.innerHTML = "✅ <strong>Contexte généré avec succès.</strong>";
-                        msg.style.color = "#188038";
-                    } else {
-                        msg.innerHTML = "❌ <strong>Échec de l'IA :</strong> " + res.message;
-                        msg.style.color = "#d93025";
-                    }
-                }).withFailureHandler(function(err) {
-                    clearInterval(stepTimer);
-                    loader.style.display = 'none';
-                    loader.innerHTML = '<div class="spinner"></div>';
-                    
-                    btn.disabled = false;
-                    btn.innerText = "🤖 Générer le contexte par IA";
-                    msg.innerHTML = "❌ <strong>Erreur critique (Timeout/Serveur) :</strong> Le traitement a été interrompu.";
-                    msg.style.color = "#d93025";
-                }).genererContexteClientIA(urlsFormatees, fichiersBase64);
-            }).catch(function(err) {
+            google.script.run.withSuccessHandler(function(res) {
                 clearInterval(stepTimer);
                 loader.style.display = 'none';
+                loader.innerHTML = '<div class="spinner"></div>';
+                
                 btn.disabled = false;
                 btn.innerText = "🤖 Générer le contexte par IA";
-                msg.innerHTML = "❌ <strong>Erreur de lecture du fichier :</strong> " + err.message;
+                
+                if (res.success) {
+                    contexteField.value = res.texte;
+                    autoSaveContext();
+                    msg.innerHTML = "✅ <strong>Contexte généré avec succès.</strong>";
+                    msg.style.color = "#188038";
+                } else {
+                    msg.innerHTML = "❌ <strong>Échec de l'IA :</strong> " + res.message;
+                    msg.style.color = "#d93025";
+                }
+            }).withFailureHandler(function(err) {
+                clearInterval(stepTimer);
+                loader.style.display = 'none';
+                loader.innerHTML = '<div class="spinner"></div>';
+                
+                btn.disabled = false;
+                btn.innerText = "🤖 Générer le contexte par IA";
+                msg.innerHTML = "❌ <strong>Erreur critique (Timeout/Serveur) :</strong> Le traitement a été interrompu.";
                 msg.style.color = "#d93025";
-            });
+            }).genererContexteClientIA(urlsFormatees, ""); // On envoie une chaîne vide au backend à la place des fichiers
         }
 
         function exporterClustering() {

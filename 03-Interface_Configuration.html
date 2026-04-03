@@ -363,137 +363,141 @@
         }
 
         function saveCurrentState(btn) {
-            console.log("Début de la fonction saveCurrentState");
-            if (btn) {
-                btn.dataset.originalText = btn.innerText;
-                btn.innerText = "⏳ Enregistrement...";
-                btn.disabled = true;
-            }
+          console.log("Début de la fonction saveCurrentState");
+          if (btn) {
+              btn.dataset.originalText = btn.innerText;
+              btn.innerText = "⏳ Enregistrement...";
+              btn.disabled = true;
+          }
 
-            console.log("Préparation de la sauvegarde de la configuration");
-            var formObj = {
-                isMultiTheme: document.getElementById('isMultiTheme').checked,
-                CONF_PROJECT_TYPE: document.getElementById('projectType').value,
-                CONF_ID_CLIENT: document.getElementById('clientName').value,
-                CONF_URL_CLIENT: document.getElementById('clientUrl').value,
-                CONF_CLIENT_STRENGTH: document.getElementById('clientStrength').value,
-                CONF_CLIENT_BRAND: document.getElementById('clientBrand').value,
-                CONF_COMP_NAME_1: document.getElementById('competitorName1').value,
-                CONF_COMP_URL_1: document.getElementById('competitor1').value,
-                CONF_COMP_STRENGTH_1: document.getElementById('competitorStrength1').value,
-                CONF_COMP_BRAND_1: document.getElementById('competitorBrand1').value,
-                CONF_COMP_NAME_2: document.getElementById('competitorName2').value,
-                CONF_COMP_URL_2: document.getElementById('competitor2').value,
-                CONF_COMP_STRENGTH_2: document.getElementById('competitorStrength2').value,
-                CONF_COMP_BRAND_2: document.getElementById('competitorBrand2').value,
-                CONF_COMP_NAME_3: document.getElementById('competitorName3').value,
-                CONF_COMP_URL_3: document.getElementById('competitor3').value,
-                CONF_COMP_STRENGTH_3: document.getElementById('competitorStrength3').value,
-                CONF_COMP_BRAND_3: document.getElementById('competitorBrand3').value,
-                CONF_COMP_NAME_4: document.getElementById('competitorName4').value,
-                CONF_COMP_URL_4: document.getElementById('competitor4').value,
-                CONF_COMP_STRENGTH_4: document.getElementById('competitorStrength4').value,
-                CONF_COMP_BRAND_4: document.getElementById('competitorBrand4').value,
-                CONF_COMP_NAME_5: document.getElementById('competitorName5').value,
-                CONF_COMP_URL_5: document.getElementById('competitor5').value,
-                CONF_COMP_STRENGTH_5: document.getElementById('competitorStrength5').value,
-                CONF_COMP_BRAND_5: document.getElementById('competitorBrand5').value,
-                ctrPos1: document.getElementById('ctrPos1').value,
-                ctrPos2: document.getElementById('ctrPos2').value,
-                ctrPos3: document.getElementById('ctrPos3').value,
-                ctrPos4: document.getElementById('ctrPos4').value,
-                ctrPos5: document.getElementById('ctrPos5').value,
-                ctrPos6: document.getElementById('ctrPos6').value,
-                ctrPos7: document.getElementById('ctrPos7').value,
-                ctrPos8: document.getElementById('ctrPos8').value,
-                ctrPos9: document.getElementById('ctrPos9').value,
-                ctrPos10: document.getElementById('ctrPos10').value
-            };
+          console.log("Préparation de la sauvegarde de la configuration");
+          var formObj = {
+              isMultiTheme: document.getElementById('isMultiTheme').checked,
+              CONF_PROJECT_TYPE: document.getElementById('projectType').value,
+              CONF_ID_CLIENT: document.getElementById('clientName').value,
+              CONF_URL_CLIENT: document.getElementById('clientUrl').value,
+              CONF_CLIENT_STRENGTH: document.getElementById('clientStrength').value,
+              CONF_CLIENT_BRAND: document.getElementById('clientBrand').value,
+              CONF_COMP_NAME_1: document.getElementById('competitorName1').value,
+              CONF_COMP_URL_1: document.getElementById('competitor1').value,
+              CONF_COMP_STRENGTH_1: document.getElementById('competitorStrength1').value,
+              CONF_COMP_BRAND_1: document.getElementById('competitorBrand1').value,
+              CONF_COMP_NAME_2: document.getElementById('competitorName2').value,
+              CONF_COMP_URL_2: document.getElementById('competitor2').value,
+              CONF_COMP_STRENGTH_2: document.getElementById('competitorStrength2').value,
+              CONF_COMP_BRAND_2: document.getElementById('competitorBrand2').value,
+              CONF_COMP_NAME_3: document.getElementById('competitorName3').value,
+              CONF_COMP_URL_3: document.getElementById('competitor3').value,
+              CONF_COMP_STRENGTH_3: document.getElementById('competitorStrength3').value,
+              CONF_COMP_BRAND_3: document.getElementById('competitorBrand3').value,
+              CONF_COMP_NAME_4: document.getElementById('competitorName4').value,
+              CONF_COMP_URL_4: document.getElementById('competitor4').value,
+              CONF_COMP_STRENGTH_4: document.getElementById('competitorStrength4').value,
+              CONF_COMP_BRAND_4: document.getElementById('competitorBrand4').value,
+              CONF_COMP_NAME_5: document.getElementById('competitorName5').value,
+              CONF_COMP_URL_5: document.getElementById('competitor5').value,
+              CONF_COMP_STRENGTH_5: document.getElementById('competitorStrength5').value,
+              CONF_COMP_BRAND_5: document.getElementById('competitorBrand5').value,
+              CONF_SEUIL_POSITION: document.getElementById('seuilPos').value,
+              CONF_EXCLUSION_GLOBALE: document.getElementById('exclusionTxt').value,
+              ctrPos1: document.getElementById('ctrPos1').value,
+              ctrPos2: document.getElementById('ctrPos2').value,
+              ctrPos3: document.getElementById('ctrPos3').value,
+              ctrPos4: document.getElementById('ctrPos4').value,
+              ctrPos5: document.getElementById('ctrPos5').value,
+              ctrPos6: document.getElementById('ctrPos6').value,
+              ctrPos7: document.getElementById('ctrPos7').value,
+              ctrPos8: document.getElementById('ctrPos8').value,
+              ctrPos9: document.getElementById('ctrPos9').value,
+              ctrPos10: document.getElementById('ctrPos10').value
+          };
 
-            console.log("Envoi des données de configuration à Google Script");
-            google.script.run.withSuccessHandler(function() {
-                console.log("Enregistrement réussi côté serveur");
-                if (btn) {
-                    btn.classList.add('btn-success');
-                    btn.innerText = "✅ Enregistré";
-                    setTimeout(function() {
-                        btn.classList.remove('btn-success');
-                        btn.innerText = btn.dataset.originalText;
-                        btn.disabled = false;
-                    }, 2000);
+          console.log("Envoi des données de configuration à Google Script");
+          google.script.run.withSuccessHandler(function() {
+              console.log("Enregistrement réussi côté serveur");
+              if (btn) {
+                  btn.classList.add('btn-success');
+                  btn.innerText = "✅ Enregistré";
+                  setTimeout(function() {
+                      btn.classList.remove('btn-success');
+                      btn.innerText = btn.dataset.originalText;
+                      btn.disabled = false;
+                  }, 2000);
+              }
+              console.log("Fin de la fonction saveCurrentState");
+          }).enregistrerConfiguration(formObj);
+      }
+
+      function restoreFormValues(data) {
+        console.log("Début de la fonction restoreFormValues");
+        var loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'none';
+        if (!data) return;
+
+        function safeSetValue(id, val) {
+            var el = document.getElementById(id);
+            if (el) {
+                if (el.type === 'checkbox') {
+                    el.checked = (val === true || val === 'true');
+                } else {
+                    el.value = val;
                 }
-                console.log("Fin de la fonction saveCurrentState");
-            }).enregistrerConfiguration(formObj);
-        }
-
-        function restoreFormValues(data) {
-            console.log("Début de la fonction restoreFormValues");
-            var loader = document.getElementById('loader');
-            if (loader) loader.style.display = 'none';
-            if (!data) return;
-
-            function safeSetValue(id, val) {
-                var el = document.getElementById(id);
-                if (el) {
-                    if (el.type === 'checkbox') {
-                        el.checked = (val === true || val === 'true');
-                    } else {
-                        el.value = val;
-                    }
-                }
-            }
-
-            try {
-                console.log("Restauration des valeurs du formulaire");
-                safeSetValue('isMultiTheme', data.isMultiTheme);
-                safeSetValue('projectType', data.CONF_PROJECT_TYPE || 'installe');
-                safeSetValue('clientName', data.CONF_ID_CLIENT || '');
-                safeSetValue('clientUrl', data.CONF_URL_CLIENT || '');
-                safeSetValue('clientStrength', data.CONF_CLIENT_STRENGTH || 'moyenne');
-                safeSetValue('clientBrand', data.CONF_CLIENT_BRAND || '');
-                safeSetValue('competitorName1', data.CONF_COMP_NAME_1 || '');
-                safeSetValue('competitor1', data.CONF_COMP_URL_1 || '');
-                safeSetValue('competitorStrength1', data.CONF_COMP_STRENGTH_1 || 'moyenne');
-                safeSetValue('competitorBrand1', data.CONF_COMP_BRAND_1 || '');
-                safeSetValue('competitorName2', data.CONF_COMP_NAME_2 || '');
-                safeSetValue('competitor2', data.CONF_COMP_URL_2 || '');
-                safeSetValue('competitorStrength2', data.CONF_COMP_STRENGTH_2 || 'moyenne');
-                safeSetValue('competitorBrand2', data.CONF_COMP_BRAND_2 || '');
-                safeSetValue('competitorName3', data.CONF_COMP_NAME_3 || '');
-                safeSetValue('competitor3', data.CONF_COMP_URL_3 || '');
-                safeSetValue('competitorStrength3', data.CONF_COMP_STRENGTH_3 || 'moyenne');
-                safeSetValue('competitorBrand3', data.CONF_COMP_BRAND_3 || '');
-                safeSetValue('competitorName4', data.CONF_COMP_NAME_4 || '');
-                safeSetValue('competitor4', data.CONF_COMP_URL_4 || '');
-                safeSetValue('competitorStrength4', data.CONF_COMP_STRENGTH_4 || 'moyenne');
-                safeSetValue('competitorBrand4', data.CONF_COMP_BRAND_4 || '');
-                safeSetValue('competitorName5', data.CONF_COMP_NAME_5 || '');
-                safeSetValue('competitor5', data.CONF_COMP_URL_5 || '');
-                safeSetValue('competitorStrength5', data.CONF_COMP_STRENGTH_5 || 'moyenne');
-                safeSetValue('competitorBrand5', data.CONF_COMP_BRAND_5 || '');
-                safeSetValue('ctrPos1', data.ctrPos1 || 28);
-                safeSetValue('ctrPos2', data.ctrPos2 || 20);
-                safeSetValue('ctrPos3', data.ctrPos3 || 12);
-                safeSetValue('ctrPos4', data.ctrPos4 || 8);
-                safeSetValue('ctrPos5', data.ctrPos5 || 7);
-                safeSetValue('ctrPos6', data.ctrPos6 || 6);
-                safeSetValue('ctrPos7', data.ctrPos7 || 5);
-                safeSetValue('ctrPos8', data.ctrPos8 || 5);
-                safeSetValue('ctrPos9', data.ctrPos9 || 4);
-                safeSetValue('ctrPos10', data.ctrPos10 || 3);
-                
-                toggleProjectType();
-
-                var filterZone = document.getElementById('filterZone');
-                if (data.hasMatrix && filterZone) {
-                    filterZone.style.display = 'block';
-                }
-                console.log("Fin de la fonction restoreFormValues");
-            } catch (e) {
-                console.error("Erreur de restauration : ", e);
-                console.log("Fin de la fonction restoreFormValues (avec erreur)");
             }
         }
+
+        try {
+            console.log("Restauration des valeurs du formulaire");
+            safeSetValue('isMultiTheme', data.isMultiTheme);
+            safeSetValue('projectType', data.CONF_PROJECT_TYPE || 'installe');
+            safeSetValue('clientName', data.CONF_ID_CLIENT || '');
+            safeSetValue('clientUrl', data.CONF_URL_CLIENT || '');
+            safeSetValue('clientStrength', data.CONF_CLIENT_STRENGTH || 'moyenne');
+            safeSetValue('clientBrand', data.CONF_CLIENT_BRAND || '');
+            safeSetValue('competitorName1', data.CONF_COMP_NAME_1 || '');
+            safeSetValue('competitor1', data.CONF_COMP_URL_1 || '');
+            safeSetValue('competitorStrength1', data.CONF_COMP_STRENGTH_1 || 'moyenne');
+            safeSetValue('competitorBrand1', data.CONF_COMP_BRAND_1 || '');
+            safeSetValue('competitorName2', data.CONF_COMP_NAME_2 || '');
+            safeSetValue('competitor2', data.CONF_COMP_URL_2 || '');
+            safeSetValue('competitorStrength2', data.CONF_COMP_STRENGTH_2 || 'moyenne');
+            safeSetValue('competitorBrand2', data.CONF_COMP_BRAND_2 || '');
+            safeSetValue('competitorName3', data.CONF_COMP_NAME_3 || '');
+            safeSetValue('competitor3', data.CONF_COMP_URL_3 || '');
+            safeSetValue('competitorStrength3', data.CONF_COMP_STRENGTH_3 || 'moyenne');
+            safeSetValue('competitorBrand3', data.CONF_COMP_BRAND_3 || '');
+            safeSetValue('competitorName4', data.CONF_COMP_NAME_4 || '');
+            safeSetValue('competitor4', data.CONF_COMP_URL_4 || '');
+            safeSetValue('competitorStrength4', data.CONF_COMP_STRENGTH_4 || 'moyenne');
+            safeSetValue('competitorBrand4', data.CONF_COMP_BRAND_4 || '');
+            safeSetValue('competitorName5', data.CONF_COMP_NAME_5 || '');
+            safeSetValue('competitor5', data.CONF_COMP_URL_5 || '');
+            safeSetValue('competitorStrength5', data.CONF_COMP_STRENGTH_5 || 'moyenne');
+            safeSetValue('competitorBrand5', data.CONF_COMP_BRAND_5 || '');
+            safeSetValue('seuilPos', data.seuilPos || '20');
+            safeSetValue('exclusionTxt', data.exclusionTxt || '');
+            safeSetValue('ctrPos1', data.ctrPos1 || 28);
+            safeSetValue('ctrPos2', data.ctrPos2 || 20);
+            safeSetValue('ctrPos3', data.ctrPos3 || 12);
+            safeSetValue('ctrPos4', data.ctrPos4 || 8);
+            safeSetValue('ctrPos5', data.ctrPos5 || 7);
+            safeSetValue('ctrPos6', data.ctrPos6 || 6);
+            safeSetValue('ctrPos7', data.ctrPos7 || 5);
+            safeSetValue('ctrPos8', data.ctrPos8 || 5);
+            safeSetValue('ctrPos9', data.ctrPos9 || 4);
+            safeSetValue('ctrPos10', data.ctrPos10 || 3);
+            
+            toggleProjectType();
+
+            var filterZone = document.getElementById('filterZone');
+            if (data.hasMatrix && filterZone) {
+                filterZone.style.display = 'block';
+            }
+            console.log("Fin de la fonction restoreFormValues");
+        } catch (e) {
+            console.error("Erreur de restauration : ", e);
+            console.log("Fin de la fonction restoreFormValues (avec erreur)");
+        }
+    }
 
         function ouvrirLienSemrushUnique(id) {
             var inputEl = (id === 'client') ? document.getElementById('clientUrl') : document.getElementById('competitor' + id);

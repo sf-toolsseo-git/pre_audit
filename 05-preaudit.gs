@@ -8,16 +8,17 @@ function ouvrirFenetrePreAudit() {
 
 function chargerConfigurationPreAudit() {
     Logger.log("=== DÉBUT : chargerConfigurationPreAudit ===");
-        var keys = [
-        'CONF_ID_CLIENT', 'CONF_URL_CLIENT', 'CONF_URLS_CONTEXTE', 'CONF_CONTEXTE_CLIENT',
+    var keys = [
+        'CONF_ID_CLIENT', 'CONF_URL_CLIENT', 'CLUSTERING_URLS_CONTEXTE', 'CLUSTERING_CONTEXTE_CLIENT',
         'PA_CONF_SLIDE_ID', 'PA_CONF_BRIEF', 'PA_CONF_URL_FORM_REPONSES', 'PA_CONF_PROFILAGE_COMMERCIAL',
         'PA_GLOBALE_BESOIN_HTML', 'PA_GLOBALE_BESOIN', 'PA_GLOBALE_SOLUTION_HTML', 'PA_GLOBALE_SOLUTION',
         'PA_GLOBALE_TITRE_SEMRUSH', 'PA_GLOBALE_SEMRUSH_MOTCLE_HTML', 'PA_GLOBALE_SEMRUSH_MOTCLE',
-        'PA_GLOBALE_SEMRUSH_TRAFIC_HTML', 'PA_GLOBALE_SEMRUSH_TRAFIC', 'PA_ETAT_TITRE_THEMATIQUETOP',
-        'PA_ETAT_ANALYSE_THEMATIQUETOP1', 'PA_ETAT_TITRE_THEMATIQUEFLOP', 'PA_ETAT_ANALYSE_THEMATIQUEFLOP1',
+        'PA_GLOBALE_SEMRUSH_TRAFIC_HTML', 'PA_GLOBALE_SEMRUSH_TRAFIC', 'PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE', 'PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC', 
+        'PA_ETAT_TITRE_THEMATIQUETOP', 'PA_ETAT_ANALYSE_THEMATIQUETOP1', 'PA_ETAT_TITRE_THEMATIQUEFLOP', 'PA_ETAT_ANALYSE_THEMATIQUEFLOP1',
         'PA_ETAT_TITRE_MCTOP', 'PA_ETAT_ANALYSE_MCTOP1', 'PA_ETAT_TITRE_MCFLOP', 'PA_ETAT_ANALYSE_MCFLOP1',
         'CONF_COMP_NAME_1', 'CONF_COMP_URL_1', 'CONF_COMP_NAME_2', 'CONF_COMP_URL_2', 'CONF_COMP_NAME_3',
-        'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
+        'CONF_COMP_URL_3', 'CONF_COMP_NAME_4', 'CONF_COMP_URL_4', 
+        'CONF_COMP_NAME_5', 'CONF_COMP_URL_5',
         'PA_FOCUS_MCCIBLE', 'PA_FOCUS_MCCIBLE_VOLUME', 'PA_FOCUS_MCCIBLE_URLCLIENT', 'PA_FOCUS_MCCIBLE_POSCLIENT', 'PA_FOCUS_MCCIBLE_URLCONC',
         'PA_FOCUS_MCCIBLE_POSCONC', 'PA_FOCUS_LOCALISATION', 'PA_FOCUS_SERP_ELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_DESC_1',
         'PA_FOCUS_PLACEHOLDER_SERPELEMENT_1', 'PA_FOCUS_SERP_ELEMENT_2', 'PA_FOCUS_SERP_ELEMENT_DESC_2', 'PA_FOCUS_PLACEHOLDER_SERPELEMENT_2',
@@ -26,7 +27,8 @@ function chargerConfigurationPreAudit() {
         'PA_FOCUS_STANDARD_TEXTE_1', 'PA_FOCUS_STANDARD_TEXTE_2', 'PA_FOCUS_STANDARD_TEXTE_3',
         'PA_FOCUS_SEMANTIQUE_TEXTE_1', 'PA_FOCUS_SEMANTIQUE_TEXTE_2', 'PA_FOCUS_SEMANTIQUE_TEXTE_3',
         'PA_FOCUS_GAP_TITRE_1', 'PA_FOCUS_GAP_DESC_1', 'PA_FOCUS_GAP_TITRE_2', 'PA_FOCUS_GAP_DESC_2', 'PA_FOCUS_GAP_TITRE_3', 'PA_FOCUS_GAP_DESC_3',
-        'PA_FOCUS_RECO_1', 'PA_FOCUS_RECO_2', 'PA_FOCUS_RECO_3', 'PA_FOCUS_RECO_4',
+        'PA_FOCUS_RECO_1', 'PA_FOCUS_RECO_2', 
+        'PA_FOCUS_RECO_3', 'PA_FOCUS_RECO_4',
         'PA_TECH_URL_CLIENT', 'PA_TECH_SITEMAP', 'PA_TECH_TYPE_PAGE', 'PA_TECH_URL_PAGE_MERE', 'PA_TECH_URL_PAGINEES', 'PA_TECH_URL_FILTRE',
         'PA_TECH_IS_MULTILINGUE', 'PA_TECH_LANGUE_CIBLE', 'PA_TECH_PAYS_CIBLE', 'PA_TECH_HTML_CRAWL', 'PA_TECH_HTML_INDEX',
         'PA_TECH_HTML_POS', 'PA_TECH_IA_FULL_STATE', 'PA_TECH_TITRE',
@@ -44,7 +46,8 @@ function chargerConfigurationPreAudit() {
         'PA_UX_CONC_CHECK_1', 'PA_UX_CONC_CHECK_2', 'PA_UX_CONC_CHECK_3', 'PA_UX_CONC_CHECK_4', 'PA_UX_CONC_CHECK_5', 'PA_UX_CONC_CHECK_6',
         'PA_CONTENU_YTG_CIBLE_GLOBALE', 'PA_CONTENU_STRUCTURE_CLIENT', 'PA_CONTENU_STRUCTURE_CLIENT_HTML',
         'PA_CONTENU_YTG_CLIENT', 'PA_CONTENU_YTG_CLIENT_HTML', 'PA_CONTENU_YTG_SCORE_CLIENT', 'PA_CONTENU_YTG_DATA_CLIENT',
-        'PA_CONTENU_1FR_CLIENT', 'PA_CONTENU_1FR_CLIENT_HTML', 'PA_CONTENU_1FR_URL_CLIENT', 'PA_CONTENU_1FR_SCORE_CLIENT',
+        'PA_CONTENU_1FR_CLIENT', 'PA_CONTENU_1FR_CLIENT_HTML', 'PA_CONTENU_1FR_URL_CLIENT', 
+        'PA_CONTENU_1FR_SCORE_CLIENT',
         'PA_CONTENU_1FR_DATA_CLIENT', 'PA_CONTENU_SCRAPED_CLIENT', 'PA_CONTENU_TITRE_CLIENT', 'PA_CONTENU_STRUCTURE_CONC',
         'PA_CONTENU_STRUCTURE_CONC_HTML', 'PA_CONTENU_YTG_CONC', 'PA_CONTENU_YTG_CONC_HTML',
         'PA_CONTENU_YTG_SCORE_CONC', 'PA_CONTENU_YTG_DATA_CONC', 'PA_CONTENU_1FR_CONC',
@@ -63,11 +66,11 @@ function chargerConfigurationPreAudit() {
     var config = {
         clientName: props['CONF_ID_CLIENT'] || "",
         clientUrl: props['CONF_URL_CLIENT'] || "",
-        urlsContexte: props['CONF_URLS_CONTEXTE'] || "",
-        contexteClient: props['CONF_CONTEXTE_CLIENT'] || "",
+        urlsContexte: props['CLUSTERING_URLS_CONTEXTE'] || "",
+        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
         slideId: props['PA_CONF_SLIDE_ID'] || "",
         brief: props['PA_CONF_BRIEF'] || "",
-        urlReponses: props['PA_CONF_URL_FORM_REPONSES'] || "",
+        urlReponses: props['PA_CONF_URL_FORM_REPONSES'] || "https://docs.google.com/forms/d/1ysuod7lKrpOjqb-wVPnfhauZmslPfnEXDdaRD4tAD2E/",
         contextePreaudit: props['PA_CONF_PROFILAGE_COMMERCIAL'] || "",
         besoinHtml: props['PA_GLOBALE_BESOIN_HTML'] || "",
         besoinTexte: props['PA_GLOBALE_BESOIN'] || "",
@@ -78,6 +81,8 @@ function chargerConfigurationPreAudit() {
         analyseKwTexte: props['PA_GLOBALE_SEMRUSH_MOTCLE'] || "",
         analyseTraficHtml: props['PA_GLOBALE_SEMRUSH_TRAFIC_HTML'] || "",
         analyseTraficTexte: props['PA_GLOBALE_SEMRUSH_TRAFIC'] || "",
+        idImgSemrushKw: props['PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE'] || "",
+        idImgSemrushTrafic: props['PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC'] || "",
         activeTab: userProps['PREAUDIT_ACTIVE_TAB'] || "config",
         analyseThemeTopTitre: props['PA_ETAT_TITRE_THEMATIQUETOP'] || "",
         analyseThemeTop: props['PA_ETAT_ANALYSE_THEMATIQUETOP1'] || "",
@@ -238,23 +243,51 @@ function chargerConfigurationPreAudit() {
 
 function sauvegarderConfigurationPreAudit(form) {
     Logger.log("=== DÉBUT : sauvegarderConfigurationPreAudit ===");
-    setDatabaseData({
-        // Bloc Contacts
-        'PA_CONF_CONTACT_COM': form.contactCom || "",
-        'PA_CONF_CONTACT_CONS1': form.contactCons1 || "",
-        'PA_CONF_CONTACT_CONS2': form.contactCons2 || "",
-        
-        // Bloc Projet
-        'PA_CONF_SLIDE_ID': form.slideId || "",
+    
+    var ANNUAIRE_CONTACTS = {
+        "Commerciaux": {
+            "Achille": { nom: "Achille Catel", poste: "Fondateur et Président", email: "achille.catel@search-factory.fr", driveId: "1QxX01BfLW5-oGHVdGnYHjB15BYDx1B8Q" },
+            "Quentin": { nom: "Quentin Pareyn", poste: "DG Adjoint Associé", email: "quentin.pareyn@search-factory.fr", driveId: "1o_uePHn_VcbSTW3va8o56cvzIAhAjB5N" },
+            "Sylvain": { nom: "Sylvain Peran", poste: "Chargé de Clientèle Digitale", email: "sylvain.peran@search-factory.fr", driveId: "1B2BohTw0jZDJUE_DENMz4eKoaJLI4cql" }
+        },
+        "Consultants": {
+            "Benjamin": { nom: "Benjamin Gennequin", poste: "Team Lead SEO", email: "benjamin.gennequin@search-factory.fr", driveId: "16uLGck2QSJTrduHYnM-1JPjH2PiWaes8" },
+            "Robin": { nom: "Robin Ansaldi", poste: "Expert SEO Confirmé", email: "robin.ansaldi@search-factory.fr", driveId: "1Z8MWV5bF6WIKWvdUKPsHmluoVn8wZlN8" },
+            "Léa": { nom: "Léa Deshayes", poste: "Experte SEO Confirmée", email: "lea.deshayes@search-factory.fr", driveId: "15M-xda-jDSVD0N9Wx0km-bZ4LkWEWdyN" },
+            "Claire": { nom: "Claire Chamaillard", poste: "Experte SEO Confirmée", email: "claire.chamaillard@search-factory.fr", driveId: "1ARiBcwRkf1bICZMSgoLktkDyHqXh8_rn" },
+            "Philippe": { nom: "Philippe Vesin", poste: "Team Lead SEO", email: "philippe.vesin@search-factory.fr", driveId: "1xw6tdoYYaN-utsqU60Q95EUD_O99AqWg" }
+        }
+    };
 
-        // Bloc Contexte & Brief
+    var comData = ANNUAIRE_CONTACTS["Commerciaux"][form.contactCom] || {};
+    var cons1Data = ANNUAIRE_CONTACTS["Consultants"][form.contactCons1] || {};
+    var cons2Data = (form.contactCons2 !== "Aucun") ? (ANNUAIRE_CONTACTS["Consultants"][form.contactCons2] || {}) : {};
+
+    setDatabaseData({
+        'PA_CONF_CONTACT_COM': form.contactCom || "",
+        'PLACEHOLDER_CONTACT_COM': comData.driveId || "",
+        'nom_com': comData.nom || "",
+        'poste_com': comData.poste || "",
+        'email_com': comData.email || "",
+
+        'PA_CONF_CONTACT_CONS1': form.contactCons1 || "",
+        'PLACEHOLDER_CONTACT_CONS1': cons1Data.driveId || "",
+        'nom_cons1': cons1Data.nom || "",
+        'poste_cons1': cons1Data.poste || "",
+        'email_cons1': cons1Data.email || "",
+
+        'PA_CONF_CONTACT_CONS2': form.contactCons2 || "Aucun",
+        'PLACEHOLDER_CONTACT_CONS2': cons2Data.driveId || "",
+        'nom_cons2': cons2Data.nom || "",
+        'poste_cons2': cons2Data.poste || "",
+        'email_cons2': cons2Data.email || "",
+        
+        'PA_CONF_SLIDE_ID': form.slideId || "",
         'PA_CONF_BRIEF': form.brief || "",
-        'PA_CONF_URL_FORM_REPONSES': form.urlReponses || "",
+        'PA_CONF_URL_FORM_REPONSES': form.urlReponses || "https://docs.google.com/forms/d/1ysuod7lKrpOjqb-wVPnfhauZmslPfnEXDdaRD4tAD2E/",
         
-        // Synchronisation des clés
-        'CONF_URLS_CONTEXTE': form.urlsContexte || "",
-        'CONF_CONTEXTE_CLIENT': form.contexteClient || "",
-        
+        'CLUSTERING_URLS_CONTEXTE': form.urlsContexte || "",
+        'CLUSTERING_CONTEXTE_CLIENT': form.contexteClient || "",
         'PA_CONF_PROFILAGE_COMMERCIAL': form.contextePreaudit || ""
     });
     Logger.log("=== FIN : sauvegarderConfigurationPreAudit ===");
@@ -264,6 +297,8 @@ function sauvegarderConfigurationPreAudit(form) {
 function sauvegarderDonneesAnalyseGlobale(data) {
     Logger.log("=== DÉBUT : sauvegarderDonneesAnalyseGlobale ===");
     try {
+        // Les images sont maintenant sauvegardées en temps réel.
+        // On ne met à jour que les champs textes et HTML générés par l'IA.
         setDatabaseData({
             'PA_GLOBALE_BESOIN':              data.besoinTexte || "",
             'PA_GLOBALE_BESOIN_HTML':         data.besoinHtml || "",
@@ -274,17 +309,69 @@ function sauvegarderDonneesAnalyseGlobale(data) {
             'PA_GLOBALE_SEMRUSH_MOTCLE':      data.analyseKwTexte || "",
             'PA_GLOBALE_SEMRUSH_MOTCLE_HTML': data.analyseKwHtml || "",
             'PA_GLOBALE_SEMRUSH_TRAFIC':      data.analyseTraficTexte || "",
-            'PA_GLOBALE_SEMRUSH_TRAFIC_HTML': data.analyseTraficHtml || "",
-            
-            'PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE': "IMAGE",
-            'PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC': "IMAGE"
+            'PA_GLOBALE_SEMRUSH_TRAFIC_HTML': data.analyseTraficHtml || ""
         });
-        Logger.log("Propriétés enregistrées vers CONFIG...");
+        Logger.log("Propriétés de l'analyse globale enregistrées vers CONFIG...");
         Logger.log("=== FIN : sauvegarderDonneesAnalyseGlobale ===");
         return true;
     } catch (e) {
         Logger.log("Erreur dans sauvegarderDonneesAnalyseGlobale : " + e.message);
         throw new Error("Erreur lors de la sauvegarde globale : " + e.message);
+    }
+}
+
+function sauvegarderImageSemrushSeule(type, base64Data, mimeType, oldFileId) {
+    Logger.log("=== DÉBUT : sauvegarderImageSemrushSeule ===");
+    try {
+        // 1. Suppression de l'ancienne image si elle existe
+        if (oldFileId && oldFileId !== "IMAGE" && oldFileId !== "") {
+            try {
+                DriveApp.getFileById(oldFileId).setTrashed(true);
+                Logger.log("Ancienne image (" + oldFileId + ") mise à la corbeille.");
+            } catch(e) {
+                Logger.log("Impossible de supprimer l'ancienne image : " + e.message);
+            }
+        }
+
+        // 2. Création de la nouvelle image
+        var props = getDatabaseData();
+        var clientUrl = props['CONF_URL_CLIENT'] || "domaine";
+        var domain = clientUrl.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+        if (!domain) domain = "client";
+
+        var folderId = "1CXlwCajJ4LsYYgfdE2KolGI-1HDxVKW3";
+        var folder = DriveApp.getFolderById(folderId);
+
+        // CORRECTION STRICTE DU TYPE MIME (Pour éviter les .octet-stream)
+        var finalMimeType = mimeType;
+        if (!finalMimeType || finalMimeType.indexOf('image/') !== 0) {
+            finalMimeType = 'image/png';
+        }
+        
+        var ext = finalMimeType.split('/')[1] || "png";
+        if (ext === "jpeg") ext = "jpg"; // Homogénéisation de l'extension
+
+        var suffix = (type === 'kw') ? "motcle" : "trafic";
+        var fileName = "semrush_" + domain + "_" + suffix + "." + ext;
+
+        var blob = Utilities.newBlob(Utilities.base64Decode(base64Data), finalMimeType, fileName);
+        var file = folder.createFile(blob);
+        try { file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch(e) {}
+        
+        var newId = file.getId();
+        Logger.log("Nouvelle image créée avec l'ID : " + newId + " et le nom : " + fileName);
+
+        // 3. Mise à jour de la base de données (uniquement la clé concernée)
+        var keyToUpdate = (type === 'kw') ? 'PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE' : 'PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC';
+        var updateDict = {};
+        updateDict[keyToUpdate] = newId;
+        setDatabaseData(updateDict);
+
+        Logger.log("=== FIN : sauvegarderImageSemrushSeule ===");
+        return newId;
+    } catch(e) {
+        Logger.log("ERREUR sauvegarderImageSemrushSeule : " + e.message);
+        throw new Error(e.message);
     }
 }
 
@@ -349,7 +436,7 @@ function genererAnalyseEditorialIA(pistesEdito) {
     Logger.log("=== DÉBUT : genererAnalyseEditorialIA ===");
     try {
         var props = getDatabaseData();
-        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné";
+        var contexteClient = props['CLUSTERING_CONTEXTE_CLIENT'] || "Non renseigné";
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         
@@ -361,7 +448,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
             throw new Error("Aucune piste éditoriale fournie.");
         }
 
-        // 1. Extraction des URLs à scraper (max 3)
         var urlsToScrape = [];
         for (var i = 0; i < pistesEdito.length && i < 3; i++) {
             if (pistesEdito[i].url) {
@@ -372,7 +458,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
         Logger.log("Scraping de " + urlsToScrape.length + " URLs...");
         var scrapedData = scrapeUrlsParallel(urlsToScrape);
 
-        // 2. Construction du contexte pour l'IA
         var contexteUrls = [];
         for (var i = 0; i < scrapedData.length; i++) {
             var sData = scrapedData[i];
@@ -383,7 +468,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
                     structure_hn: sData.structure_hn
                 });
             } else {
-                // En cas d'erreur de scraping, on transmet l'URL et les mots-clés disponibles
                 contexteUrls.push({
                     url: sData.url,
                     titre: "Erreur de récupération",
@@ -396,7 +480,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
             contexte_client: contexteClient || "Non renseigné",
             contenus_concurrents: contexteUrls
         };
-
         var systemPrompt = "Tu es un expert SEO spécialisé en stratégie éditoriale. Ton objectif est de générer les titres de slides et les noms courts pour 3 contenus concurrents identifiés.\n\n" +
                            "RÈGLES DE GÉNÉRATION :\n" +
                            "1. titre_slide_concurrence : Un titre percutant résumant l'environnement concurrentiel informationnel (ex: 'Votre visibilité informationnelle face au marché').\n" +
@@ -408,15 +491,12 @@ function genererAnalyseEditorialIA(pistesEdito) {
                            "  \"titre_slide_thematique\": \"Titre slide 2\",\n" +
                            "  \"contenus\": [\"Nom court contenu 1\", \"Nom court contenu 2\", \"Nom court contenu 3\"]\n" +
                            "}";
-
         var userPrompt = "Voici les données : \n" + JSON.stringify(extractionData);
-
         var payload = {
             "system_instruction": { "parts": [{"text": systemPrompt}] },
             "contents": [ { "parts": [{"text": userPrompt}] } ],
             "generationConfig": { "responseMimeType": "application/json" }
         };
-
         var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
         var options = {
             "method": "post",
@@ -425,7 +505,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
             "payload": JSON.stringify(payload),
             "muteHttpExceptions": true
         };
-
         var response = UrlFetchApp.fetch(apiUrl, options);
         var jsonResponse = JSON.parse(response.getContentText());
 
@@ -443,7 +522,6 @@ function genererAnalyseEditorialIA(pistesEdito) {
 
         Logger.log("=== FIN : genererAnalyseEditorialIA (Succès) ===");
         return { success: true, data: parsedData };
-
     } catch (e) {
         Logger.log("Erreur dans genererAnalyseEditorialIA : " + e.message);
         return { success: false, error: e.message };
@@ -1332,8 +1410,7 @@ function lancerWorkflowSERP(data) {
         var geminiApiKey = userProps['CONF_API_KEY_GEMINI'];
         var listeClesAPIStr = userProps['LISTE_CLES_API'];
         var props = getDatabaseData();
-        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "";
-
+        var contexteClient = props['CLUSTERING_CONTEXTE_CLIENT'] || "";
         if (!geminiApiKey || geminiApiKey.trim() === "") {
             throw new Error("Clé API Gemini introuvable.");
         }
@@ -1354,33 +1431,20 @@ function lancerWorkflowSERP(data) {
         }
 
         if (apiKeys.length === 0) throw new Error("Aucune clé API SERP configurée dans l'onglet Général.");
-
         var motCle = data.kw;
         var loc = data.localisation || "france";
         var urlClient = data.urlClient;
         var noPage = data.noPage;
-
-        // ==========================================
-        // ÉTAPE 1 : FETCH SERP (SERPAPI / SERPSTACK)
-        // ==========================================
         Logger.log("Étape 1 : Récupération SERP pour '" + motCle + "'");
-
         var serpJson = fetchSerpData(motCle, loc, apiKeys);
         if (!serpJson) throw new Error("Impossible de récupérer la SERP (Quotas atteints ou erreur API).");
-
         var serpData = extractSerpData(serpJson);
         
         var featuresLog = serpData.elements_serp.map(function(e) { return e.type_feature; }).join(", ");
-
         Logger.log("SERP Features détectées : " + serpData.elements_serp.length + " (" + featuresLog + ")");
-
         Logger.log("Top 10 URLs récupérées : " + serpData.urls.length);
 
-        // ==========================================
-        // ÉTAPE 2 : SCRAPING EN PARALLÈLE
-        // ==========================================
         Logger.log("Étape 2 : Scraping des URLs du Top 10 + URL Client");
-
         var urlsToScrape = serpData.urls.slice(); 
         
         if (!noPage && urlClient && urlsToScrape.indexOf(urlClient) === -1) {
@@ -1388,12 +1452,8 @@ function lancerWorkflowSERP(data) {
         }
 
         var scrapedPages = scrapeUrlsParallel(urlsToScrape);
-
         Logger.log("Scraping terminé. " + scrapedPages.length + " pages analysées.");
 
-        // ==========================================
-        // PRÉPARATION DU PAYLOAD POUR GEMINI
-        // ==========================================
         var extractionData = {
             metadata: {
                 keyword: motCle,
@@ -1403,33 +1463,31 @@ function lancerWorkflowSERP(data) {
             serp_features: serpData.elements_serp.map(function(e) { return e.type_feature; }),
             pages: scrapedPages
         };
-
         Logger.log("Étape 3 : Création du prompt et appel API Gemini 2.5 Pro");
-
         var systemPrompt = `Tu es un expert stratège SEO. Ta mission est d'analyser des données brutes issues du scraping d'une SERP Google (top 10 concurrents + page cible du client) pour fournir un diagnostic clinique et un plan d'action stratégique sur-mesure.
-
         /// Protocole d'analyse (rigueur fiscale) ///
 
         1. Charte typographique (rigueur française absolue)
         - Titres, puces et labels : majuscule uniquement au premier mot (sauf noms propres).
         - Parenthèses : pas de majuscule au premier mot à l'intérieur.
         - Deux-points (:) : toujours un espace avant le deux-points, et aucune majuscule après (sauf nom propre).
-        - Formatage visuel : utilise le gras standard Markdown (**mot**) pour mettre en valeur les concepts clés. Ne pas utiliser d'astérisque simple.
+        - Formatage visuel : utilise le gras standard Markdown (**mot**) pour mettre en valeur les concepts clés.
+        Ne pas utiliser d'astérisque simple.
 
         2. Hiérarchie décisionnelle et objectifs (règle d'or : SERP > client)
         Ce que Google positionne dicte ce que tu dois recommander.
-        - Mode création (si l'URL client est 'Page à créer') : ne critique pas la page client puisqu'elle n'existe pas. Projette la future page idéale basée sur les standards de la SERP.
+        - Mode création (si l'URL client est 'Page à créer') : ne critique pas la page client puisqu'elle n'existe pas.
+        Projette la future page idéale basée sur les standards de la SERP.
         - Mode optimisation (si l'URL client existe) : audite la page cible existante du client par rapport aux exigences de la SERP.
-
         3. Intelligence commerciale et synergie (crucial)
-        Ne traite pas le mot-clé cible en vase clos. Repère les expertises du client via le contexte client. Dans tes recommandations (et le gap business), propose des ponts intelligents (maillage interne, encarts de réassurance) entre le sujet analysé et l'offre globale du client.
-
+        Ne traite pas le mot-clé cible en vase clos.
+        Repère les expertises du client via le contexte client. Dans tes recommandations (et le gap business), propose des ponts intelligents (maillage interne, encarts de réassurance) entre le sujet analysé et l'offre globale du client.
         4. Lecture de l'environnement (SERP features)
-        Examine les 'serp_features' détectées. Ce sont des signaux d'intention stricts à intégrer dans tes recommandations.
-
+        Examine les 'serp_features' détectées.
+        Ce sont des signaux d'intention stricts à intégrer dans tes recommandations.
         5. Concision extrême et limites de longueur
-        Tu as des limites de mots et de caractères STRICTES pour chaque champ définies dans le modèle JSON ci-dessous. Va droit au but, supprime les mots de liaison inutiles. Tu seras pénalisé si tu dépasses ces limites.
-
+        Tu as des limites de mots et de caractères STRICTES pour chaque champ définies dans le modèle JSON ci-dessous.
+        Va droit au but, supprime les mots de liaison inutiles. Tu seras pénalisé si tu dépasses ces limites.
         /// Format de sortie obligatoire ///
         Tu dois fournir ta réponse uniquement sous forme d'objet JSON valide, sans balise markdown autour.
         Structure stricte exigée :
@@ -1454,10 +1512,14 @@ function lancerWorkflowSERP(data) {
             {"titre": "Business (MAX 2 mots, 25 caractères)", "description": "L'opportunité manquée... (MAX 25 mots, 150 caractères)"}
         ],
         "recommandations": [
-            "Action structure Hn/UX. (MAX 20 mots, 100 caractères)",
-            "Action profondeur. (MAX 20 mots, 100 caractères)",
-            "Action conversion. (MAX 20 mots, 100 caractères)",
-            "Action maillage/cross-sell. (MAX 20 mots, 100 caractères)"
+            "Action structure Hn/UX.
+            (MAX 20 mots, 100 caractères)",
+            "Action profondeur.
+            (MAX 20 mots, 100 caractères)",
+            "Action conversion.
+            (MAX 20 mots, 100 caractères)",
+            "Action maillage/cross-sell.
+            (MAX 20 mots, 100 caractères)"
         ]
         }`;
 
@@ -1501,7 +1563,6 @@ function lancerWorkflowSERP(data) {
 
         var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
         responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-
         Logger.log("Réponse brute Gemini générée.");
         
         var jsonGemini;
@@ -1523,7 +1584,6 @@ function lancerWorkflowSERP(data) {
             "image": "1acgKroCoqPOy9rV2KnRwjdxk_fP_UIPh",
             "defaut": "18ILbiONR6N1gfikkFh-lMF1oTye45hje"
         };
-
         var finalElementsSerp = serpData.elements_serp || [];
         
         Logger.log("Traitement des éléments SERP pour le renvoi au front-end...");
@@ -1536,10 +1596,8 @@ function lancerWorkflowSERP(data) {
             el.base64_data = getDriveImageBase64(el.png_icon);
             Logger.log("Élément SERP " + (index + 1) + " : " + el.titre + " -> assigné à l'icône : " + el.png_icon);
         });
-
         Logger.log("Objet de retour prêt. Fin de la fonction.");
         Logger.log("=== FIN : lancerWorkflowSERP (Succès) ===");
-        
         return {
             success: true,
             data: {
@@ -1551,7 +1609,6 @@ function lancerWorkflowSERP(data) {
                 recommandations: jsonGemini.recommandations || []
             }
         };
-
     } catch(err) {
         Logger.log("Erreur dans lancerWorkflowSERP : " + err.message);
         return { success: false, error: err.message };
@@ -1914,14 +1971,14 @@ function genererProfilageCommercialIA(urlForm, brief, contexte) {
 function genererSlideBesoinSolutionIA(contextePreaudit) {
     Logger.log("=== DÉBUT : genererSlideBesoinSolutionIA ===");
     var catalogueOffres = [
-    "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",
-    "SEO agile (accompagnement continu) : suivi mensuel/trimestriel, monitoring technique, reporting et recommandations d'optimisation.",
-    "Accompagnement refonte : sécurisation SEO lors d'une création/refonte de site (cahier des charges, plan de redirection 301, recettes pré et post-lancement).",
-    "Stratégie et rédaction de contenus SEO (clé en main) : planification éditoriale, rédaction experte et optimisation sémantique complète.",
-    "Accompagnement éditorial (co-création) : fourniture des briefs/mots-clés et optimisation SEO de textes rédigés par le client."
+        "Audit et stratégie de positionnement : analyse concurrentielle, choix des mots-clés et plan d'action ciblé (mapping).",
+        "SEO agile (accompagnement continu) : suivi mensuel/trimestriel, monitoring technique, reporting et recommandations d'optimisation.",
+        "Accompagnement refonte : sécurisation SEO lors d'une création/refonte de site (cahier des charges, plan de redirection 301, recettes pré et post-lancement).",
+        "Stratégie et rédaction de contenus SEO (clé en main) : planification éditoriale, rédaction experte et optimisation sémantique complète.",
+        "Accompagnement éditorial (co-création) : fourniture des briefs/mots-clés et optimisation SEO de textes rédigés par le client."
     ];
     var texteOffres = "- " + catalogueOffres.join("\n- ");
-    
+
     try {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
@@ -1937,7 +1994,8 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
                 "3. Pour le 'Besoin', commence chaque puce obligatoirement par un nom commun (ex: Déficit, Nécessité, Manque, Volonté) ou un verbe à l'infinitif (ex: Définir, Structurer, Acquérir).\n" +
                 "4. Pour la 'Solution', tu dois piocher uniquement dans ce catalogue d'offres : \n" + texteOffres + "\n" +
                 "5. Pour la 'Solution', commence obligatoirement ta phrase par le NOM EXACT de l'offre choisie, suivi d'un espace, puis de deux-points, puis d'une phrase très courte de bénéfice.\n" +
-                "6. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON (le script s'en charge).\n\n" +
+                "6. Ne mets pas de tirets ou de puces textuelles dans la réponse JSON (le script s'en charge).\n" +
+                "7. MISE EN VALEUR (GRAS) : Dans chaque phrase générée, encadre 1 ou 2 concepts clés ou mots très importants avec des astérisques simples (ex: *concept clé*). N'utilise JAMAIS le gras markdown standard (**).\n\n" +
                 "Règles typographiques obligatoires (français) à respecter à la lettre :\n" +
                 "- Espacement : il faut TOUJOURS un espace avant les deux-points (ex: 'Audit SEO : pour...').\n" +
                 "- Majuscule uniquement au premier mot des puces et des phrases (sauf noms propres).\n" +
@@ -1947,8 +2005,8 @@ function genererSlideBesoinSolutionIA(contextePreaudit) {
                 "- L'acronyme 'SEO' doit toujours être écrit en majuscules.\n\n" +
                 "Format de sortie attendu strictement en JSON :\n" +
                 "{\n" +
-                "  \"besoin\": [\"Phrase besoin 1\", \"Phrase besoin 2\", \"Phrase besoin 3\"],\n" +
-                "  \"solution\": [\"Phrase solution 1\", \"Phrase solution 2\", \"Phrase solution 3\"]\n" +
+                "  \"besoin\": [\"Phrase besoin 1 avec *mot*\", \"Phrase besoin 2 avec *mot*\", \"Phrase besoin 3 avec *mot*\"],\n" +
+                "  \"solution\": [\"Phrase solution 1 avec *mot*\", \"Phrase solution 2 avec *mot*\", \"Phrase solution 3 avec *mot*\"]\n" +
                 "}\n\n" +
                 "Profilage commercial :\n" + contextePreaudit;
 
@@ -2629,7 +2687,7 @@ function genererAnalyseTechniqueIA() {
         var userProps = PropertiesService.getUserProperties().getProperties();
         var apiKey = userProps['CONF_API_KEY_GEMINI'];
         var props = getDatabaseData();
-        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "";
+        var contexteClient = props['CLUSTERING_CONTEXTE_CLIENT'] || "";
         var urlCible = props['PA_TECH_URL_CLIENT'] || "";
         var motCleCible = props['PA_FOCUS_MCCIBLE'] || "Non défini";
 
@@ -2638,8 +2696,6 @@ function genererAnalyseTechniqueIA() {
         }
 
         Logger.log("Étape 1 : Évaluation algorithmique et préparation des données brutes");
-
-        // --- CRAWL ---
         var firstLinkUrl = props['PA_TECH_CRAWL_FIRST_LINK_URL'] || "";
         var firstLinkAnchor = props['PA_TECH_CRAWL_FIRST_LINK_ANCHOR'] || "";
         var pagiMereBody = props['PA_TECH_CRAWL_PAGI_MERE_BODY'] === "true";
@@ -2653,8 +2709,6 @@ function genererAnalyseTechniqueIA() {
         var links4xx = parseInt(props['PA_TECH_CRAWL_LINKS_4XX'] || "0", 10);
         var links5xx = parseInt(props['PA_TECH_CRAWL_LINKS_5XX'] || "0", 10);
         var robotsTxt = props['PA_TECH_CRAWL_ROBOTS'] || "Fichier vide ou introuvable";
-
-        // --- INDEXATION ---
         var metaRobots = (props['PA_TECH_INDEX_META_ROBOTS'] || "").toLowerCase();
         var evalMetaRobots = "[OK]";
         if (metaRobots.indexOf("noindex") !== -1) {
@@ -2673,13 +2727,11 @@ function genererAnalyseTechniqueIA() {
             evalSitemap = "[AVERTISSEMENT]";
         }
         
-        // MULTILINGUE
         var isMultilingue = (props['PA_TECH_IS_MULTILINGUE'] || "non").toLowerCase();
         var langueCible = props['PA_TECH_LANGUE_CIBLE'] || "Non spécifiée";
         var paysCible = props['PA_TECH_PAYS_CIBLE'] || "Non spécifié";
         var hreflangs = props['PA_TECH_CRAWL_HREFLANGS'] || "Aucune balise détectée";
 
-        // PAGINATION (Conditionnelle)
         var urlPageMere = props['PA_TECH_URL_PAGE_MERE'] || "";
         var urlPaginees = props['PA_TECH_URL_PAGINEES'] || "";
         var pagiMetaRobots = props['PA_TECH_INDEX_PAGI_META_ROBOTS'] || "";
@@ -2700,7 +2752,6 @@ function genererAnalyseTechniqueIA() {
             paginationPromptRule = " IGNORE totalement le sujet de la pagination car elle n'a pas été configurée.";
         }
 
-        // --- POSITIONNEMENT ---
         var titleText = props['PA_TECH_POS_TITLE'] || "";
         var titleHasKw = props['PA_TECH_POS_TITLE_HAS_KW'] === "true";
         var evalTitle = titleHasKw ? "[OK]" : "[KO]";
@@ -2711,15 +2762,12 @@ function genererAnalyseTechniqueIA() {
 
         var typePage = props['PA_TECH_TYPE_PAGE'] || "Non spécifié";
         var schemas = props['PA_TECH_POS_SCHEMA'] || "Aucun schéma détecté";
-
-        // STRUCTURE HN
         var structureHnStr = props['PA_TECH_POS_HN'] || "[]";
         var hnCount = 0;
         try { hnCount = JSON.parse(structureHnStr).length; } catch(e){}
         var evalHn = (hnCount > 0) ? "[OK]" : "[KO]";
 
         Logger.log("Étape 2 : Construction du dossier technique pour l'IA");
-
         var techDataStr = "=== PROFILAGE COMMERCIAL ===\n" +
             (props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.") + "\n\n" +
             "=== BLOC 1 : CRAWL ===\n" +
@@ -2746,9 +2794,7 @@ function genererAnalyseTechniqueIA() {
             "- Structure Hn extraite (" + hnCount + " balises) : " + structureHnStr + " -> Présence stricte : " + evalHn + "\n" +
             "- Type de page déclaré : " + typePage + "\n" +
             "- Données structurées (Schema.org) trouvées : " + schemas + "\n";
-
         Logger.log("Étape 3 : Définition de la doctrine SEO stricte (Prompt avec exhaustivité)");
-
         var systemPrompt = "Tu es un auditeur SEO technique expert. Ton rôle est de restituer un audit sous forme de puces pour le client. Tu dois utiliser ton intelligence pour nuancer certaines données algorithmiques, tout en respectant une doctrine stricte.\n\n" +
             "RÈGLES TYPOGRAPHIQUES OBLIGATOIRES (français) :\n" +
             "- Majuscule uniquement au premier mot des puces (sauf noms propres).\n" +
@@ -2782,7 +2828,6 @@ function genererAnalyseTechniqueIA() {
             "contents": [ { "parts": [{"text": userPrompt}] } ],
             "generationConfig": { "responseMimeType": "application/json" }
         };
-
         var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
         var options = {
             "method": "post",
@@ -2791,11 +2836,9 @@ function genererAnalyseTechniqueIA() {
             "payload": JSON.stringify(payload),
             "muteHttpExceptions": true
         };
-
         Logger.log("Étape 4 : Appel API Gemini (Analyse experte en cours)...");
         var response = UrlFetchApp.fetch(apiUrl, options);
         var jsonResponse = JSON.parse(response.getContentText());
-
         if (response.getResponseCode() !== 200) {
             throw new Error(jsonResponse.error ? jsonResponse.error.message : "Erreur inattendue de l'API Gemini.");
         }
@@ -2815,7 +2858,6 @@ function genererAnalyseTechniqueIA() {
             "MAUVAIS": "1WCVH1kIsBu5oEG_nWP9fQsGS5JZ5aGgI",
             "INCONNU": "1bi8wj96QvF9EetPHPEkVztTEwZf5H8tS"
         };
-
         var iconsBase64 = {};
         for (var key in ICON_IDS) {
             try {
@@ -2833,7 +2875,6 @@ function genererAnalyseTechniqueIA() {
             data: jsonGemini,
             icons: iconsBase64
         };
-
     } catch(err) {
         Logger.log("=== FIN : genererAnalyseTechniqueIA (Erreur) ===");
         Logger.log("Message d'erreur : " + err.message);
@@ -3051,15 +3092,13 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         var compViewportId = props['PA_UX_CONC_VIEWPORT'];
         var compFullId = props['PA_UX_CONC_FULL'];
         var compCropId = props['PA_UX_CONC_CROP'];
-        
-        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var contexteClient = props['CLUSTERING_CONTEXTE_CLIENT'] || "Non renseigné.";
 
         if (!clientViewportId || !clientFullId || !compViewportId || !compFullId) {
             throw new Error("Les identifiants des captures principales (Viewport/Full) sont manquants.");
         }
 
         Logger.log("Récupération des images depuis Google Drive...");
-
         function safeGetBase64(fileId) {
             if (!fileId || fileId === "-" || fileId.trim() === "") return null;
             try {
@@ -3078,10 +3117,8 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         var b64CompViewport = safeGetBase64(compViewportId);
         var b64CompFull = safeGetBase64(compFullId);
         var b64CompCrop = safeGetBase64(compCropId);
-
         var nbImagesClient = (b64ClientViewport ? 1 : 0) + (b64ClientFull ? 1 : 0) + (b64ClientCrop ? 1 : 0);
         var nbImagesComp = (b64CompViewport ? 1 : 0) + (b64CompFull ? 1 : 0) + (b64CompCrop ? 1 : 0);
-        
         Logger.log("Images client envoyées: " + nbImagesClient + ", Images concurrent envoyées: " + nbImagesComp);
 
         Logger.log("Construction du prompt système...");
@@ -3125,18 +3162,13 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             "}\n\n" +
             "Note sur `recommande_par_defaut` : Mets à `true` pour les 6 éléments les plus cruciaux à afficher au client, `false` pour les autres.\n\n" +
             "Respecte la typographie stricte : Majuscule uniquement au premier mot, un espace avant les deux-points (:), acronymes (UX, IA, CTA) en majuscules.";
-
         var userPrompt = "[Contexte du client] : " + contexteClient + "\n" +
                          "[Type de page cible] : " + typePage + "\n" +
                          "[Intention de recherche] : " + intention;
-
-        // --- LOG DU PROMPT UTILISATEUR ---
         Logger.log("=== DEBUG UX PROMPT UTILISATEUR ===");
         Logger.log(userPrompt);
-        // ---------------------------------
 
         var partsArray = [{"text": userPrompt}];
-
         if (b64ClientViewport) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientViewport}});
         if (b64ClientFull) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientFull}});
         if (b64ClientCrop) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64ClientCrop}});
@@ -3144,7 +3176,6 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
         if (b64CompViewport) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompViewport}});
         if (b64CompFull) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompFull}});
         if (b64CompCrop) partsArray.push({"inlineData": {"mimeType": "image/jpeg", "data": b64CompCrop}});
-
         var payload = {
             "system_instruction": {
                 "parts": [{"text": systemPrompt}]
@@ -3156,7 +3187,7 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
             ],
             "generationConfig": {
                 "responseMimeType": "application/json",
-                "temperature": 0.2 // Réduit la créativité pour forcer le respect du HTML
+                "temperature": 0.2
             }
         };
 
@@ -3187,18 +3218,13 @@ function genererAnalyseComparativeUXIA(typePage, intention) {
 
         var responseText = jsonResponse.candidates[0].content.parts[0].text.trim();
         responseText = responseText.replace(/^```json\n/, '').replace(/\n```$/, '');
-        
-        // --- LOG DE LA RÉPONSE BRUTE ---
         Logger.log("=== DEBUG UX REPONSE BRUTE IA ===");
         Logger.log(responseText);
-        // ---------------------------------
 
         var parsedJson = JSON.parse(responseText);
-
         Logger.log("Analyse IA générée et parsée avec succès.");
         Logger.log("=== FIN : genererAnalyseComparativeUXIA ===");
         return { success: true, data: parsedJson };
-
     } catch (e) {
         Logger.log("Erreur dans genererAnalyseComparativeUXIA : " + e.message);
         Logger.log("=== FIN : genererAnalyseComparativeUXIA (Erreur) ===");
@@ -3424,7 +3450,7 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         }
 
         var props = getDatabaseData();
-        var contexteClient = props['CONF_CONTEXTE_CLIENT'] || "Non renseigné.";
+        var contexteClient = props['CLUSTERING_CONTEXTE_CLIENT'] || "Non renseigné.";
         var profilage = props['PA_CONF_PROFILAGE_COMMERCIAL'] || "Non renseigné.";
         var intention = props['PA_FOCUS_INTENTION_TITRE'] || "Non renseignée.";
         var motCle = props['PA_FOCUS_MCCIBLE'] || "Non défini.";
@@ -3449,15 +3475,12 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
                 unfr_data: unfrCompStr ? JSON.parse(unfrCompStr) : {}
             }
         };
-
-        // Supprimer toute référence à score_reel ou score_saisi pour éviter que l'IA ne les voit
         delete extractionData.client.ytg_data.score_reel;
         delete extractionData.concurrent.ytg_data.score_reel;
         delete extractionData.client.unfr_data.score_saisi;
         delete extractionData.concurrent.unfr_data.score_saisi;
 
         Logger.log("Données d'extraction (Scraping + Outils) : " + JSON.stringify(extractionData));
-
         Logger.log("Étape 2 : Construction du Prompt Système...");
         var systemPrompt = "Tu es un auditeur SEO ultra-analytique et un stratège en conversion. Ta mission est de générer 6 constats pour la stratégie de contenu d'une page client et d'une page concurrente.\n" +
             "Tu dois analyser la structure Hn et les données sémantiques (YourTextGuru et 1.fr) en croisant avec l'intention de recherche de la SERP.\n\n" +
@@ -3492,15 +3515,12 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             "    \"unfr\": \"Analyse 1.fr factuelle et concise...\"\n" +
             "  }\n" +
             "}";
-
         var userPrompt = "[Contexte client] :\n" + contexteClient + "\n\n[Profilage commercial] :\n" + profilage + "\n\n[Données techniques extraites] :\n" + JSON.stringify(extractionData);
-
         var payload = {
             "system_instruction": { "parts": [{"text": systemPrompt}] },
             "contents": [ { "parts": [{"text": userPrompt}] } ],
             "generationConfig": { "responseMimeType": "application/json" }
         };
-
         var apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
         var options = {
             "method": "post",
@@ -3509,7 +3529,6 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
             "payload": JSON.stringify(payload),
             "muteHttpExceptions": true
         };
-
         Logger.log("=== PAYLOAD COMPLET ENVOYÉ À GEMINI ===");
         Logger.log(JSON.stringify(payload));
         Logger.log("=======================================");
@@ -3518,10 +3537,8 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
         var response = UrlFetchApp.fetch(apiUrl, options);
         var responseCode = response.getResponseCode();
         var responseTextBrut = response.getContentText();
-        
         Logger.log("Code HTTP de la réponse : " + responseCode);
         Logger.log("Réponse brute de Gemini : " + responseTextBrut);
-
         var jsonResponse = JSON.parse(responseTextBrut);
 
         if (responseCode !== 200) {
@@ -3538,7 +3555,6 @@ function genererAnalyseContenuDoubleIA(urlClient, urlComp, ytgClientStr, unfrCli
 
         Logger.log("=== FIN : genererAnalyseContenuDoubleIA (Succès) ===");
         return { success: true, data: parsedJson };
-
     } catch(err) {
         Logger.log("ERREUR CRITIQUE dans genererAnalyseContenuDoubleIA : " + err.message);
         return { success: false, error: err.message };

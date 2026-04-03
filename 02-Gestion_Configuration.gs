@@ -72,8 +72,8 @@ function sauvegarderClesAPI(data) {
 function afficherFenetrePreparationClustering() {
     try {
         var html = HtmlService.createHtmlOutputFromFile('04-Interface_Preparation_Clustering')
-            .setWidth(850)
-            .setHeight(800)
+            .setWidth(900)
+            .setHeight(900)
             .setTitle('Préparation Clustering Sémantique');
         SpreadsheetApp.getUi().showModelessDialog(html, '🧩 Clustering');
     } catch (e) {
@@ -158,7 +158,6 @@ function chargerDonneesInitiales() {
 
 function enregistrerConfiguration(formulaire) {
     Logger.log("=== DÉBUT : enregistrerConfiguration ===");
-    
     setDatabaseData({
         'CONF_IS_MULTI_THEME': formulaire.isMultiTheme ? "true" : "false",
         'CONF_PROJECT_TYPE': formulaire.CONF_PROJECT_TYPE,
@@ -186,6 +185,8 @@ function enregistrerConfiguration(formulaire) {
         'CONF_COMP_URL_5': formulaire.CONF_COMP_URL_5,
         'CONF_COMP_STRENGTH_5': formulaire.CONF_COMP_STRENGTH_5,
         'CONF_COMP_BRAND_5': formulaire.CONF_COMP_BRAND_5,
+        'CONF_SEUIL_POSITION': formulaire.CONF_SEUIL_POSITION,
+        'CONF_EXCLUSION_GLOBALE': formulaire.CONF_EXCLUSION_GLOBALE,
         'CONF_CTR_POS_1': formulaire.ctrPos1,
         'CONF_CTR_POS_2': formulaire.ctrPos2,
         'CONF_CTR_POS_3': formulaire.ctrPos3,
@@ -197,7 +198,6 @@ function enregistrerConfiguration(formulaire) {
         'CONF_CTR_POS_9': formulaire.ctrPos9,
         'CONF_CTR_POS_10': formulaire.ctrPos10
     });
-    
     Logger.log("=== FIN : enregistrerConfiguration ===");
     return { success: true };
 }
@@ -633,7 +633,7 @@ function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) 
         var props = getDatabaseData();
         var isMultiTheme = (props['CONF_IS_MULTI_THEME'] === 'true');
         
-        var ctxFinal = contexteClient || props['CONF_CONTEXTE_CLIENT'] || "";
+        var ctxFinal = contexteClient || props['CLUSTERING_CONTEXTE_CLIENT'] || "";
         var dirFinal = directivePrioritaire || props['CLUSTERING_DIRECTIVE'] || "";
 
         var sheet = ss.getSheetByName("Concurrence filtrée");
@@ -644,7 +644,6 @@ function recupererDonneesBrutesClustering(contexteClient, directivePrioritaire) 
         
         var nbEntites = (headers.length - 3) / 2;
         var urlStartIdx = 3 + nbEntites;
-
         var exportList = [];
         for (var i = 1; i < data.length; i++) {
             var row = data[i];
@@ -1025,12 +1024,12 @@ function genererContexteClientIA(urlsTexte, briefTexte) {
 
 function chargerContexteIA() {
     Logger.log("=== DÉBUT : chargerContexteIA ===");
-    var keys = ['CONF_URLS_CONTEXTE', 'CONF_CONTEXTE_CLIENT', 'CLUSTERING_DIRECTIVE'];
+    var keys = ['CLUSTERING_URLS_CONTEXTE', 'CLUSTERING_CONTEXTE_CLIENT', 'CLUSTERING_DIRECTIVE'];
     var props = getDatabaseData(keys);
     Logger.log("=== FIN : chargerContexteIA ===");
     return {
-        urlsContexte: props['CONF_URLS_CONTEXTE'] || "",
-        contexteClient: props['CONF_CONTEXTE_CLIENT'] || "",
+        urlsContexte: props['CLUSTERING_URLS_CONTEXTE'] || "",
+        contexteClient: props['CLUSTERING_CONTEXTE_CLIENT'] || "",
         directivePrioritaire: props['CLUSTERING_DIRECTIVE'] || ""
     };
 }
@@ -1038,9 +1037,8 @@ function chargerContexteIA() {
 function sauvegarderContexteIA(urls, contexte, directive) {
     Logger.log("=== DÉBUT : sauvegarderContexteIA ===");
     setDatabaseData({
-        // Synchronisation des clés
-        'CONF_URLS_CONTEXTE': urls || "",
-        'CONF_CONTEXTE_CLIENT': contexte || "",
+        'CLUSTERING_URLS_CONTEXTE': urls || "",
+        'CLUSTERING_CONTEXTE_CLIENT': contexte || "",
         'CLUSTERING_DIRECTIVE': directive || ""
     });
     Logger.log("=== FIN : sauvegarderContexteIA ===");
@@ -1093,11 +1091,15 @@ function initFormatConfigSheet() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetName = "CONFIG";
     var sheet = ss.getSheetByName(sheetName);
+    var existingData = {};
     
     if (sheet) {
+        Logger.log("Sauvegarde des données existantes avant réinitialisation");
+        existingData = getDatabaseData();
         Logger.log("Suppression de l'ancien onglet CONFIG pour réinitialisation propre");
         ss.deleteSheet(sheet);
     }
+    
     sheet = ss.insertSheet(sheetName);
     sheet.hideSheet();
 
@@ -1117,19 +1119,19 @@ function initFormatConfigSheet() {
     headersLine1[24] = "📈 PRÉ-AUDIT - CONTENU";
     headersLine1[27] = "📈 PRÉ-AUDIT - ÉDITORIAL";
     headersLine1[30] = "📦 AUTRES (FALLBACK)";
-    
+
     sections.forEach(function(colIdx) {
         headersLine2[colIdx] = "Clé";
         headersLine2[colIdx + 1] = "Valeur";
     });
-    
+
     sheet.getRange(1, 1, 1, maxCols).setValues([headersLine1]);
     sheet.getRange(2, 1, 1, maxCols).setValues([headersLine2]);
     
     sections.forEach(function(colIdx) {
         sheet.getRange(1, colIdx + 1, 1, 2).mergeAcross();
     });
-    
+
     var keysByGroup = {
         0: [
             "CONF_PROJECT_TYPE", "CONF_ID_CLIENT", "CONF_URL_CLIENT", "CONF_CLIENT_STRENGTH", "CONF_CLIENT_BRAND", 
@@ -1139,11 +1141,10 @@ function initFormatConfigSheet() {
             "CONF_COMP_NAME_4", "CONF_COMP_URL_4", "CONF_COMP_STRENGTH_4", "CONF_COMP_BRAND_4", 
             "CONF_COMP_NAME_5", "CONF_COMP_URL_5", "CONF_COMP_STRENGTH_5", "CONF_COMP_BRAND_5",
             "CONF_SEUIL_POSITION", "CONF_EXCLUSION_GLOBALE", "CONF_IS_MULTI_THEME",
-            "CONF_CTR_POS_1", "CONF_CTR_POS_2", "CONF_CTR_POS_3", "CONF_CTR_POS_4", "CONF_CTR_POS_5", "CONF_CTR_POS_6", "CONF_CTR_POS_7", "CONF_CTR_POS_8", "CONF_CTR_POS_9", "CONF_CTR_POS_10",
-            "CONF_URLS_CONTEXTE", "CONF_CONTEXTE_CLIENT"
+            "CONF_CTR_POS_1", "CONF_CTR_POS_2", "CONF_CTR_POS_3", "CONF_CTR_POS_4", "CONF_CTR_POS_5", "CONF_CTR_POS_6", "CONF_CTR_POS_7", "CONF_CTR_POS_8", "CONF_CTR_POS_9", "CONF_CTR_POS_10"
         ],
         3: [
-            "CLUSTERING_DIRECTIVE"
+            "CLUSTERING_URLS_CONTEXTE", "CLUSTERING_CONTEXTE_CLIENT", "CLUSTERING_DIRECTIVE"
         ],
         6: [
             "PA_CONF_CONTACT_COM", "PA_CONF_CONTACT_CONS1", "PA_CONF_CONTACT_CONS2", 
@@ -1153,8 +1154,13 @@ function initFormatConfigSheet() {
         ],
         9: [
             "PA_GLOBALE_BESOIN", "PA_GLOBALE_BESOIN_HTML", "PA_GLOBALE_SOLUTION", "PA_GLOBALE_SOLUTION_HTML", 
-            "PA_GLOBALE_TITRE_SEMRUSH", "PA_GLOBALE_SEMRUSH_MOTCLE", "PA_GLOBALE_SEMRUSH_MOTCLE_HTML", 
-            "PA_GLOBALE_SEMRUSH_TRAFIC", "PA_GLOBALE_SEMRUSH_TRAFIC_HTML"
+            "PA_GLOBALE_TITRE_SEMRUSH", 
+            "PA_GLOBALE_PLACEHOLDER_SEMRUSH_MOTCLE",
+            "PA_GLOBALE_SEMRUSH_MOTCLE", 
+            "PA_GLOBALE_SEMRUSH_MOTCLE_HTML", 
+            "PA_GLOBALE_PLACEHOLDER_SEMRUSH_TRAFIC",
+            "PA_GLOBALE_SEMRUSH_TRAFIC", 
+            "PA_GLOBALE_SEMRUSH_TRAFIC_HTML"
         ],
         12: [
             "PA_ETAT_MOTCLE_CLIENT_GLOBAL", "PA_ETAT_MOTCLE_CLIENT_TOP10", "PA_ETAT_MOTCLE_CLIENT_TOP3", "PA_ETAT_CLIENT_URL",
@@ -1216,7 +1222,8 @@ function initFormatConfigSheet() {
         ],
         18: [
             "PA_TECH_URL_CLIENT", "PA_TECH_SITEMAP", "PA_TECH_TYPE_PAGE", "PA_TECH_URL_PAGE_MERE", "PA_TECH_URL_PAGINEES", "PA_TECH_URL_FILTRE", "PA_TECH_IS_MULTILINGUE", "PA_TECH_LANGUE_CIBLE", "PA_TECH_PAYS_CIBLE", 
-            "PA_TECH_HTML_CRAWL", "PA_TECH_HTML_INDEX", "PA_TECH_HTML_POS", "PA_TECH_IA_FULL_STATE", 
+            "PA_TECH_HTML_CRAWL", "PA_TECH_HTML_INDEX", 
+            "PA_TECH_HTML_POS", "PA_TECH_IA_FULL_STATE", 
             "PA_TECH_TITRE", 
             "PA_TECH_CRAWL_CHECK_1", "PA_TECH_CRAWL_CONTENT_1", "PA_TECH_CRAWL_CONTENT_HTML_1",
             "PA_TECH_CRAWL_CHECK_2", "PA_TECH_CRAWL_CONTENT_2", "PA_TECH_CRAWL_CONTENT_HTML_2",
@@ -1261,11 +1268,10 @@ function initFormatConfigSheet() {
             "PA_EDITO_NOM_CONC4", "PA_EDITO_TOP10_CONC4", "PA_EDITO_PAGES_CONC4", "PA_EDITO_BLOG_CONC4",
             "PA_EDITO_TITRE_THEMATIQUE", "PA_EDITO_THEMATIQUE_1", "PA_EDITO_NOM_CONC_CONTENU_1", "PA_EDITO_URL_CONTENU_1", "PA_EDITO_NOM_CONTENU_1", "PA_EDITO_DATA_TOP10_1",
             "PA_EDITO_THEMATIQUE_2", "PA_EDITO_NOM_CONC_CONTENU_2", "PA_EDITO_URL_CONTENU_2", "PA_EDITO_NOM_CONTENU_2", "PA_EDITO_DATA_TOP10_2",
-            "PA_EDITO_THEMATIQUE_3", "PA_EDITO_NOM_CONC_CONTENU_3", "PA_EDITO_URL_CONTENU_3", "PA_EDITO_NOM_CONTENU_3", "PA_EDITO_DATA_TOP10_3",
-            "PA_EDITO_SELECTION_JSON" // Ajout de la clé de sélection technique ici
+            "PA_EDITO_THEMATIQUE_3", "PA_EDITO_NOM_CONC_CONTENU_3", "PA_EDITO_URL_CONTENU_3", "PA_EDITO_NOM_CONTENU_3", "PA_EDITO_DATA_TOP10_3"
         ]
     };
-    
+
     var maxRowsData = 0;
     for (var k in keysByGroup) {
         if (keysByGroup[k].length > maxRowsData) { maxRowsData = keysByGroup[k].length; }
@@ -1287,6 +1293,11 @@ function initFormatConfigSheet() {
 
     applyConfigStyle(sheet);
     Logger.log("=== FIN : initFormatConfigSheet ===");
+    
+    if (Object.keys(existingData).length > 0) {
+        Logger.log("Restauration des données dans la nouvelle structure...");
+        setDatabaseData(existingData);
+    }
 }
 
 function applyConfigStyle(sheet) {
@@ -1297,7 +1308,7 @@ function applyConfigStyle(sheet) {
     var maxCols = 32;
 
     var TRIGGER_KEYS = [
-        "CONF_COMP_BRAND_5", "CONF_IS_MULTI_THEME", "CONF_CTR_POS_10", "CONF_CONTEXTE_CLIENT",
+        "CONF_COMP_BRAND_5", "CONF_IS_MULTI_THEME", "CONF_CTR_POS_10",
         "CLUSTERING_DIRECTIVE",
         "email_cons2", "PA_CONF_SLIDE_ID", "PA_CONF_PROFILAGE_COMMERCIAL",
         "PA_GLOBALE_SOLUTION_HTML", "PA_GLOBALE_SEMRUSH_TRAFIC_HTML",
@@ -1311,9 +1322,9 @@ function applyConfigStyle(sheet) {
         "PA_TECH_PAYS_CIBLE", "PA_TECH_IA_FULL_STATE",
         "PA_UX_RECO_HTML_2", "PA_UX_CONC_CROP", "PA_UX_IA_FULL_STATE",
         "PA_CONTENU_YTG_CIBLE_GLOBALE", "PA_CONTENU_SCRAPED_CLIENT", "PA_CONTENU_SCRAPED_CONC",
-        "PA_EDITO_BLOG_CONC4", "PA_EDITO_SELECTION_JSON" // Bordure finale de la section édito
+        "PA_EDITO_BLOG_CONC4", "PA_EDITO_SELECTION_JSON"
     ];
-    
+
     sheet.getRange(1, 1, 1, maxCols).setBackground("#08133B").setFontColor("white").setFontWeight("bold").setHorizontalAlignment("center");
     sheet.getRange(2, 1, 1, maxCols).setBackground("#d9d9d9").setFontWeight("bold").setHorizontalAlignment("center");
 
@@ -1342,8 +1353,8 @@ function applyConfigStyle(sheet) {
                              (cellKey.indexOf('PA_TECH_') === 0 && (cellKey === 'PA_TECH_TITRE' || cellKey.indexOf('_CHECK_') !== -1 || (cellKey.indexOf('_CONTENT_') !== -1 && cellKey.indexOf('_HTML') === -1))) ||
                              (cellKey.indexOf('PA_UX_') === 0 && cellKey.indexOf('_HTML') === -1 && cellKey.indexOf('_VIEWPORT') === -1 && cellKey.indexOf('_FULL') === -1 && cellKey.indexOf('_CROP') === -1 && cellKey.indexOf('_STATE') === -1) ||
                              (cellKey.indexOf('PA_CONTENU_') === 0 && cellKey.indexOf('_HTML') === -1 && cellKey.indexOf('_SCORE_') === -1 && cellKey.indexOf('_URL_') === -1 && cellKey.indexOf('_DATA_') === -1 && cellKey.indexOf('_SCRAPED_') === -1 && cellKey.indexOf('_GLOBALE') === -1) ||
-                             (cellKey.indexOf('PA_EDITO_') === 0 && cellKey.indexOf('_JSON') === -1) || // On exclut la clé JSON de la coloration orange
-                             cellKey.indexOf('top_thm_') === 0 || 
+                             (cellKey.indexOf('PA_EDITO_') === 0 && cellKey.indexOf('_JSON') === -1) ||
+                             cellKey.indexOf('top_thm_') === 0 ||
                              cellKey.indexOf('flop_thm_') === 0 ||
                              cellKey.indexOf('top_MC_') === 0 || 
                              cellKey.indexOf('QW_MC_') === 0 ||
@@ -1353,20 +1364,18 @@ function applyConfigStyle(sheet) {
                              cellKey.indexOf('TITRE_SLIDE_') === 0 || 
                              cellKey.indexOf('ANALYSE_') === 0 ||
                              cellKey.indexOf('PLACEHOLDER_') === 0 || 
-                             cellKey.indexOf('focus_') === 0 || 
+                             cellKey.indexOf('focus_') === 0 ||
                              cellKey === 'nom_com' || cellKey === 'poste_com' || cellKey === 'email_com' ||
-                             cellKey === 'nom_cons1' || cellKey === 'poste_cons1' || cellKey === 'email_cons1' ||
+                             cellKey === 'nom_cons1' || cellKey === 'poste_cons1' ||
+                             cellKey === 'email_cons1' ||
                              cellKey === 'nom_cons2' || cellKey === 'poste_cons2' || cellKey === 'email_cons2';
-                             
-            var cellValue = (c + 1 < values[r].length) ? String(values[r][c + 1]).trim() : "";
-            
-            if (isSlideKey && cellValue !== "" && cellValue !== "-") {
+
+            if (isSlideKey) {
                 sheet.getRange(r + 1, c + 1, 1, 2).setBackground("#fce5cd");
             }
         }
     }
     SpreadsheetApp.flush();
-    
     try {
         var token = ScriptApp.getOAuthToken();
         var requests = [{
